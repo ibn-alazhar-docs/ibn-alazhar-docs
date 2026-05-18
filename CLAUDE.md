@@ -124,3 +124,21 @@ For every task:
 For additional context about technologies to be used, project structure,
 shell commands, and other important information, read the current plan
 <!-- SPECKIT END -->
+
+## Impeccable design workflow
+
+Impeccable may be used for UI design critique, polish, typography, layout, and visual quality.
+
+Before using Impeccable commands:
+1. Read PRODUCT.md.
+2. Read DESIGN.md.
+3. Apply ibn-impeccable-bridge.
+4. Re-check with ibn-brand-audit and ibn-rtl-audit.
+
+Do not accept generic Impeccable output if it conflicts with:
+- Arabic-first
+- RTL-first
+- Cairo font
+- Ibn Al-Azhar Docs brand colors
+- calm academic product tone
+- Phase 1 scope
