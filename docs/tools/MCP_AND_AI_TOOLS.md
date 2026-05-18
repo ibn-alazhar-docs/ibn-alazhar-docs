@@ -41,12 +41,14 @@ Used for structured reasoning.
 Status: planned, not activated.
 
 Purpose:
+
 - AI-assisted test planning.
 - Test generation.
 - Test execution support.
 - Structured testing feedback inside Claude Code.
 
 Activation requirements:
+
 - TestSprite account.
 - TestSprite API key.
 - Project has local tooling foundation.
@@ -68,3 +70,4 @@ Prefer project-scoped MCP configuration when possible.
 Review tool permissions before enabling automatic actions.
 Do not give MCP tools write permissions unless needed.
 Do not let testing tools create product code before Phase 1 is locked.
+```

@@ -15,7 +15,7 @@
     "format:check": "prettier . --check",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
     "tools:doctor": "node -e \"console.log('Tooling foundation OK')\"",
-    "secrets:scan": "git diff --cached | grep -nE 'sk-[0-9a-fA-F]{20,}|sk-ant-[A-Za-z0-9_-]+|ANTHROPIC_API_KEY[[:space:]]*=[[:space:]]*[^[:space:]\"']|ANTHROPIC_AUTH_TOKEN[[:space:]]*=[[:space:]]*[^[:space:]\"']|TESTSPRITE_API_KEY[[:space:]]*=[[:space:]]*[^[:space:]\"']' || echo 'No obvious staged secrets'"
+    "secrets:scan": "node scripts/secrets-scan.mjs"
   },
   "devDependencies": {
     "prettier": "3.6.2",
