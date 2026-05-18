@@ -35,3 +35,6 @@ docs/_archived/
 docs/_incoming/
 00_Inbox/
 09_Archive/
+
+# Imported/archived/generated documentation snapshots
+docs/_reports/
