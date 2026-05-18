@@ -119,3 +119,8 @@ For every task:
 - docs/05_TECHNICAL_DESIGN.md
 - docs/10_DEVOPS_DEPLOYMENT.md
 - docs/25_GO_NO_GO_REVIEW.md
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->
