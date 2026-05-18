@@ -84,3 +84,4 @@ Never paste the real API key into Markdown files.
 Never put the real API key in .env.example.
 Use local environment variables only.
 Rotate the key if it is exposed.
+```

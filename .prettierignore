@@ -21,3 +21,11 @@ tmp
 .claude/skills/impeccable
 .claude/skills/speckit-*
 .specify
+
+# Claude Code operating files - avoid noisy formatting-only changes during tooling setup
+.claude/agents
+.claude/skills/ibn-*
+CLAUDE.md
+PRODUCT.md
+DESIGN.md
+pnpm-lock.yaml
