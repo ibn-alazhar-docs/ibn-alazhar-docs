@@ -1,11 +1,12 @@
 import { execFileSync } from "node:child_process";
 
 const patterns = [
-  /sk-[0-9a-fA-F]{20,}/,
-  /sk-ant-[A-Za-z0-9_-]+/,
-  /ANTHROPIC_API_KEY\s*=\s*[^ \t\r\n"']+/,
-  /ANTHROPIC_AUTH_TOKEN\s*=\s*[^ \t\r\n"']+/,
-  /TESTSPRITE_API_KEY\s*=\s*[^ \t\r\n"']+/,
+  { name: "Generic sk-* token", regex: /sk-[0-9a-fA-F]{20,}/ },
+  { name: "Anthropic sk-ant token", regex: /sk-ant-[A-Za-z0-9_-]+/ },
+  { name: "ANTHROPIC_API_KEY", regex: /ANTHROPIC_API_KEY\s*=\s*[^ \t\r\n"']+/ },
+  { name: "ANTHROPIC_AUTH_TOKEN", regex: /ANTHROPIC_AUTH_TOKEN\s*=\s*[^ \t\r\n"']+/ },
+  { name: "TESTSPRITE_API_KEY", regex: /TESTSPRITE_API_KEY\s*=\s*[^ \t\r\n"']+/ },
+  { name: "GitHub token", regex: /gh[pousr]_[A-Za-z0-9_]{20,}/ },
 ];
 
 const stagedFiles = execFileSync("git", ["diff", "--cached", "--name-only"], {
@@ -26,9 +27,9 @@ for (const file of stagedFiles) {
   let diff = "";
 
   try {
-    diff = execFileSync("git", ["diff", "--cached", "--", file], {
+    diff = execFileSync("git", ["diff", "--cached", "--unified=0", "--", file], {
       encoding: "utf8",
-      maxBuffer: 64 * 1024 * 1024,
+      maxBuffer: 256 * 1024 * 1024,
     });
   } catch (error) {
     console.error(`Failed to scan staged diff for ${file}`);
@@ -42,9 +43,11 @@ for (const file of stagedFiles) {
 
   for (const [index, line] of addedLines.entries()) {
     for (const pattern of patterns) {
-      if (pattern.test(line)) {
+      if (pattern.regex.test(line)) {
         found = true;
-        console.error(`Potential secret found in ${file} near added diff line ${index + 1}`);
+        console.error(
+          `Potential secret found in ${file} near added diff line ${index + 1}: ${pattern.name}`,
+        );
       }
     }
   }
