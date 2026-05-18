@@ -98,3 +98,16 @@ Before using any provider for repository work:
 - Sending API keys, auth tokens, cookies, or credentials to any model.
 - Committing provider secrets.
 - Using non-Anthropic models while claiming they are Anthropic.
+
+## Model selection policy
+
+Claude Code provider aliases must not force a model unless a provider requires it.
+
+Preferred workflow:
+
+1. Start Claude Code through the desired provider profile.
+2. Use `/model` inside Claude Code to select or switch models.
+3. Keep shell-level `ANTHROPIC_MODEL` unset for OpenRouter unless debugging a provider issue.
+
+Reason:
+Model choice is an interactive session decision, while provider choice is an environment decision.
