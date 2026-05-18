@@ -37,11 +37,7 @@ for (const pattern of patterns) {
 
   for (const match of matches) {
     // Allow intentionally empty placeholders.
-    if (
-      match.endsWith('=""') ||
-      match.endsWith("=''") ||
-      match.endsWith("=")
-    ) {
+    if (match.endsWith('=""') || match.endsWith("=''") || match.endsWith("=")) {
       continue;
     }
 
