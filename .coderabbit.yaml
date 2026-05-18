@@ -1,0 +1,169 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  high_level_summary: true
+  review_status: true
+  review_details: true
+  poem: false
+  collapse_walkthrough: false
+  sequence_diagrams: true
+  changed_files_summary: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+
+chat:
+  auto_reply: true
+  art: false
+
+knowledge_base:
+  opt_out: false
+
+path_filters:
+  - "!node_modules/**"
+  - "!.next/**"
+  - "!dist/**"
+  - "!build/**"
+  - "!out/**"
+  - "!coverage/**"
+  - "!playwright-report/**"
+  - "!test-results/**"
+  - "!uploads/**"
+  - "!tmp/**"
+  - "!.cache/**"
+  - "!00_Inbox/agent-outputs/**"
+  - "!09_Archive/**"
+  - "!.agents/**"
+  - "!*.log"
+  - "!*.png"
+  - "!*.jpg"
+  - "!*.jpeg"
+  - "!*.webp"
+  - "!*.gif"
+  - "!*.pdf"
+  - "!*.docx"
+  - "!*.xlsx"
+
+path_instructions:
+  - path: "CLAUDE.md"
+    instructions: |
+      Review this file as the project-level AI operating manual.
+      Check that instructions are consistent with Spec Kit, Impeccable, CodeRabbit, Arabic-first, RTL-first, Docker-first, and Phase-based workflow.
+      Flag contradictions, vague rules, unsafe permissions, or scope creep.
+
+  - path: ".coderabbit.yaml"
+    instructions: |
+      Review this configuration for correctness, noise reduction, security, and alignment with the repository workflow.
+      Flag unsupported options, risky settings, or review instructions that are too broad.
+
+  - path: ".specify/**"
+    instructions: |
+      Review Spec Kit configuration as workflow infrastructure.
+      Do not request implementation code here.
+      Focus on consistency, governance, phase discipline, and whether generated specs/plans/tasks remain aligned with the constitution.
+
+  - path: "specs/**"
+    instructions: |
+      Review specs as product and engineering source-of-truth.
+      Check for ambiguity, missing acceptance criteria, missing non-functional requirements, missing Arabic/RTL requirements, missing security/privacy requirements, and mismatch with Phase 1 scope.
+      Do not ask for implementation unless the spec is complete.
+
+  - path: "docs/**"
+    instructions: |
+      Review documentation for consistency, completeness, and contradictions.
+      Enforce:
+      - Phase terminology, not Sprint terminology.
+      - Arabic-first and RTL-first requirements.
+      - Docker-first local development.
+      - Free-first hosting without false free-forever claims.
+      - Conversion and export separation.
+      - No MVP scope creep.
+      Flag duplicated, stale, or conflicting documents.
+
+  - path: "PRODUCT.md"
+    instructions: |
+      Review product strategy for clarity and consistency with Ibn Al-Azhar Docs.
+      Check user personas, product promise, tone, anti-references, and accessibility needs.
+      Flag generic SaaS positioning or English-first assumptions.
+
+  - path: "DESIGN.md"
+    instructions: |
+      Review design system guidance.
+      Enforce Cairo font, RTL-first layout, Arabic-first copy, Primary Green #16A34A, Heritage Gold #CA8A04, Dark Text Gray #1F2937, and calm academic visual direction.
+      Flag generic gradients, random glassmorphism, fake analytics, low contrast, and decorative Islamic patterns without purpose.
+
+  - path: ".claude/**"
+    instructions: |
+      Review Claude Code skills, agents, settings, and instructions as tool infrastructure.
+      Flag secrets, overly broad shell permissions, duplicated skills, broken references, or conflicts with CLAUDE.md.
+      Do not request product code changes from this path.
+
+  - path: "apps/web/**"
+    instructions: |
+      Review frontend code with strict attention to:
+      - Arabic-first UX.
+      - RTL-first layout.
+      - Cairo typography.
+      - accessibility.
+      - responsive behavior.
+      - loading, empty, error, and success states.
+      - no generic SaaS UI.
+      - no hardcoded English-first assumptions.
+      If React/Next.js code exists, check type safety, component boundaries, and performance.
+
+  - path: "packages/ui/**"
+    instructions: |
+      Review UI components as reusable design-system primitives.
+      Check accessibility, RTL compatibility, variant consistency, token usage, focus states, and composability.
+      Reject one-off styling that should be tokenized.
+
+  - path: "packages/shared/**"
+    instructions: |
+      Review shared utilities for type safety, clear naming, testability, and avoiding frontend/backend coupling.
+
+  - path: "packages/config/**"
+    instructions: |
+      Review shared config for strictness, maintainability, and avoiding secrets or environment-specific assumptions.
+
+  - path: "prisma/**"
+    instructions: |
+      Review database schema and migrations.
+      Check data privacy, ownership boundaries, soft delete strategy, indexes, relations, naming, and migration safety.
+      Flag any schema change that lacks documentation or migration notes.
+
+  - path: "workers/**"
+    instructions: |
+      Review workers for queue safety, idempotency, retries, error handling, file privacy, logging hygiene, and separation between conversion and export.
+
+  - path: "docker/**"
+    instructions: |
+      Review Docker-related files for Docker-first local development, service naming, volumes, healthchecks, env hygiene, and production/dev separation.
+
+  - path: "compose*.yaml"
+    instructions: |
+      Review Docker Compose files for local reproducibility, service dependencies, volumes, healthchecks, and safe defaults.
+      Ensure PostgreSQL, Redis, MinIO, web, and workers are clearly separated when present.
+
+  - path: ".github/workflows/**"
+    instructions: |
+      Review CI workflows for security, minimal permissions, caching, deterministic installs, pnpm usage, lint/type/test checks, and secret safety.
+      Flag workflows that run unsafe scripts or expose tokens.
+
+  - path: "package.json"
+    instructions: |
+      Review scripts, package manager assumptions, engines, dependency categories, and monorepo consistency.
+      Flag missing check/lint/typecheck/test scripts once code exists.
+
+  - path: "pnpm-workspace.yaml"
+    instructions: |
+      Review workspace package boundaries and ensure apps/packages/workers are included correctly.
+
+  - path: "tsconfig*.json"
+    instructions: |
+      Review TypeScript strictness, module settings, path aliases, and consistency across apps/packages/workers.
