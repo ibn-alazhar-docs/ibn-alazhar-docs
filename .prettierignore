@@ -16,3 +16,8 @@ tmp
 *.pdf
 *.docx
 *.xlsx
+
+# external AI/tooling assets - keep vendor formatting stable
+.claude/skills/impeccable
+.claude/skills/speckit-*
+.specify
