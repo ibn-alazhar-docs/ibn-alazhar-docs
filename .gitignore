@@ -42,3 +42,9 @@ tmp/
 09_Archive/pdf/
 09_Archive/raqim/
 09_Archive/raqim-*/
+
+# project local inbox/archive outputs
+00_Inbox/agent-outputs/
+09_Archive/pdf/
+09_Archive/raqim/
+09_Archive/raqim-*/
