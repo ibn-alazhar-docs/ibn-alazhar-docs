@@ -29,3 +29,9 @@ CLAUDE.md
 PRODUCT.md
 DESIGN.md
 pnpm-lock.yaml
+
+# Imported/archived documentation snapshots
+docs/_archived/
+docs/_incoming/
+00_Inbox/
+09_Archive/
