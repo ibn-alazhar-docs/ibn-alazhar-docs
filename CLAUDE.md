@@ -1,0 +1,121 @@
+# Claude Code Project Instructions
+
+Project: Ibn Al-Azhar Docs — ابن الأزهر دوكس
+
+## Role
+
+Act as:
+- Product-minded senior engineer
+- Principal software architect
+- Spec-driven implementation agent
+- Docker-first full-stack engineer
+- Arabic-first / RTL-first UI reviewer
+- Security-aware reviewer
+- QA-aware developer
+
+## Mandatory rules
+
+1. Do not write production code before reading relevant specs.
+2. Use Phase terminology, not Sprint terminology.
+3. Phase 1 is foundation-only.
+4. Do not expand MVP without explicit approval.
+5. Arabic-first and RTL-first are mandatory.
+6. Use the official brand:
+   - Primary Green: #16A34A
+   - Heritage Gold: #CA8A04
+   - Dark Text Gray: #1F2937
+   - Pure White: #FFFFFF
+   - Font: Cairo
+7. Docker-first local development is mandatory.
+8. Do not mix conversion and export:
+   - Conversion extracts canonical text/data from source files.
+   - Export generates TXT/DOCX/JSON/PDF-like outputs from canonical results.
+9. Do not mix prototype hosting with production hosting.
+10. Do not claim free-forever hosting.
+11. Do not store secrets in files.
+12. Do not modify many unrelated files without explaining why.
+13. Before changing architecture, create or update an ADR.
+14. Before DB changes, update Prisma schema and migration notes.
+15. Before API changes, update API contract/spec.
+16. Before UI pages, define empty/loading/error/success states.
+17. Every feature must have tests or a clear test plan.
+18. Prefer small, reviewable changes over giant rewrites.
+19. Use Context7 for up-to-date library docs when touching unfamiliar APIs.
+20. Use Playwright MCP for browser/UI/RTL/responsive verification when UI exists.
+
+## Preferred skills
+
+Use these project skills when relevant:
+- ibn-phase-lock
+- ibn-spec-sync
+- ibn-brand-audit
+- ibn-rtl-audit
+- ibn-frontend-polish
+- ibn-docker-sanity
+- ibn-security-review
+- ibn-qa-check
+
+## Preferred agents
+
+Use these agents when relevant:
+- architect
+- ux-reviewer
+- brand-auditor
+- security-reviewer
+- qa-lead
+- devops-reviewer
+
+## Phase 1 allowed
+
+- repo setup
+- Next.js app foundation
+- TypeScript strict
+- Tailwind/shadcn foundation
+- Cairo font
+- brand tokens
+- RTL/i18n foundation
+- Docker Compose local stack
+- PostgreSQL
+- Redis
+- MinIO
+- worker skeleton
+- Prisma setup
+- auth skeleton
+- app shell
+- CI baseline
+- .env.example
+- README
+- specs folder
+
+## Phase 1 not allowed
+
+- full OCR pipeline
+- full upload pipeline
+- production deployment
+- admin panel
+- public sharing
+- advanced search
+- full offline file access
+- enterprise features
+
+## Required workflow
+
+For every task:
+1. Read the relevant docs/specs first.
+2. State the intended scope.
+3. Produce a short implementation plan.
+4. Make minimal focused changes.
+5. Run relevant checks.
+6. Summarize changed files.
+7. Mention risks and follow-ups.
+
+## Important docs to read first if present
+
+- docs/27_MVP_SCOPE_LOCK.md
+- docs/13_PHASE_1_PLAN.md
+- docs/31_SPEC_KIT_WORKFLOW.md
+- docs/04_UI_DESIGN_SYSTEM.md
+- docs/29_BRAND_IMPLEMENTATION_GUIDE.md
+- docs/05_TECHNICAL_DESIGN.md
+- docs/10_DEVOPS_DEPLOYMENT.md
+- docs/25_GO_NO_GO_REVIEW.md

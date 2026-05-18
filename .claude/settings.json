@@ -1,0 +1,36 @@
+{
+  "env": {
+    "ANTHROPIC_BASE_URL": "https://api.ecomagent.in/",
+    "ANTHROPIC_MODEL": "claude-opus-4-6",
+    "ANTHROPIC_SMALL_FAST_MODEL": "claude-opus-4-6"
+  },
+  "permissions": {
+    "allow": [
+      "Bash(pwd)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(grep:*)",
+      "Bash(rg:*)",
+      "Bash(find:*)",
+      "Bash(tree:*)",
+      "Bash(jq:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(node:*)",
+      "Bash(npm:*)",
+      "Bash(pnpm:*)",
+      "Bash(corepack:*)",
+      "Bash(docker:*)",
+      "Bash(docker compose:*)"
+    ],
+    "deny": [
+      "Bash(rm -rf /:*)",
+      "Bash(rm -rf ~:*)",
+      "Bash(sudo:*)",
+      "Bash(curl * | sh:*)",
+      "Bash(wget * | sh:*)"
+    ]
+  }
+}

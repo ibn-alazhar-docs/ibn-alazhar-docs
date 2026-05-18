@@ -1,0 +1,38 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Claude local/private
+.claude/settings.local.json
+
+# build outputs
+.next/
+dist/
+build/
+out/
+coverage/
+playwright-report/
+test-results/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# uploads/runtime
+uploads/
+tmp/
+.cache/
