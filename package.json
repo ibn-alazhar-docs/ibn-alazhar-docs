@@ -12,10 +12,11 @@
   "scripts": {
     "check": "pnpm format:check && pnpm typecheck",
     "format": "prettier . --write",
-    "format:check": "prettier . --check",
+    "format:check": "prettier \"CLAUDE.md\" \"README.md\" \".claude/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --check",
     "typecheck": "tsc -p tsconfig.base.json --noEmit",
     "tools:doctor": "node -e \"console.log('Tooling foundation OK')\"",
-    "secrets:scan": "node scripts/secrets-scan.mjs"
+    "secrets:scan": "node scripts/secrets-scan.mjs",
+    "format:write": "prettier \"CLAUDE.md\" \"README.md\" \".claude/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write"
   },
   "devDependencies": {
     "prettier": "3.6.2",
