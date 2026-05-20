@@ -1,0 +1,25 @@
+{
+  "version": "1.0",
+  "providers": {
+    "context7": {
+      "enabled": true,
+      "purpose": "documentation_and_library_context"
+    },
+    "playwright": {
+      "enabled": true,
+      "purpose": "browser_automation_and_ui_testing"
+    },
+    "github": {
+      "enabled": false,
+      "purpose": "repository_and_pull_request_management"
+    },
+    "docker": {
+      "enabled": true,
+      "purpose": "container_runtime_and_stack_management"
+    },
+    "filesystem": {
+      "enabled": true,
+      "purpose": "repository_navigation_and_analysis"
+    }
+  }
+}

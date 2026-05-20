@@ -100,7 +100,7 @@ path_instructions:
 
   - path: ".claude/**"
     instructions: |
-      Review Claude Code skills, agents, settings, and instructions as tool infrastructure.
+      Review OpenCode workflows, prompts, governance rules, and repository policies.
       Flag secrets, overly broad shell permissions, duplicated skills, broken references, or conflicts with CLAUDE.md.
       Do not request product code changes from this path.
 
