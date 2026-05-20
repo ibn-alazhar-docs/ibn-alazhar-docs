@@ -22,7 +22,7 @@ tmp
 .claude/skills/speckit-*
 .specify
 
-# Claude Code operating files - avoid noisy formatting-only changes during tooling setup
+# OpenCode operating files - avoid noisy formatting-only changes during tooling setup
 .claude/agents
 .claude/skills/ibn-*
 CLAUDE.md

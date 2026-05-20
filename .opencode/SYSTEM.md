@@ -104,7 +104,7 @@ When documents conflict, resolve in this order:
 1. **`docs/`** — Product specs, PRD, technical design, ADRs.
 2. **`specs/`** — Feature specifications.
 3. **`.opencode/`** — Runtime layer (this directory).
-4. **`.claude/`** — Claude Code project instructions (CLAUDE.md).
+4. **`archive/legacy-agents/`** — OpenCode project instructions (OPENCODE.md).
 5. **Repository structure** — Code and configuration.
 
 The runtime layer (`.opencode/`) does **not** override product docs. It operationalizes them.
