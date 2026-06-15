@@ -1,0 +1,5 @@
+{
+  "name": "playwright",
+  "type": "disabled",
+  "description": "Playwright MCP server — browser automation"
+}
