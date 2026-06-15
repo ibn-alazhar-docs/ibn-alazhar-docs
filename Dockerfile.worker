@@ -1,0 +1,58 @@
+FROM node:22-slim AS builder
+WORKDIR /app
+
+# Install native dependencies for building/running on Debian
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    make \
+    g++ \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy host pre-built node_modules and code
+COPY . .
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+FROM node:22-slim AS runner
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+# Install Python, Tesseract, and canvas runtime dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 \
+    python3-pip \
+    tesseract-ocr \
+    tesseract-ocr-ara \
+    libcairo2 \
+    libpango-1.0-0 \
+    libjpeg62-turbo \
+    libgif7 \
+    librsvg2-2 \
+    curl \
+    openssl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install python dependencies for local OCR engine (Surya/Pdfium)
+RUN pip3 install --break-system-packages pypdfium2 Pillow pytesseract
+
+RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 nextjs
+
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages/pipeline ./packages/pipeline
+COPY --from=builder /app/workers ./workers
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/apps/web/src/lib/auth.ts ./apps/web/src/lib/auth.ts
+
+USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:9090/health || curl -f http://localhost:9091/health || exit 1
+
+CMD ["npx", "tsx", "workers/ocr-worker/src/index.ts"]

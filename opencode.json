@@ -1,0 +1,112 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "model": "opencode/deepseek-v4-flash-free",
+  "small_model": "opencode/gpt-5-nano",
+  "formatter": {
+    "prettier": {
+      "command": ["npx", "prettier", "--write", "$FILE"],
+      "extensions": [".js", ".jsx", ".ts", ".tsx", ".md", ".json", ".yml", ".yaml", ".css"]
+    }
+  },
+  "instructions": [
+    "AGENTS.md",
+    "CODE_STYLE.md",
+    "SECURITY.md",
+    "CONTRIBUTING.md",
+    "governance/*.md"
+  ],
+  "permission": {
+    "read": {
+      "*": "allow",
+      "*.env": "deny",
+      "*.env.*": "deny",
+      "*.env.example": "allow"
+    },
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git log*": "allow",
+      "git diff*": "allow",
+      "ls*": "allow",
+      "grep*": "allow",
+      "rg*": "allow",
+      "find*": "allow",
+      "pnpm*": "allow",
+      "docker compose*": "allow",
+      "node*": "allow"
+    },
+    "edit": {
+      "*.md": "allow",
+      "*.json": "allow",
+      "*.yml": "allow",
+      "*.yaml": "allow",
+      "*.ts": "ask",
+      "*.tsx": "ask",
+      "*.js": "ask",
+      "*.jsx": "ask"
+    },
+    "skill": {
+      "*": "allow"
+    }
+  },
+  "watcher": {
+    "ignore": [
+      "node_modules/**",
+      "dist/**",
+      ".git/**",
+      ".next/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+      "archive/**",
+      "docs/_reports/**"
+    ]
+  },
+  "provider": {
+    "opencode": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "OpenCode Zen",
+      "options": {
+        "apiKey": "{env:OPENCODE_ZEN_API_KEY}",
+        "baseURL": "https://opencode.ai/zen/v1"
+      }
+    }
+  },
+  "mcp": {
+    "postgres": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "@modelcontextprotocol/server-postgres",
+        "postgresql://ibn:ibn@localhost:5432/ibn_al_azhar_docs"
+      ],
+      "enabled": true
+    },
+    "sequential-thinking": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "enabled": true
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@executeautomation/playwright-mcp-server"],
+      "enabled": false
+    },
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-github"],
+      "enabled": false
+    },
+    "context7-local": {
+      "type": "local",
+      "command": ["npx", "-y", "@upstash/context7-mcp"],
+      "enabled": false
+    }
+  }
+}

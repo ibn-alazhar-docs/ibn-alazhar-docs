@@ -1,0 +1,111 @@
+@import "tailwindcss";
+@import "./brand.css";
+@import "./motion.css";
+@import "./reading.css";
+@import "./discovery.css";
+@import "./landing.css";
+
+@layer base {
+  html {
+    font-family: var(--font-family-body);
+    font-size: 16px;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  html[dir="rtl"] {
+    text-align: right;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    background-color: var(--page-bg);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ring-focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  * {
+    margin-inline-start: 0;
+    margin-inline-end: 0;
+    padding-inline-start: 0;
+    padding-inline-end: 0;
+    border-inline-start: 0;
+    border-inline-end: 0;
+  }
+
+  ::selection {
+    background-color: rgba(196, 144, 40, 0.18);
+    color: var(--text-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-line);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-family-display);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-strong {
+    background: color-mix(in srgb, var(--glass-bg) 85%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-header {
+    background: color-mix(in srgb, var(--surface) 75%, transparent);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+}
