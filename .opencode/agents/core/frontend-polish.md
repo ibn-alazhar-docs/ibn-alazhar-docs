@@ -1,3 +1,14 @@
+---
+description: Refines UI/UX — brand consistency, accessibility, visual polish
+mode: subagent
+temperature: 0.2
+permission:
+  edit: deny
+  bash:
+    "grep *": allow
+    "rg *": allow
+---
+
 # Agent: Frontend Polish
 
 > **File:** `.opencode/agents/core/frontend-polish.md`

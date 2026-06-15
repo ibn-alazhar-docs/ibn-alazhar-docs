@@ -1,3 +1,15 @@
+---
+description: Audits Arabic/RTL compliance — direction, fonts, layout, brand colors
+mode: subagent
+temperature: 0.1
+permission:
+  edit: deny
+  bash:
+    "grep *": allow
+    "rg *": allow
+    "cat *": allow
+---
+
 # Agent: RTL Auditor
 
 > **File:** `.opencode/agents/core/rtl-auditor.md`

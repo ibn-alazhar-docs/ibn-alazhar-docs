@@ -1,3 +1,10 @@
+---
+description: Synchronizes documentation across the repository — maintains consistency
+mode: subagent
+permission:
+  bash: deny
+---
+
 # Agent: Docs-Sync
 
 > **File:** `.opencode/agents/core/docs-sync.md`
