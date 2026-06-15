@@ -1,3 +1,16 @@
+---
+description: Owns quality assurance — test strategy, coverage, regression prevention
+mode: subagent
+temperature: 0.1
+permission:
+  edit: deny
+  bash:
+    "pnpm test*": ask
+    "pnpm vitest*": ask
+    "grep *": allow
+    "rg *": allow
+---
+
 # Agent: QA Lead
 
 > **File:** `.opencode/agents/core/qa-lead.md`

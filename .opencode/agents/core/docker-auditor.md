@@ -1,3 +1,15 @@
+---
+description: Audits Docker configuration — correctness, security, best practices
+mode: subagent
+temperature: 0.1
+permission:
+  edit: deny
+  bash:
+    "docker compose*": ask
+    "grep *": allow
+    "rg *": allow
+---
+
 # Agent: Docker Auditor
 
 > **File:** `.opencode/agents/core/docker-auditor.md`

@@ -1,3 +1,15 @@
+---
+description: Performs security audits — OWASP Top 10, dependency scanning, threat analysis
+mode: subagent
+temperature: 0.1
+permission:
+  edit: deny
+  bash:
+    "pnpm audit*": allow
+    "grep *": allow
+    "rg *": allow
+---
+
 # Agent: Security Reviewer
 
 > **File:** `.opencode/agents/core/security-reviewer.md`

@@ -1,3 +1,15 @@
+---
+description: Ensures implementation matches approved specs — scope enforcement, no scope creep
+mode: subagent
+temperature: 0.1
+permission:
+  edit: deny
+  bash:
+    "grep *": allow
+    "rg *": allow
+    "cat *": allow
+---
+
 # Agent: Spec-Guardian
 
 > **File:** `.opencode/agents/core/spec-guardian.md`
