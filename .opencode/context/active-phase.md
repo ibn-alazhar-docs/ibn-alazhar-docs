@@ -1,9 +1,10 @@
 # Active Phase
 
 Current Phase:
-Phase 1 — Foundation Stabilization
+Phase 2C-2 — Tags
 
 Allowed:
+
 - repo stabilization
 - governance
 - docker foundation
@@ -13,10 +14,13 @@ Allowed:
 - app shell
 - RTL foundation
 - design system foundation
+- tag management (CRUD + assign + filter)
+- tag-based search and navigation
 
 Blocked:
-- full OCR
-- advanced search
+
+- full OCR pipeline changes
+- enhanced export features
+- sharing and collaboration
 - production deployment
 - enterprise features
-- full upload pipeline
