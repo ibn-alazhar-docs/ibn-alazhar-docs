@@ -1,0 +1,5 @@
+{
+  "name": "docker",
+  "type": "disabled",
+  "description": "Docker MCP server — container management"
+}
