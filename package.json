@@ -16,7 +16,9 @@
     "typecheck": "tsc -p apps/web/tsconfig.json --noEmit && tsc -p packages/pipeline/tsconfig.json --noEmit && tsc -p workers/ocr-worker/tsconfig.json --noEmit && tsc -p workers/export-worker/tsconfig.json --noEmit",
     "tools:doctor": "node -e \"console.log('Tooling foundation OK')\"",
     "secrets:scan": "node scripts/secrets-scan.mjs",
-    "format:write": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write"
+    "format:write": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write",
+    "lint": "eslint apps/ packages/ workers/ --max-warnings 0",
+    "test": "vitest run"
   },
   "devDependencies": {
     "prettier": "3.6.2",

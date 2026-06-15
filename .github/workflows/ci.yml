@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "feat/*", "fix/*"]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ibn
+          POSTGRES_PASSWORD: ibn
+          POSTGRES_DB: ibn_al_azhar_docs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: npx prettier --check .
+        name: Format check
+
+      - run: pnpm typecheck
+        name: TypeScript type check
+
+      - run: pnpm test
+        name: Run tests
