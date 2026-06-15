@@ -133,4 +133,4 @@ The runtime layer (`.opencode/`) does **not** override product docs. It operatio
 
 - **Runtime version:** 1.0.0
 - **Last updated:** 2026-05-20
-- **Compatible with:** Phase 1 (Foundation)
+- **Compatible with:** Phase 2C-2 (Tags)

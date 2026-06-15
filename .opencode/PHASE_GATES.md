@@ -165,6 +165,16 @@ Once a phase gate passes, the phase scope is **locked**. Changes to scope requir
 
 ## Gate History
 
-| Gate | Date | Status | Notes |
-|------|------|--------|-------|
-| Phase 1 → Phase 2 | TBD | Pending | Phase 1 in progress |
+| Gate                | Date    | Status  | Notes                                                           |
+| ------------------- | ------- | ------- | --------------------------------------------------------------- |
+| Phase 0 → Phase 1A  | 2024-Q1 | PASS    | Core pipeline implementation                                    |
+| Phase 1A → Phase 1B | 2024-Q2 | PASS    | Real document validation                                        |
+| Phase 1B(1)         | 2024-Q2 | PASS    | Pipeline hardening (text cleanup)                               |
+| Phase 1B(2)         | 2024-Q2 | PASS    | Operational hardening (queue/DLQ/stability)                     |
+| Phase 1C            | 2024-Q2 | PASS    | OCR engine expansion (hybrid provider, Surya, page splitting)   |
+| Phase 1D            | 2024-Q2 | PASS    | OCR burn-in + stress testing                                    |
+| Phase 2A            | 2025-Q1 | PASS    | Auth (NextAuth.js v5, JWT, roles)                               |
+| Phase 2B-1          | 2025-Q1 | PASS    | Folder management (5-level, soft-delete)                        |
+| Phase 2B-2          | 2025-Q2 | PASS    | Document org (status lifecycle, listing, bulk)                  |
+| Phase 2C-1          | 2025-Q2 | PASS    | Search (SQL full-text, suggestions)                             |
+| Phase 2C-2          | Active  | ⏳      | Tags — in progress                                              |

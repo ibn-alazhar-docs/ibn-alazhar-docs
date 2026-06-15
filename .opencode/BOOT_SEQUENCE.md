@@ -16,7 +16,15 @@
 ## Active Phase
 
 Current phase:
-Phase 1 — Foundation Stabilization
+Phase 2C-2 — Tags
+
+## Completed Phases
+
+- Phase 1A–1D (Pipeline): ✅ OCR, cleanup, queue, export
+- Phase 2A (Auth): ✅ NextAuth.js v5, JWT, roles
+- Phase 2B-1 (Folders): ✅ 5-level hierarchy, soft-delete
+- Phase 2B-2 (Document Org): ✅ Status lifecycle, listing, bulk
+- Phase 2C-1 (Search): ✅ SQL full-text, suggestions
 
 ## Runtime Mode
 
