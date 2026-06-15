@@ -1,0 +1,153 @@
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dcfce7;
+  --color-primary-200: #bbf7d0;
+  --color-primary-300: #86efac;
+  --color-primary-400: #4ade80;
+  --color-primary-500: #22c55e;
+  --color-primary-600: #16a34a;
+  --color-primary-700: #15803d;
+  --color-primary-800: #166534;
+  --color-primary-900: #14532d;
+
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #eab308;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #a16207;
+  --color-gold-800: #854d0e;
+  --color-gold-900: #713f12;
+
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-info-50: #eff6ff;
+  --color-info-500: #3b82f6;
+
+  --font-family-cairo: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --font-family-amiri: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-family-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-family-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+
+  --color-ring: var(--color-primary-500);
+  --ring-offset-width: 2px;
+  --ring-offset-color: var(--surface);
+}
+
+:root {
+  --page-bg: #f4efe8;
+  --surface: #fdfaf5;
+  --card-bg: #fdfaf5;
+  --border-line: #e0d9ce;
+  --border-subtle: #e9e3da;
+  --text-primary: #1c1816;
+  --text-secondary: #5c564f;
+  --text-tertiary: #6b6560;
+  --text-inverse: #faf7f2;
+  --btn-primary-bg: #1a5c3a;
+  --btn-primary-text: #faf7f2;
+  --btn-ghost-border: rgba(28, 24, 22, 0.12);
+  --hover-bg: rgba(28, 24, 22, 0.04);
+  --active-bg: rgba(28, 24, 22, 0.06);
+  --badge-bg: rgba(28, 24, 22, 0.05);
+  --overlay: rgba(28, 24, 22, 0.5);
+  --input-bg: #fdfaf5;
+  --input-border: #d1c9bf;
+  --input-focus: #1a5c3a;
+  --success: #1a5c3a;
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --danger: #b91c1c;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --info: #1a5c3a;
+  --info-bg: #ecfdf5;
+  --gold: #c49028;
+  --gold-bg: #fef8e7;
+  --gold-border: #f0dfa8;
+  --icon-color: #1c1816;
+  --icon-muted: #78716c;
+  --ring-focus: #1a5c3a;
+  --shadow-color: 0 0 0;
+  --font-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --glass-bg: rgba(253, 250, 245, 0.7);
+  --glass-border: rgba(224, 217, 206, 0.3);
+  --glass-shadow: 0 8px 32px rgba(28, 24, 22, 0.08);
+}
+
+.dark {
+  --page-bg: #0e0d0b;
+  --surface: #161513;
+  --card-bg: #1c1b18;
+  --border-line: #282623;
+  --border-subtle: #201f1c;
+  --text-primary: #e3e0da;
+  --text-secondary: #a39b92;
+  --text-tertiary: #8a837b;
+  --text-inverse: #1c1917;
+  --btn-primary-bg: #2d8a4e;
+  --btn-primary-text: #faf7f2;
+  --btn-ghost-border: rgba(227, 224, 218, 0.1);
+  --hover-bg: rgba(227, 224, 218, 0.05);
+  --active-bg: rgba(227, 224, 218, 0.08);
+  --badge-bg: rgba(45, 138, 78, 0.12);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --input-bg: #1c1b18;
+  --input-border: #383632;
+  --input-focus: #4ade80;
+  --success: #4ade80;
+  --success-bg: rgba(74, 222, 128, 0.1);
+  --success-border: rgba(74, 222, 128, 0.2);
+  --danger: #f87171;
+  --danger-bg: rgba(248, 113, 113, 0.1);
+  --danger-border: rgba(248, 113, 113, 0.2);
+  --info: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.1);
+  --gold: #cc9f2e;
+  --gold-bg: rgba(204, 159, 46, 0.08);
+  --gold-border: rgba(204, 159, 46, 0.15);
+  --icon-color: #e3e0da;
+  --icon-muted: #78716c;
+  --glass-bg: rgba(22, 21, 19, 0.7);
+  --glass-border: rgba(40, 38, 35, 0.4);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+@media print {
+  body {
+    color: #000;
+    background: #fff;
+  }
+}

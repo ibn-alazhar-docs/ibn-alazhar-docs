@@ -1,18 +1,16 @@
-# dependencies
+# Dependencies
 node_modules/
 .pnpm-store/
+.turbo/
 
-# env / secrets
+# Environment and secrets
 .env
 .env.*
 !.env.example
 *.pem
 *.key
 
-# Claude local/private
-.claude/settings.local.json
-
-# build outputs
+# Build outputs
 .next/
 dist/
 build/
@@ -20,55 +18,32 @@ out/
 coverage/
 playwright-report/
 test-results/
+.vercel/
 
-# logs
+# Logs
 *.log
 npm-debug.log*
 pnpm-debug.log*
 
-# OS/editor
+# OS and editor
 .DS_Store
 Thumbs.db
 .vscode/
 .idea/
 
-# uploads/runtime
+# Runtime data
 uploads/
 tmp/
 .cache/
 
-# project local inbox/archive outputs
-00_Inbox/agent-outputs/
-09_Archive/pdf/
-09_Archive/raqim/
-09_Archive/raqim-*/
+# Non-canonical project paths (see SOURCE_OF_TRUTH.md)
+archive/
+00_Inbox/
+09_Archive/
 
-# project local inbox/archive outputs
-00_Inbox/agent-outputs/
-09_Archive/pdf/
-09_Archive/raqim/
-09_Archive/raqim-*/
-
+# Agent runtime config
 .agents/
+.opencode/help.mdc
 
-# environment files
-.env
-.env.*
-!.env.example
-
-# package manager / tooling
-node_modules/
-.pnpm-store/
-.turbo/
-.vercel/
-.next/
-dist/
-build/
-out/
-coverage/
-playwright-report/
-test-results/
-tmp/
-.cache/
-uploads/
+# Tooling
 .aider*

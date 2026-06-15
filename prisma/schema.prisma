@@ -1,0 +1,311 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DATABASE_URL_DIRECT")
+  relationMode = "prisma"
+}
+
+// ============================================
+// Users & Authentication
+// ============================================
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  emailVerified DateTime?
+  image         String?
+  passwordHash  String?
+  role          Role      @default(STUDENT)
+  locale        String    @default("ar")
+  timezone      String    @default("Africa/Cairo")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+
+  accounts      Account[]
+  sessions      Session[]
+  documents     Document[]
+  folders       Folder[]
+  tags          Tag[]
+  conversionJobs ConversionJob[]
+  settings      UserSetting?
+  shareLinks    ShareLink[]
+
+  @@index([role])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(255)
+  token      String   @unique @db.VarChar(255)
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, token])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// Documents & Organization
+// ============================================
+
+model Document {
+  id          String   @id @default(cuid())
+  userId      String
+  folderId    String?
+  title       String
+  description String?
+  fileName    String
+  originalName String
+  mimeType    String
+  fileSize    BigInt
+  storageKey  String   @unique
+  status      DocStatus @default(UPLOADED)
+  pageCount   Int?
+  pageRange   String?
+  outputFormats String[] @default([])
+  language    String    @default("ar")
+  isRtl       Boolean   @default(true)
+
+  // Search fields (managed via raw SQL, not Prisma)
+  // searchVector  tsvector (in PostgreSQL)
+  // searchPreview text
+  // wordCount     integer
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder      Folder?   @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags        TagDocument[]
+  conversions ConversionJob[]
+  shareLinks  ShareLink[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@index([deletedAt])
+  @@index([status, createdAt])
+  @@map("documents")
+}
+
+model Folder {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  parentId  String?
+  color     String?
+  icon      String?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  children  Folder[] @relation("FolderHierarchy")
+  documents Document[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([userId, parentId])
+  @@index([userId, parentId, order])
+  @@index([deletedAt])
+  @@map("folders")
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  color     String   @default("#16A34A")
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents TagDocument[]
+
+  @@unique([userId, name])
+  @@map("tags")
+}
+
+model TagDocument {
+  tagId      String
+  documentId String
+
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, documentId])
+  @@index([documentId])
+  @@map("tag_documents")
+}
+
+// ============================================
+// Conversion Pipeline
+// ============================================
+
+model ConversionJob {
+  id          String         @id @default(cuid())
+  userId      String
+  documentId  String
+  sourceFormat String
+  targetFormat String
+  status      JobStatus      @default(PENDING)
+  progress    Int            @default(0)
+  inputKey    String
+  outputKey   String?
+  error       String?
+  attempts    Int            @default(0)
+  maxAttempts Int            @default(3)
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@map("conversion_jobs")
+}
+
+// ============================================
+// Sharing
+// ============================================
+
+model ShareLink {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  documentId String
+  userId     String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([documentId])
+  @@index([userId])
+  @@index([expiresAt])
+  @@unique([documentId, userId])
+  @@map("share_links")
+}
+
+// ============================================
+// Settings & Audit
+// ============================================
+
+model UserSetting {
+  id     String @id @default(cuid())
+  userId String @unique
+  key    String
+  value  String @db.Text
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("user_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum Role {
+  ADMIN
+  STUDENT
+  TEACHER
+}
+
+enum DocStatus {
+  UPLOADED
+  VALIDATING
+  SPLITTING
+  OCR_PROCESSING
+  CLEANING
+  GENERATING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}

@@ -1,0 +1,65 @@
+"use client";
+
+import { useState } from "react";
+import { useTranslations } from "next-intl";
+import { FolderTree } from "@/components/folders/folder-tree";
+import { Breadcrumbs } from "@/components/folders/breadcrumbs";
+import { Container } from "@/components/ui/container";
+import { Section } from "@/components/ui/section";
+import { Stack } from "@/components/ui/stack";
+import { Heading } from "@/components/ui/heading";
+import { Text } from "@/components/ui/text";
+
+interface Breadcrumb {
+  id: string;
+  name: string;
+}
+
+export default function FoldersPage() {
+  const t = useTranslations("folders");
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
+  const [breadcrumbs, setBreadcrumbs] = useState<Breadcrumb[]>([]);
+
+  function handleSelectFolder(folderId: string | null) {
+    setSelectedFolderId(folderId);
+
+    if (folderId) {
+      fetch(`/api/folders/${folderId}/tree`)
+        .then((r) => r.json())
+        .then((data) => {
+          if (data.targetFolder) {
+            setBreadcrumbs([{ id: folderId, name: data.targetFolder.name }]);
+          }
+        })
+        .catch(() => {
+          setBreadcrumbs([{ id: folderId, name: "..." }]);
+        });
+    } else {
+      setBreadcrumbs([]);
+    }
+  }
+
+  return (
+    <Container>
+      <Section padding="md">
+        <Stack gap={6}>
+          {/* Header */}
+          <div>
+            <Heading level={2}>{t("title")}</Heading>
+            <Text color="muted">{t("empty")}</Text>
+          </div>
+
+          {/* Breadcrumbs */}
+          {breadcrumbs.length > 0 && (
+            <Breadcrumbs breadcrumbs={breadcrumbs} onNavigate={handleSelectFolder} />
+          )}
+
+          {/* Folder Tree */}
+          <div className="bg-card rounded-xl border border-line p-4">
+            <FolderTree selectedFolderId={selectedFolderId} onSelectFolder={handleSelectFolder} />
+          </div>
+        </Stack>
+      </Section>
+    </Container>
+  );
+}

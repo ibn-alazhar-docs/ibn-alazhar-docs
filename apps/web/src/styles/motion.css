@@ -1,0 +1,225 @@
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    translate: 0 1rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes fade-in-down {
+  from {
+    opacity: 0;
+    translate: 0 -0.75rem;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    translate: 0.5rem 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes slide-in-left {
+  from {
+    opacity: 0;
+    translate: -0.5rem 0;
+  }
+  to {
+    opacity: 1;
+    translate: 0 0;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    scale: 0.95;
+  }
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+@keyframes scale-out {
+  from {
+    opacity: 1;
+    scale: 1;
+  }
+  to {
+    opacity: 0;
+    scale: 0.95;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes gold-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    scale: 1;
+  }
+  50% {
+    opacity: 0.7;
+    scale: 1.05;
+  }
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 200;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -8px;
+  }
+}
+
+@keyframes glow {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+@utility animate-fade-in-up {
+  animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-fade-in-down {
+  animation: fade-in-down 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-gold-pulse {
+  animation: gold-pulse 3s ease-in-out infinite;
+}
+
+@utility animate-draw-line {
+  stroke-dasharray: 200;
+  animation: draw-line 2s ease-out forwards;
+}
+
+@utility animate-fade-in {
+  animation: fade-in 0.4s ease-out forwards;
+}
+
+@utility animate-slide-in-right {
+  animation: slide-in-right 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-slide-in-left {
+  animation: slide-in-left 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-scale-in {
+  animation: scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-shimmer {
+  background: linear-gradient(90deg, transparent 25%, var(--hover-bg) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+@utility delay-100 {
+  animation-delay: 100ms;
+}
+@utility delay-200 {
+  animation-delay: 200ms;
+}
+@utility delay-300 {
+  animation-delay: 300ms;
+}
+@utility delay-400 {
+  animation-delay: 400ms;
+}
+@utility delay-500 {
+  animation-delay: 500ms;
+}
+@utility delay-700 {
+  animation-delay: 700ms;
+}
+
+.hover-lift {
+  transition:
+    translate 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.2s ease;
+  &:hover {
+    translate: 0 -2px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  }
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in-up,
+  .animate-fade-in-down,
+  .animate-fade-in,
+  .animate-slide-in-right,
+  .animate-slide-in-left,
+  .animate-scale-in,
+  .animate-shimmer,
+  .animate-float,
+  .animate-glow {
+    animation: none;
+    opacity: 1;
+    translate: 0 0;
+  }
+}

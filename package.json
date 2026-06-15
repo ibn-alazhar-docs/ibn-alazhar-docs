@@ -6,17 +6,17 @@
   "license": "UNLICENSED",
   "packageManager": "pnpm@10.33.4",
   "engines": {
-    "node": "20.17.0",
+    "node": "22.x",
     "pnpm": "10.33.4"
   },
   "scripts": {
     "check": "pnpm format:check && pnpm typecheck",
     "format": "prettier . --write",
-    "format:check": "prettier \"CLAUDE.md\" \"README.md\" \".claude/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --check",
-    "typecheck": "tsc -p tsconfig.base.json --noEmit",
+    "format:check": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --check",
+    "typecheck": "tsc -p apps/web/tsconfig.json --noEmit && tsc -p packages/pipeline/tsconfig.json --noEmit && tsc -p workers/ocr-worker/tsconfig.json --noEmit && tsc -p workers/export-worker/tsconfig.json --noEmit",
     "tools:doctor": "node -e \"console.log('Tooling foundation OK')\"",
     "secrets:scan": "node scripts/secrets-scan.mjs",
-    "format:write": "prettier \"CLAUDE.md\" \"README.md\" \".claude/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write"
+    "format:write": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write"
   },
   "devDependencies": {
     "prettier": "3.6.2",

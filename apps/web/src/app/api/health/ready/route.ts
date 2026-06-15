@@ -1,0 +1,81 @@
+import { NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+import net from "net";
+
+async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {
+  const start = Date.now();
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    return { status: "healthy", latencyMs: Date.now() - start };
+  } catch {
+    return { status: "unhealthy", latencyMs: Date.now() - start };
+  }
+}
+
+async function checkRedis(): Promise<{ status: string; latencyMs: number }> {
+  const start = Date.now();
+  try {
+    const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";
+    const url = new URL(redisUrl);
+    const host = url.hostname;
+    const port = parseInt(url.port || "6379", 10);
+
+    await new Promise<void>((resolve, reject) => {
+      const socket = new net.Socket();
+      socket.setTimeout(2000);
+      socket.once("connect", () => {
+        socket.destroy();
+        resolve();
+      });
+      socket.once("timeout", () => {
+        socket.destroy();
+        reject(new Error("timeout"));
+      });
+      socket.once("error", (err) => {
+        socket.destroy();
+        reject(err);
+      });
+      socket.connect(port, host);
+    });
+
+    return { status: "healthy", latencyMs: Date.now() - start };
+  } catch {
+    return { status: "unhealthy", latencyMs: Date.now() - start };
+  }
+}
+
+async function checkMinio(): Promise<{ status: string; latencyMs: number }> {
+  const start = Date.now();
+  try {
+    const endpoint = process.env.S3_ENDPOINT || "http://localhost:9000";
+    const response = await fetch(`${endpoint}/minio/health/live`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    return {
+      status: response.ok ? "healthy" : "unhealthy",
+      latencyMs: Date.now() - start,
+    };
+  } catch {
+    return { status: "unhealthy", latencyMs: Date.now() - start };
+  }
+}
+
+export async function GET() {
+  const [postgres, redis, minio] = await Promise.all([checkPostgres(), checkRedis(), checkMinio()]);
+
+  const checks = { postgres, redis, minio };
+  const allHealthy = Object.values(checks).every((c) => c.status === "healthy");
+  const anyUnhealthy = Object.values(checks).some((c) => c.status === "unhealthy");
+
+  const status = allHealthy ? "healthy" : anyUnhealthy ? "unhealthy" : "degraded";
+
+  return NextResponse.json(
+    {
+      status,
+      version: process.env.npm_package_version || "0.0.0",
+      timestamp: new Date().toISOString(),
+      checks,
+    },
+    { status: allHealthy ? 200 : 503 },
+  );
+}

@@ -1,0 +1,25 @@
+# node_modules/
+.pnpm-store/
+.next/
+dist/
+build/
+out/
+coverage/
+.git/
+.env
+.env.*
+.aider*
+.opencode_backups/
+.venv/
+.agents/
+.agent/
+archive/
+docs/
+test-results/
+test-data/
+my-project/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
