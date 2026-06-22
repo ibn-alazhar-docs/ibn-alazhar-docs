@@ -48,7 +48,6 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
     };
   }, [file]);
 
-  const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
   const MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5GB (Raised from 100MB)
 
   function validateFile(f: File): string | null {
