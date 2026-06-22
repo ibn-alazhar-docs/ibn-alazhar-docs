@@ -23,16 +23,14 @@ function IconSlot({ index, className }: { index: number; className: string }) {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const containerVariants: any = {
+const containerVariants = {
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.2 },
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 40 },
   visible: {
     opacity: 1,

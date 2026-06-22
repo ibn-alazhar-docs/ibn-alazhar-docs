@@ -41,8 +41,7 @@ interface HeroProps {
   isLoggedIn?: boolean;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const containerVariants: any = {
+const containerVariants = {
   hidden: { opacity: 0 },
   visible: {
     opacity: 1,
@@ -53,8 +52,7 @@ const containerVariants: any = {
   },
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const itemVariants: any = {
+const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: {
     opacity: 1,
