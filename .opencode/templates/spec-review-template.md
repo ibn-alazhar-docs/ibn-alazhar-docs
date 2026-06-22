@@ -40,9 +40,9 @@
 
 ## Ambiguities
 
-| # | Section | Ambiguity | Clarification Needed |
-|---|---------|-----------|---------------------|
-| 1 | [section] | [description] | [what needs clarification] |
+| #   | Section   | Ambiguity     | Clarification Needed       |
+| --- | --------- | ------------- | -------------------------- |
+| 1   | [section] | [description] | [what needs clarification] |
 
 ## Scope Check
 

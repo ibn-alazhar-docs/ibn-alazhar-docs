@@ -35,13 +35,13 @@ Define the minimum security requirements for all code changes.
 
 ## Violations
 
-| Violation | Severity | Action |
-|-----------|----------|--------|
-| Secret in code | Critical | Block merge, rotate secret |
-| No input validation | High | Block merge, add validation |
-| No auth check | High | Block merge, add auth check |
-| Missing security header | Medium | Fix in same PR |
-| No rate limiting | Medium | Add rate limiting |
+| Violation               | Severity | Action                      |
+| ----------------------- | -------- | --------------------------- |
+| Secret in code          | Critical | Block merge, rotate secret  |
+| No input validation     | High     | Block merge, add validation |
+| No auth check           | High     | Block merge, add auth check |
+| Missing security header | Medium   | Fix in same PR              |
+| No rate limiting        | Medium   | Add rate limiting           |
 
 ## Reference
 

@@ -24,6 +24,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Feature specification completeness and correctness.
 
 #### Checklist
+
 - [ ] Spec is unambiguous and testable
 - [ ] Acceptance criteria are defined (Given/When/Then)
 - [ ] UI states defined (empty/loading/error/success)
@@ -47,6 +48,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Phase scope, dependencies, risk, readiness.
 
 #### Checklist
+
 - [ ] All specs reviewed and approved
 - [ ] Phase scope defined and locked
 - [ ] Dependencies mapped
@@ -68,6 +70,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Lint, typecheck, test, build.
 
 #### Checks
+
 - ESLint — no errors
 - TypeScript — no errors (strict mode)
 - Vitest — all tests pass
@@ -85,6 +88,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Automated code review for security, style, scope.
 
 #### Categories
+
 - **Required findings:** Security, privacy, data loss, broken build, scope creep, spec mismatch.
 - **Advisory findings:** Style suggestions, optional refactoring.
 
@@ -102,6 +106,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Security baseline compliance.
 
 #### Checklist
+
 - [ ] No secrets in code or config
 - [ ] Input validation present (Zod)
 - [ ] Output encoding present
@@ -127,6 +132,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** RTL and Arabic compliance.
 
 #### Checklist
+
 - [ ] Direction is RTL by default
 - [ ] Text alignment is right for Arabic
 - [ ] Flex/grid layouts use logical properties
@@ -150,6 +156,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Brand consistency and design quality.
 
 #### Checklist
+
 - [ ] Primary green is `#16A34A` (not `#10B981`)
 - [ ] Heritage gold is `#CA8A04`
 - [ ] Text gray is `#1F2937`
@@ -173,6 +180,7 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 **What:** Final approval.
 
 #### Checklist
+
 - [ ] CI passes
 - [ ] CodeRabbit required findings addressed
 - [ ] Security review passes
@@ -189,21 +197,22 @@ Spec Review → Phase Gate → Implementation → CI → CodeRabbit → Security
 
 ## Review Escalation
 
-| Issue | Escalates To |
-|-------|-------------|
-| Spec ambiguity | Architect |
+| Issue            | Escalates To              |
+| ---------------- | ------------------------- |
+| Spec ambiguity   | Architect                 |
 | Security concern | Security-reviewer → human |
-| Scope creep | Spec-guardian → human |
-| Brand violation | Frontend-polish → human |
-| RTL failure | RTL-auditor → human |
-| Docker failure | Docker-auditor → human |
-| Phase gate block | Architect → human |
+| Scope creep      | Spec-guardian → human     |
+| Brand violation  | Frontend-polish → human   |
+| RTL failure      | RTL-auditor → human       |
+| Docker failure   | Docker-auditor → human    |
+| Phase gate block | Architect → human         |
 
 ---
 
 ## Review Records
 
 All reviews are recorded in:
+
 - `reviews/` — Review outputs and findings.
 - Spec `review.md` — Spec-specific review notes.
 - PR comments — Code review discussion.

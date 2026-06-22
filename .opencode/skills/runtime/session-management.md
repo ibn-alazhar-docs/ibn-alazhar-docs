@@ -43,12 +43,12 @@ Session Start → Boot → Task Intake → Execution → Verification → Wrap �
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Session blocked | Document blocking issue, identify recovery path |
-| Session scope exceeds phase | Flag scope creep, pause |
-| Session model fails | Apply fallback routing |
-| Session cannot complete | Mark as Partial, document follow-ups |
+| Condition                   | Action                                          |
+| --------------------------- | ----------------------------------------------- |
+| Session blocked             | Document blocking issue, identify recovery path |
+| Session scope exceeds phase | Flag scope creep, pause                         |
+| Session model fails         | Apply fallback routing                          |
+| Session cannot complete     | Mark as Partial, document follow-ups            |
 
 ## Review Requirements
 

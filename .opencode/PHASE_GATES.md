@@ -25,17 +25,21 @@ Each gate review produces a gate decision document:
 - Status: PASS | FAIL | CONDITIONAL
 
 ## Deliverables Checklist
+
 - [ ] Deliverable 1
 - [ ] Deliverable 2
 - ...
 
 ## Blocking Issues
+
 - None | [list]
 
 ## Conditional Requirements
+
 - None | [list with deadline]
 
 ## Decision
+
 [Pass / Fail / Conditional with conditions]
 ```
 
@@ -48,12 +52,14 @@ Each gate review produces a gate decision document:
 Phase 1 is the foundation phase. Gate review verifies:
 
 ### Infrastructure
+
 - [ ] `docker compose up` starts all services (PostgreSQL, Redis, MinIO)
 - [ ] Container naming convention: `ibn-al-azhar-docs-*`
 - [ ] Health checks configured and passing
 - [ ] `.env.example` is complete
 
 ### Application
+
 - [ ] Next.js 16 app boots without errors
 - [ ] TypeScript strict mode enabled
 - [ ] Tailwind CSS v4 configured
@@ -62,44 +68,52 @@ Phase 1 is the foundation phase. Gate review verifies:
 - [ ] Brand tokens defined (#16A34A, #CA8A04, #1F2937, #FFFFFF)
 
 ### i18n / RTL
+
 - [ ] next-intl configured (ar/en)
 - [ ] Arabic is default locale
 - [ ] RTL is default direction
 - [ ] Language switch works
 
 ### Auth
+
 - [ ] NextAuth.js v5 configured (JWT strategy, 24h)
 - [ ] Credentials provider working
 - [ ] Auth pages render (ar/en)
 - [ ] Middleware protects routes
 
 ### Database
+
 - [ ] Prisma schema defined
 - [ ] Initial migration applied
 - [ ] Seed script creates admin user
 - [ ] Prisma Studio accessible
 
 ### App Shell
+
 - [ ] Dashboard layout (Sidebar + Header + Content)
 - [ ] Responsive behavior (mobile hamburger)
 - [ ] Navigation between pages
 
 ### State Management
+
 - [ ] authStore (Zustand)
 - [ ] uiStore (Zustand, persisted)
 
 ### CI/CD
+
 - [ ] GitHub Actions workflow (lint + test + build)
 - [ ] CI passes on main branch
 - [ ] Branch protection configured
 
 ### Documentation
+
 - [ ] README with Docker-first quickstart
 - [ ] `.opencode/` runtime populated
 - [ ] Specs folder structure created
 - [ ] ADRs created for key decisions
 
 ### Quality
+
 - [ ] ESLint passes (no errors)
 - [ ] TypeScript typecheck passes (no errors)
 - [ ] ≥5 Vitest tests pass
@@ -125,23 +139,28 @@ Phase 2 covers file upload and management. Gate review will verify:
 ## Gate Enforcement
 
 ### Who Runs the Gate?
+
 1. **Architect agent** — Runs automated checks, produces draft gate report.
 2. **Human engineer** — Reviews draft, confirms findings, records decision.
 
 ### Gate Decision Types
-| Decision | Meaning |
-|----------|---------|
-| PASS | All criteria met. Next phase authorized. |
-| FAIL | Blocking issues exist. Next phase not authorized. |
+
+| Decision    | Meaning                                                           |
+| ----------- | ----------------------------------------------------------------- |
+| PASS        | All criteria met. Next phase authorized.                          |
+| FAIL        | Blocking issues exist. Next phase not authorized.                 |
 | CONDITIONAL | Non-blocking issues exist. Next phase authorized with conditions. |
 
 ### Gate Record
+
 All gate decisions are recorded in:
+
 - `docs/19_DECISION_LOG.md`
 - Gate decision document in `reviews/`
 - `memory/project/current-status.md` updated
 
 ### Gate Failure Protocol
+
 1. Identify all blocking issues.
 2. Create remediation tasks.
 3. Assign owners and deadlines.
@@ -165,16 +184,16 @@ Once a phase gate passes, the phase scope is **locked**. Changes to scope requir
 
 ## Gate History
 
-| Gate                | Date    | Status  | Notes                                                           |
-| ------------------- | ------- | ------- | --------------------------------------------------------------- |
-| Phase 0 → Phase 1A  | 2024-Q1 | PASS    | Core pipeline implementation                                    |
-| Phase 1A → Phase 1B | 2024-Q2 | PASS    | Real document validation                                        |
-| Phase 1B(1)         | 2024-Q2 | PASS    | Pipeline hardening (text cleanup)                               |
-| Phase 1B(2)         | 2024-Q2 | PASS    | Operational hardening (queue/DLQ/stability)                     |
-| Phase 1C            | 2024-Q2 | PASS    | OCR engine expansion (hybrid provider, Surya, page splitting)   |
-| Phase 1D            | 2024-Q2 | PASS    | OCR burn-in + stress testing                                    |
-| Phase 2A            | 2025-Q1 | PASS    | Auth (NextAuth.js v5, JWT, roles)                               |
-| Phase 2B-1          | 2025-Q1 | PASS    | Folder management (5-level, soft-delete)                        |
-| Phase 2B-2          | 2025-Q2 | PASS    | Document org (status lifecycle, listing, bulk)                  |
-| Phase 2C-1          | 2025-Q2 | PASS    | Search (SQL full-text, suggestions)                             |
-| Phase 2C-2          | Active  | ⏳      | Tags — in progress                                              |
+| Gate                | Date       | Status | Notes                                                         |
+| ------------------- | ---------- | ------ | ------------------------------------------------------------- |
+| Phase 0 → Phase 1A  | 2024-Q1    | PASS   | Core pipeline implementation                                  |
+| Phase 1A → Phase 1B | 2024-Q2    | PASS   | Real document validation                                      |
+| Phase 1B(1)         | 2024-Q2    | PASS   | Pipeline hardening (text cleanup)                             |
+| Phase 1B(2)         | 2024-Q2    | PASS   | Operational hardening (queue/DLQ/stability)                   |
+| Phase 1C            | 2024-Q2    | PASS   | OCR engine expansion (hybrid provider, Surya, page splitting) |
+| Phase 1D            | 2024-Q2    | PASS   | OCR burn-in + stress testing                                  |
+| Phase 2A            | 2025-Q1    | PASS   | Auth (NextAuth.js v5, JWT, roles)                             |
+| Phase 2B-1          | 2025-Q1    | PASS   | Folder management (5-level, soft-delete)                      |
+| Phase 2B-2          | 2025-Q2    | PASS   | Document org (status lifecycle, listing, bulk)                |
+| Phase 2C-1          | 2025-Q2    | PASS   | Search (SQL full-text, suggestions)                           |
+| Phase 2C-2          | 2026-06-15 | PASS   | Tags CRUD, merge, filter, export — implemented                |

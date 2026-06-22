@@ -43,12 +43,12 @@ PR Opened → Consistency Audit → Findings → Resolution → Review Complete
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
+| Condition                             | Action                        |
+| ------------------------------------- | ----------------------------- |
 | Critical inconsistency (code vs spec) | Flag to spec-guardian + human |
-| Doc conflict between files | Flag to docs-sync + architect |
-| Memory inconsistent with state | Flag to docs-sync |
-| ADR conflicts with implementation | Flag to architect |
+| Doc conflict between files            | Flag to docs-sync + architect |
+| Memory inconsistent with state        | Flag to docs-sync             |
+| ADR conflicts with implementation     | Flag to architect             |
 
 ## Review Requirements
 

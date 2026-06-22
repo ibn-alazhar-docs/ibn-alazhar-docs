@@ -23,15 +23,15 @@
 
 ### Required Findings
 
-| # | Finding | Severity | File | Line | Description |
-|---|---------|----------|------|------|-------------|
-| 1 | [finding] | High/Medium/Low | [file] | [line] | [description] |
+| #   | Finding   | Severity        | File   | Line   | Description   |
+| --- | --------- | --------------- | ------ | ------ | ------------- |
+| 1   | [finding] | High/Medium/Low | [file] | [line] | [description] |
 
 ### Advisory Findings
 
-| # | Finding | File | Line | Description |
-|---|---------|------|------|-------------|
-| 1 | [finding] | [file] | [line] | [description] |
+| #   | Finding   | File   | Line   | Description   |
+| --- | --------- | ------ | ------ | ------------- |
+| 1   | [finding] | [file] | [line] | [description] |
 
 ## Checklist
 

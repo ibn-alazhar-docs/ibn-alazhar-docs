@@ -19,6 +19,7 @@ The bootstrap lifecycle initializes the runtime when a session starts. It ensure
 
 **Action:** Read all files in `memory/`.
 **Order:**
+
 1. `memory/project/project-overview.md`
 2. `memory/project/phase-1-focus.md`
 3. `memory/project/current-status.md`
@@ -74,21 +75,22 @@ The bootstrap lifecycle initializes the runtime when a session starts. It ensure
 
 ## Bootstrap Failure Recovery
 
-| Failure Point | Recovery |
-|---------------|----------|
-| SYSTEM.md missing | Cannot bootstrap. Flag as critical failure. |
-| Memory file missing | Flag warning, continue with available memory. |
+| Failure Point          | Recovery                                                               |
+| ---------------------- | ---------------------------------------------------------------------- |
+| SYSTEM.md missing      | Cannot bootstrap. Flag as critical failure.                            |
+| Memory file missing    | Flag warning, continue with available memory.                          |
 | Runtime status missing | Derive from `docs/13_PHASE_1_PLAN.md` and `docs/27_MVP_SCOPE_LOCK.md`. |
-| Model unavailable | Apply fallback routing from `MODEL_ROUTING.md`. |
-| Agent file missing | Flag warning, skip agent for this session. |
-| Policy file missing | Flag warning, continue with default policies. |
-| Health check fails | Report failures, continue in degraded mode. |
+| Model unavailable      | Apply fallback routing from `MODEL_ROUTING.md`.                        |
+| Agent file missing     | Flag warning, skip agent for this session.                             |
+| Policy file missing    | Flag warning, continue with default policies.                          |
+| Health check fails     | Report failures, continue in degraded mode.                            |
 
 ---
 
 ## Bootstrap Output
 
 After successful bootstrap:
+
 - Session context is loaded.
 - Model is selected and verified.
 - Agents are available.

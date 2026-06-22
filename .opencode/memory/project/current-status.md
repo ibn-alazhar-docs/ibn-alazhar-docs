@@ -8,8 +8,8 @@
 ## Current Phase
 
 - **Phase:** Phase 2C-2 — Tags
-- **Status:** In Progress
-- **Gate:** Pending (Phase 2C-2 gate not yet run)
+- **Status:** Complete
+- **Gate:** Passed (Phase 2C-2 gate review complete)
 
 ## Runtime Status
 
@@ -19,34 +19,40 @@
 
 ## Completed Work
 
-| Phase              | Status | Notes                                              |
-| ------------------ | ------ | -------------------------------------------------- |
-| Pipeline 1A–1D     | ✅     | OCR, cleanup, queue, export                        |
-| Auth 2A            | ✅     | NextAuth.js v5, JWT, roles (ADMIN/STUDENT/TEACHER) |
-| Folders 2B-1       | ✅     | 5-level hierarchy, soft-delete                     |
-| Document Org 2B-2  | ✅     | Status lifecycle, listing, bulk operations         |
-| Search 2C-1        | ✅     | SQL full-text, suggestions                         |
+| Phase             | Status | Notes                                              |
+| ----------------- | ------ | -------------------------------------------------- |
+| Pipeline 1A–1D    | ✅     | OCR, cleanup, queue, export                        |
+| Auth 2A           | ✅     | NextAuth.js v5, JWT, roles (ADMIN/STUDENT/TEACHER) |
+| Folders 2B-1      | ✅     | 5-level hierarchy, soft-delete                     |
+| Document Org 2B-2 | ✅     | Status lifecycle, listing, bulk operations         |
+| Search 2C-1       | ✅     | SQL full-text, suggestions                         |
 
 ## In-Progress Work
 
-| Item          | Owner | Notes              |
-| ------------- | ----- | ------------------ |
-| Tags 2C-2     | TBD   | Spec in draft      |
+| Item | Owner | Notes |
+| ---- | ----- | ----- |
+| —    | —     | —     |
+
+## Completed Work
+
+| Item      | Notes                            |
+| --------- | -------------------------------- |
+| Tags 2C-2 | Tags CRUD, merge, filter, export |
 
 ## Upcoming Milestones
 
-| Milestone       | Target | Notes                  |
-| --------------- | ------ | ---------------------- |
-| Enhanced export | TBD    | Phase 2C-3             |
-| Sharing         | TBD    | Phase 2D               |
+| Milestone       | Target     | Notes |
+| --------------- | ---------- | ----- |
+| Enhanced export | Phase 2C-3 |       |
+| Sharing         | Phase 2D   |       |
 
 ## Known Risks
 
-| Risk                                                                | Severity | Mitigation               |
-| ------------------------------------------------------------------- | -------- | ------------------------ |
-| Runtime files may drift from project state                          | Medium   | docs-sync agent monitors |
-| Memory may become stale                                             | Medium   | Update memory on session |
-| Phase 2C-2 scope creep                                              | Medium   | spec-guardian enforces   |
+| Risk                                                                 | Severity | Mitigation               |
+| -------------------------------------------------------------------- | -------- | ------------------------ |
+| Runtime files may drift from project state                           | Medium   | docs-sync agent monitors |
+| Memory may become stale                                              | Medium   | Update memory on session |
+| Phase 2C-2 scope creep                                               | Medium   | spec-guardian enforces   |
 | 2 remaining `require()` calls in `remove-isadmin.js` (legacy script) | Low      | Script already converted |
 
 ## Last Updated

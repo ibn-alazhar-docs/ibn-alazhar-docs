@@ -28,41 +28,41 @@
 
 ## Work Performed
 
-| Task | Status | Notes |
-|------|--------|-------|
+| Task     | Status   | Notes   |
+| -------- | -------- | ------- |
 | [task 1] | Complete | [notes] |
-| [task 2] | Partial | [notes] |
-| [task 3] | Failed | [notes] |
+| [task 2] | Partial  | [notes] |
+| [task 3] | Failed   | [notes] |
 
 ## Changes Made
 
-| File | Change Type | Notes |
-|------|-------------|-------|
+| File   | Change Type              | Notes   |
+| ------ | ------------------------ | ------- |
 | [file] | Created/Modified/Deleted | [notes] |
 
 ## Decisions Made
 
-| Decision | Rationale | Impact |
-|----------|-----------|--------|
+| Decision   | Rationale   | Impact   |
+| ---------- | ----------- | -------- |
 | [decision] | [rationale] | [impact] |
 
 ## Escalations
 
-| Issue | Escalated To | Status |
-|-------|-------------|--------|
-| [issue] | [recipient] | Resolved/Pending |
+| Issue   | Escalated To | Status           |
+| ------- | ------------ | ---------------- |
+| [issue] | [recipient]  | Resolved/Pending |
 
 ## Follow-ups
 
-| Task | Priority | Notes |
-|------|----------|-------|
+| Task   | Priority        | Notes   |
+| ------ | --------------- | ------- |
 | [task] | High/Medium/Low | [notes] |
 
 ## Memory Updates
 
-| Memory File | Change | Notes |
-|-------------|--------|-------|
-| [file] | Updated | [notes] |
+| Memory File | Change  | Notes   |
+| ----------- | ------- | ------- |
+| [file]      | Updated | [notes] |
 
 ## Notes
 

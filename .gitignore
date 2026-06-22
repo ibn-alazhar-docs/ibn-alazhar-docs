@@ -19,6 +19,11 @@ coverage/
 playwright-report/
 test-results/
 .vercel/
+*.tsbuildinfo
+
+# Test data (large binary files, test reports)
+test-data/
+packages/pipeline/test-data/
 
 # Logs
 *.log
@@ -43,7 +48,31 @@ archive/
 
 # Agent runtime config
 .agents/
+.qoder/
 .opencode/help.mdc
+.opencode/node_modules/
+.opencode/snapshots/
+.opencode/sessions/
+.opencode/package-lock.json
+
+# Binary test data
+*.ppm
+*.pbm
+*.pgm
+
+# Python cache (OCR worker venv)
+.ruff_cache/
+__pycache__/
+*.pyc
 
 # Tooling
 .aider*
+.pi/
+scratch/
+opencode.json
+
+# Test artifacts at root
+*.docx
+*.epub
+
+testsprite_tests/tmp/config.json

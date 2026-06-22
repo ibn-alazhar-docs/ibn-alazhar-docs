@@ -42,12 +42,12 @@ Phase Deliveries → Phase Gate Review → Pass/Fail → Phase Transition or Rem
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Blocking issue found | Fail gate, create remediation tasks |
+| Condition              | Action                              |
+| ---------------------- | ----------------------------------- |
+| Blocking issue found   | Fail gate, create remediation tasks |
 | Deliverable incomplete | Fail gate, flag missing deliverable |
-| CI failing | Fail gate, fix CI first |
-| Conditional pass | Document conditions, set deadline |
+| CI failing             | Fail gate, fix CI first             |
+| Conditional pass       | Document conditions, set deadline   |
 
 ## Review Requirements
 

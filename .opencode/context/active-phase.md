@@ -1,7 +1,10 @@
 # Active Phase
 
 Current Phase:
-Phase 2C-2 — Tags
+Phase 2C-2 — Tags ✅ (Complete)
+
+Next Phase:
+Phase 2C-3 — Enhanced Export 📋
 
 Allowed:
 
@@ -14,13 +17,11 @@ Allowed:
 - app shell
 - RTL foundation
 - design system foundation
-- tag management (CRUD + assign + filter)
-- tag-based search and navigation
 
 Blocked:
 
 - full OCR pipeline changes
-- enhanced export features
+- enhanced export features (waiting for phase gate)
 - sharing and collaboration
 - production deployment
 - enterprise features

@@ -12,6 +12,7 @@ Every new session must:
 - Avoid scope expansion
 
 Before implementation:
+
 - define scope
 - define risks
 - define touched files

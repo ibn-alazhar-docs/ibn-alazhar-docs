@@ -41,13 +41,13 @@ A PWA that converts scanned documents to editable text via OCR, with export to m
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Registered users (month 1) | 50 |
-| Conversion success rate | > 90% |
+| Metric                         | Target       |
+| ------------------------------ | ------------ |
+| Registered users (month 1)     | 50           |
+| Conversion success rate        | > 90%        |
 | Avg conversion time (10 pages) | < 60 seconds |
-| Lighthouse Performance | > 90 |
-| PWA install rate | > 30% |
+| Lighthouse Performance         | > 90         |
+| PWA install rate               | > 30%        |
 
 ## Last Updated
 

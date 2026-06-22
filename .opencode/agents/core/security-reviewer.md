@@ -61,17 +61,18 @@ Ensure every change meets the security baseline and introduces no vulnerabilitie
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Critical vulnerability found | Human engineer (immediate) |
-| Secret detected in code | Human engineer (immediate, rotate secret) |
-| Auth bypass detected | Human engineer + architect |
-| Data exposure risk | Human engineer |
-| Security baseline not met | Human engineer (block merge) |
+| Trigger                      | Escalates To                              |
+| ---------------------------- | ----------------------------------------- |
+| Critical vulnerability found | Human engineer (immediate)                |
+| Secret detected in code      | Human engineer (immediate, rotate secret) |
+| Auth bypass detected         | Human engineer + architect                |
+| Data exposure risk           | Human engineer                            |
+| Security baseline not met    | Human engineer (block merge)              |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any file in the repository.
 - Run security-focused bash commands (lint, scan).
 - Review auth, API, and file handling code.
@@ -82,6 +83,7 @@ Ensure every change meets the security baseline and introduces no vulnerabilitie
 - Flag security issues with severity ratings.
 
 ### Cannot Do
+
 - Write production implementation code.
 - Rotate secrets (human action only).
 - Modify auth configuration without approval.
@@ -99,15 +101,15 @@ Ensure every change meets the security baseline and introduces no vulnerabilitie
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Spec Creation | Identify security implications |
-| Spec Review | Verify security considerations are documented |
-| Phase Gate | Verify security baseline is met |
-| Implementation | Review code for security compliance |
-| Code Review | Primary security reviewer |
-| Merge | Block merge if security issues unresolved |
-| Post-Merge | Update threat model if needed |
+| Workflow Stage | Role                                          |
+| -------------- | --------------------------------------------- |
+| Spec Creation  | Identify security implications                |
+| Spec Review    | Verify security considerations are documented |
+| Phase Gate     | Verify security baseline is met               |
+| Implementation | Review code for security compliance           |
+| Code Review    | Primary security reviewer                     |
+| Merge          | Block merge if security issues unresolved     |
+| Post-Merge     | Update threat model if needed                 |
 
 ## Security Review Checklist
 

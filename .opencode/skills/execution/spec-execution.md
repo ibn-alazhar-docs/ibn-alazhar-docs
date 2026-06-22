@@ -41,12 +41,12 @@ Phase Gate Pass → Spec Locked → Spec Execution → Code Review → Merge
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Spec is ambiguous during implementation | Pause, clarify with architect |
-| Implementation reveals spec flaw | Flag to spec-guardian, update spec |
-| Implementation exceeds phase scope | Flag to spec-guardian, pause |
-| Technical blocker found | Flag to architect |
+| Condition                               | Action                             |
+| --------------------------------------- | ---------------------------------- |
+| Spec is ambiguous during implementation | Pause, clarify with architect      |
+| Implementation reveals spec flaw        | Flag to spec-guardian, update spec |
+| Implementation exceeds phase scope      | Flag to spec-guardian, pause       |
+| Technical blocker found                 | Flag to architect                  |
 
 ## Review Requirements
 

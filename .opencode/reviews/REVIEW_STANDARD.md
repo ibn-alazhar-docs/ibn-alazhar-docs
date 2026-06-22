@@ -12,14 +12,14 @@ Every review artifact must include:
 
 ### 1. Metadata
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| Review ID | Yes | Unique identifier (e.g., `review-0001-security-auth`) |
-| Date | Yes | When the review was performed |
-| Type | Yes | Spec, Security, RTL, Brand, Code, Phase Gate, Runtime |
-| Reviewer | Yes | Agent name or human name |
-| Target | Yes | What was reviewed (file, PR, spec, etc.) |
-| Status | Yes | Pass, Fail, Conditional |
+| Field     | Required | Description                                           |
+| --------- | -------- | ----------------------------------------------------- |
+| Review ID | Yes      | Unique identifier (e.g., `review-0001-security-auth`) |
+| Date      | Yes      | When the review was performed                         |
+| Type      | Yes      | Spec, Security, RTL, Brand, Code, Phase Gate, Runtime |
+| Reviewer  | Yes      | Agent name or human name                              |
+| Target    | Yes      | What was reviewed (file, PR, spec, etc.)              |
+| Status    | Yes      | Pass, Fail, Conditional                               |
 
 ### 2. Scope
 
@@ -37,15 +37,15 @@ A clear statement of what was reviewed and what was not:
 
 Each finding must include:
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| ID | Yes | Finding identifier within the review (F-001, F-002, etc.) |
-| Category | Yes | Security, RTL, Brand, Style, Spec, Performance, etc. |
-| Severity | Yes | Critical, High, Medium, Low, Advisory |
-| Location | Yes | File path and line number (if applicable) |
-| Description | Yes | What the finding is |
-| Evidence | Yes | Why it is a finding (code snippet, spec quote, etc.) |
-| Recommendation | Yes | How to fix it |
+| Field          | Required | Description                                               |
+| -------------- | -------- | --------------------------------------------------------- |
+| ID             | Yes      | Finding identifier within the review (F-001, F-002, etc.) |
+| Category       | Yes      | Security, RTL, Brand, Style, Spec, Performance, etc.      |
+| Severity       | Yes      | Critical, High, Medium, Low, Advisory                     |
+| Location       | Yes      | File path and line number (if applicable)                 |
+| Description    | Yes      | What the finding is                                       |
+| Evidence       | Yes      | Why it is a finding (code snippet, spec quote, etc.)      |
+| Recommendation | Yes      | How to fix it                                             |
 
 **Finding format:**
 
@@ -57,9 +57,11 @@ Each finding must include:
 - **Location:** [file:line]
 - **Description:** [what the finding is]
 - **Evidence:**
-  ```
-  [relevant code or content]
-  ```
+```
+
+[relevant code or content]
+
+```
 - **Recommendation:** [how to fix]
 ```
 
@@ -70,11 +72,11 @@ A summary table of all findings:
 ```markdown
 ## Summary
 
-| Finding | Category | Severity | Status |
-|---------|----------|----------|--------|
-| F-001 | Security | High | Open |
-| F-002 | RTL | Medium | Open |
-| F-003 | Brand | Low | Advisory |
+| Finding | Category | Severity | Status   |
+| ------- | -------- | -------- | -------- |
+| F-001   | Security | High     | Open     |
+| F-002   | RTL      | Medium   | Open     |
+| F-003   | Brand    | Low      | Advisory |
 ```
 
 ### 5. Verdict
@@ -152,13 +154,13 @@ Another reviewer should be able to reproduce the findings:
 
 ## Review Severity Definitions
 
-| Severity | Definition | Action Required |
-|----------|------------|-----------------|
-| **Critical** | Immediate risk to security, data loss, or system integrity. | Block merge. Fix immediately. |
-| **High** | Significant issue that affects core functionality or security. | Block merge. Fix before next review. |
-| **Medium** | Important issue that affects quality or correctness. | Fix before merge, or document risk acceptance. |
-| **Low** | Minor issue that does not affect functionality. | Fix when convenient, or document as accepted. |
-| **Advisory** | Suggestion for improvement, not a defect. | Optional. No action required. |
+| Severity     | Definition                                                     | Action Required                                |
+| ------------ | -------------------------------------------------------------- | ---------------------------------------------- |
+| **Critical** | Immediate risk to security, data loss, or system integrity.    | Block merge. Fix immediately.                  |
+| **High**     | Significant issue that affects core functionality or security. | Block merge. Fix before next review.           |
+| **Medium**   | Important issue that affects quality or correctness.           | Fix before merge, or document risk acceptance. |
+| **Low**      | Minor issue that does not affect functionality.                | Fix when convenient, or document as accepted.  |
+| **Advisory** | Suggestion for improvement, not a defect.                      | Optional. No action required.                  |
 
 ---
 
@@ -178,6 +180,7 @@ reviews/review-<NNNN>-<type>-<target>.md
 ```
 
 Examples:
+
 - `reviews/review-0001-security-auth.md`
 - `reviews/review-0002-rtl-dashboard.md`
 - `reviews/review-0003-brand-button.md`
@@ -224,8 +227,8 @@ Use this template for all reviews:
 ## Summary
 
 | Finding | Category | Severity | Status |
-|---------|----------|----------|--------|
-| F-001 | ... | ... | ... |
+| ------- | -------- | -------- | ------ |
+| F-001   | ...      | ...      | ...    |
 
 ---
 
@@ -249,16 +252,16 @@ Use this template for all reviews:
 
 ## Review Anti-Patterns
 
-| Anti-Pattern | Problem | Fix |
-|--------------|---------|-----|
-| Vague findings | Cannot act on the finding | Be specific with evidence and location |
-| Missing evidence | Finding cannot be verified | Include code snippets, spec quotes, or screenshots |
-| No recommendation | Reviewer identifies problem but not solution | Always include a fix recommendation |
-| Skipped checklist items | Incomplete review | Mark N/A with explanation, do not skip |
-| Influenced reviews | One review affects another | Keep reviews independent |
-| Over-severity | Marking everything as Critical | Use severity definitions consistently |
-| Under-severity | Marking critical issues as Low | Use severity definitions consistently |
-| No sign-off | Review has no accountability | Always sign off with name, date, confidence |
+| Anti-Pattern            | Problem                                      | Fix                                                |
+| ----------------------- | -------------------------------------------- | -------------------------------------------------- |
+| Vague findings          | Cannot act on the finding                    | Be specific with evidence and location             |
+| Missing evidence        | Finding cannot be verified                   | Include code snippets, spec quotes, or screenshots |
+| No recommendation       | Reviewer identifies problem but not solution | Always include a fix recommendation                |
+| Skipped checklist items | Incomplete review                            | Mark N/A with explanation, do not skip             |
+| Influenced reviews      | One review affects another                   | Keep reviews independent                           |
+| Over-severity           | Marking everything as Critical               | Use severity definitions consistently              |
+| Under-severity          | Marking critical issues as Low               | Use severity definitions consistently              |
+| No sign-off             | Review has no accountability                 | Always sign off with name, date, confidence        |
 
 ---
 

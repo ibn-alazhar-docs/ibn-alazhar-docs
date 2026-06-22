@@ -44,12 +44,12 @@ Spec Draft → Spec Sync (track status) → Implementation → Spec Sync (track 
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
+| Condition                       | Action                |
+| ------------------------------- | --------------------- |
 | Spec and implementation diverge | Flag to spec-guardian |
-| Spec is stale (no activity) | Flag to human |
-| Spec references outdated docs | Flag to docs-sync |
-| Spec status is unclear | Flag to spec-guardian |
+| Spec is stale (no activity)     | Flag to human         |
+| Spec references outdated docs   | Flag to docs-sync     |
+| Spec status is unclear          | Flag to spec-guardian |
 
 ## Review Requirements
 

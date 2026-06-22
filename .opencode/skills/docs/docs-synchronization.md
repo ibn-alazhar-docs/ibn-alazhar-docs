@@ -44,12 +44,12 @@ Code Change → Docs Sync Detection → Impact Assessment → Doc Update → Ver
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Doc impact is unclear | Flag to human |
-| Doc update requires technical knowledge | Escalate to architect |
-| Multiple docs conflict | Flag to human + architect |
-| Memory is stale | Update memory, flag for review |
+| Condition                               | Action                         |
+| --------------------------------------- | ------------------------------ |
+| Doc impact is unclear                   | Flag to human                  |
+| Doc update requires technical knowledge | Escalate to architect          |
+| Multiple docs conflict                  | Flag to human + architect      |
+| Memory is stale                         | Update memory, flag for review |
 
 ## Review Requirements
 

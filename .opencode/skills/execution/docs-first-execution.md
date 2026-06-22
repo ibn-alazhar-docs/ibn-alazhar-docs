@@ -42,12 +42,12 @@ Idea → Spec Draft → Spec Review → Docs-First Gate → Implementation Autho
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| No spec exists | Block implementation, create spec first |
-| Spec is incomplete | Return for revision |
-| Spec not reviewed | Block implementation, request review |
-| Docs conflict with spec | Flag to docs-sync + architect |
+| Condition               | Action                                  |
+| ----------------------- | --------------------------------------- |
+| No spec exists          | Block implementation, create spec first |
+| Spec is incomplete      | Return for revision                     |
+| Spec not reviewed       | Block implementation, request review    |
+| Docs conflict with spec | Flag to docs-sync + architect           |
 
 ## Review Requirements
 

@@ -11,6 +11,7 @@
 A runtime deadlock occurs when two or more runtime entities (agents, reviews, processes) are blocked waiting for each other, and no progress can be made without external intervention.
 
 Unlike a traditional code deadlock (thread A waits for thread B, thread B waits for thread A), runtime deadlocks involve:
+
 - Agents blocking each other's work.
 - Reviews with conflicting findings.
 - Escalations that cannot be resolved at any level.
@@ -25,11 +26,13 @@ Unlike a traditional code deadlock (thread A waits for thread B, thread B waits 
 **Pattern:** Agent A needs output from Agent B, and Agent B needs output from Agent A.
 
 **Detection:**
+
 1. Session detects no progress for > 2 iterations.
 2. Both agents report "waiting for X" where X is the other agent.
 3. Review order cannot be determined because both are prerequisites.
 
 **Example:**
+
 - Security-reviewer needs RTL-auditor to verify CSS changes don't introduce XSS via inline styles.
 - RTL-auditor needs security-reviewer to verify that RTL fixes don't break CSP.
 
@@ -38,11 +41,13 @@ Unlike a traditional code deadlock (thread A waits for thread B, thread B waits 
 **Pattern:** Review A passes only if Review B fails, and Review B passes only if Review A fails.
 
 **Detection:**
+
 1. Two reviews produce mutually exclusive findings.
 2. Fixing one review's finding causes the other to fail.
 3. No single change satisfies both reviews.
 
 **Example:**
+
 - Security review requires removing inline styles (CSP compliance).
 - RTL audit requires inline styles for dynamic direction switching.
 
@@ -51,11 +56,13 @@ Unlike a traditional code deadlock (thread A waits for thread B, thread B waits 
 **Pattern:** Escalation reaches a level where the escalator and the escalatee are the same entity.
 
 **Detection:**
+
 1. Escalation chain loops back to the originator.
 2. No higher authority exists to resolve the conflict.
 3. The escalation format has no recipient.
 
 **Example:**
+
 - Architect escalates to human, but human delegates back to architect.
 - Human delegates to architect, architect escalates back to human.
 
@@ -64,11 +71,13 @@ Unlike a traditional code deadlock (thread A waits for thread B, thread B waits 
 **Pattern:** Spec A depends on Spec B being implemented, and Spec B depends on Spec A being implemented.
 
 **Detection:**
+
 1. Dependency graph shows a cycle between specs.
 2. Neither spec can start because the other is a prerequisite.
 3. Phase gate cannot proceed because both specs are blocked.
 
 **Example:**
+
 - Auth spec requires app shell layout for login page placement.
 - App shell spec requires auth spec for protected route middleware.
 
@@ -79,12 +88,14 @@ Unlike a traditional code deadlock (thread A waits for thread B, thread B waits 
 ### Step 1: Detect
 
 The orchestrating agent (architect) monitors for deadlock patterns:
+
 - No progress for > 2 iterations.
 - Circular wait conditions.
 - Mutually exclusive findings.
 - Escalation loops.
 
 **Detection triggers:**
+
 - Session records no forward progress.
 - Agent reports "blocked waiting for X."
 - Review outputs contradict irreconcilably.
@@ -92,6 +103,7 @@ The orchestrating agent (architect) monitors for deadlock patterns:
 ### Step 2: Classify
 
 Identify the deadlock type:
+
 - **D-01:** Agent dependency deadlock.
 - **D-02:** Review conflict deadlock.
 - **D-03:** Escalation deadlock.
@@ -113,6 +125,7 @@ Apply the appropriate resolution strategy:
 6. If validation still fails: escalate to human.
 
 **Example resolution:**
+
 - Security-reviewer goes first (security is foundational).
 - Security-reviewer produces provisional finding: "inline styles must be removed."
 - RTL-auditor works against this: "use CSS classes with logical properties instead."
@@ -129,6 +142,7 @@ Apply the appropriate resolution strategy:
 4. If no alternative exists: escalate to human for exception.
 
 **Example resolution:**
+
 - Security review requires removing inline styles (priority: High).
 - RTL audit requires inline styles (priority: Medium).
 - Security wins.
@@ -147,6 +161,7 @@ Apply the appropriate resolution strategy:
 6. Deadlock is broken.
 
 **If human is unavailable:**
+
 - Defer the decision.
 - Continue with non-blocked work.
 - Re-attempt when human is available.
@@ -163,6 +178,7 @@ Apply the appropriate resolution strategy:
 6. Resume phase gate.
 
 **Example resolution:**
+
 - Auth spec and app shell spec have circular dependency.
 - Architect merges them into a single spec: "Auth + App Shell Foundation."
 - Single spec is reviewed and implemented together.
@@ -171,6 +187,7 @@ Apply the appropriate resolution strategy:
 ### Step 4: Verify
 
 After resolution:
+
 1. Verify all previously blocked agents can proceed.
 2. Verify all reviews can pass.
 3. Verify no new deadlocks were introduced.
@@ -226,6 +243,7 @@ Before phase gate, verify the graph has no cycles. If a cycle exists, resolve it
 ### P-03: Escalation Chain Validation
 
 Before escalating, verify the escalation chain does not loop:
+
 - Track the escalation path.
 - If the path revisits a previous entity: flag as deadlock.
 - Break the loop by escalating to the next level.
@@ -233,6 +251,7 @@ Before escalating, verify the escalation chain does not loop:
 ### P-04: Timeout-Based Detection
 
 Set a progress timeout for each workflow stage:
+
 - If no progress for > 2 iterations: flag potential deadlock.
 - Architect investigates.
 - If deadlock confirmed: apply resolution protocol.
@@ -248,6 +267,7 @@ When escalation itself is the source of conflict:
 **Scenario:** Two agents escalate the same issue with different recommendations.
 
 **Resolution:**
+
 1. Architect reviews both recommendations.
 2. Applies priority order: Security > RTL > Brand > Style.
 3. Selects the higher-priority recommendation.
@@ -259,6 +279,7 @@ When escalation itself is the source of conflict:
 **Scenario:** Agent escalates to human, human rejects and delegates back.
 
 **Resolution:**
+
 1. Human must provide a clear reason for rejection.
 2. Agent re-evaluates with the human's feedback.
 3. If agent still cannot resolve: escalate again with updated context.
@@ -269,6 +290,7 @@ When escalation itself is the source of conflict:
 **Scenario:** Escalation is sent but no response is received.
 
 **Resolution:**
+
 1. Wait for a reasonable timeout (session-dependent).
 2. If no response: escalate to the next level in the hierarchy.
 3. If no higher level exists: defer the blocked work, continue with non-blocked work.

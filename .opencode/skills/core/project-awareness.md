@@ -47,12 +47,12 @@ Boot → Project Awareness → [Other Skills] → Task Execution
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Memory file missing | Flag for population, continue with available context |
-| Memory inconsistent with docs | Flag for reconciliation |
-| Phase status unclear | Check `runtime/runtime-status.md`, flag if still unclear |
-| Brand rules missing | Load from `docs/29_BRAND_IMPLEMENTATION_GUIDE.md` |
+| Condition                     | Action                                                   |
+| ----------------------------- | -------------------------------------------------------- |
+| Memory file missing           | Flag for population, continue with available context     |
+| Memory inconsistent with docs | Flag for reconciliation                                  |
+| Phase status unclear          | Check `runtime/runtime-status.md`, flag if still unclear |
+| Brand rules missing           | Load from `docs/29_BRAND_IMPLEMENTATION_GUIDE.md`        |
 
 ## Review Requirements
 

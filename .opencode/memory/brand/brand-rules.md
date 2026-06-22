@@ -7,22 +7,22 @@
 
 ## Official Brand Colors
 
-| Color | Hex | RGB | Usage |
-|-------|-----|-----|-------|
-| Primary Green | `#16A34A` | 22, 163, 74 | Buttons, links, primary actions |
-| Heritage Gold | `#CA8A04` | 202, 138, 4 | Heritage accents, distinctions |
-| Dark Text Gray | `#1F2937` | 31, 41, 55 | Body text, headings |
-| Pure White | `#FFFFFF` | 255, 255, 255 | Backgrounds, surfaces |
+| Color          | Hex       | RGB           | Usage                           |
+| -------------- | --------- | ------------- | ------------------------------- |
+| Primary Green  | `#16A34A` | 22, 163, 74   | Buttons, links, primary actions |
+| Heritage Gold  | `#CA8A04` | 202, 138, 4   | Heritage accents, distinctions  |
+| Dark Text Gray | `#1F2937` | 31, 41, 55    | Body text, headings             |
+| Pure White     | `#FFFFFF` | 255, 255, 255 | Backgrounds, surfaces           |
 
 **CRITICAL:** Primary green is `#16A34A`, NOT `#10B981` (Emerald). This is a common mistake.
 
 ## Typography
 
-| Element | Font | Notes |
-|---------|------|-------|
-| Arabic text | Cairo | Primary font, self-hosted |
-| Latin text | Cairo (or Inter as fallback) | Cairo preferred for consistency |
-| Code | Fira Code | Monospace for code blocks |
+| Element     | Font                         | Notes                           |
+| ----------- | ---------------------------- | ------------------------------- |
+| Arabic text | Cairo                        | Primary font, self-hosted       |
+| Latin text  | Cairo (or Inter as fallback) | Cairo preferred for consistency |
+| Code        | Fira Code                    | Monospace for code blocks       |
 
 ## Brand Tone
 
@@ -36,10 +36,10 @@
 All brand colors must be used via CSS custom properties (design tokens), never hardcoded:
 
 ```css
---color-primary-600: #16A34A;    /* Primary green */
---color-gold-600: #CA8A04;       /* Heritage gold */
---color-neutral-800: #1F2937;    /* Dark text gray */
---color-white: #FFFFFF;          /* Pure white */
+--color-primary-600: #16a34a; /* Primary green */
+--color-gold-600: #ca8a04; /* Heritage gold */
+--color-neutral-800: #1f2937; /* Dark text gray */
+--color-white: #ffffff; /* Pure white */
 ```
 
 ## Logo and Icon
@@ -50,13 +50,13 @@ All brand colors must be used via CSS custom properties (design tokens), never h
 
 ## Violations to Avoid
 
-| Violation | Correct Value |
-|-----------|--------------|
-| Using `#10B981` (Emerald) | Use `#16A34A` |
-| Using Inter as primary Arabic font | Use Cairo |
-| Hardcoding brand colors | Use design tokens |
+| Violation                           | Correct Value      |
+| ----------------------------------- | ------------------ |
+| Using `#10B981` (Emerald)           | Use `#16A34A`      |
+| Using Inter as primary Arabic font  | Use Cairo          |
+| Hardcoding brand colors             | Use design tokens  |
 | Flashy or consumer-grade aesthetics | Calm academic tone |
-| LTR-first design | RTL-first design |
+| LTR-first design                    | RTL-first design   |
 
 ## Reference
 

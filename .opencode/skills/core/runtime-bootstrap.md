@@ -46,12 +46,12 @@ Session Start → Runtime Bootstrap → Session Ready → Task Intake
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
+| Condition                     | Action                                        |
+| ----------------------------- | --------------------------------------------- |
 | Critical runtime file missing | Flag as degraded mode, continue with warnings |
-| Model unavailable | Apply fallback routing |
-| Memory corrupted | Flag for repair, use docs as fallback |
-| Health check fails | Report failures, continue in degraded mode |
+| Model unavailable             | Apply fallback routing                        |
+| Memory corrupted              | Flag for repair, use docs as fallback         |
+| Health check fails            | Report failures, continue in degraded mode    |
 
 ## Review Requirements
 

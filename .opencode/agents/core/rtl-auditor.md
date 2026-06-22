@@ -58,17 +58,18 @@ Ensure every UI change works correctly in RTL mode and renders Arabic text prope
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| RTL direction broken | Human engineer |
-| Arabic text not rendering | Human engineer + frontend-polish |
-| CSS uses LTR assumptions | Human engineer |
-| Responsive RTL broken | Human engineer |
-| Font not loading correctly | Human engineer |
+| Trigger                    | Escalates To                     |
+| -------------------------- | -------------------------------- |
+| RTL direction broken       | Human engineer                   |
+| Arabic text not rendering  | Human engineer + frontend-polish |
+| CSS uses LTR assumptions   | Human engineer                   |
+| Responsive RTL broken      | Human engineer                   |
+| Font not loading correctly | Human engineer                   |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any UI-related file (CSS, components, pages, config).
 - Review CSS for RTL compliance.
 - Check font loading and configuration.
@@ -78,6 +79,7 @@ Ensure every UI change works correctly in RTL mode and renders Arabic text prope
 - Write CSS fixes for RTL issues.
 
 ### Cannot Do
+
 - Write production implementation code (non-CSS).
 - Modify font files.
 - Override brand rules.
@@ -95,15 +97,15 @@ Ensure every UI change works correctly in RTL mode and renders Arabic text prope
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Spec Creation | Verify RTL considerations are documented |
-| Spec Review | Check RTL requirements are specified |
-| Phase Gate | Verify RTL foundation is solid |
-| Implementation | Review CSS and components for RTL |
-| Code Review | Primary RTL reviewer for UI changes |
-| Merge | Block merge if RTL issues unresolved |
-| Post-Merge | Verify RTL still correct after merge |
+| Workflow Stage | Role                                     |
+| -------------- | ---------------------------------------- |
+| Spec Creation  | Verify RTL considerations are documented |
+| Spec Review    | Check RTL requirements are specified     |
+| Phase Gate     | Verify RTL foundation is solid           |
+| Implementation | Review CSS and components for RTL        |
+| Code Review    | Primary RTL reviewer for UI changes      |
+| Merge          | Block merge if RTL issues unresolved     |
+| Post-Merge     | Verify RTL still correct after merge     |
 
 ## RTL Audit Checklist
 
