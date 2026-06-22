@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 interface CreateFolderDialogProps {
-  onSubmit: (name: string) => void;
+  onSubmit: (name: string) => Promise<void>;
   onClose: () => void;
 }
 
@@ -13,8 +13,9 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
   const tCommon = useTranslations("common");
   const [name, setName] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
     if (!name.trim()) {
@@ -27,12 +28,19 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
       return;
     }
 
-    onSubmit(name.trim());
+    try {
+      setIsSubmitting(true);
+      await onSubmit(name.trim());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : tCommon("error"));
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4">
+      <div className="bg-card border border-line rounded-xl shadow-xl w-full max-w-md mx-4">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-primary-color mb-4">{t("createNew")}</h2>
 
@@ -74,9 +82,10 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-[var(--btn-primary-text)] bg-[var(--success)] hover:opacity-90 rounded-lg"
+                disabled={isSubmitting}
+                className="px-4 py-2 text-sm font-medium text-[var(--btn-primary-text)] bg-[var(--success)] hover:opacity-90 rounded-lg disabled:opacity-50"
               >
-                {t("create")}
+                {isSubmitting ? "..." : t("create")}
               </button>
             </div>
           </form>

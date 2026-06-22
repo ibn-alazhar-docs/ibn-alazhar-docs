@@ -146,9 +146,23 @@ export function validatePdf(
 
 export async function ensureBucket(config: PipelineConfig): Promise<void> {
   const mc = getStorageClient(config);
-  const exists = await mc.bucketExists(config.minio.bucket);
-  if (!exists) {
-    await mc.makeBucket(config.minio.bucket);
+  const maxRetries = 10;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const exists = await mc.bucketExists(config.minio.bucket);
+      if (!exists) {
+        await mc.makeBucket(config.minio.bucket);
+      }
+      return;
+    } catch (err) {
+      if (attempt === maxRetries) throw err;
+      const delay = Math.min(1000 * attempt, 5000);
+      console.warn(
+        `[storage] MinIO not ready (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
+      );
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
 }
 

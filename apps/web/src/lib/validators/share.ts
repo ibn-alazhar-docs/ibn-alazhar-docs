@@ -29,5 +29,5 @@ export const createShareSchema = z.object({
 
 export type CreateShareInput = z.infer<typeof createShareSchema>;
 
-export const EXPORT_FORMATS = ["md", "txt", "json"] as const;
+export const EXPORT_FORMATS = ["md", "txt", "json", "docx", "pdf", "epub", "searchable-pdf"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];

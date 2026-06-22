@@ -2,53 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { STAGE_ORDER, normalizeStage, type Stage } from "@/lib/conversion-status-utils";
 
 interface ConversionStatusProps {
   jobId: string;
   onComplete?: (jobId: string) => void;
-}
-
-type Stage =
-  | "pending"
-  | "validating"
-  | "splitting"
-  | "ocr"
-  | "cleaning"
-  | "generating"
-  | "completed"
-  | "failed";
-
-const STAGE_ORDER: Stage[] = [
-  "pending",
-  "validating",
-  "splitting",
-  "ocr",
-  "cleaning",
-  "generating",
-  "completed",
-];
-
-const STATUS_NORMALIZE: Record<string, Stage> = {
-  pending: "pending",
-  validating: "validating",
-  splitting: "splitting",
-  ocr: "ocr",
-  cleaning: "cleaning",
-  generating: "generating",
-  completed: "completed",
-  failed: "failed",
-  UPLOADED: "pending",
-  VALIDATING: "validating",
-  SPLITTING: "splitting",
-  OCR_PROCESSING: "ocr",
-  CLEANING: "cleaning",
-  GENERATING: "generating",
-  COMPLETED: "completed",
-  FAILED: "failed",
-};
-
-function normalizeStage(raw: string): Stage {
-  return STATUS_NORMALIZE[raw] ?? "pending";
 }
 
 export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
@@ -77,8 +35,12 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       }
     };
 
+    let fallbackInterval: NodeJS.Timeout | undefined;
+
     eventSource.onerror = () => {
-      const interval = setInterval(async () => {
+      if (fallbackInterval) return; // Prevent multiple intervals (DDoS protection)
+
+      fallbackInterval = setInterval(async () => {
         try {
           const res = await fetch(`/api/conversion/${jobId}/status`);
           if (res.ok) {
@@ -87,7 +49,10 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             setProgress(typeof data.progress === "number" ? data.progress : 0);
             const s = normalizeStage(data.status);
             if (s === "completed" || s === "failed") {
-              clearInterval(interval);
+              if (fallbackInterval) clearInterval(fallbackInterval);
+              if (s === "completed") {
+                onComplete?.(jobId); // Fix UI hang
+              }
             }
           }
         } catch {
@@ -96,7 +61,10 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       }, 3000);
     };
 
-    return () => eventSource.close();
+    return () => {
+      eventSource.close();
+      if (fallbackInterval) clearInterval(fallbackInterval);
+    };
   }, [jobId, onComplete]);
 
   const currentIdx = STAGE_ORDER.indexOf(stage);
@@ -123,7 +91,9 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
       {/* Status Text */}
       <div className="text-center">
-        <p className={`text-lg font-medium ${isFailed ? "text-[var(--danger)]" : "text-[var(--success)]"}`}>
+        <p
+          className={`text-lg font-medium ${isFailed ? "text-[var(--danger)]" : "text-[var(--success)]"}`}
+        >
           {isFailed ? "Failed" : isCompleted ? "Done" : t(stage)}
         </p>
         {!isCompleted && !isFailed && (

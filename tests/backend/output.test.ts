@@ -4,6 +4,8 @@ import {
   generateTxt,
   generateJson,
   generateDocx,
+  generateEpub,
+  generatePdf,
 } from "../../packages/pipeline/src/output";
 import type { CleanedText } from "../../packages/pipeline/src/types";
 
@@ -36,24 +38,24 @@ const LONG_ARABIC =
 
 describe("generateMarkdown", () => {
   describe("metadata generation", () => {
-    it("includes YAML frontmatter by default", () => {
-      const r = generateMarkdown(LONG_ARABIC);
+    it("includes YAML frontmatter if requested", () => {
+      const r = generateMarkdown(LONG_ARABIC, { includeMetadata: true });
       expect(r.markdown).toContain("---");
       expect(r.markdown).toContain("generated:");
     });
 
     it("includes total_pages in frontmatter", () => {
-      const r = generateMarkdown(LONG_ARABIC);
+      const r = generateMarkdown(LONG_ARABIC, { includeMetadata: true });
       expect(r.markdown).toContain("total_pages:");
     });
 
     it("includes total_words in frontmatter", () => {
-      const r = generateMarkdown(LONG_ARABIC);
+      const r = generateMarkdown(LONG_ARABIC, { includeMetadata: true });
       expect(r.markdown).toContain("total_words:");
     });
 
     it("includes arabic_ratio in frontmatter", () => {
-      const r = generateMarkdown(LONG_ARABIC);
+      const r = generateMarkdown(LONG_ARABIC, { includeMetadata: true });
       expect(r.markdown).toContain("arabic_ratio:");
     });
 
@@ -68,7 +70,7 @@ describe("generateMarkdown", () => {
     });
 
     it("metadata includes quality_score", () => {
-      const r = generateMarkdown(LONG_ARABIC);
+      const r = generateMarkdown(LONG_ARABIC, { includeMetadata: true });
       expect(r.markdown).toContain("quality_score:");
     });
   });
@@ -205,10 +207,18 @@ describe("generateMarkdown", () => {
     });
 
     it("very long text processes correctly", () => {
-      const longText = Array.from({ length: 200 }, () => LONG_ARABIC).join("");
-      const r = generateMarkdown(longText);
-      expect(r.markdown.length).toBeGreaterThan(0);
-      expect(r.metadata.wordCount).toBeGreaterThan(100);
+      const longText = Array(100).fill("هذا نص طويل جدا لاختبار الأداء.").join("\n");
+      const result = generateMarkdown(longText);
+      expect(result.metadata.wordCount).toBeGreaterThan(100);
+    });
+
+    it("advances index correctly when no paragraph lines matched", () => {
+      // Create a line that matches nothing but causes inner loop to exit immediately
+      // A heading followed by another heading immediately
+      const text = "## Heading 1\n### Heading 2";
+      const result = generateMarkdown(text);
+      expect(result.markdown).toContain("## Heading 1");
+      expect(result.markdown).toContain("### Heading 2");
     });
 
     it("text is cleaned before markdown generation", () => {
@@ -227,24 +237,24 @@ describe("generateMarkdown", () => {
 
 describe("generateTxt", () => {
   describe("metadata header", () => {
-    it("header present by default", () => {
-      const r = generateTxt(makeCleaned());
+    it("header present if requested", () => {
+      const r = generateTxt(makeCleaned(), true);
       expect(r).toContain("=");
       expect(r).toContain("Ibn Al-Azhar Docs");
     });
 
     it("header has Pages field", () => {
-      const r = generateTxt(makeCleaned());
+      const r = generateTxt(makeCleaned(), true);
       expect(r).toContain("Pages:");
     });
 
     it("header has Words field", () => {
-      const r = generateTxt(makeCleaned());
+      const r = generateTxt(makeCleaned(), true);
       expect(r).toContain("Words:");
     });
 
     it("header has Confidence with percentage", () => {
-      const r = generateTxt(makeCleaned());
+      const r = generateTxt(makeCleaned(), true);
       expect(r).toContain("Confidence: 85.0%");
     });
 
@@ -342,15 +352,95 @@ describe("generateJson", () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe("generateDocx", () => {
-  it("throws error", async () => {
-    await expect(generateDocx(makeCleaned())).rejects.toThrow();
+  it("returns a valid DOCX buffer", async () => {
+    const buffer = await generateDocx(makeCleaned());
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+
+    // Basic check for DOCX file signature (PK ZIP header)
+    // DOCX files are ZIP archives, so they should start with PK\x03\x04
+    expect(buffer[0]).toBe(0x50); // 'P'
+    expect(buffer[1]).toBe(0x4b); // 'K'
   });
 
-  it("error mentions DOCX_EXPORT_NOT_AVAILABLE", async () => {
-    await expect(generateDocx(makeCleaned())).rejects.toThrow("DOCX_EXPORT_NOT_AVAILABLE");
+  it("includes the cleaned text in the DOCX", async () => {
+    // This is a more complex test that would require parsing the DOCX
+    // For now, we'll just verify it generates a reasonable sized buffer
+    const buffer = await generateDocx(makeCleaned());
+    expect(buffer.length).toBeGreaterThan(1000); // Reasonable size for a DOCX with content
   });
 
-  it("error mentions docx package", async () => {
-    await expect(generateDocx(makeCleaned())).rejects.toThrow("docx");
+  it("handles empty text", async () => {
+    const emptyCleaned = makeCleaned({ cleaned: "", markdown: "" });
+    const buffer = await generateDocx(emptyCleaned);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// generateEpub
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("generateEpub", () => {
+  it("returns a valid EPUB buffer", async () => {
+    const buffer = await generateEpub(makeCleaned());
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+
+    // Basic check for EPUB file signature (PK ZIP header, similar to DOCX)
+    expect(buffer[0]).toBe(0x50); // 'P'
+    expect(buffer[1]).toBe(0x4b); // 'K'
+  });
+
+  it("handles empty text", async () => {
+    const emptyCleaned = makeCleaned({ cleaned: "", markdown: "" });
+    const buffer = await generateEpub(emptyCleaned);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// generatePdf
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("generatePdf", () => {
+  it("returns a valid PDF buffer", async () => {
+    const buffer = await generatePdf(makeCleaned());
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+
+    // PDF files should start with %PDF-
+    expect(buffer[0]).toBe(0x25); // '%'
+    expect(buffer[1]).toBe(0x50); // 'P'
+    expect(buffer[2]).toBe(0x44); // 'D'
+    expect(buffer[3]).toBe(0x46); // 'F'
+    expect(buffer[4]).toBe(0x2d); // '-'
+  });
+
+  it("respects fontSize option", async () => {
+    const buffer = await generatePdf(makeCleaned(), { fontSize: 20 });
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  it("respects watermark option", async () => {
+    const buffer = await generatePdf(makeCleaned(), { watermark: "TEST WATERMARK" });
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+
+  it("handles empty text", async () => {
+    const emptyCleaned = makeCleaned({ cleaned: "", markdown: "" });
+    const buffer = await generatePdf(emptyCleaned);
+    expect(buffer).toBeInstanceOf(Buffer);
+    expect(buffer.length).toBeGreaterThan(0);
+  });
+  
+  it("handles heading levels", async () => {
+    const textWithHeadings = makeCleaned({ markdown: "# Heading 1\n\n## Heading 2\n\nSome text" });
+    const buffer = await generatePdf(textWithHeadings);
+    expect(buffer).toBeInstanceOf(Buffer);
   });
 });

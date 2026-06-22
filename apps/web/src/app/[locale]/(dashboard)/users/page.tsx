@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { Container } from "@/components/ui/container";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
@@ -54,9 +55,7 @@ export default function UsersPage() {
         body: JSON.stringify({ userId, role: newRole }),
       });
       if (!res.ok) throw new Error("Failed");
-      setUsers((prev) =>
-        prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)),
-      );
+      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch {
       setError(t("roleChanged"));
     }
@@ -107,6 +106,7 @@ export default function UsersPage() {
   const students = users.filter((u) => u.role === "STUDENT").length;
 
   return (
+    <PageTransition>
     <Container>
       <Section padding="md">
         <Stack gap={6}>
@@ -134,24 +134,41 @@ export default function UsersPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-line bg-hover">
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">{t("name")}</th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">{t("email")}</th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">{t("role")}</th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">{t("createdAt")}</th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">{t("actions")}</th>
+                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                      {t("name")}
+                    </th>
+                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                      {t("email")}
+                    </th>
+                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                      {t("role")}
+                    </th>
+                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                      {t("createdAt")}
+                    </th>
+                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                      {t("actions")}
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map((user) => (
-                    <tr key={user.id} className="border-b border-line last:border-0 hover:bg-hover transition-colors">
-                      <td className="px-4 py-3 font-medium text-primary-color">{user.name || "—"}</td>
+                    <tr
+                      key={user.id}
+                      className="border-b border-line last:border-0 hover:bg-hover transition-colors"
+                    >
+                      <td className="px-4 py-3 font-medium text-primary-color">
+                        {user.name || "—"}
+                      </td>
                       <td className="px-4 py-3 text-muted-color">{user.email}</td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                          user.role === "ADMIN"
-                            ? "bg-[var(--success-bg)] text-[var(--success)]"
-                            : "bg-badge text-muted-color"
-                        }`}>
+                        <span
+                          className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                            user.role === "ADMIN"
+                              ? "bg-[var(--success-bg)] text-[var(--success)]"
+                              : "bg-badge text-muted-color"
+                          }`}
+                        >
                           {user.role}
                         </span>
                       </td>
@@ -185,5 +202,6 @@ export default function UsersPage() {
         </Stack>
       </Section>
     </Container>
+    </PageTransition>
   );
 }

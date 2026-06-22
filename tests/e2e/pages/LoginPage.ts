@@ -23,9 +23,27 @@ export class LoginPage {
   }
 
   async login(email: string, password: string) {
-    await this.emailInput.fill(email);
-    await this.passwordInput.fill(password);
-    await this.submitButton.click();
+    // E2E Tests backdoor: we added a CredentialsProvider to NextAuth specifically for tests.
+    // Instead of clicking "Sign in with Google", we bypass via a direct POST.
+    const csrfResponse = await this.page.request.get("/api/auth/csrf");
+    const csrfData = await csrfResponse.json();
+    const csrfToken = csrfData.csrfToken;
+
+    const response = await this.page.request.post("/api/auth/callback/credentials", {
+      form: {
+        csrfToken: csrfToken,
+        email: email,
+        password: password,
+        redirect: "false",
+      },
+    });
+    console.log(`Login response status: ${response.status()}`);
+    if (response.status() !== 200) {
+      console.error("Login failed:", await response.text());
+    }
+
+    // Refresh page to apply session
+    await this.page.reload();
   }
 
   async expectRedirectToDashboard(timeout: number = 20000) {

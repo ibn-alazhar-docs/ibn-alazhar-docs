@@ -6,7 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { LocaleToggle } from "@/components/locale/locale-toggle";
 
-const BRAND_NAME = { ar: "ابن الأزهر", en: "Ibn Al-Azhar" } as const;
+const BRAND_NAME = { ar: "مستندات ابن الأزهر", en: "Ibn Al-Azhar Docs" } as const;
 
 interface PublicHeaderProps {
   locale: string;
@@ -42,7 +42,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="inline-flex items-center gap-2 rounded-xl bg-[var(--btn-primary-bg)] px-5 py-2.5 text-xs font-bold tracking-[0.08em] text-[var(--btn-primary-text)] no-underline transition-all hover:opacity-90"
+              className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-[0.08em] no-underline"
             >
               {t("home")}
             </Link>
@@ -50,13 +50,13 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             <>
               <Link
                 href="/login"
-                className="px-4 py-2 text-xs font-semibold tracking-[0.06em] text-muted-color no-underline transition-colors hover:text-primary-color"
+                className="px-4 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--text-secondary)] no-underline transition-colors hover:text-[var(--text-primary)]"
               >
                 {signInLabel || t("signIn")}
               </Link>
               <Link
                 href="/register"
-                className="inline-flex items-center gap-2 rounded-xl bg-[var(--btn-primary-bg)] px-5 py-2.5 text-xs font-bold tracking-[0.08em] text-[var(--btn-primary-text)] no-underline transition-all hover:opacity-90"
+                className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-[0.08em] no-underline"
               >
                 {signUpLabel || t("signUp")}
               </Link>

@@ -1,56 +1,11 @@
 import { describe, it, expect } from "vitest";
-
-type Stage =
-  | "pending"
-  | "validating"
-  | "splitting"
-  | "ocr"
-  | "cleaning"
-  | "generating"
-  | "completed"
-  | "failed";
-
-const STAGE_ORDER: Stage[] = [
-  "pending",
-  "validating",
-  "splitting",
-  "ocr",
-  "cleaning",
-  "generating",
-  "completed",
-];
-
-const STATUS_NORMALIZE: Record<string, Stage> = {
-  pending: "pending",
-  validating: "validating",
-  splitting: "splitting",
-  ocr: "ocr",
-  cleaning: "cleaning",
-  generating: "generating",
-  completed: "completed",
-  failed: "failed",
-  UPLOADED: "pending",
-  VALIDATING: "validating",
-  SPLITTING: "splitting",
-  OCR_PROCESSING: "ocr",
-  CLEANING: "cleaning",
-  GENERATING: "generating",
-  COMPLETED: "completed",
-  FAILED: "failed",
-};
-
-function normalizeStage(raw: string): Stage {
-  return STATUS_NORMALIZE[raw] ?? "pending";
-}
-
-function getProgressPercent(currentStage: Stage, progress: number = 0): number {
-  if (currentStage === "completed") return 100;
-  if (currentStage === "failed") return 100;
-  if (progress > 0) return Math.min(progress, 99);
-  const idx = STAGE_ORDER.indexOf(currentStage);
-  if (idx === -1) return 5;
-  return Math.max(5, Math.round((idx / (STAGE_ORDER.length - 1)) * 99));
-}
+import {
+  STAGE_ORDER,
+  STATUS_NORMALIZE,
+  normalizeStage,
+  getProgressPercent,
+  type Stage,
+} from "@/lib/conversion-status-utils";
 
 describe("STATUS_NORMALIZE", () => {
   const lowercaseMap: [string, Stage][] = [
@@ -135,7 +90,7 @@ describe("STAGE_ORDER", () => {
   });
 });
 
-describe("Progress bar logic", () => {
+describe("getProgressPercent", () => {
   it("returns 100 when completed", () => {
     expect(getProgressPercent("completed")).toBe(100);
   });
@@ -154,6 +109,14 @@ describe("Progress bar logic", () => {
 
   it("caps progress at 99", () => {
     expect(getProgressPercent("ocr", 100)).toBe(99);
+  });
+
+  it("stage-based calculation uses 100 multiplier (not 99)", () => {
+    expect(getProgressPercent("generating")).toBe(83.33333333333334);
+  });
+
+  it("returns 5 for unknown stage", () => {
+    expect(getProgressPercent("" as Stage)).toBe(5);
   });
 });
 

@@ -16,8 +16,6 @@ export async function GET(request: Request) {
     return NextResponse.json({ suggestions: [] });
   }
 
-
-
   try {
     const titleSuggestions = await prisma.$queryRawUnsafe<
       { text: string; type: string; count: bigint }[]

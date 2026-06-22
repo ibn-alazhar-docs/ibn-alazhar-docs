@@ -4,6 +4,12 @@ vi.mock("@/lib/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("next/navigation", () => ({
+  redirect: vi.fn(() => {
+    throw new Error("NEXT_REDIRECT");
+  }),
+}));
+
 vi.mock("next/server", () => ({
   NextResponse: {
     json: vi.fn((data: unknown, init?: { status?: number }) => ({
@@ -18,8 +24,8 @@ import {
   requireRole,
   unauthorizedResponse,
   forbiddenResponse,
-} from "../../apps/web/src/lib/auth-guards";
-import { auth } from "../../apps/web/src/lib/auth";
+} from "@/lib/auth-guards";
+import { auth } from "@/lib/auth";
 
 const mockedAuth = vi.mocked(auth);
 

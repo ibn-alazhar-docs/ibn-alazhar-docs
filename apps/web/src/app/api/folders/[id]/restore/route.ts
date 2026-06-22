@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
+import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,43 +10,38 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
     const { id } = await params;
 
-    const folder = await prisma.folder.findFirst({
-      where: ownedWhere({ id, deletedAt: { not: null } }, session),
-      select: { id: true, parentId: true },
-    });
-
-    if (!folder) {
-      return NextResponse.json({ error: "المجلد غير موجود أو غير محذوف" }, { status: 404 });
-    }
-
-    // Check parent still exists if folder has a parent
-    if (folder.parentId) {
-      const parent = await prisma.folder.findFirst({
-        where: ownedWhere({
-          id: folder.parentId,
-          deletedAt: null,
-        }, session),
-        select: { id: true },
+    try {
+      const restored = await folderUseCases.restoreFolder(id, session.user.id);
+      return NextResponse.json({
+        message: "تم استعادة المجلد بنجاح",
+        folder: restored,
       });
-
-      if (!parent) {
+    } catch (error: unknown) {
+      if ((error as Error).message === "NOT_FOUND") {
         return NextResponse.json(
-          { error: "المجلد الأصلي غير موجود. اختر مجلداً آخر" },
+          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "PARENT_DELETED") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message:
+                "لا يمكن استعادة المجلد لأن المجلد الأب محذوف. يرجى استعادة المجلد الأب أولاً.",
+            },
+          },
           { status: 400 },
         );
       }
+      throw error;
     }
-
-    // Restore folder
-    const restored = await prisma.folder.update({
-      where: { id },
-      data: { deletedAt: null },
-    });
-
-    return NextResponse.json({ folder: restored });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
     logger.error(error, "[folders/[id]/restore/POST] Failed:");
-    return NextResponse.json({ error: "فشل استعادة المجلد", details: errMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل استعادة المجلد" } },
+      { status: 500 },
+    );
   }
 }

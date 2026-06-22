@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
+const moveSchema = z.object({
+  folderId: z.string().nullable(),
+});
+
+export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);
   if (!session) {
     return unauthorizedResponse();
@@ -10,33 +15,40 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
   const { id } = await params;
   const body = await request.json();
-  const { folderId } = body;
 
-  const document = await prisma.document.findFirst({
-    where: ownedWhere({ id, deletedAt: null }, session),
-  });
-
-  if (!document) {
-    return NextResponse.json({ error: "المستند غير موجود" }, { status: 404 });
+  const validation = moveSchema.safeParse(body);
+  if (!validation.success) {
+    const firstError = validation.error.issues[0];
+    return NextResponse.json(
+      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
+      { status: 400 },
+    );
   }
 
-  if (folderId) {
-    const folder = await prisma.folder.findFirst({
-      where: ownedWhere({ id: folderId, deletedAt: null }, session),
+  const { folderId } = validation.data;
+
+  try {
+    const updated = await documentUseCases.moveDocument(id, session.user.id, folderId);
+    return NextResponse.json({
+      success: true,
+      document: updated,
     });
-    if (!folder) {
-      return NextResponse.json({ error: "المجلد غير موجود" }, { status: 404 });
+  } catch (error: unknown) {
+    if ((error as Error).message === "NOT_FOUND") {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
+        { status: 404 },
+      );
     }
+    if ((error as Error).message === "FOLDER_NOT_FOUND") {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المجلد الهدف غير موجود" } },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
+      { status: 500 },
+    );
   }
-
-  const updated = await prisma.document.update({
-    where: { id },
-    data: { folderId: folderId || null },
-    select: { id: true, title: true, folderId: true, updatedAt: true },
-  });
-
-  return NextResponse.json({
-    document: updated,
-    message: folderId ? "تم نقل المستند إلى المجلد" : "تم إزالة المستند من المجلد",
-  });
 }

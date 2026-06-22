@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);
   if (!session) {
     return unauthorizedResponse();
@@ -10,33 +10,23 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
   const { id } = await params;
 
-  const document = await prisma.document.findFirst({
-    where: ownedWhere({ id, deletedAt: { not: null } }, session),
-  });
-
-  if (!document) {
-    return NextResponse.json({ error: "المستند غير موجود أو غير محذوف" }, { status: 404 });
+  try {
+    const restored = await documentUseCases.restoreDocument(id, session.user.id);
+    return NextResponse.json({
+      success: true,
+      document: restored,
+      message: "تم استعادة المستند بنجاح",
+    });
+  } catch (error: unknown) {
+    if ((error as Error).message === "NOT_FOUND") {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
+        { status: 404 },
+      );
+    }
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
+      { status: 500 },
+    );
   }
-
-  const restored = await prisma.document.update({
-    where: { id },
-    data: { deletedAt: null },
-    select: { id: true, title: true, deletedAt: true, updatedAt: true },
-  });
-
-  // Rebuild searchVector on restore
-  await prisma.$executeRaw`
-    UPDATE documents
-    SET searchvector =
-      setweight(to_tsvector('simple', coalesce(${document.title}, '')), 'A') ||
-      setweight(to_tsvector('simple', coalesce(${document.fileName}, '')), 'B') ||
-      setweight(to_tsvector('simple', coalesce(${document.description || ""}, '')), 'C') ||
-      setweight(to_tsvector('simple', coalesce((SELECT searchpreview FROM documents WHERE id = ${id}), '')), 'D')
-    WHERE id = ${id}
-  `;
-
-  return NextResponse.json({
-    document: restored,
-    message: "تم استرجاع المستند",
-  });
 }

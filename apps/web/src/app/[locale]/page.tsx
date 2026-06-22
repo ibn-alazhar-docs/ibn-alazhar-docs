@@ -37,7 +37,7 @@ export default async function HomePage({ params }: HomePageProps) {
   const isLoggedIn = !!session?.user;
 
   return (
-    <div className="landing-page min-h-screen">
+    <div className="landing-page min-h-screen overflow-x-hidden">
       <PublicHeader
         locale={locale}
         signInLabel={tNav("signIn")}
@@ -55,19 +55,25 @@ export default async function HomePage({ params }: HomePageProps) {
           isLoggedIn={isLoggedIn}
         />
         <div className="geometric-divider py-2">
-          <svg viewBox="0 0 100 100" fill="none" className="geometric-star h-4 w-4" aria-hidden="true">
-            <polygon points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38" stroke="currentColor" strokeWidth="0.8" fill="none" />
+          <svg
+            viewBox="0 0 100 100"
+            fill="none"
+            className="geometric-star h-4 w-4"
+            aria-hidden="true"
+          >
+            <polygon
+              points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
+              stroke="currentColor"
+              strokeWidth="0.8"
+              fill="none"
+            />
           </svg>
         </div>
         <KnowledgeAreas />
         <Features />
         <CTASection isLoggedIn={isLoggedIn} />
       </main>
-      <PublicFooter
-        locale={locale}
-        tagline={tFooter("tagline")}
-        copyright={tFooter("copyright")}
-      />
+      <PublicFooter locale={locale} tagline={tFooter("tagline")} copyright={tFooter("copyright")} />
     </div>
   );
 }

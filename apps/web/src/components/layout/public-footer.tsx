@@ -1,16 +1,13 @@
+"use client";
+
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 
-const BRAND_NAME = { ar: "ابن الأزهر", en: "Ibn Al-Azhar" } as const;
+const BRAND_NAME = { ar: "مستندات ابن الأزهر", en: "Ibn Al-Azhar Docs" } as const;
 
 function GeometricStar({ className = "" }: { className?: string }) {
   return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 100 100" fill="none" className={className} aria-hidden="true">
       <polygon
         points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
         stroke="currentColor"
@@ -57,13 +54,10 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
             <p className="mt-2 text-xs text-very-muted">{tagline || t("tagline")}</p>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
-            <p className="text-xs text-very-muted">
-              &copy; {copyright || t("copyright")}
-            </p>
+            <p className="text-xs text-very-muted">&copy; {copyright || t("copyright")}</p>
           </div>
         </div>
       </div>
     </footer>
   );
 }
-

@@ -1,41 +1,101 @@
 @layer base {
   /* Background utilities */
-  .bg-page { background-color: var(--page-bg); }
-  .bg-surface { background-color: var(--surface); }
-  .bg-card { background-color: var(--card-bg); }
-  .bg-input { background-color: var(--input-bg); }
-  .bg-badge { background-color: var(--badge-bg); }
-  .bg-hover { background-color: var(--hover-bg); }
-  .bg-active { background-color: var(--active-bg); }
-  .bg-overlay { background-color: var(--overlay); }
-  .bg-btn-primary { background-color: var(--btn-primary-bg); }
+  .bg-page {
+    background-color: var(--page-bg);
+  }
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-card {
+    background-color: var(--card-bg);
+  }
+  .bg-input {
+    background-color: var(--input-bg);
+  }
+  .bg-badge {
+    background-color: var(--badge-bg);
+  }
+  .bg-hover {
+    background-color: var(--hover-bg);
+  }
+  .bg-active {
+    background-color: var(--active-bg);
+  }
+  .bg-overlay {
+    background-color: var(--overlay);
+  }
+  .bg-btn-primary {
+    background-color: var(--btn-primary-bg);
+  }
 
   /* Border utilities */
-  .border-line { border-color: var(--border-line); }
-  .border-subtle { border-color: var(--border-subtle); }
-  .border-input-border { border-color: var(--input-border); }
-  .border-gold { border-color: var(--gold); }
-  .border-gold-dim { border-color: var(--gold-border); }
-  .border-primary-dim { border-color: color-mix(in srgb, var(--btn-primary-bg) 12%, transparent); }
+  .border-line {
+    border-color: var(--border-line);
+  }
+  .border-subtle {
+    border-color: var(--border-subtle);
+  }
+  .border-input-border {
+    border-color: var(--input-border);
+  }
+  .border-gold {
+    border-color: var(--gold);
+  }
+  .border-gold-dim {
+    border-color: var(--gold-border);
+  }
+  .border-primary-dim {
+    border-color: color-mix(in srgb, var(--btn-primary-bg) 12%, transparent);
+  }
 
   /* Text utilities */
-  .text-primary-color { color: var(--text-primary); }
-  .text-muted-color { color: var(--text-secondary); }
-  .text-very-muted { color: var(--text-tertiary); }
-  .text-btn-primary-text { color: var(--btn-primary-text); }
-  .text-gold { color: var(--gold); }
-  .text-success { color: var(--success); }
-  .text-danger { color: var(--danger); }
-  .text-info { color: var(--info); }
-  .fill-icon { color: var(--icon-color); }
-  .placeholder-very-muted::placeholder { color: var(--text-tertiary); }
+  .text-primary-color {
+    color: var(--text-primary);
+  }
+  .text-muted-color {
+    color: var(--text-secondary);
+  }
+  .text-very-muted {
+    color: var(--text-tertiary);
+  }
+  .text-btn-primary-text {
+    color: var(--btn-primary-text);
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+  .text-success {
+    color: var(--success);
+  }
+  .text-danger {
+    color: var(--danger);
+  }
+  .text-info {
+    color: var(--info);
+  }
+  .fill-icon {
+    color: var(--icon-color);
+  }
+  .placeholder-very-muted::placeholder {
+    color: var(--text-tertiary);
+  }
 
   /* Background mixes */
-  .bg-gold-dim { background-color: color-mix(in srgb, var(--gold) 8%, transparent); }
-  .bg-primary-dim { background-color: color-mix(in srgb, var(--btn-primary-bg) 5%, transparent); }
-  .bg-success { background-color: var(--success-bg); }
-  .bg-danger { background-color: var(--danger-bg); }
-  .bg-info { background-color: var(--info-bg); }
+  .bg-gold-dim {
+    background-color: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+  .bg-primary-dim {
+    background-color: color-mix(in srgb, var(--btn-primary-bg) 5%, transparent);
+  }
+  .bg-success {
+    background-color: var(--success-bg);
+  }
+  .bg-danger {
+    background-color: var(--danger-bg);
+  }
+  .bg-info {
+    background-color: var(--info-bg);
+  }
 
   /* Landing page */
   .landing-page {
@@ -58,7 +118,7 @@
   .landing-btn-primary:hover {
     opacity: 0.92;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px rgba(26, 92, 58, 0.25);
+    box-shadow: 0 6px 20px var(--btn-shadow-lg);
   }
   .landing-btn-primary:active {
     transform: translateY(0);
@@ -152,7 +212,7 @@
   }
   .stat-card-premium:hover {
     border-color: var(--btn-primary-bg);
-    box-shadow: 0 8px 24px rgba(26, 92, 58, 0.08);
+    box-shadow: 0 8px 24px var(--btn-shadow);
     transform: translateY(-2px);
   }
   .stat-card-premium::before {

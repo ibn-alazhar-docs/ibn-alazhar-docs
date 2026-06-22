@@ -22,7 +22,7 @@ interface CleanOptions {
 const DEFAULT_OPTIONS: CleanOptions = {
   normalizeUnicode: true,
   normalizeArabic: true,
-  removeTashkeel: true,
+  removeTashkeel: false,
   removeTatweel: true,
   normalizeDigits: false,
   normalizeWhitespace: true,
@@ -39,8 +39,6 @@ const DEFAULT_OPTIONS: CleanOptions = {
   collapseRepeatedParagraphs: true,
   finalCleanup: true,
 };
-
-
 
 // Unicode control characters that corrupt Arabic OCR output
 const BIDI_CONTROL = /[\u200B-\u200F\u202A-\u202E\u2060-\u2069\uFFF0-\uFFFF\u00AD\u061C]/g;
@@ -107,6 +105,11 @@ export function cleanArabicText(raw: string, options: CleanOptions = DEFAULT_OPT
       /(^|[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF])ال\s+(?=[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF])/g,
       "$1ال",
     );
+
+    // Fix common OCR death date symbol misrecognition (e.g. ")© 430 ه)." -> "(ت 430 هـ)")
+    text = text.replace(/[)\](]?\s*©\s*(?=\d+\s*ه)/g, "(ت ");
+    // Fix Hijri year suffix (ه). -> هـ).)
+    text = text.replace(/(\d+)\s*ه\s*[)\]]/g, "$1 هـ)");
   }
 
   if (opts.removeTashkeel) {
@@ -216,8 +219,6 @@ function removeBrokenHtml(text: string): string {
 }
 
 function removeAsciiNoise(text: string): string {
-
-
   return text
     .split("\n")
     .map((line) => {
@@ -232,10 +233,10 @@ function removeAsciiNoise(text: string): string {
 
       const arabicRatio = arabicChars / totalChars;
 
-      // If line is primarily Arabic (>40%), only remove single-character garbage
+      // If line is primarily Arabic (>40%), remove isolated Latin characters (OCR garbage)
       if (arabicRatio > 0.4) {
         return trimmed
-          .replace(/(?<=[\u0600-\u06FF\s])\b[a-zA-Z]\b(?=[\u0600-\u06FF\s]|$)/g, "")
+          .replace(/\b[a-zA-Z]{1,2}\b/g, "")
           .replace(/\s{2,}/g, " ")
           .trim();
       }
@@ -282,7 +283,7 @@ function removeGarbageSymbols(text: string): string {
 
 function normalizeArabicPunctuation(text: string): string {
   const arabicRange = "[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]";
-  
+
   // Normalize comma: replace English comma with Arabic comma only if adjacent to Arabic text
   text = text.replace(new RegExp(`(${arabicRange}\\s*),`, "g"), "$1،");
   text = text.replace(new RegExp(`,\\s*(${arabicRange})`, "g"), "، $1");
@@ -416,6 +417,19 @@ function reconstructArabicLines(text: string): string {
         buffer = [];
       }
       prevEndsContinuative = false;
+      result.push(trimmed);
+      continue;
+    }
+
+    // Footnote or list-starting lines — flush buffer and keep separate
+    if (/^\[?\s*\d+\s*\]?[\s\-.)]/.test(trimmed) || /^\(\d+\)/.test(trimmed) || /^[\u00B9\u00B2\u00B3]/.test(trimmed)) {
+      if (buffer.length > 0) {
+        result.push(buffer.join(" "));
+        buffer = [];
+      }
+      prevEndsContinuative = false;
+      // Ensure footnote numbers are formatted like Markdown footnotes if they look like [1]
+      // Actually, just keep it separate for now
       result.push(trimmed);
       continue;
     }
@@ -681,7 +695,10 @@ export function analyzeText(text: string, knownPageCount?: number): TextAnalysis
   );
 
   return {
-    pageCount: knownPageCount && knownPageCount > 0 ? knownPageCount : Math.max(1, Math.ceil(words.length / 250)),
+    pageCount:
+      knownPageCount && knownPageCount > 0
+        ? knownPageCount
+        : Math.max(1, Math.ceil(words.length / 250)),
     headingCount: headings,
     level1HeadingCount: level1Headings,
     level2HeadingCount: level2Headings,

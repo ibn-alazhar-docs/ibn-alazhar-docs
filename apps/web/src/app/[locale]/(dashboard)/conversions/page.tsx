@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Container } from "@/components/ui/container";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
@@ -28,9 +29,15 @@ interface ConversionJob {
 }
 
 const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
-  PENDING: { bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-700 dark:text-yellow-400" },
+  PENDING: {
+    bg: "bg-yellow-100 dark:bg-yellow-900/30",
+    text: "text-yellow-700 dark:text-yellow-400",
+  },
   PROCESSING: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400" },
-  COMPLETED: { bg: "bg-green-100 dark:bg-green-900/30", text: "text-green-700 dark:text-green-400" },
+  COMPLETED: {
+    bg: "bg-green-100 dark:bg-green-900/30",
+    text: "text-green-700 dark:text-green-400",
+  },
   FAILED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400" },
   CANCELLED: { bg: "bg-gray-100 dark:bg-gray-900/30", text: "text-gray-700 dark:text-gray-400" },
 };
@@ -82,9 +89,7 @@ export default function ConversionsPage() {
 
   // Auto-refresh active conversions every 5s
   useEffect(() => {
-    const hasActive = jobs.some(
-      (j) => j.status === "PENDING" || j.status === "PROCESSING",
-    );
+    const hasActive = jobs.some((j) => j.status === "PENDING" || j.status === "PROCESSING");
     if (!hasActive) return;
 
     const interval = setInterval(() => {
@@ -99,6 +104,7 @@ export default function ConversionsPage() {
   }
 
   return (
+    <PageTransition>
     <Container>
       <Section padding="md">
         <Stack gap={6}>
@@ -174,28 +180,49 @@ export default function ConversionsPage() {
             ) : jobs.length === 0 ? (
               <div className="px-6 py-12 text-center">
                 <div className="mb-4 text-muted-color">
-                  <svg className="w-12 h-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  <svg
+                    className="w-12 h-12 mx-auto"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
                   </svg>
                 </div>
                 <Text color="muted">{tConv("noConversions")}</Text>
-                <Text color="muted" className="text-sm mt-1">{tConv("noConversionsHint")}</Text>
+                <Text color="muted" className="text-sm mt-1">
+                  {tConv("noConversionsHint")}
+                </Text>
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-line text-start">
-                      <th className="px-6 py-3 font-medium text-muted-color">{tConv("document")}</th>
+                      <th className="px-6 py-3 font-medium text-muted-color">
+                        {tConv("document")}
+                      </th>
                       <th className="px-6 py-3 font-medium text-muted-color">{tConv("status")}</th>
-                      <th className="px-6 py-3 font-medium text-muted-color">{tConv("progress")}</th>
-                      <th className="px-6 py-3 font-medium text-muted-color">{tConv("createdAt")}</th>
+                      <th className="px-6 py-3 font-medium text-muted-color">
+                        {tConv("progress")}
+                      </th>
+                      <th className="px-6 py-3 font-medium text-muted-color">
+                        {tConv("createdAt")}
+                      </th>
                       <th className="px-6 py-3 font-medium text-muted-color">{tConv("actions")}</th>
                     </tr>
                   </thead>
                   <tbody>
                     {jobs.map((job) => {
-                      const style = STATUS_STYLE[job.status] ?? { bg: "bg-gray-100", text: "text-gray-700" };
+                      const style = STATUS_STYLE[job.status] ?? {
+                        bg: "bg-gray-100",
+                        text: "text-gray-700",
+                      };
                       const isActive = job.status === "PENDING" || job.status === "PROCESSING";
                       return (
                         <tr
@@ -203,11 +230,17 @@ export default function ConversionsPage() {
                           className="border-b border-line last:border-b-0 hover:bg-badge/50 transition-colors"
                         >
                           <td className="px-6 py-4">
-                            <div className="font-medium text-primary-color">{job.document.title}</div>
-                            <div className="text-xs text-very-muted mt-0.5">{job.document.fileName}</div>
+                            <div className="font-medium text-primary-color">
+                              {job.document.title}
+                            </div>
+                            <div className="text-xs text-very-muted mt-0.5">
+                              {job.document.fileName}
+                            </div>
                           </td>
                           <td className="px-6 py-4">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}>
+                            <span
+                              className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+                            >
                               {tConv(job.status.toLowerCase())}
                             </span>
                           </td>
@@ -217,13 +250,19 @@ export default function ConversionsPage() {
                                 <div className="h-2 bg-badge rounded-full overflow-hidden">
                                   <div
                                     className="h-full bg-[var(--success)] transition-all duration-500"
-                                    style={{ width: `${job.progress > 0 ? Math.max(5, job.progress) : 5}%` }}
+                                    style={{
+                                      width: `${job.progress > 0 ? Math.max(5, job.progress) : 5}%`,
+                                    }}
                                   />
                                 </div>
-                                <span className="text-xs text-very-muted mt-1 block">{job.progress}%</span>
+                                <span className="text-xs text-very-muted mt-1 block">
+                                  {job.progress}%
+                                </span>
                               </div>
                             ) : job.status === "COMPLETED" ? (
-                              <span className="text-xs text-[var(--success)] font-medium">100%</span>
+                              <span className="text-xs text-[var(--success)] font-medium">
+                                100%
+                              </span>
                             ) : (
                               <span className="text-xs text-very-muted">—</span>
                             )}
@@ -283,5 +322,6 @@ export default function ConversionsPage() {
         </Stack>
       </Section>
     </Container>
+    </PageTransition>
   );
 }

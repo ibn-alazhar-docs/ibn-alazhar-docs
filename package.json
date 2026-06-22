@@ -10,18 +10,51 @@
     "pnpm": "10.33.4"
   },
   "scripts": {
-    "check": "pnpm format:check && pnpm typecheck",
+    "check": "pnpm format:check && pnpm lint && pnpm typecheck",
     "format": "prettier . --write",
-    "format:check": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --check",
+    "format:check": "prettier . --check",
     "typecheck": "tsc -p apps/web/tsconfig.json --noEmit && tsc -p packages/pipeline/tsconfig.json --noEmit && tsc -p workers/ocr-worker/tsconfig.json --noEmit && tsc -p workers/export-worker/tsconfig.json --noEmit",
+    "ci:all": "pnpm format:check && pnpm lint && pnpm typecheck && pnpm test && pnpm secrets:scan",
     "tools:doctor": "node -e \"console.log('Tooling foundation OK')\"",
     "secrets:scan": "node scripts/secrets-scan.mjs",
-    "format:write": "prettier \"AGENTS.md\" \"README.md\" \".agents/**/*.md\" \"docs/tools/**/*.md\" \"scripts/**/*.{js,mjs,ts}\" \"package.json\" \"tsconfig*.json\" --write",
+    "format:write": "prettier . --write",
     "lint": "eslint apps/ packages/ workers/ --max-warnings 0",
-    "test": "vitest run"
+    "test": "vitest run",
+    "coverage": "vitest run --coverage",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:security": "vitest run --config vitest.security.config.ts",
+    "test:pentest": "vitest run --config vitest.pentest.config.ts",
+    "test:load": "vitest run --config vitest.load.config.ts",
+    "test:recovery": "vitest run --config vitest.recovery.config.ts",
+    "test:backup": "vitest run --config vitest.backup.config.ts",
+    "test:api": "vitest run --config vitest.api.config.ts",
+    "test:e2e": "playwright test",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:seed": "npx tsx prisma/seed.ts"
+  },
+  "prisma": {
+    "seed": "npx tsx prisma/seed.ts"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
+    "@playwright/test": "1.61.0",
+    "@typescript-eslint/eslint-plugin": "8.59.4",
+    "@typescript-eslint/parser": "8.59.4",
+    "@vitest/coverage-v8": "3.2.4",
+    "bcryptjs": "3.0.3",
+    "dotenv": "17.4.2",
+    "eslint": "8.57.1",
+    "eslint-config-prettier": "9.1.2",
+    "jszip": "3.10.1",
     "prettier": "3.6.2",
-    "typescript": "5.9.3"
+    "prisma": "6.5.0",
+    "tsx": "^4.22.4",
+    "typescript": "5.9.3",
+    "vitest": "3.2.4"
+  },
+  "dependencies": {
+    "@prisma/client": "6.5.0",
+    "googleapis": "173.0.0"
   }
 }

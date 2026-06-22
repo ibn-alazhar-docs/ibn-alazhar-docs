@@ -34,7 +34,12 @@ export function validateEnv(): { valid: boolean; missing: string[]; warnings: st
     }
   }
 
-  if (process.env.AUTH_SECRET === "change-me-in-production") {
+  const KNOWN_DEFAULTS = [
+    "change-me-in-production",
+    "replace-with-local-dev-secret",
+    "dev-only-secret-do-not-use-in-production",
+  ];
+  if (KNOWN_DEFAULTS.includes(process.env.AUTH_SECRET ?? "")) {
     warnings.push("AUTH_SECRET is using default value — change in production!");
   }
 
@@ -64,6 +69,4 @@ export function failFastEnvCheck(): void {
       console.warn(`   - ${key}`);
     }
   }
-
-  console.log("Environment validation passed");
 }

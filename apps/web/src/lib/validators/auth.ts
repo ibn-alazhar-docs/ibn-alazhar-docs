@@ -2,12 +2,19 @@ import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
-  password: z.string().min(1, "كلمة المرور مطلوبة").min(8, "يجب أن تكون كلمة المرور 8 أحرف على الأقل"),
+  password: z
+    .string()
+    .min(1, "كلمة المرور مطلوبة")
+    .min(8, "يجب أن تكون كلمة المرور 8 أحرف على الأقل"),
 });
 
 export const registerSchema = z
   .object({
-    name: z.string().min(1, "الاسم مطلوب").min(2, "يجب أن يكون الاسم حرفين على الأقل").max(100, "الاسم طويل جداً"),
+    name: z
+      .string()
+      .min(1, "الاسم مطلوب")
+      .min(2, "يجب أن يكون الاسم حرفين على الأقل")
+      .max(100, "الاسم طويل جداً"),
     email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
     password: z
       .string()
@@ -25,7 +32,8 @@ export const registerSchema = z
   });
 
 export const profileUpdateSchema = z.object({
-  name: z.string()
+  name: z
+    .string()
     .min(1, "الاسم مطلوب")
     .min(2, "يجب أن يكون الاسم حرفين على الأقل")
     .max(100, "الاسم طويل جداً")

@@ -3,17 +3,25 @@
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { GeometricStar } from "@/components/ui/geometric-star";
+import * as motion from "motion/react-client";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const t = useTranslations("section.cta");
   const locale = useLocale();
+  const isRtl = locale === "ar";
 
   return (
     <section className="relative isolate overflow-hidden bg-[var(--text-primary)]">
+      {/* Decorative Background Elements */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_50%)] opacity-[0.04]" />
+        <motion.div
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_60%)] opacity-[0.06]"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+        />
         <div className="absolute -left-20 -top-20 opacity-[0.04]">
-          <GeometricStar className="h-64 w-64 text-gold" />
+          <GeometricStar className="h-64 w-64 text-[var(--gold)]" />
         </div>
         <div className="absolute -bottom-20 -right-20 opacity-[0.04]">
           <GeometricStar className="h-48 w-48 text-[var(--page-bg)]" />
@@ -21,40 +29,61 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-32 sm:py-40">
-        <div className="max-w-2xl">
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--page-bg)]/10 bg-[var(--page-bg)]/[0.04] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--page-bg)]/60 uppercase">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="max-w-2xl relative z-10"
+        >
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--page-bg)]/15 bg-[var(--page-bg)]/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--page-bg)]/80 uppercase">
             {t("title")}
           </div>
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[var(--page-bg)] sm:text-5xl lg:text-6xl">
+
+          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[var(--page-bg)] sm:text-5xl lg:text-6xl drop-shadow-md">
             {t("title")}
           </h2>
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[var(--page-bg)]/60 sm:text-lg">
+
+          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[var(--page-bg)]/70 sm:text-lg">
             {t("subtitle")}
           </p>
+
           <div className="mt-12">
             {isLoggedIn ? (
-              <Link
-                href="/dashboard"
-                className="glass inline-flex items-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] text-[var(--text-primary)] no-underline transition-all hover:bg-[var(--page-bg)]/90 hover:shadow-xl"
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-block"
               >
-                {t("dashboardCTA")}
-                <span aria-hidden="true" className="text-sm">
-                  {locale === "ar" ? "←" : "→"}
-                </span>
-              </Link>
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 text-xs font-bold tracking-[0.1em] text-white no-underline shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all hover:bg-white/20 hover:border-white/30"
+                >
+                  {t("dashboardCTA")}
+                  <span aria-hidden="true" className="flex items-center">
+                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                  </span>
+                </Link>
+              </motion.div>
             ) : (
-              <Link
-                href="/register"
-                className="glass inline-flex items-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] text-[var(--text-primary)] no-underline transition-all hover:bg-[var(--page-bg)]/90 hover:shadow-xl"
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="inline-block"
               >
-                {t("button")}
-                <span aria-hidden="true" className="text-sm">
-                  {locale === "ar" ? "←" : "→"}
-                </span>
-              </Link>
+                <Link
+                  href="/register"
+                  className="inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 text-xs font-bold tracking-[0.1em] text-white no-underline shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all hover:bg-white/20 hover:border-white/30"
+                >
+                  {t("button")}
+                  <span aria-hidden="true" className="flex items-center">
+                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                  </span>
+                </Link>
+              </motion.div>
             )}
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

@@ -135,10 +135,7 @@ export default async function DocPage({ params }: DocPageProps) {
               <DocNavigation prev={prev} next={next} locale={locale} />
             </article>
 
-            <aside
-              className="toc-sidebar hidden lg:block"
-              aria-label="Sidebar"
-            >
+            <aside className="toc-sidebar hidden lg:block" aria-label="Sidebar">
               <TOC />
             </aside>
           </div>

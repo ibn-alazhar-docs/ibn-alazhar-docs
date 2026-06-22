@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn } from "../../apps/web/src/lib/cn";
+import { cn } from "@/lib/cn";
 
 describe("cn", () => {
   it("single class returns itself", () => {
@@ -36,6 +36,10 @@ describe("cn", () => {
 
   it("whitespace in classes preserved", () => {
     expect(cn("  foo  ", "bar")).toBe("  foo   bar");
+  });
+
+  it("empty string filtered out", () => {
+    expect(cn("foo", "", "bar")).toBe("foo bar");
   });
 
   it("duplicate classes not deduped", () => {

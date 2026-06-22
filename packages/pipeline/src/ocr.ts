@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { accessSync, constants } from "node:fs";
-import { mkdtemp, writeFile, readFile, unlink, rm } from "node:fs/promises";
+import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -28,15 +28,16 @@ export async function extractTextViaGoogleDrive(
 
 export async function ocrImageViaGoogleDrive(
   config: PipelineConfig,
-  pageImages: Buffer[],
+  pageGetters: (() => Promise<Buffer>)[],
   fileName: string,
 ): Promise<OcrEngineResult> {
   const provider = new GoogleDriveOcrProvider();
-  return provider.extractPages(config, pageImages, fileName);
+  return provider.extractPages(config, pageGetters, fileName);
 }
 
 export interface SplitResult {
-  pages: Buffer[];
+  pagePaths: string[];
+  tempDir: string;
   pageCount: number;
 }
 
@@ -67,8 +68,8 @@ export async function splitPdfPages(fileBuffer: Buffer, dpi: number = 300): Prom
         python,
         [scriptPath, pdfPath, tempDir, String(dpi)],
         {
-          timeout: 60_000,
-          maxBuffer: 10 * 1024 * 1024,
+          timeout: 1800_000,
+          maxBuffer: 50 * 1024 * 1024,
           env: { ...process.env, PYTHONIOENCODING: "utf-8" },
         },
         (err, stdout) => {
@@ -89,15 +90,11 @@ export async function splitPdfPages(fileBuffer: Buffer, dpi: number = 300): Prom
       throw new Error(`PDF_SPLIT_PARSE_FAILED: Could not parse split output`);
     }
 
-    const pages: Buffer[] = [];
-    for (const page of result.pages) {
-      const imgBuf = await readFile(page.path);
-      pages.push(imgBuf);
-      await unlink(page.path).catch(() => {});
-    }
-
-    return { pages, pageCount: result.pageCount };
-  } finally {
+    const pagePaths = result.pages.map((p) => p.path);
+    return { pagePaths, tempDir, pageCount: result.pageCount };
+  } catch (err) {
+    // Only remove tempDir on failure. On success, caller is responsible for cleanup.
     await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    throw err;
   }
 }

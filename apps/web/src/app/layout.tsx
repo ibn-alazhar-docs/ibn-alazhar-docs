@@ -12,8 +12,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   manifest: "/manifest.webmanifest",
   icons: {
-    icon: "/favicon.svg",
-    shortcut: "/favicon.svg",
+    icon: "/logo.png",
+    shortcut: "/logo.png",
     apple: "/logo.png",
   },
 };
@@ -22,13 +22,15 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   themeColor: "#1A5C3A",
+  colorScheme: "light dark",
 };
 
 export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="ar" suppressHydrationWarning>
       <head>
         <link rel="manifest" href="/manifest.webmanifest" />
+        {/* Inline script sets lang/dir before first paint since root layout has no locale context. DirectionProvider in [locale]/layout.tsx keeps it in sync. */}
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -49,15 +51,7 @@ export default function RootLayout({ children }: Readonly<RootLayoutProps>) {
           }}
         />
       </head>
-      <body className="bg-page">
-        <a
-          href="#main-content"
-          className="fixed -translate-y-full left-4 top-2 z-[100] rounded-lg bg-btn-primary px-4 py-2 text-xs font-bold text-btn-primary-text no-underline transition-transform focus:translate-y-0 focus:outline-2 focus:outline-[var(--ring-focus)]"
-        >
-          Skip to main content
-        </a>
-        {children}
-      </body>
+      <body className="bg-page">{children}</body>
     </html>
   );
 }

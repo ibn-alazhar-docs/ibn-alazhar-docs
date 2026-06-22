@@ -20,7 +20,10 @@ export async function GET(request: Request) {
   const offset = (page - 1) * limit;
 
   if (!query || query.trim().length < 2) {
-    return NextResponse.json({ error: "Min 2 characters required" }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: "VALIDATION_ERROR", message: "Min 2 characters required" } },
+      { status: 400 },
+    );
   }
 
   const normalizedQuery = query
@@ -39,7 +42,10 @@ export async function GET(request: Request) {
     .join(" & ");
 
   if (!tsQuery) {
-    return NextResponse.json({ error: "Invalid search query" }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: "VALIDATION_ERROR", message: "Invalid search query" } },
+      { status: 400 },
+    );
   }
 
   try {
@@ -95,9 +101,8 @@ export async function GET(request: Request) {
     const total = Number(countResult[0]?.total || 0);
 
     const tsQueryIndex = params.indexOf(tsQuery) + 1;
-    const rankClause = tsQueryIndex > 0
-      ? `ts_rank(d.searchvector, to_tsquery('simple', $${tsQueryIndex}))`
-      : `0.0`;
+    const rankClause =
+      tsQueryIndex > 0 ? `ts_rank(d.searchvector, to_tsquery('simple', $${tsQueryIndex}))` : `0.0`;
 
     const searchQuery = `
       SELECT
@@ -198,6 +203,9 @@ export async function GET(request: Request) {
     });
   } catch (error) {
     logger.error(error, "Search error:");
-    return NextResponse.json({ error: "Search failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Search failed" } },
+      { status: 500 },
+    );
   }
 }

@@ -24,10 +24,16 @@ export async function GET() {
 
     return NextResponse.json({ users });
   } catch (error) {
-    if (error instanceof Error && error.message === "FORBIDDEN") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Admin access required" } },
+        { status: 403 },
+      );
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -40,7 +46,7 @@ export async function PATCH(request: Request) {
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
     }
@@ -48,7 +54,10 @@ export async function PATCH(request: Request) {
     const { userId, role } = validation.data;
 
     if (userId === session.user.id) {
-      return NextResponse.json({ error: "Cannot change your own role" }, { status: 400 });
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Cannot change your own role" } },
+        { status: 400 },
+      );
     }
 
     // Verify user is not soft-deleted
@@ -58,7 +67,10 @@ export async function PATCH(request: Request) {
     });
 
     if (!userExists) {
-      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } },
+        { status: 404 },
+      );
     }
 
     const user = await prisma.user.update({
@@ -69,10 +81,16 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    if (error instanceof Error && error.message === "FORBIDDEN") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Admin access required" } },
+        { status: 403 },
+      );
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -82,11 +100,17 @@ export async function DELETE(request: Request) {
     const { userId } = await request.json();
 
     if (!userId) {
-      return NextResponse.json({ error: "userId required" }, { status: 400 });
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "userId required" } },
+        { status: 400 },
+      );
     }
 
     if (userId === session.user.id) {
-      return NextResponse.json({ error: "Cannot delete yourself" }, { status: 400 });
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Cannot delete yourself" } },
+        { status: 400 },
+      );
     }
 
     // Verify user exists and is active
@@ -96,7 +120,10 @@ export async function DELETE(request: Request) {
     });
 
     if (!userExists) {
-      return NextResponse.json({ error: "المستخدم غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } },
+        { status: 404 },
+      );
     }
 
     await prisma.user.update({
@@ -106,9 +133,15 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof Error && error.message === "FORBIDDEN") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 });
+    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Admin access required" } },
+        { status: 403 },
+      );
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
+      { status: 500 },
+    );
   }
 }

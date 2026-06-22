@@ -3,6 +3,8 @@ import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse } from "next/server";
 
+const DEFAULT_LOCALE = "ar";
+
 export class AuthError extends Error {
   constructor(
     message: string,
@@ -29,7 +31,7 @@ export async function requireAuth(): Promise<AuthSession> {
   const session = await getCachedAuth();
 
   if (!session?.user) {
-    redirect("/ar/login");
+    redirect(`/${DEFAULT_LOCALE}/login`);
   }
 
   return session as AuthSession;

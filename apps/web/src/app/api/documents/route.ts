@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
 export async function GET(request: Request) {
   const session = await requireAuth().catch(() => null);
@@ -11,84 +11,44 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+  const skip = (page - 1) * limit;
+
   const folderId = searchParams.get("folderId");
-  const status = searchParams.get("status");
-  const sort = searchParams.get("sort") || "createdAt";
-  const order = searchParams.get("order") || "desc";
+  const search = searchParams.get("search");
 
-  const where = ownedWhere({ deletedAt: null }, session);
-
-  if (folderId === "root") {
-    where.folderId = null;
-  } else if (folderId) {
-    where.folderId = folderId;
-  }
-
-  if (status) {
-    where.status = status;
-  }
-
-  const tagIds = searchParams.getAll("tagId");
-  if (tagIds.length > 0) {
-    where.AND = tagIds.map((tagId) => ({
-      tags: {
-        some: { tagId },
+  // Since use cases currently expect 'skip', 'take', 'folderId', 'search', 'deleted'
+  // Let's pass what we have
+  try {
+    const { documents, total } = await documentUseCases.getDocuments(
+      session.user.id,
+      session.user.role,
+      {
+        skip,
+        take: limit,
+        folderId: folderId ?? undefined,
+        search: search ?? undefined,
+        deleted: false, // Default to not returning deleted documents unless specified?
       },
+    );
+
+    const serializedDocuments = documents.map((doc) => ({
+      ...doc,
+      fileSize: Number(doc.fileSize),
     }));
-  }
 
-  const validSortFields = ["createdAt", "updatedAt", "title", "fileSize", "status"];
-  const sortField = validSortFields.includes(sort) ? sort : "createdAt";
-  const sortOrder = order === "asc" ? "asc" : "desc";
-
-  const [documents, total] = await Promise.all([
-    prisma.document.findMany({
-      where,
-      orderBy: { [sortField]: sortOrder },
-      skip: (page - 1) * limit,
-      take: limit,
-      select: {
-        id: true,
-        title: true,
-        fileName: true,
-        originalName: true,
-        mimeType: true,
-        fileSize: true,
-        status: true,
-        pageCount: true,
-        outputFormats: true,
-        language: true,
-        isRtl: true,
-        folderId: true,
-        createdAt: true,
-        updatedAt: true,
-        folder: {
-          select: { id: true, name: true },
-        },
-        tags: {
-          select: {
-            tag: {
-              select: { id: true, name: true, color: true },
-            },
-          },
-        },
+    return NextResponse.json({
+      documents: serializedDocuments,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
       },
-    }),
-    prisma.document.count({ where }),
-  ]);
-  
-  const serializedDocuments = documents.map((doc) => ({
-    ...doc,
-    fileSize: Number(doc.fileSize),
-  }));
-
-  return NextResponse.json({
-    documents: serializedDocuments,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  });
+    });
+  } catch {
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
+      { status: 500 },
+    );
+  }
 }

@@ -1,19 +1,12 @@
 import type { ReactNode } from "react";
 import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { cairo, amiri } from "@/lib/fonts";
-import arMessages from "@/messages/ar.json";
-import enMessages from "@/messages/en.json";
 import { ThemeWrapper } from "@/components/theme/theme-wrapper";
 import { generatePageMetadata } from "@/lib/metadata";
-
-const messagesMap: Record<string, typeof arMessages> = {
-  ar: arMessages,
-  en: enMessages,
-};
 
 interface LocaleLayoutProps {
   children: ReactNode;
@@ -42,18 +35,18 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     notFound();
   }
 
-  const messages = messagesMap[locale]!;
+  const messages = await getMessages();
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Ibn Al-Azhar",
+    name: "Ibn Al-Azhar Docs",
     description: "Document processing and text search",
     url: `https://ibnalazhar-docs.vercel.app/${locale}`,
     inLanguage: locale === "ar" ? "ar" : "en",
     publisher: {
       "@type": "Organization",
-      name: "Ibn Al-Azhar",
+      name: "Ibn Al-Azhar Docs",
     },
   };
 

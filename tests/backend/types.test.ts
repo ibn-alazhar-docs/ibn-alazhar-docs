@@ -67,16 +67,16 @@ describe("JOB_TIMEOUTS", () => {
     }
   });
 
-  it("VALIDATION timeout is 30000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.VALIDATION]).toBe(30000);
+  it("VALIDATION timeout is 60000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.VALIDATION]).toBe(60000);
   });
 
-  it("OCR timeout is 1800000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.OCR]).toBe(1_800_000);
+  it("OCR timeout is 7200000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.OCR]).toBe(7_200_000);
   });
 
-  it("GENERATION timeout is 30000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.GENERATION]).toBe(30000);
+  it("GENERATION timeout is 600000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.GENERATION]).toBe(600000);
   });
 });
 

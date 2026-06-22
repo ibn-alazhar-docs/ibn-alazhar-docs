@@ -4,17 +4,9 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { FolderItem } from "./folder-item";
 import { CreateFolderDialog } from "./create-folder-dialog";
-
-interface FolderNode {
-  id: string;
-  name: string;
-  parentId: string | null;
-  color: string | null;
-  icon: string | null;
-  order: number;
-  children: FolderNode[];
-  _count: { documents: number; children: number };
-}
+import { MoveDialog } from "./move-dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { buildFolderTree, type FolderNode } from "@/lib/build-folder-tree";
 
 interface FolderTreeProps {
   selectedFolderId: string | null;
@@ -27,44 +19,16 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createParentId, setCreateParentId] = useState<string | null>(null);
+  const [showMoveDialog, setShowMoveDialog] = useState(false);
+  const [movingFolderId, setMovingFolderId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const loadFolders = useCallback(async () => {
     try {
       const response = await fetch("/api/folders");
       if (!response.ok) throw new Error("Failed to load folders");
       const data = await response.json();
-
-      // Build tree from flat list
-      interface FlatFolder {
-        id: string;
-        name: string;
-        parentId: string | null;
-        color: string | null;
-        icon: string | null;
-        order: number;
-        _count: { documents: number; children: number };
-      }
-
-      const allFolders: (FlatFolder & { children: FolderNode[] })[] = data.folders.map(
-        (f: FlatFolder) => ({
-          ...f,
-          children: [] as FolderNode[],
-        }),
-      );
-      const folderMap = new Map(allFolders.map((f) => [f.id, f]));
-      const rootFolders: FolderNode[] = [];
-
-      for (const folder of allFolders) {
-        if (folder.parentId && folderMap.has(folder.parentId)) {
-          const parent = folderMap.get(folder.parentId);
-          if (parent) {
-            parent.children.push(folder);
-          }
-        } else if (!folder.parentId) {
-          rootFolders.push(folder);
-        }
-      }
-
+      const rootFolders = buildFolderTree(data.folders);
       setFolders(rootFolders);
     } catch (error) {
       console.error("Failed to load folders:", error);
@@ -77,7 +41,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
     loadFolders();
   }, [loadFolders]);
 
-  async function handleCreate(name: string) {
+  async function handleCreate(name: string): Promise<void> {
     try {
       const response = await fetch("/api/folders", {
         method: "POST",
@@ -95,6 +59,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       setCreateParentId(null);
     } catch (error) {
       console.error("Failed to create folder:", error);
+      throw error;
     }
   }
 
@@ -118,8 +83,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   }
 
   async function handleDelete(folderId: string) {
-    if (!confirm(t("deleteConfirm"))) return;
-
     try {
       const response = await fetch(`/api/folders/${folderId}`, {
         method: "DELETE",
@@ -137,18 +100,39 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       await loadFolders();
     } catch (error) {
       console.error("Failed to delete folder:", error);
+    } finally {
+      setDeleteConfirmId(null);
     }
   }
 
-  async function handleMove(_folderId: string, _parentId: string | null) {
-    // TODO: Show move dialog in Phase 2B-2
+  function handleMove(folderId: string, _parentId: string | null) {
+    setMovingFolderId(folderId);
+    setShowMoveDialog(true);
+  }
+
+  async function handleMoveSubmit(newParentId: string | null) {
+    if (!movingFolderId) return;
+    try {
+      const response = await fetch(`/api/folders/${movingFolderId}/move`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parentId: newParentId }),
+      });
+      if (response.ok) {
+        setShowMoveDialog(false);
+        setMovingFolderId(null);
+        await loadFolders();
+      }
+    } catch (error) {
+      console.error("Failed to move folder:", error);
+    }
   }
 
   if (loading) {
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-10 bg-hover rounded-lg animate-pulse" />
+          <div key={i} className="h-10 animate-pulse rounded-lg bg-hover" />
         ))}
       </div>
     );
@@ -157,11 +141,11 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   return (
     <div className="space-y-2">
       {/* Root level actions */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-color">{t("title")}</h3>
         <button
           type="button"
-          className="text-sm text-[var(--success)] hover:text-[var(--success)] font-medium"
+          className="text-sm font-medium text-[var(--success)] hover:text-[var(--success)]"
           onClick={() => {
             setCreateParentId(null);
             setShowCreateDialog(true);
@@ -174,15 +158,27 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       {/* All Files option */}
       <button
         type="button"
-        className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-start transition-colors ${
+        className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start transition-colors ${
           selectedFolderId === null
             ? "bg-[var(--success-bg)] text-[var(--success)]"
-            : "hover:bg-hover text-primary-color"
+            : "text-primary-color hover:bg-hover"
         }`}
         onClick={() => onSelectFolder(null)}
       >
         <span className="text-lg">
-          <svg className="w-5 h-5 text-muted-color" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+          <svg
+            className="h-5 w-5 text-muted-color"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+            />
+          </svg>
         </span>
         <span className="text-sm font-medium">{t("allFiles")}</span>
       </button>
@@ -198,20 +194,32 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
               selectedFolderId={selectedFolderId}
               onSelect={onSelectFolder}
               onRename={handleRename}
-              onDelete={handleDelete}
+              onDelete={(folderId) => setDeleteConfirmId(folderId)}
               onMove={handleMove}
             />
           ))}
         </div>
       ) : (
-          <div className="text-center py-8">
+        <div className="py-8 text-center">
           <div className="mb-2 text-muted-color">
-            <svg className="w-10 h-10 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /></svg>
+            <svg
+              className="mx-auto h-10 w-10"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+              />
+            </svg>
           </div>
           <p className="text-sm text-muted-color">{t("empty")}</p>
           <button
             type="button"
-            className="mt-2 text-sm text-[var(--success)] hover:text-[var(--success)] font-medium"
+            className="mt-2 text-sm font-medium text-[var(--success)] hover:text-[var(--success)]"
             onClick={() => {
               setCreateParentId(null);
               setShowCreateDialog(true);
@@ -230,6 +238,31 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
             setShowCreateDialog(false);
             setCreateParentId(null);
           }}
+        />
+      )}
+
+      {/* Move folder dialog */}
+      {showMoveDialog && (
+        <MoveDialog
+          selectedCount={1}
+          onSubmit={handleMoveSubmit}
+          onClose={() => {
+            setShowMoveDialog(false);
+            setMovingFolderId(null);
+          }}
+        />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deleteConfirmId && (
+        <ConfirmDialog
+          title={t("deleteTitle", { fallback: "حذف المجلد" })}
+          message={t("deleteConfirm")}
+          confirmLabel="حذف"
+          cancelLabel="إلغاء"
+          variant="danger"
+          onConfirm={() => handleDelete(deleteConfirmId)}
+          onCancel={() => setDeleteConfirmId(null)}
         />
       )}
     </div>

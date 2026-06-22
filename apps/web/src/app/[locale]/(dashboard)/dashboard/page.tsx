@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { isAdmin, requireAuth } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { DashboardContent } from "../dashboard-content";
+import { PageTransition } from "@/components/ui/page-transition";
 
 export const revalidate = 0;
 
@@ -40,9 +41,11 @@ export default async function DashboardPage() {
   ]);
 
   return (
-    <DashboardContent
-      counts={{ documents, folders, tags, conversions }}
-      recentDocuments={recentDocuments}
-    />
+    <PageTransition>
+      <DashboardContent
+        counts={{ documents, folders, tags, conversions }}
+        recentDocuments={recentDocuments}
+      />
+    </PageTransition>
   );
 }

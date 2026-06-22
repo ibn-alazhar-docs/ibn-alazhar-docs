@@ -15,7 +15,7 @@ export async function POST(request: Request) {
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
     }
@@ -23,7 +23,10 @@ export async function POST(request: Request) {
     const { sourceTagId, targetTagId } = validation.data;
 
     if (sourceTagId === targetTagId) {
-      return NextResponse.json({ error: "لا يمكن دمج الوسم مع نفسه" }, { status: 400 });
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "لا يمكن دمج الوسم مع نفسه" } },
+        { status: 400 },
+      );
     }
 
     const [sourceTag, targetTag] = await Promise.all([
@@ -38,11 +41,17 @@ export async function POST(request: Request) {
     ]);
 
     if (!sourceTag) {
-      return NextResponse.json({ error: "الوسم المصدري غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "الوسم المصدري غير موجود" } },
+        { status: 404 },
+      );
     }
 
     if (!targetTag) {
-      return NextResponse.json({ error: "الوسم الهدف غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "الوسم الهدف غير موجود" } },
+        { status: 404 },
+      );
     }
 
     const sourceDocs = await prisma.tagDocument.findMany({
@@ -50,27 +59,21 @@ export async function POST(request: Request) {
       select: { documentId: true },
     });
 
-    let affectedDocuments = 0;
+    const existingTarget = await prisma.tagDocument.findMany({
+      where: { tagId: targetTagId },
+      select: { documentId: true },
+    });
 
-    for (const { documentId } of sourceDocs) {
-      const existing = await prisma.tagDocument.findUnique({
-        where: {
-          tagId_documentId: {
-            tagId: targetTagId,
-            documentId,
-          },
-        },
+    const existingDocIds = new Set(existingTarget.map((td) => td.documentId));
+    const newDocIds = sourceDocs.map((td) => td.documentId).filter((id) => !existingDocIds.has(id));
+
+    if (newDocIds.length > 0) {
+      await prisma.tagDocument.createMany({
+        data: newDocIds.map((documentId) => ({
+          tagId: targetTagId,
+          documentId,
+        })),
       });
-
-      if (!existing) {
-        await prisma.tagDocument.create({
-          data: {
-            tagId: targetTagId,
-            documentId,
-          },
-        });
-        affectedDocuments++;
-      }
     }
 
     await prisma.tagDocument.deleteMany({
@@ -83,11 +86,14 @@ export async function POST(request: Request) {
 
     return NextResponse.json({
       success: true,
-      affectedDocuments,
-      message: `تم دمج الوسم بنجاح. تم نقل ${affectedDocuments} مستند`,
+      affectedDocuments: newDocIds.length,
+      message: `تم دمج الوسم بنجاح. تم نقل ${newDocIds.length} مستند`,
     });
   } catch (error: unknown) {
     logger.error(error, "[tags/merge/POST] Failed:");
-    return NextResponse.json({ error: "فشل دمج الوسوم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل دمج الوسوم" } },
+      { status: 500 },
+    );
   }
 }

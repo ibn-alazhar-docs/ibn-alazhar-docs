@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Container } from "@/components/ui/container";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
@@ -144,6 +145,7 @@ export default function TagsPage() {
   const totalDocuments = tags.reduce((sum, tag) => sum + tag._count.documents, 0);
 
   return (
+    <PageTransition>
     <Container>
       <Section padding="md">
         <Stack gap={6}>
@@ -152,7 +154,8 @@ export default function TagsPage() {
             <div>
               <Heading level={2}>{t("manage")}</Heading>
               <Text color="muted">
-                {t("tagsCount", { count: tags.length })} | {totalDocuments} {t("documentsCount", { count: totalDocuments })}
+                {t("tagsCount", { count: tags.length })} | {totalDocuments}{" "}
+                {t("documentsCount", { count: totalDocuments })}
               </Text>
             </div>
             <button
@@ -166,7 +169,11 @@ export default function TagsPage() {
 
           {/* Error */}
           {error && (
-            <div className="p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)]" role="alert" aria-live="polite">
+            <div
+              className="p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)]"
+              role="alert"
+              aria-live="polite"
+            >
               {error}
               <button type="button" className="ms-2 underline" onClick={() => setError(null)}>
                 {tCommon("close")}
@@ -417,5 +424,6 @@ export default function TagsPage() {
         </Stack>
       </Section>
     </Container>
+    </PageTransition>
   );
 }

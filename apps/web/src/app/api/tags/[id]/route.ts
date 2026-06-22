@@ -21,13 +21,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     });
 
     if (!tag) {
-      return NextResponse.json({ error: "الوسم غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
+        { status: 404 },
+      );
     }
 
     return NextResponse.json({ tag });
   } catch (error: unknown) {
     logger.error(error, "[tags/[id]/GET] Failed:");
-    return NextResponse.json({ error: "فشل الحصول على الوسم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على الوسم" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -43,7 +49,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
     }
@@ -54,21 +60,30 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     });
 
     if (!tag) {
-      return NextResponse.json({ error: "الوسم غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
+        { status: 404 },
+      );
     }
 
     const { name, color } = validation.data;
 
     if (name) {
       const existingTag = await prisma.tag.findFirst({
-        where: ownedWhere({
-          name: { equals: name, mode: "insensitive" },
-          id: { not: id },
-        }, session),
+        where: ownedWhere(
+          {
+            name: { equals: name, mode: "insensitive" },
+            id: { not: id },
+          },
+          session,
+        ),
       });
 
       if (existingTag) {
-        return NextResponse.json({ error: "يوجد وسم بهذا الاسم بالفعل" }, { status: 409 });
+        return NextResponse.json(
+          { error: { code: "CONFLICT", message: "يوجد وسم بهذا الاسم بالفعل" } },
+          { status: 409 },
+        );
       }
     }
 
@@ -83,7 +98,10 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     return NextResponse.json({ tag: updated });
   } catch (error: unknown) {
     logger.error(error, "[tags/[id]/PATCH] Failed:");
-    return NextResponse.json({ error: "فشل تحديث الوسم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل تحديث الوسم" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -100,7 +118,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     });
 
     if (!tag) {
-      return NextResponse.json({ error: "الوسم غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
+        { status: 404 },
+      );
     }
 
     await prisma.tagDocument.deleteMany({
@@ -114,6 +135,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ success: true, message: "تم حذف الوسم بنجاح" });
   } catch (error: unknown) {
     logger.error(error, "[tags/[id]/DELETE] Failed:");
-    return NextResponse.json({ error: "فشل حذف الوسم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل حذف الوسم" } },
+      { status: 500 },
+    );
   }
 }

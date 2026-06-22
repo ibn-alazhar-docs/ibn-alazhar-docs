@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
 
 const prisma = new PrismaClient();
 
@@ -27,26 +28,31 @@ async function main() {
       name: "مستخدم",
       role: "STUDENT",
       locale: "ar",
-      passwordHash: "$2b$12$7C6H1e/jllfmsem3c6i1weD/yTIr0LUJ.nKoHRtp.aB4mVr6iSV3q",
+      passwordHash: process.env.USER_PASSWORD
+        ? bcrypt.hashSync(process.env.USER_PASSWORD, 12)
+        : "$2b$12$7C6H1e/jllfmsem3c6i1weD/yTIr0LUJ.nKoHRtp.aB4mVr6iSV3q",
     },
   });
 
   console.log(`User created: ${userUser.id}`);
 
   const adminUser = await prisma.user.upsert({
-    where: { email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.local" },
+    where: { email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.app" },
     update: {},
     create: {
-      email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.local",
+      email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.app",
       name: "مدير النظام",
       role: "ADMIN",
       locale: "ar",
-      passwordHash: "$2b$12$bGJjAXPTHoTztOybDAV1f.WTgeYnOWCif5IgMz7iO.rWoiFUiubCK",
+      passwordHash: process.env.ADMIN_PASSWORD
+        ? bcrypt.hashSync(process.env.ADMIN_PASSWORD, 12)
+        : bcrypt.hashSync("admin123", 12),
     },
   });
 
   console.log(`Admin user created: ${adminUser.id}`);
-  console.log("Seeding complete.");
+
+  console.log("Seeding complete. Clean database without fake data.");
 }
 
 main()

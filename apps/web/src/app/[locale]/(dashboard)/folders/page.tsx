@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { FolderTree } from "@/components/folders/folder-tree";
 import { Breadcrumbs } from "@/components/folders/breadcrumbs";
 import { Container } from "@/components/ui/container";
+import { PageTransition } from "@/components/ui/page-transition";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
@@ -40,6 +41,7 @@ export default function FoldersPage() {
   }
 
   return (
+    <PageTransition>
     <Container>
       <Section padding="md">
         <Stack gap={6}>
@@ -61,5 +63,6 @@ export default function FoldersPage() {
         </Stack>
       </Section>
     </Container>
+    </PageTransition>
   );
 }
