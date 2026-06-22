@@ -1,0 +1,102 @@
+groups:
+  - name: infrastructure
+    rules:
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL has been unreachable for more than 1 minute."
+          runbook: "See RUNBOOK.md → PostgreSQL Down"
+
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis has been unreachable for more than 1 minute."
+          runbook: "See RUNBOOK.md → Redis Down"
+
+      - alert: ContainerDown
+        expr: time() - container_last_seen{name=~"ibn-.*"} > 300
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "Container {{ $labels.name }} is down"
+          description: "Container {{ $labels.name }} has not reported metrics for 5 minutes."
+
+      - alert: DiskUsageHigh
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Disk usage above 80%"
+          description: "Disk {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full."
+
+      - alert: DiskUsageCritical
+        expr: (node_filesystem_size_bytes - node_filesystem_free_bytes) / node_filesystem_size_bytes > 0.95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Disk usage above 95% — imminent full disk"
+          description: "Disk {{ $labels.mountpoint }} is {{ $value | humanizePercentage }} full. Immediate action required."
+
+  - name: application
+    rules:
+      - alert: WebHighLatency
+        expr: histogram_quantile(0.95, http_request_duration_seconds_bucket) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Web p95 latency above 2 seconds"
+          description: "95th percentile request latency is {{ $value }}s for the last 5 minutes."
+
+      - alert: WebErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "Web 5xx error rate above 5%"
+          description: "{{ $value | humanizePercentage }} of requests are returning 5xx errors."
+
+  - name: workers
+    rules:
+      - alert: OCRWorkerDown
+        expr: absent(container_last_seen{name="ibn-ocr-worker"})
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "OCR worker is down"
+          description: "No OCR worker container metrics for 5 minutes. Jobs are queuing."
+          runbook: "See RUNBOOK.md → Worker Down"
+
+      - alert: ExportWorkerDown
+        expr: absent(container_last_seen{name="ibn-export-worker"})
+        for: 5m
+        labels:
+          severity: high
+        annotations:
+          summary: "Export worker is down"
+          description: "No export worker container metrics for 5 minutes. Export jobs are queuing."
+          runbook: "See RUNBOOK.md → Worker Down"
+
+  - name: backups
+    rules:
+      - alert: BackupFailed
+        expr: time() - backup_last_success_timestamp_seconds > 90000
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "Backup has not succeeded in 25 hours"
+          description: "Last successful backup was {{ $value | humanizeDuration }} ago."
