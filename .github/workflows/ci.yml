@@ -7,16 +7,62 @@ on:
     branches: [main]
 
 jobs:
-  ci:
-    runs-on: ubuntu-latest
+  format:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: npx prettier --check .
+        name: Format check
 
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+        name: ESLint check
+
+  typecheck:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: npx prisma generate
+        name: Prisma generate
+      - run: pnpm typecheck
+        name: TypeScript type check
+
+  test:
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16
         env:
-          POSTGRES_USER: ibn
-          POSTGRES_PASSWORD: ibn
-          POSTGRES_DB: ibn_al_azhar_docs
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: ibn_docs_password
+          POSTGRES_DB: ibn_docs
         ports:
           - 5432:5432
         options: >-
@@ -24,26 +70,68 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+    env:
+      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
+      REDIS_URL: redis://localhost:6379
     steps:
       - uses: actions/checkout@v4
-
       - uses: pnpm/action-setup@v4
         with:
           version: 10
-
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
           cache: "pnpm"
-
       - run: pnpm install --frozen-lockfile
-
-      - run: npx prettier --check .
-        name: Format check
-
-      - run: pnpm typecheck
-        name: TypeScript type check
-
+      - run: npx prisma generate
+        name: Prisma generate
+      - run: npx prisma migrate deploy
+        name: Prisma migrate
       - run: pnpm test
-        name: Run tests
+        name: Run unit tests
+      - run: pnpm test:security
+        name: Run security tests
+
+  build:
+    runs-on: ubuntu-24.04
+    needs: [format, lint, typecheck, test]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: ibn_docs_password
+          POSTGRES_DB: ibn_docs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: npx prisma generate
+        name: Prisma generate
+      - run: npx next build
+        working-directory: apps/web
+        name: Next.js build
+      - name: Build Docker images
+        run: |
+          docker build -t ibn-web -f Dockerfile .
+          docker build -t ibn-ocr-worker -f Dockerfile.worker --target ocr-runner .
+          docker build -t ibn-export-worker -f Dockerfile.worker --target export-runner .
