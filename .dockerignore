@@ -1,4 +1,4 @@
-# node_modules/
+node_modules/
 .pnpm-store/
 .next/
 dist/
@@ -18,8 +18,15 @@ docs/
 test-results/
 test-data/
 my-project/
-*.pdf
-*.png
-*.jpg
-*.jpeg
-
+**/*.pdf
+**/*.png
+**/*.jpg
+**/*.jpeg
+.opencode/
+specs/
+governance/
+00_Inbox/
+09_Archive/
+.github/
+infrastructure/
+*.md
