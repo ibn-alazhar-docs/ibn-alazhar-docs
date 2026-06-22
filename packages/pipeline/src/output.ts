@@ -292,7 +292,7 @@ export async function generatePdf(
       end: () => void;
     };
   };
-  const printer = new Printer(fonts, undefined as any, { resolve: () => {}, resolved: () => Promise.resolve() } as any, undefined as any);
+  const printer = new Printer(fonts);
 
   const markdownText = cleanedText.markdown || cleanedText.cleaned;
   const blocks = markdownText.split("\n\n").filter(Boolean);
