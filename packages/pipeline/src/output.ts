@@ -279,13 +279,23 @@ export async function generatePdf(
     },
   };
 
-  const Printer = PdfPrinter as unknown as new (fonts: Record<string, Record<string, string>>) => {
+  const Printer = PdfPrinter as unknown as new (
+    fonts: Record<string, Record<string, string>>,
+    vfs?: unknown,
+    urlResolver?: { resolve: () => void; resolved: () => Promise<unknown> },
+    vfsCache?: unknown,
+  ) => {
     createPdfKitDocument: (docDefinition: TDocumentDefinitions) => {
       on: (event: string, callback: (chunk: Buffer) => void) => void;
       end: () => void;
     };
   };
-  const printer = new Printer(fonts);
+  // pdfmake's Printer expects a urlResolver stub to avoid resolveUrls failing on undefined.
+  const urlResolver = {
+    resolve: () => {},
+    resolved: () => Promise.resolve(),
+  };
+  const printer = new Printer(fonts, undefined, urlResolver);
 
   const markdownText = cleanedText.markdown || cleanedText.cleaned;
   const blocks = markdownText.split("\n\n").filter(Boolean);
