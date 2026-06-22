@@ -115,7 +115,9 @@ function parseFrontmatter(raw: string): { metadata: DocMetadata; content: string
   return { metadata, content: match[2]! };
 }
 
-async function getDocFiles(locale: string): Promise<{ file: string; category: string; slug: string }[]> {
+async function getDocFiles(
+  locale: string,
+): Promise<{ file: string; category: string; slug: string }[]> {
   const localeDir = path.join(CONTENT_DIR, locale);
   if (!(await exists(localeDir))) return [];
 
@@ -145,7 +147,8 @@ export const getDocContent = cache(async function getDocContent(
   metadata: DocMetadata;
   content: string;
 } | null> {
-  const filePath = path.join(CONTENT_DIR, locale, category, `${slug}.mdx`);
+  const filePath = path.resolve(CONTENT_DIR, locale, category, `${slug}.mdx`);
+  if (!filePath.startsWith(path.resolve(CONTENT_DIR))) return null;
   if (!(await exists(filePath))) return null;
 
   const raw = await fsPromises.readFile(filePath, "utf-8");
@@ -294,7 +297,10 @@ export async function getRelatedDocs(locale: string, currentSlug: string): Promi
   return results.filter((d): d is DocEntry => d !== null);
 }
 
-export async function getPrerequisiteDocs(locale: string, currentSlug: string): Promise<DocEntry[]> {
+export async function getPrerequisiteDocs(
+  locale: string,
+  currentSlug: string,
+): Promise<DocEntry[]> {
   const current = await getDocBySlug(locale, currentSlug);
   if (!current?.metadata.prerequisites?.length) return [];
 
@@ -303,7 +309,10 @@ export async function getPrerequisiteDocs(locale: string, currentSlug: string): 
   return results.filter((d): d is DocEntry => d !== null);
 }
 
-export async function getContinuationDoc(locale: string, currentSlug: string): Promise<DocEntry | null> {
+export async function getContinuationDoc(
+  locale: string,
+  currentSlug: string,
+): Promise<DocEntry | null> {
   const current = await getDocBySlug(locale, currentSlug);
   if (!current?.metadata.continuation) return null;
   return getDocBySlug(locale, current.metadata.continuation);

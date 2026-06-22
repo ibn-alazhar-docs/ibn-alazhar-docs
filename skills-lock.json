@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "clean-code-guard": {
+      "source": "amelnagdy/guard-skills",
+      "sourceType": "github",
+      "skillPath": "skills/clean-code-guard/SKILL.md",
+      "computedHash": "0418cdf1d9b88eb04ae8e90a49989e3023212c60690e216e1f773ac46e9a8850"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

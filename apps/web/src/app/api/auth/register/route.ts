@@ -23,23 +23,6 @@ export async function POST(request: Request) {
     });
 
     if (existingUser) {
-      if (existingUser.deletedAt) {
-        const passwordHash = await bcrypt.hash(password, 12);
-        await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            name,
-            passwordHash,
-            deletedAt: null,
-            role: "STUDENT",
-            locale: "ar",
-          },
-        });
-        return NextResponse.json(
-          { message: "تم إعادة تنشيط الحساب بنجاح", userId: existingUser.id },
-          { status: 201 },
-        );
-      }
       return NextResponse.json(
         { error: { code: "EMAIL_EXISTS", message: "هذا البريد الإلكتروني مسجل مسبقاً" } },
         { status: 409 },

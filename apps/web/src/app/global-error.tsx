@@ -7,13 +7,11 @@ interface GlobalErrorProps {
 
 export default function GlobalError({ reset }: GlobalErrorProps) {
   return (
-    <html>
+    <html lang="ar">
       <body>
         <div className="flex min-h-screen items-center justify-center bg-page">
           <div className="text-center max-w-md mx-auto p-8">
-            <h1 className="text-2xl font-bold text-primary-color mb-2">
-              خطأ عام / Global Error
-            </h1>
+            <h1 className="text-2xl font-bold text-primary-color mb-2">خطأ عام / Global Error</h1>
             <p className="text-muted-color mb-6">
               حدث خطأ غير متوقع — An unexpected error occurred.
             </p>

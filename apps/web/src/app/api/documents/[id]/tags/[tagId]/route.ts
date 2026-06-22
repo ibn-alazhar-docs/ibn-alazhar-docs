@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
 
 export async function DELETE(
@@ -13,34 +13,32 @@ export async function DELETE(
 
     const { id, tagId } = await params;
 
-    const document = await prisma.document.findFirst({
-      where: ownedWhere({ id }, session),
-      select: { id: true },
-    });
-
-    if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+    try {
+      await documentUseCases.removeTagFromDocument(id, tagId, session.user.id, session.user.role);
+      return NextResponse.json({ success: true, message: "Tag removed" });
+    } catch (error: unknown) {
+      if ((error as Error).message === "NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "Document not found" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "TAG_NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "Tag not found" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "TAG_NOT_ASSIGNED") {
+        return NextResponse.json({ success: true, message: "Tag was not assigned" });
+      }
+      throw error;
     }
-
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id: tagId }, session),
-      select: { id: true },
-    });
-
-    if (!tag) {
-      return NextResponse.json({ error: "Tag not found" }, { status: 404 });
-    }
-
-    await prisma.tagDocument.deleteMany({
-      where: {
-        tagId,
-        documentId: id,
-      },
-    });
-
-    return NextResponse.json({ success: true, message: "Tag removed" });
   } catch (error: unknown) {
     logger.error(error, "[documents/[id]/tags/[tagId]/DELETE] Failed:");
-    return NextResponse.json({ error: "Failed to remove tag" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Failed to remove tag" } },
+      { status: 500 },
+    );
   }
 }

@@ -4,22 +4,25 @@ const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const MAX_MAP_SIZE = 10000;
 
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
-  "/api/auth/register": { limit: 5, windowMs: 60_000 },
-  "/api/auth/callback/credentials": { limit: 10, windowMs: 60_000 },
+  "/api/auth/register": { limit: 50, windowMs: 60_000 },
+  "/api/auth/callback/credentials": { limit: 50, windowMs: 60_000 },
   "/api/search": { limit: 30, windowMs: 60_000 },
   "/api/export": { limit: 10, windowMs: 60_000 },
   "/api/upload": { limit: 20, windowMs: 60_000 },
+  "/api/share": { limit: 30, windowMs: 60_000 },
 };
 
 let redisClient: Redis | null = null;
 let redisFailed = false;
+let redisRetryAt = 0;
 
 async function getRedisClient(): Promise<Redis | null> {
-  if (redisFailed) return null;
+  if (redisFailed && Date.now() < redisRetryAt) return null;
   if (redisClient) return redisClient;
 
   // Check if we can run under Node runtime (avoid importing on Edge)
-  if (typeof process !== "undefined" && process.env && typeof require !== "undefined") {
+  // @ts-expect-error EdgeRuntime is not defined in standard TS
+  if (typeof process !== "undefined" && typeof EdgeRuntime === "undefined") {
     const host = process.env.REDIS_HOST ?? "localhost";
     const port = Number(process.env.REDIS_PORT ?? 6379);
     const password = process.env.REDIS_PASSWORD;
@@ -46,12 +49,14 @@ async function getRedisClient(): Promise<Redis | null> {
       redisClient.on("error", (err: unknown) => {
         console.error("Redis rate limit client error:", err);
         redisFailed = true;
+        redisRetryAt = Date.now() + 30_000;
         redisClient = null;
       });
       return redisClient;
     } catch (e) {
       console.error("Failed to initialize Redis rate limit client:", e);
       redisFailed = true;
+      redisRetryAt = Date.now() + 30_000;
       return null;
     }
   }

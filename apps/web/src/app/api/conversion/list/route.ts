@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { requireAuth, unauthorizedResponse, isAdmin } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 
@@ -13,14 +14,14 @@ export async function GET(request: Request) {
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10)));
   const status = searchParams.get("status");
 
-  const where: Record<string, unknown> = {};
+  const where: Prisma.ConversionJobWhereInput = {};
 
   if (!isAdmin(session)) {
     where.userId = session.user.id;
   }
 
   if (status) {
-    where.status = status;
+    (where as Record<string, unknown>).status = status;
   }
 
   const [jobs, total] = await Promise.all([

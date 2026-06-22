@@ -3,18 +3,23 @@ import {
   createExportWorker,
   downloadFile,
   uploadBuffer,
-  getPresignedUrl,
   generateMarkdown,
   generateTxt,
   generateJson,
   recordFailedJob,
   closeQueueConnections,
   categorizeFailure,
+  getDriveClient,
+  ensureDriveFolder,
+  uploadToDrive,
   type ExportRequest,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
 import { startHealthServer } from "../../shared/health-server";
 import { logger } from "../../shared/logger";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 const config = loadConfig();
 
@@ -72,15 +77,63 @@ async function main() {
           outputKey = `${config.paths.exports}/${req.jobId}/export.docx`;
           break;
         }
+        case "epub": {
+          const { generateEpub } = await import("@ibn-al-azhar-docs/pipeline");
+          outputBuffer = await generateEpub(result);
+          contentType = "application/epub+zip";
+          outputKey = `${config.paths.exports}/${req.jobId}/export.epub`;
+          break;
+        }
+        case "pdf": {
+          const { generatePdf } = await import("@ibn-al-azhar-docs/pipeline");
+          outputBuffer = await generatePdf(result, req.options);
+          contentType = "application/pdf";
+          outputKey = `${config.paths.exports}/${req.jobId}/export.pdf`;
+          break;
+        }
         default:
           throw new Error(`UNSUPPORTED_FORMAT: ${req.format}`);
       }
 
-      await uploadBuffer(config, outputKey, outputBuffer, contentType);
+      let account = null;
+      if (req.options?.destination === "drive") {
+        account = await prisma.account.findFirst({
+          where: { userId: req.userId, provider: "google" },
+        });
+      }
 
-      const downloadUrl = await getPresignedUrl(config, outputKey, 3600);
+      if (account && account.access_token && account.refresh_token) {
+        const drive = getDriveClient(
+          account.access_token,
+          account.refresh_token,
+          process.env.GOOGLE_CLIENT_ID || "",
+          process.env.GOOGLE_CLIENT_SECRET || "",
+        );
+        const folderId = await ensureDriveFolder(drive);
+        const fileId = await uploadToDrive(
+          drive,
+          `export.${req.format}`,
+          contentType,
+          outputBuffer,
+          folderId,
+        );
+        outputKey = `gdrive://${fileId}`;
+      } else {
+        await uploadBuffer(config, outputKey, outputBuffer, contentType);
+      }
 
-      logger.info(`[export] Completed ${req.format} export for ${req.jobId}: ${downloadUrl}`);
+      // Update outputKeys in Document
+      const doc = await prisma.document.findUnique({ where: { id: req.jobId } });
+      if (doc) {
+        const keys = (doc.outputKeys as Record<string, string>) || {};
+        keys[req.format] = outputKey;
+        await prisma.document.update({
+          where: { id: req.jobId },
+          data: { outputKeys: keys },
+        });
+      }
+
+      logger.info(`[export] Completed ${req.format} export for ${req.jobId}`);
     } catch (error: unknown) {
       const errMessage = error instanceof Error ? error.message : String(error);
       const { category } = categorizeFailure(

@@ -42,7 +42,7 @@ export default async function DocsIndexPage({ params }: DocsIndexPageProps) {
     collection.categories.map(async (cat) => {
       const totalReadingTime = await getCategoryTotalReadingTime(cat.id, locale);
       return { ...cat, totalReadingTime };
-    })
+    }),
   );
 
   return (

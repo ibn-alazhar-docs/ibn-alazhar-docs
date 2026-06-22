@@ -17,13 +17,13 @@ export default function LocaleError({ reset }: LocaleErrorProps) {
         <Stack gap={4} className="items-center justify-center py-20 text-center">
           <Heading level={2}>خطأ / Error</Heading>
           <Text color="muted">تعذر تحميل الصفحة — Something went wrong.</Text>
-        <button
-          type="button"
-          onClick={reset}
-          className="rounded-lg bg-btn-primary px-4 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-colors"
-        >
-          إعادة المحاولة / Try again
-        </button>
+          <button
+            type="button"
+            onClick={reset}
+            className="rounded-lg bg-btn-primary px-4 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-colors"
+          >
+            إعادة المحاولة / Try again
+          </button>
         </Stack>
       </div>
     </Container>

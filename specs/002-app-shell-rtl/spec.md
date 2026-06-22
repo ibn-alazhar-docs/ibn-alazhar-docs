@@ -5,9 +5,11 @@
 > **Last Updated:** 2026-05-21
 
 ## Overview
+
 RTL-first application shell with responsive layout, navigation, and theme support.
 
 ## Requirements
+
 - [ ] RTL layout by default (Arabic)
 - [ ] Responsive sidebar navigation
 - [ ] Dark/light theme toggle

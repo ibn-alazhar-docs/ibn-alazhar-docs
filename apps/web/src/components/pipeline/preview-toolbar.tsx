@@ -17,7 +17,7 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
   }
 
   return (
-    <div className="flex items-center justify-between flex-wrap gap-3 p-4 bg-card border-b border-line">
+    <div className="sticky top-0 z-40 flex items-center justify-between flex-wrap gap-3 p-4 bg-card border-b border-line shadow-sm">
       <div className="flex items-center gap-3">
         <button
           onClick={onBack}
@@ -47,21 +47,38 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
         <span className="text-xs text-very-muted ms-2">{t("export")}</span>
         <button
           onClick={() => handleExport("md")}
+          dir="ltr"
           className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
         >
           .md
         </button>
         <button
           onClick={() => handleExport("txt")}
+          dir="ltr"
           className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
         >
           .txt
         </button>
         <button
           onClick={() => handleExport("json")}
+          dir="ltr"
           className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
         >
           .json
+        </button>
+        <button
+          onClick={() => handleExport("docx")}
+          dir="ltr"
+          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md hover:bg-primary-hover transition-colors shadow-sm"
+        >
+          .docx
+        </button>
+        <button
+          onClick={() => handleExport("epub")}
+          dir="ltr"
+          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md hover:bg-primary-hover transition-colors shadow-sm"
+        >
+          .epub
         </button>
       </div>
     </div>

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { EXPORT_FORMATS, type ExportFormat } from "@/lib/validators/share";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function validateShareAccess(token: string) {
   const share = await prisma.shareLink.findUnique({
@@ -60,24 +61,46 @@ function getContentType(format: ExportFormat): string {
       return "text/plain; charset=utf-8";
     case "json":
       return "application/json; charset=utf-8";
+    case "pdf":
+    case "searchable-pdf":
+      return "application/pdf";
     default:
       return "application/octet-stream";
   }
 }
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ token: string; format: string }> },
 ) {
+  const rateLimitResult = await checkRateLimit("/api/share", request);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+        },
+      },
+    );
+  }
+
   const { token, format } = await params;
 
   if (!EXPORT_FORMATS.includes(format as ExportFormat)) {
-    return NextResponse.json({ error: "Unsupported format" }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
+      { status: 400 },
+    );
   }
 
   const result = await validateShareAccess(token);
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json(
+      { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
+      { status: result.status },
+    );
   }
 
   const { share } = result;
@@ -86,17 +109,20 @@ export async function GET(
   try {
     const config = loadConfig();
 
-    const outputKey = `${config.paths.exports}/${share.documentId}/output.${exportFormat}`;
+    const outputKey = `${config.paths.exports}/${share.documentId}/${exportFormat === "searchable-pdf" ? "searchable.pdf" : `output.${exportFormat}`}`;
     const exists = await fileExists(config, outputKey);
 
     if (!exists) {
-      const altKey = `${config.paths.exports}/${share.documentId}/export.${exportFormat}`;
+      const altKey = `${config.paths.exports}/${share.documentId}/${exportFormat === "searchable-pdf" ? "searchable.pdf" : `export.${exportFormat}`}`;
       const altExists = await fileExists(config, altKey);
       if (!altExists) {
-        return NextResponse.json({ error: "Export not ready" }, { status: 404 });
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "Export not ready" } },
+          { status: 404 },
+        );
       }
       const buffer = await downloadFile(config, altKey);
-      const filename = `${sanitizeFilename(share.document.title)}.${exportFormat}`;
+      const filename = `${sanitizeFilename(share.document.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": getContentType(exportFormat),
@@ -106,7 +132,7 @@ export async function GET(
     }
 
     const buffer = await downloadFile(config, outputKey);
-    const filename = `${sanitizeFilename(share.document.title)}.${exportFormat}`;
+    const filename = `${sanitizeFilename(share.document.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
     return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type": getContentType(exportFormat),
@@ -115,6 +141,9 @@ export async function GET(
     });
   } catch (error: unknown) {
     logger.error(error, "[share] Export failed:");
-    return NextResponse.json({ error: "Download failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Download failed" } },
+      { status: 500 },
+    );
   }
 }

@@ -4,12 +4,7 @@ interface GeometricStarProps {
 
 export function GeometricStar({ className = "" }: GeometricStarProps) {
   return (
-    <svg
-      viewBox="0 0 100 100"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 100 100" fill="none" className={className} aria-hidden="true">
       <polygon
         points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
         stroke="currentColor"

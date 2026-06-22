@@ -15,7 +15,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     });
 
     if (!share) {
-      return NextResponse.json({ error: "Share link not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "Share link not found" } },
+        { status: 404 },
+      );
     }
 
     await prisma.shareLink.delete({
@@ -25,6 +28,9 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     return NextResponse.json({ success: true, message: "Sharing disabled" });
   } catch (error: unknown) {
     logger.error(error, "[share] Delete failed:");
-    return NextResponse.json({ error: "Failed to disable sharing" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Failed to disable sharing" } },
+      { status: 500 },
+    );
   }
 }

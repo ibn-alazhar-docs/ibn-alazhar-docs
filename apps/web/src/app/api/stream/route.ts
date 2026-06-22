@@ -49,7 +49,10 @@ export async function GET(request: Request) {
   const jobId = searchParams.get("jobId");
 
   if (!jobId) {
-    return NextResponse.json({ error: "jobId مطلوب" }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: "BAD_REQUEST", message: "jobId مطلوب" } },
+      { status: 400 },
+    );
   }
 
   const document = await prisma.document.findFirst({
@@ -57,7 +60,10 @@ export async function GET(request: Request) {
     select: { id: true },
   });
   if (!document) {
-    return NextResponse.json({ error: "غير مصرح" }, { status: 403 });
+    return NextResponse.json(
+      { error: { code: "FORBIDDEN", message: "غير مصرح" } },
+      { status: 403 },
+    );
   }
 
   const encoder = new TextEncoder();
@@ -81,8 +87,29 @@ export async function GET(request: Request) {
       sendEvent(JSON.stringify({ type: "connected", jobId }));
 
       let consecutiveCompleteChecks = 0;
+      let pollCount = 0;
+      const MAX_POLLS = 300;
+      const TIMEOUT_MS = 10 * 60 * 1000;
+
+      const timeoutId = setTimeout(() => {
+        if (!closed) {
+          sendEvent(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
+          closeStream();
+        }
+      }, TIMEOUT_MS);
 
       const interval = setInterval(async () => {
+        pollCount++;
+
+        if (pollCount >= MAX_POLLS) {
+          clearInterval(interval);
+          clearTimeout(timeoutId);
+          if (!closed) {
+            sendEvent(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
+            closeStream();
+          }
+          return;
+        }
         if (closed) {
           clearInterval(interval);
           return;
@@ -177,6 +204,7 @@ export async function GET(request: Request) {
       request.signal.addEventListener("abort", () => {
         closed = true;
         clearInterval(interval);
+        clearTimeout(timeoutId);
         controller.close();
       });
     },

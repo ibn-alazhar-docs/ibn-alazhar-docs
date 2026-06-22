@@ -231,28 +231,28 @@ describe("JOB_QUEUES constants", () => {
 });
 
 describe("JOB_TIMEOUTS constants", () => {
-  it("validation = 30000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.VALIDATION]).toBe(30_000);
+  it("validation = 60000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.VALIDATION]).toBe(60_000);
   });
 
-  it("splitting = 60000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.SPLITTING]).toBe(60_000);
+  it("splitting = 600000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.SPLITTING]).toBe(600_000);
   });
 
-  it("ocr = 1800000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.OCR]).toBe(1_800_000);
+  it("ocr = 7200000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.OCR]).toBe(7_200_000);
   });
 
-  it("cleaning = 30000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.CLEANING]).toBe(30_000);
+  it("cleaning = 180000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.CLEANING]).toBe(180_000);
   });
 
-  it("generation = 30000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.GENERATION]).toBe(30_000);
+  it("generation = 600000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.GENERATION]).toBe(600_000);
   });
 
-  it("export = 60000", () => {
-    expect(JOB_TIMEOUTS[JOB_QUEUES.EXPORT]).toBe(60_000);
+  it("export = 300000", () => {
+    expect(JOB_TIMEOUTS[JOB_QUEUES.EXPORT]).toBe(300_000);
   });
 });
 

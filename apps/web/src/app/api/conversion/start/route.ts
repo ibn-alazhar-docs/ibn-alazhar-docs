@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
+
+const startConversionSchema = z.object({
+  documentId: z.string().min(1),
+});
 
 export async function POST(request: Request) {
   try {
@@ -11,11 +16,17 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { documentId } = body;
+    const parsed = startConversionSchema.safeParse(body);
 
-    if (!documentId) {
-      return NextResponse.json({ error: "documentId مطلوب" }, { status: 400 });
+    if (!parsed.success) {
+      const firstError = parsed.error.issues[0];
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "documentId مطلوب" } },
+        { status: 400 },
+      );
     }
+
+    const { documentId } = parsed.data;
 
     // Verify document ownership — never trust client-supplied storageKey/fileName
     const document = await prisma.document.findFirst({
@@ -24,7 +35,10 @@ export async function POST(request: Request) {
     });
 
     if (!document) {
-      return NextResponse.json({ error: "المستند غير موجود" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
+        { status: 404 },
+      );
     }
 
     const { loadConfig, enqueueSplitting } = await import("@ibn-al-azhar-docs/pipeline");
@@ -53,6 +67,9 @@ export async function POST(request: Request) {
     });
   } catch (error: unknown) {
     logger.error(error, "[conversion/start] Failed:");
-    return NextResponse.json({ error: "فشل بدء التحويل" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل بدء التحويل" } },
+      { status: 500 },
+    );
   }
 }

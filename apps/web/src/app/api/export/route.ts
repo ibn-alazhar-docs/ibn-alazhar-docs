@@ -27,7 +27,6 @@ export async function POST(request: Request) {
         error: {
           code: "VALIDATION_ERROR",
           message: "Invalid data",
-          details: parsed.error.issues,
         },
       },
       { status: 400 },
@@ -123,7 +122,7 @@ export async function POST(request: Request) {
       const exportExists = await fileExists(config, exportKey);
       if (!exportExists) {
         return NextResponse.json(
-          { error: "Export not ready" },
+          { error: { code: "NOT_FOUND", message: "Export not ready" } },
           { status: 404 },
         );
       }
@@ -148,13 +147,19 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
+    const errMessage = error instanceof Error ? (error as Error).message : String(error);
     logger.error({ errMessage }, "[export] Single export failed:");
 
     if (errMessage.includes("not found") || errMessage.includes("Document not found")) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "Document not found" } },
+        { status: 404 },
+      );
     }
 
-    return NextResponse.json({ error: "Export failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Export failed" } },
+      { status: 500 },
+    );
   }
 }

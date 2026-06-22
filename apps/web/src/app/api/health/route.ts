@@ -6,7 +6,7 @@ interface HealthStatus {
   timestamp: string;
   uptime: number;
   checks: {
-    database: { status: "ok" | "error"; latencyMs?: number; error?: string };
+    database: { status: "ok" | "error"; latencyMs?: number };
     memory: { status: "ok" | "warning" | "error"; usedMB: number; limit: number };
     workers: { ocr: "ok" | "unknown"; export: "ok" | "unknown" };
   };
@@ -28,7 +28,6 @@ export async function GET(): Promise<NextResponse> {
     checks.database = {
       status: "error",
       latencyMs: Date.now() - dbStart,
-      error: e instanceof Error ? e.message : "Unknown",
     };
   }
 

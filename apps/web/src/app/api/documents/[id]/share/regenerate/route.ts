@@ -1,12 +1,7 @@
 import { NextResponse } from "next/server";
-import { randomBytes } from "crypto";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
-
-function generateToken(): string {
-  return randomBytes(32).toString("base64url");
-}
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);
@@ -15,31 +10,8 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
 
   try {
-    const document = await prisma.document.findFirst({
-      where: ownedWhere({ id, deletedAt: null }, session),
-    });
-
-    if (!document) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
-    }
-
-    const existing = await prisma.shareLink.findFirst({
-      where: ownedWhere({ documentId: id }, session),
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { error: "No share link exists" },
-        { status: 404 },
-      );
-    }
-
-    const newToken = generateToken();
-
-    const updated = await prisma.shareLink.update({
-      where: { id: existing.id },
-      data: { token: newToken },
-    });
+    const updated = await documentUseCases.regenerateShareLink(id, session.user.id);
+    const document = await documentUseCases.getDocumentById(id, session.user.id);
 
     const url = `/share/${updated.token}`;
 
@@ -53,7 +25,22 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       message: "Link regenerated. Old link is now invalid.",
     });
   } catch (error: unknown) {
+    if ((error as Error).message === "NOT_FOUND") {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "Document not found" } },
+        { status: 404 },
+      );
+    }
+    if ((error as Error).message === "NO_SHARE_LINK") {
+      return NextResponse.json(
+        { error: { code: "NOT_FOUND", message: "No share link exists" } },
+        { status: 404 },
+      );
+    }
     logger.error(error, "[share] Regenerate failed:");
-    return NextResponse.json({ error: "Failed to regenerate link" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Failed to regenerate link" } },
+      { status: 500 },
+    );
   }
 }

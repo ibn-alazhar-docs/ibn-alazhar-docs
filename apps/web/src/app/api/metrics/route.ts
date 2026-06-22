@@ -25,8 +25,8 @@ interface Metrics {
 
 async function getDatabaseMetrics(): Promise<Metrics["database"]> {
   const [users, documents, folders, tags, shareLinks] = await Promise.all([
-    prisma.user.count(),
-    prisma.document.count(),
+    prisma.user.count({ where: { deletedAt: null } }),
+    prisma.document.count({ where: { deletedAt: null } }),
     prisma.folder.count(),
     prisma.tag.count(),
     prisma.shareLink.count(),
@@ -34,10 +34,39 @@ async function getDatabaseMetrics(): Promise<Metrics["database"]> {
   return { users, documents, folders, tags, shareLinks };
 }
 
+async function getQueueLength(queueName: string, redis: RedisClient): Promise<number> {
+  const waiting = await redis.llen(`${queueName}:wait`);
+  const active = await redis.llen(`${queueName}:active`);
+  const delayed = await redis.zcard(`${queueName}:delayed`);
+  return waiting + active + delayed;
+}
+
+interface RedisClient {
+  llen(key: string): Promise<number>;
+  zcard(key: string): Promise<number>;
+  quit(): Promise<void>;
+}
+
 async function getWorkerMetrics(): Promise<Metrics["workers"]> {
-  // Worker queue depth requires Redis client (ioredis) which is only in worker packages.
-  // Return -1 to indicate "unknown" rather than hardcoded zeros.
-  return { ocrQueue: -1, exportQueue: -1 };
+  try {
+    const { default: IORedis } = await import("ioredis");
+    const redis = new IORedis(process.env.REDIS_URL || "redis://localhost:6379", {
+      maxRetriesPerRequest: 1,
+      connectTimeout: 2000,
+      lazyConnect: true,
+    });
+    await redis.connect();
+
+    const [ocrQueue, exportQueue] = await Promise.all([
+      getQueueLength("pipeline-ocr", redis as unknown as RedisClient),
+      getQueueLength("pipeline-export", redis as unknown as RedisClient),
+    ]);
+
+    await redis.quit();
+    return { ocrQueue, exportQueue };
+  } catch {
+    return { ocrQueue: -1, exportQueue: -1 };
+  }
 }
 
 export async function GET(): Promise<NextResponse> {
@@ -61,8 +90,10 @@ export async function GET(): Promise<NextResponse> {
     };
 
     return NextResponse.json(metrics);
-  } catch (error) {
-    const message = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Failed to collect metrics" } },
+      { status: 500 },
+    );
   }
 }

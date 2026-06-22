@@ -10,7 +10,7 @@ import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { useState, useTransition } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 
 interface SettingsContentProps {
   user: {
@@ -30,6 +30,8 @@ export function SettingsContent({ user }: SettingsContentProps) {
   const pathname = usePathname();
   const { theme, toggle: toggleTheme } = useTheme();
   const [isPending, startTransition] = useTransition();
+
+  const { update } = useSession();
 
   const [name, setName] = useState(user.name || "");
   const [saving, setSaving] = useState(false);
@@ -59,6 +61,8 @@ export function SettingsContent({ user }: SettingsContentProps) {
         return;
       }
       setSaved(true);
+      await update({ name: name.trim() });
+      router.refresh();
       setTimeout(() => setSaved(false), 2000);
     } catch {
       setError(t("error"));
@@ -97,9 +101,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
           )}
 
           {error && (
-            <div className="rounded-xl bg-[var(--danger-bg)] p-4 text-[var(--danger)]">
-              {error}
-            </div>
+            <div className="rounded-xl bg-[var(--danger-bg)] p-4 text-[var(--danger)]">{error}</div>
           )}
 
           {/* Profile Section */}
@@ -153,7 +155,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
               <button
                 onClick={() => handleLanguageSwitch("ar")}
                 disabled={isPending || locale === "ar"}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
                   locale === "ar"
                     ? "bg-btn-primary text-btn-primary-text"
                     : "border border-line bg-page text-primary-color hover:bg-hover"
@@ -164,7 +166,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
               <button
                 onClick={() => handleLanguageSwitch("en")}
                 disabled={isPending || locale === "en"}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
                   locale === "en"
                     ? "bg-btn-primary text-btn-primary-text"
                     : "border border-line bg-page text-primary-color hover:bg-hover"
@@ -189,7 +191,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
                   onClick={() => {
                     if (theme !== t_) toggleTheme();
                   }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
                     theme === t_
                       ? "bg-btn-primary text-btn-primary-text"
                       : "border border-line bg-page text-primary-color hover:bg-hover"
@@ -213,7 +215,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
             {!showDeleteConfirm ? (
               <button
                 onClick={() => setShowDeleteConfirm(true)}
-                className="mt-4 rounded-lg border border-[var(--danger)]/30 bg-card px-4 py-2 text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors"
+                className="mt-4 rounded-lg border border-[var(--danger)]/30 bg-card px-4 py-2 text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
               >
                 {t("deleteAccount")}
               </button>
@@ -225,14 +227,14 @@ export function SettingsContent({ user }: SettingsContentProps) {
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deleting}
-                  className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50"
+                  className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
                 >
                   {deleting ? "..." : tCommon("confirm")}
                 </button>
                 <button
                   onClick={() => setShowDeleteConfirm(false)}
                   disabled={deleting}
-                  className="rounded-lg border border-line bg-page px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover transition-colors"
+                  className="rounded-lg border border-line bg-page px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
                 >
                   {tCommon("cancel")}
                 </button>
@@ -245,7 +247,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
             <button
               onClick={handleSave}
               disabled={saving || name.trim() === (user.name || "")}
-              className="rounded-lg bg-btn-primary px-6 py-2.5 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-all disabled:opacity-50"
+              className="rounded-lg bg-btn-primary px-6 py-2.5 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
             >
               {saving ? "..." : tCommon("save")}
             </button>

@@ -12,9 +12,7 @@ export async function ContinuationLink({ doc, locale }: ContinuationLinkProps) {
 
   return (
     <div className="continuation-bar">
-      <span className="text-xs font-medium text-gold-500">
-        {t("journeyNext")}
-      </span>
+      <span className="text-xs font-medium text-gold-500">{t("journeyNext")}</span>
       <a
         href={`/${locale}/docs/${doc.category}/${doc.slug}`}
         className="font-semibold text-gold-700 underline underline-offset-2 hover:text-gold-800"

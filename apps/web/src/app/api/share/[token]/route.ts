@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
+import { checkRateLimit } from "@/lib/rate-limit";
 
 async function validateShareAccess(token: string) {
   const share = await prisma.shareLink.findUnique({
@@ -43,12 +44,28 @@ async function validateShareAccess(token: string) {
   return { share };
 }
 
-export async function GET(_request: Request, { params }: { params: Promise<{ token: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
+  const rateLimitResult = await checkRateLimit("/api/share", request);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+        },
+      },
+    );
+  }
+
   const { token } = await params;
 
   const result = await validateShareAccess(token);
   if ("error" in result) {
-    return NextResponse.json({ error: result.error }, { status: result.status });
+    return NextResponse.json(
+      { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
+      { status: result.status },
+    );
   }
 
   const { share } = result;
@@ -117,6 +134,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tok
     });
   } catch (error: unknown) {
     logger.error(error, "[share] Access failed:");
-    return NextResponse.json({ error: "Failed to load document" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Failed to load document" } },
+      { status: 500 },
+    );
   }
 }

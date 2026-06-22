@@ -208,7 +208,19 @@ export default async function SharePage({ params }: SharePageProps) {
         <div className="min-h-screen flex items-center justify-center bg-page">
           <div className="text-center max-w-md mx-auto p-8">
             <div className="mb-4 text-muted-color">
-              <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+              <svg
+                className="w-16 h-16 mx-auto"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+                />
+              </svg>
             </div>
             <h1 className="text-xl font-bold text-primary-color mb-2">{t("expired")}</h1>
             <p className="text-muted-color text-sm">{t("requestNewLinkFromOwner")}</p>
@@ -221,7 +233,19 @@ export default async function SharePage({ params }: SharePageProps) {
       <div className="min-h-screen flex items-center justify-center bg-page">
         <div className="text-center max-w-md mx-auto p-8">
           <div className="mb-4 text-muted-color">
-            <svg className="w-16 h-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+            <svg
+              className="w-16 h-16 mx-auto"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"
+              />
+            </svg>
           </div>
           <h1 className="text-xl font-bold text-primary-color mb-2">{t(result.error as string)}</h1>
           <p className="text-muted-color text-sm">{t("requestNewLinkFromOwner")}</p>
@@ -306,7 +330,7 @@ export default async function SharePage({ params }: SharePageProps) {
       </main>
 
       <footer className="border-t border-line py-4 text-center text-muted-color text-sm">
-        Ibn Al-Azhar
+        Ibn Al-Azhar Docs
       </footer>
     </div>
   );

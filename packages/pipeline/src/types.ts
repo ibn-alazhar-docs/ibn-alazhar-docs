@@ -1,4 +1,4 @@
-export type OcrEngineType = "google" | "surya" | "tesseract";
+export type OcrEngineType = "google" | "surya" | "tesseract" | "gemini";
 
 export interface OcrPageResult {
   number: number;
@@ -31,6 +31,9 @@ export interface PipelineConfig {
   google: {
     serviceAccountEmail: string;
     privateKey: string;
+  };
+  gemini: {
+    apiKey: string;
   };
   ocr: {
     dpi: number;
@@ -76,10 +79,16 @@ export type JobStage =
 export interface ExportRequest {
   jobId: string;
   documentId: string;
-  format: "md" | "txt" | "docx" | "json";
+  userId: string;
+  format: "md" | "txt" | "docx" | "json" | "pdf" | "epub";
   textKey: string;
   outputKey: string;
   pageCount?: number;
+  options?: {
+    fontSize?: number;
+    watermark?: string;
+    destination?: string;
+  };
 }
 
 export interface CleanedText {
@@ -129,12 +138,12 @@ export const JOB_QUEUES = {
 } as const;
 
 export const JOB_TIMEOUTS: Record<string, number> = {
-  [JOB_QUEUES.VALIDATION]: 30_000,
-  [JOB_QUEUES.SPLITTING]: 60_000,
-  [JOB_QUEUES.OCR]: 1_800_000,
-  [JOB_QUEUES.CLEANING]: 30_000,
-  [JOB_QUEUES.GENERATION]: 30_000,
-  [JOB_QUEUES.EXPORT]: 60_000,
+  [JOB_QUEUES.VALIDATION]: 60_000,
+  [JOB_QUEUES.SPLITTING]: 600_000, // 10 minutes
+  [JOB_QUEUES.OCR]: 7_200_000, // 2 hours
+  [JOB_QUEUES.CLEANING]: 180_000,
+  [JOB_QUEUES.GENERATION]: 600_000,
+  [JOB_QUEUES.EXPORT]: 300_000,
 };
 
 export const JOB_CONCURRENCY: Record<string, number> = {

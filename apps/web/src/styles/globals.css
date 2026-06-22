@@ -1,9 +1,14 @@
 @import "tailwindcss";
+button, [role="button"] {
+  cursor: pointer;
+}
+/* trigger rebuild */
 @import "./brand.css";
 @import "./motion.css";
 @import "./reading.css";
 @import "./discovery.css";
 @import "./landing.css";
+@import "./view-transitions.css";
 
 @layer base {
   html {
@@ -46,7 +51,7 @@
   }
 
   ::selection {
-    background-color: rgba(196, 144, 40, 0.18);
+    background-color: hsla(41, 96%, 40%, 0.25);
     color: var(--text-primary);
   }
 
@@ -87,25 +92,44 @@
   }
 
   .glass {
-    background: var(--glass-bg);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    background: linear-gradient(
+      135deg,
+      var(--glass-bg),
+      color-mix(in srgb, var(--glass-bg) 60%, transparent)
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
 
   .glass-strong {
-    background: color-mix(in srgb, var(--glass-bg) 85%, transparent);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--glass-bg) 120%, var(--surface)),
+      var(--glass-bg)
+    );
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
     border: 1px solid var(--glass-border);
     box-shadow: var(--glass-shadow);
   }
 
   .glass-header {
-    background: color-mix(in srgb, var(--surface) 75%, transparent);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--surface) 95%, transparent),
+      color-mix(in srgb, var(--surface) 85%, transparent)
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, hsl(142 76% 36%), hsl(41 96% 40%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 }

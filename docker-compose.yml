@@ -1,52 +1,190 @@
 name: ibn-al-azhar-docs
 
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+x-security: &default-security
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+x-readonly: &readonly-service
+  read_only: true
+  tmpfs:
+    - /tmp
+    - /app/apps/web/.next/cache
+
+x-common-env: &common-env
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: "1"
+  DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/ibn_docs?schema=public&connection_limit=25
+  DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/ibn_docs?schema=public
+  REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
+  S3_ENDPOINT: http://minio:9000
+  S3_REGION: us-east-1
+  S3_BUCKET: ibn-al-azhar-docs
+  S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY must be set}
+  S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY must be set}
+
 services:
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+    volumes:
+      - ./infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    networks:
+      - frontend
+    depends_on:
+      web:
+        condition: service_started
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
   postgres:
     image: postgres:16-alpine
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
     environment:
       POSTGRES_DB: ibn_docs
       POSTGRES_USER: ibn_docs
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ibn_docs_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
     volumes:
       - pgdata:/var/lib/postgresql/data
       - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./infrastructure/scripts/backup-job.sh:/scripts/backup-job.sh:ro
+    networks:
+      - backend
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ibn_docs"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.backup-postgres.schedule: "@daily"
+      ofelia.job-exec.backup-postgres.command: "sh /scripts/backup-job.sh postgres"
+      ofelia.job-exec.backup-verify.schedule: "@weekly"
+      ofelia.job-exec.backup-verify.command: "sh /scripts/backup-job.sh verify"
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  pgbouncer:
+    image: pgbouncer/pgbouncer:latest
+    ports:
+      - "127.0.0.1:6432:6432"
+    environment:
+      DATABASES_HOST: postgres
+      DATABASES_PORT: "5432"
+      DATABASES_DBNAME: ibn_docs
+      DATABASES_USER: ibn_docs
+      DATABASES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGBOUNCER_AUTH_TYPE: scram-sha-256
+      PGBOUNCER_POOL_MODE: transaction
+      PGBOUNCER_DEFAULT_POOL_SIZE: "25"
+      PGBOUNCER_MAX_CLIENT_CONN: "200"
+      PGBOUNCER_MIN_POOL_SIZE: "5"
+      PGBOUNCER_LISTEN_ADDR: "0.0.0.0"
+      PGBOUNCER_LISTEN_PORT: "6432"
+      PGBOUNCER_LOG_CONNECTIONS: "0"
+      PGBOUNCER_LOG_DISCONNECTIONS: "0"
+      PGBOUNCER_IGNORE_STARTUP_PARAMETERS: "extra_float_digits,search_path"
+      PGBOUNCER_LOGFILE: /tmp/pgbouncer.log
+      QUIET: "yes"
+    extra_hosts:
+      - "postgres:172.20.0.2"
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "/opt/pgbouncer/pgbouncer", "--version"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
 
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
-    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_password}
+      - "127.0.0.1:6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    environment:
+      REDISCLI_AUTH: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
     volumes:
       - redisdata:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-redis_password}", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
 
   minio:
-    image: minio/minio:latest
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
     ports:
-      - "9000:9000"
-      - "9001:9001"
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
     environment:
-      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:-minioadmin}
-      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:-minioadmin}
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY must be set}
     command: server /data --console-address ":9001"
     volumes:
       - miniodata:/data
+      - ./infrastructure/scripts/backup-job.sh:/scripts/backup-job.sh:ro
+    networks:
+      - backend
     healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
       interval: 10s
       timeout: 10s
       retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    labels:
+      ofelia.enabled: "true"
+      ofelia.job-exec.backup-minio.schedule: "@daily"
+      ofelia.job-exec.backup-minio.command: "sh /scripts/backup-job.sh minio"
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
 
   db-migrate:
     build:
@@ -54,39 +192,44 @@ services:
       dockerfile: Dockerfile
       target: builder
     working_dir: /app
-    command: ["sh", "-c", "npx prisma migrate deploy && npx tsx prisma/seed.ts"]
+    command:
+      [
+        "sh",
+        "-c",
+        "npx prisma migrate deploy && (test -f prisma/seed.ts && npx prisma db seed || true)",
+      ]
     environment:
-      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
+      <<: *common-env
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@ibnalazhar.app}
-      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Admin@123456}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?ADMIN_PASSWORD must be set}
+    networks:
+      - backend
     depends_on:
       postgres:
         condition: service_healthy
+      pgbouncer:
+        condition: service_healthy
+    <<: *default-security
 
   web:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
-      NODE_ENV: production
-      NEXT_TELEMETRY_DISABLED: "1"
-      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
-      S3_ENDPOINT: http://minio:9000
-      S3_REGION: us-east-1
-      S3_BUCKET: ibn-al-azhar-docs
-      S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
-      S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
-      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set in .env}
+      <<: *common-env
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set}
       AUTH_TRUST_HOST: "true"
-      APP_URL: http://localhost:3000
+      APP_URL: ${APP_URL:-http://localhost:3000}
       APP_NAME: Ibn Al-Azhar Docs
+    networks:
+      - backend
+      - frontend
     depends_on:
       postgres:
+        condition: service_healthy
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -95,25 +238,35 @@ services:
       db-migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    logging: *default-logging
+    <<: [*default-security, *readonly-service]
+    healthcheck:
+      test:
+        ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
 
   ocr-worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
+      target: ocr-runner
     environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
-      S3_ENDPOINT: http://minio:9000
-      S3_REGION: us-east-1
-      S3_BUCKET: ibn-al-azhar-docs
-      S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
-      S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      <<: *common-env
       OCR_PROVIDER: tesseract
-      OCR_PROVIDERS: tesseract
+    networks:
+      - backend
     depends_on:
       postgres:
+        condition: service_healthy
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -122,24 +275,35 @@ services:
       db-migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    logging: *default-logging
+    <<: *default-security
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
 
   export-worker:
     build:
       context: .
       dockerfile: Dockerfile.worker
-    command: ["npx", "tsx", "workers/export-worker/src/index.ts"]
+      target: export-runner
     environment:
-      NODE_ENV: production
-      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:-ibn_docs_password}@postgres:5432/ibn_docs?schema=public
-      REDIS_URL: redis://:${REDIS_PASSWORD:-redis_password}@redis:6379
-      S3_ENDPOINT: http://minio:9000
-      S3_REGION: us-east-1
-      S3_BUCKET: ibn-al-azhar-docs
-      S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:-minioadmin}
-      S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:-minioadmin}
+      <<: *common-env
+    networks:
+      - backend
     depends_on:
       postgres:
+        condition: service_healthy
+      pgbouncer:
         condition: service_healthy
       redis:
         condition: service_healthy
@@ -148,8 +312,114 @@ services:
       db-migrate:
         condition: service_completed_successfully
     restart: unless-stopped
+    logging: *default-logging
+    <<: *default-security
+    tmpfs:
+      - /tmp
+    healthcheck:
+      test: ["CMD-SHELL", "kill -0 1 2>/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  ofelia:
+    image: mcuadros/ofelia:latest
+    container_name: ibn-ofelia
+    command: daemon --docker
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.2"
+          memory: 64M
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: ibn-cadvisor
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 128M
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: ibn-prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: ibn-grafana
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-grafana_admin}
+      GF_INSTALL_PLUGINS: ""
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
 
 volumes:
   pgdata:
   redisdata:
   miniodata:
+  caddydata:
+  caddyconfig:
+  prometheusdata:
+  grafanadata:
+
+networks:
+  backend:
+    internal: true
+  frontend:

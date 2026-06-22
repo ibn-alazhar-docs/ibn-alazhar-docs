@@ -1,3 +1,4 @@
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import { drive_v3 } from "@googleapis/drive";
 import { execFile } from "child_process";
 import { mkdtemp, writeFile, unlink, rm } from "fs/promises";
@@ -20,7 +21,7 @@ export interface OcrProvider {
   ): Promise<OcrEngineResult>;
   extractPages(
     config: PipelineConfig,
-    pageImages: Buffer[],
+    pageGetters: (() => Promise<Buffer>)[],
     fileName: string,
   ): Promise<OcrEngineResult>;
 }
@@ -42,6 +43,7 @@ async function getDriveClient(config: PipelineConfig): Promise<drive_v3.Drive> {
       key: config.google.privateKey,
       scopes: ["https://www.googleapis.com/auth/drive.file"],
     });
+    // @ts-expect-error - Type mismatch between google-auth-library and googleapis
     driveClient = (await import("@googleapis/drive")).drive({ version: "v3", auth });
     lastGoogleEmail = config.google.serviceAccountEmail;
     lastGooglePrivateKey = config.google.privateKey;
@@ -156,14 +158,14 @@ export class GoogleDriveOcrProvider implements OcrProvider {
 
   async extractPages(
     config: PipelineConfig,
-    pageImages: Buffer[],
+    pageGetters: (() => Promise<Buffer>)[],
     fileName: string,
   ): Promise<OcrEngineResult> {
     const drv = await getDriveClient(config);
     const allPages: { number: number; text: string }[] = [];
     const errors: { page: number; error: string }[] = [];
 
-    for (let i = 0; i < pageImages.length; i++) {
+    for (let i = 0; i < pageGetters.length; i++) {
       let fileId: string | null = null;
       const pageNum = i + 1;
 
@@ -175,7 +177,7 @@ export class GoogleDriveOcrProvider implements OcrProvider {
           },
           media: {
             mimeType: "image/png",
-            body: pageImages[i]!,
+            body: pageGetters[i]!,
           },
           fields: "id",
         });
@@ -293,20 +295,25 @@ export class SuryaOcrProvider implements OcrProvider {
 
     // Surya requires page images — split PDF first
     const { splitPdfPages } = await import("./ocr");
-    let pageImages: Buffer[];
+    let splitResult;
     try {
-      const result = await splitPdfPages(fileBuffer, config.ocr.dpi);
-      pageImages = result.pages;
+      splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi);
     } catch (err) {
       throw new Error(`SURYA_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`);
     }
 
-    return this.extractPages(config, pageImages, fileName);
+    const { readFile, rm } = await import("fs/promises");
+    try {
+      const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
+      return await this.extractPages(config, pageGetters, fileName);
+    } finally {
+      await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
+    }
   }
 
   async extractPages(
     config: PipelineConfig,
-    pageImages: Buffer[],
+    pageGetters: (() => Promise<Buffer>)[],
     fileName: string,
   ): Promise<OcrEngineResult> {
     const available = await this.isAvailable(config);
@@ -318,10 +325,11 @@ export class SuryaOcrProvider implements OcrProvider {
     const imagePaths: string[] = [];
 
     try {
-      for (let i = 0; i < pageImages.length; i++) {
+      for (let i = 0; i < pageGetters.length; i++) {
         const pageNum = i + 1;
         const imagePath = join(tempDir, `page_${pageNum}.png`);
-        await writeFile(imagePath, pageImages[i]!);
+        const pageBuf = await pageGetters[i]!();
+        await writeFile(imagePath, pageBuf);
         imagePaths.push(imagePath);
       }
 
@@ -408,8 +416,10 @@ for start in range(0, total, BATCH_SIZE):
     valid_imgs = [v[1] for v in valid]
 
     try:
+        lang_list = [["ar"] if "${_language}" == "ar" else ["en"]] * len(valid_imgs)
         ocr_results = rec_predictor(
             images=valid_imgs,
+            langs=lang_list,
             task_names=["ocr_with_boxes"] * len(valid_imgs),
             det_predictor=det_predictor,
             sort_lines=True,
@@ -502,6 +512,141 @@ export function createOcrProvider(type: OcrEngineType): OcrProvider {
       return new SuryaOcrProvider();
     case "tesseract":
       return new TesseractOcrProvider();
+    case "gemini":
+      return new GeminiOcrProvider();
+  }
+}
+
+export class GeminiOcrProvider implements OcrProvider {
+  readonly name = "Gemini 1.5 Flash OCR";
+  readonly type = "gemini" as OcrEngineType;
+
+  isAvailable(config: PipelineConfig): boolean {
+    return !!config.gemini?.apiKey;
+  }
+
+  async extractText(
+    config: PipelineConfig,
+    fileBuffer: Buffer,
+    fileName: string,
+    mimeType: string,
+  ): Promise<OcrEngineResult> {
+    if (!config.gemini?.apiKey) {
+      throw new Error("Gemini API Key is missing");
+    }
+
+    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const prompt = `You are an expert Arabic OCR and document layout analysis system.
+Extract all text exactly as it appears in this document.
+Maintain the exact structure and layout of the original text.
+Preserve all tables using Markdown format perfectly.
+Return ONLY the markdown text, without any conversational prefixes.`;
+
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: fileBuffer.toString("base64"),
+          mimeType,
+        },
+      },
+    ]);
+
+    const text = result.response.text();
+    return {
+      text: text,
+      pages: [{ number: 1, text, confidence: 1.0 }],
+      confidence: 1.0,
+      engine: "gemini",
+    };
+  }
+
+  async extractPages(
+    config: PipelineConfig,
+    pageGetters: (() => Promise<Buffer>)[],
+    _fileName: string,
+  ): Promise<OcrEngineResult> {
+    if (!config.gemini?.apiKey) {
+      throw new Error("Gemini API Key is missing");
+    }
+
+    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    const BATCH_SIZE = 10;
+    const batchPrompt = `You are an expert Arabic OCR and document layout analysis system.
+I am providing you with multiple pages from a document.
+Extract all text exactly as it appears in this document.
+Maintain the exact structure and layout of the original text.
+Preserve all tables using Markdown format perfectly.
+IMPORTANT: If the page contains footnotes or marginalia (الهوامش والحواشي السفلية), you MUST extract them accurately, preserve their reference numbers, and place them at the bottom of the extracted page text separated by a horizontal rule "---".
+Return ONLY the markdown text, without any conversational prefixes.
+IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this separator on a new line: "===PAGE_BREAK==="`;
+    const pages: OcrPageResult[] = [];
+    let fullText = "";
+
+    for (let i = 0; i < pageGetters.length; i += BATCH_SIZE) {
+      const batchGetters = pageGetters.slice(i, i + BATCH_SIZE);
+      try {
+        // eslint-disable-next-line no-console
+        console.log(
+          `[gemini] Processing batch pages ${i + 1} to ${i + batchGetters.length} of ${pageGetters.length}`,
+        );
+
+        const parts: Array<string | { inlineData: { data: string; mimeType: string } }> = [
+          batchPrompt,
+        ];
+        const batchImages = await Promise.all(batchGetters.map((get) => get()));
+        for (const imgBuf of batchImages) {
+          parts.push({
+            inlineData: {
+              data: imgBuf!.toString("base64"),
+              mimeType: "image/png",
+            },
+          });
+        }
+
+        const result = await model.generateContent(parts);
+        const text = result.response.text();
+
+        // Split text by the separator.
+        const pageTexts = text.split("===PAGE_BREAK===").map((t) => t.trim());
+
+        for (let j = 0; j < batchGetters.length; j++) {
+          const pageNum = i + j + 1;
+          const pageText = pageTexts[j] || "";
+          pages.push({ number: pageNum, text: pageText, confidence: 1.0 });
+          fullText += pageText + "\n\n";
+        }
+
+        // Sleep for 4 seconds to avoid hitting the 15 RPM limit on fast batches
+        if (i + BATCH_SIZE < pageGetters.length) {
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+        }
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : String(err);
+        // eslint-disable-next-line no-console
+        console.warn(
+          `[gemini] Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`,
+        );
+        // Add empty pages for the failed batch
+        for (let j = 0; j < batchGetters.length; j++) {
+          pages.push({ number: i + j + 1, text: "", confidence: 0.0 });
+        }
+      }
+    }
+
+    const confidence =
+      pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+
+    return {
+      text: fullText.trim(),
+      pages,
+      confidence,
+      engine: "gemini",
+    };
   }
 }
 
@@ -553,45 +698,64 @@ export class TesseractOcrProvider implements OcrProvider {
     _mimeType: string,
   ): Promise<OcrEngineResult> {
     const { splitPdfPages } = await import("./ocr");
-    let pageImages: Buffer[];
+    let splitResult;
     try {
-      const result = await splitPdfPages(fileBuffer, config.ocr.dpi);
-      pageImages = result.pages;
+      splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi);
     } catch (err) {
       throw new Error(
         `TESSERACT_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
-    return this.extractPages(config, pageImages, fileName);
+    const { readFile, rm } = await import("fs/promises");
+    try {
+      const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
+      return await this.extractPages(config, pageGetters, fileName);
+    } finally {
+      await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
+    }
   }
 
   async extractPages(
     config: PipelineConfig,
-    pageImages: Buffer[],
+    pageGetters: (() => Promise<Buffer>)[],
     _fileName: string,
   ): Promise<OcrEngineResult> {
     const tempDir = await mkdtemp(join(tmpdir(), "tesseract-ocr-"));
     const imagePaths: string[] = [];
 
     try {
-      for (let i = 0; i < pageImages.length; i++) {
+      for (let i = 0; i < pageGetters.length; i++) {
         const imagePath = join(tempDir, `page_${i + 1}.png`);
-        await writeFile(imagePath, pageImages[i]!);
+        const pageBuf = await pageGetters[i]!();
+        await writeFile(imagePath, pageBuf);
         imagePaths.push(imagePath);
       }
 
-      const lang = config.ocr.language === "ar" ? "ara+eng" : "eng";
+      const lang = config.ocr.language === "ar" ? "ara" : "eng";
 
       const script = `
 import json, sys
 import pytesseract
 from PIL import Image
+import cv2
+import numpy as np
 
-paths = ${JSON.stringify(imagePaths)}
+paths = [] # To be replaced
 results = []
 for i, path in enumerate(paths):
     try:
-        img = Image.open(path)
+        # Load via OpenCV for advanced preprocessing
+        img_cv = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
+        
+        # 1. Binarization using Otsu's thresholding (best for documents, preserves diacritics)
+        _, thresh = cv2.threshold(img_cv, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        
+        # 2. Denoise the binary image (removes dots/specs from old paper)
+        # disabled fastNlMeansDenoising as it destroys Arabic Tashkeel (diacritics)
+        
+        # Convert back to PIL for pytesseract
+        img = Image.fromarray(thresh)
+        
         text = pytesseract.image_to_string(img, lang="${lang}")
         conf_data = pytesseract.image_to_data(img, lang="${lang}", output_type=pytesseract.Output.DICT)
         confs = [float(c) for c in conf_data["conf"] if float(c) > 0]
@@ -605,36 +769,48 @@ for i, path in enumerate(paths):
 print(json.dumps(results))
 `;
 
-      const allResults = await new Promise<{ text: string; confidence: number }[]>(
-        (resolve, reject) => {
-          const python = this.getPythonCommand();
-          const proc = execFile(
-            python,
-            ["-c", script],
-            {
-              timeout: 300_000,
-              maxBuffer: 50 * 1024 * 1024,
-              env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUNBUFFERED: "1" },
-            },
-            (err, stdout, stderr) => {
-              if (err) {
-                reject(
-                  new Error(
-                    `TESSERACT_FAILED: ${err.message}\nSTDERR: ${stderr?.slice(-2000) ?? ""}`,
-                  ),
-                );
-                return;
-              }
-              try {
-                resolve(JSON.parse(stdout.trim()));
-              } catch {
-                reject(new Error(`TESSERACT_PARSE_FAILED: stdout length ${stdout.length}`));
-              }
-            },
-          );
-          proc.on("error", reject);
-        },
-      );
+      const allResults: { text: string; confidence: number }[] = [];
+      const BATCH_SIZE = 10;
+
+      for (let i = 0; i < imagePaths.length; i += BATCH_SIZE) {
+        const batchPaths = imagePaths.slice(i, i + BATCH_SIZE);
+        const batchScript = script.replace(
+          "paths = [] # To be replaced",
+          `paths = ${JSON.stringify(batchPaths)}`,
+        );
+
+        const batchResults = await new Promise<{ text: string; confidence: number }[]>(
+          (resolve, reject) => {
+            const python = this.getPythonCommand();
+            const proc = execFile(
+              python,
+              ["-c", batchScript],
+              {
+                timeout: 300_000, // 5 mins per batch of 10
+                maxBuffer: 50 * 1024 * 1024,
+                env: { ...process.env, PYTHONIOENCODING: "utf-8", PYTHONUNBUFFERED: "1" },
+              },
+              (err, stdout, stderr) => {
+                if (err) {
+                  reject(
+                    new Error(
+                      `TESSERACT_FAILED: ${err.message}\nSTDERR: ${stderr?.slice(-2000) ?? ""}`,
+                    ),
+                  );
+                  return;
+                }
+                try {
+                  resolve(JSON.parse(stdout.trim()));
+                } catch {
+                  reject(new Error(`TESSERACT_PARSE_FAILED: stdout length ${stdout.length}`));
+                }
+              },
+            );
+            proc.on("error", reject);
+          },
+        );
+        allResults.push(...batchResults);
+      }
 
       const pages: OcrPageResult[] = allResults.map((r, i) => ({
         number: i + 1,
@@ -710,7 +886,7 @@ export class OcrManager {
 
   async extractPages(
     config: PipelineConfig,
-    pageImages: Buffer[],
+    pageGetters: (() => Promise<Buffer>)[],
     fileName: string,
   ): Promise<OcrEngineResult> {
     const errors: { provider: string; error: string }[] = [];
@@ -723,7 +899,7 @@ export class OcrManager {
       }
 
       try {
-        const result = await provider.extractPages(config, pageImages, fileName);
+        const result = await provider.extractPages(config, pageGetters, fileName);
         if (errors.length > 0) {
           console.warn(
             `[ocr-manager] ${provider.name} succeeded after ${errors.length} failure(s)`,

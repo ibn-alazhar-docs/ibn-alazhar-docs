@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
+import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
 
 function contentDispositionHeader(filename: string): string {
   const asciiSafe =
@@ -28,61 +28,62 @@ export async function GET(
 
   const { id, format } = await params;
 
-  const validFormats = ["md", "txt", "json", "docx"] as const;
-  if (!validFormats.includes(format as "md" | "txt" | "json" | "docx")) {
-    return NextResponse.json({ error: "Unsupported format" }, { status: 400 });
-  }
-
-  // Verify document ownership
-  const document = await prisma.document.findFirst({
-    where: ownedWhere({ id, deletedAt: null }, session),
-  });
-
-  if (!document) {
-    return NextResponse.json({ error: "Document not found" }, { status: 404 });
+  const validFormats = ["md", "txt", "json", "docx", "epub", "pdf", "searchable-pdf"] as const;
+  if (
+    !validFormats.includes(format as "md" | "txt" | "json" | "docx" | "epub" | "pdf" | "searchable-pdf")
+  ) {
+    return NextResponse.json(
+      { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
+      { status: 400 },
+    );
   }
 
   try {
-    const { loadConfig, downloadFile, fileExists } = await import("@ibn-al-azhar-docs/pipeline");
+    const { buffer, document } = await exportDocumentUseCase.execute({
+      id,
+      format,
+      userId: session.user.id,
+    });
 
-    const config = loadConfig();
-    const outputKey = `${config.paths.exports}/${id}/output.${format}`;
-
-    const exists = await fileExists(config, outputKey);
-    if (!exists) {
-      // Try export-specific key
-      const exportKey = `${config.paths.exports}/${id}/export.${format}`;
-      const exportExists = await fileExists(config, exportKey);
-      if (!exportExists) {
-        return NextResponse.json(
-          { error: "Export not ready" },
-          { status: 404 },
-        );
-      }
-      const buffer = await downloadFile(config, exportKey);
-      return new Response(new Uint8Array(buffer), {
-        headers: {
-          "Content-Type":
-            format === "json"
-              ? "application/json"
-              : format === "md"
-                ? "text/markdown"
-                : "text/plain",
-          "Content-Disposition": contentDispositionHeader(`${document.title}.${format}`),
-        },
-      });
-    }
-
-    const buffer = await downloadFile(config, outputKey);
     return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type":
-          format === "json" ? "application/json" : format === "md" ? "text/markdown" : "text/plain",
-        "Content-Disposition": contentDispositionHeader(`${document.title}.${format}`),
+          format === "json"
+            ? "application/json"
+            : format === "md"
+              ? "text/markdown"
+              : format === "docx"
+                ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                : format === "epub"
+                  ? "application/epub+zip"
+                  : format === "pdf" || format === "searchable-pdf"
+                    ? "application/pdf"
+                    : "text/plain",
+        "Content-Disposition": contentDispositionHeader(
+          `${document.title}.${format === "searchable-pdf" ? "pdf" : format}`,
+        ),
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
       },
     });
   } catch (error: unknown) {
+    if (error instanceof Error) {
+      if ((error as Error).message === "NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "Document not found" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "NOT_READY") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "Export not ready" } },
+          { status: 404 },
+        );
+      }
+    }
     logger.error(error, "[export] Failed:");
-    return NextResponse.json({ error: "Export failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "Export failed" } },
+      { status: 500 },
+    );
   }
 }

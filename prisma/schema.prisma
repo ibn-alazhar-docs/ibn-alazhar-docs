@@ -33,7 +33,7 @@ model User {
   folders       Folder[]
   tags          Tag[]
   conversionJobs ConversionJob[]
-  settings      UserSetting?
+  settings      UserSetting[]
   shareLinks    ShareLink[]
 
   @@index([role])
@@ -77,6 +77,7 @@ model Session {
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
+  @@index([expires])
   @@map("sessions")
 }
 
@@ -87,6 +88,7 @@ model VerificationToken {
   createdAt  DateTime @default(now())
 
   @@index([identifier, token])
+  @@index([expires])
   @@map("verification_tokens")
 }
 
@@ -109,6 +111,7 @@ model Document {
   pageCount   Int?
   pageRange   String?
   outputFormats String[] @default([])
+  outputKeys    Json?
   language    String    @default("ar")
   isRtl       Boolean   @default(true)
 
@@ -116,6 +119,8 @@ model Document {
   // searchVector  tsvector (in PostgreSQL)
   // searchPreview text
   // wordCount     integer
+  // GIN index on searchVector managed via raw SQL migration
+  // See prisma/migrations/20260615120000_db_updates for the initial setup
 
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -184,6 +189,7 @@ model TagDocument {
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
 
   @@unique([tagId, documentId])
+  @@index([tagId])
   @@index([documentId])
   @@map("tag_documents")
 }
@@ -218,6 +224,7 @@ model ConversionJob {
   @@index([status])
   @@index([userId, status])
   @@index([status, createdAt])
+  @@index([createdAt])
   @@map("conversion_jobs")
 }
 
@@ -237,7 +244,6 @@ model ShareLink {
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([token])
   @@index([documentId])
   @@index([userId])
   @@index([expiresAt])
@@ -251,7 +257,7 @@ model ShareLink {
 
 model UserSetting {
   id     String @id @default(cuid())
-  userId String @unique
+  userId String
   key    String
   value  String @db.Text
 
@@ -259,6 +265,7 @@ model UserSetting {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  @@unique([userId, key])
   @@map("user_settings")
 }
 
@@ -277,6 +284,7 @@ model AuditLog {
   @@index([entity, entityId])
   @@index([createdAt])
   @@index([action, createdAt])
+  @@index([userId, createdAt])
   @@map("audit_logs")
 }
 

@@ -37,9 +37,10 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 right-0 z-40 flex w-64 flex-col border-l border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:static lg:translate-x-0",
-          isOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0",
+          "fixed inset-y-0 end-0 z-40 flex w-64 flex-col border-s border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:static lg:translate-x-0",
+          isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full lg:translate-x-0",
         )}
+        style={{ viewTransitionName: "dashboard-sidebar" }}
       >
         <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6">
           {navItems.map((item) => (
@@ -95,7 +96,7 @@ function FilesIcon() {
       <path
         strokeLinecap="round"
         strokeLinejoin="round"
-        d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z"
+        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
       />
     </svg>
   );

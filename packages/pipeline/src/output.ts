@@ -1,6 +1,22 @@
 import { analyzeText, cleanArabicText } from "./text";
 import type { CleanedText } from "./types";
 
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const PdfPrinter = require("pdfmake/js/Printer").default;
+import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
+import path from "path";
+import { fileURLToPath } from "url";
+import { execFile } from "child_process";
+import { promisify } from "util";
+import { mkdtemp, writeFile, readFile, rm } from "fs/promises";
+import { tmpdir } from "os";
+
+const execFileAsync = promisify(execFile);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export interface GenerateMdOptions {
   title?: string;
   includeMetadata?: boolean;
@@ -14,7 +30,7 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
 
   const mdLines: string[] = [];
 
-  if (options.includeMetadata !== false && analysis.wordCount > 0) {
+  if (options.includeMetadata === true && analysis.wordCount > 0) {
     mdLines.push("---");
     mdLines.push(`generated: ${new Date().toISOString()}`);
     mdLines.push(`total_pages: ${analysis.pageCount}`);
@@ -41,7 +57,10 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
 
   while (i < lines.length) {
     const line = lines[i];
-    if (!line) { i++; continue; }
+    if (!line) {
+      i++;
+      continue;
+    }
     const trimmed = line.trim();
 
     if (!trimmed) {
@@ -115,7 +134,7 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
       if (
         !currentTrimmed ||
         /^#{1,6}\s/.test(currentTrimmed) ||
-        currentTrimmed.includes("|") ||
+        (currentTrimmed.includes("|") && currentTrimmed.split("|").length > 2) ||
         /^[>\u00BB\u203B]\s/.test(currentTrimmed) ||
         /^[•·\-\u2013\u2014*]\s/.test(currentTrimmed) ||
         /^\d+[.)]\s/.test(currentTrimmed)
@@ -125,7 +144,11 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
       paraLines.push(currentTrimmed);
       i++;
     }
-    if (paraLines.length > 0) {
+    if (paraLines.length === 0) {
+      // If we didn't process any paragraph lines, we must increment i to avoid an infinite loop
+      // This handles cases where a line didn't match table logic but broke paragraph logic
+      i++;
+    } else {
       mdLines.push(paraLines.join("\n"));
     }
   }
@@ -153,7 +176,7 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
   };
 }
 
-export function generateTxt(cleanedText: CleanedText, includeMetadata: boolean = true): string {
+export function generateTxt(cleanedText: CleanedText, includeMetadata: boolean = false): string {
   const parts: string[] = [];
 
   if (includeMetadata) {
@@ -200,8 +223,136 @@ export function generateJson(cleanedText: CleanedText, sourceFileName?: string):
   );
 }
 
-export async function generateDocx(_cleanedText: CleanedText): Promise<Buffer> {
-  throw new Error(
-    "DOCX_EXPORT_NOT_AVAILABLE: Install 'docx' package (npm install docx) to enable DOCX generation",
-  );
+export async function generateDocx(cleanedText: CleanedText): Promise<Buffer> {
+  const markdownText = cleanedText.markdown || cleanedText.cleaned;
+  const tempDir = await mkdtemp(path.join(tmpdir(), "pandoc-"));
+  try {
+    const mdPath = path.join(tempDir, "input.md");
+    const docxPath = path.join(tempDir, "output.docx");
+
+    await writeFile(mdPath, markdownText, "utf8");
+
+    await execFileAsync("pandoc", [
+      mdPath,
+      "-o",
+      docxPath,
+      "-M",
+      "dir=rtl",
+      "-M",
+      "title=Document",
+    ], { timeout: 30000 });
+
+    return await readFile(docxPath);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+export async function generateEpub(cleanedText: CleanedText): Promise<Buffer> {
+  const markdownText = cleanedText.markdown || cleanedText.cleaned;
+  const tempDir = await mkdtemp(path.join(tmpdir(), "pandoc-"));
+  try {
+    const mdPath = path.join(tempDir, "input.md");
+    const epubPath = path.join(tempDir, "output.epub");
+
+    await writeFile(mdPath, markdownText, "utf8");
+
+    await execFileAsync("pandoc", [
+      mdPath,
+      "-o",
+      epubPath,
+      "-M",
+      "dir=rtl",
+      "-M",
+      "title=Document",
+    ]);
+
+    return await readFile(epubPath);
+  } finally {
+    await rm(tempDir, { recursive: true, force: true });
+  }
+}
+
+export async function generatePdf(
+  cleanedText: CleanedText,
+  options: { fontSize?: number; watermark?: string } = {},
+): Promise<Buffer> {
+  const fonts = {
+    Cairo: {
+      normal: require.resolve("@fontsource/cairo/files/cairo-arabic-400-normal.woff"),
+      bold: require.resolve("@fontsource/cairo/files/cairo-arabic-700-normal.woff"),
+      italics: require.resolve("@fontsource/cairo/files/cairo-arabic-400-normal.woff"),
+      bolditalics: require.resolve("@fontsource/cairo/files/cairo-arabic-700-normal.woff"),
+    },
+  };
+
+  const Printer = PdfPrinter as unknown as new (fonts: Record<string, Record<string, string>>) => {
+    createPdfKitDocument: (docDefinition: TDocumentDefinitions) => {
+      on: (event: string, callback: (chunk: Buffer) => void) => void;
+      end: () => void;
+    };
+  };
+  const printer = new Printer(fonts, undefined as any, { resolve: () => {}, resolved: () => Promise.resolve() } as any, undefined as any);
+
+  const markdownText = cleanedText.markdown || cleanedText.cleaned;
+  const blocks = markdownText.split("\n\n").filter(Boolean);
+
+  const content: Content[] = [];
+
+  for (const block of blocks) {
+    if (!block.trim()) continue;
+
+    if (block.trim().startsWith("#")) {
+      const level = block.match(/^#+/)?.[0]?.length ?? 1;
+      const cleanText = block.replace(/^#+\s*/, "");
+      const fontSize = 24 - level * 2; // Simple scaling
+
+      content.push({
+        text: cleanText,
+        fontSize: Math.max(12, fontSize),
+        bold: true,
+        margin: [0, 10, 0, 5],
+        alignment: "right",
+      });
+    } else {
+      content.push({
+        text: block,
+        fontSize: options.fontSize || 14,
+        margin: [0, 0, 0, 10],
+        alignment: "right",
+      });
+    }
+  }
+
+  const docDefinition: TDocumentDefinitions = {
+    content: (content.length > 0 ? content : [{ text: "" }]) as Content,
+    defaultStyle: {
+      font: "Cairo",
+      fontSize: options.fontSize || 14,
+      alignment: "right",
+    },
+  };
+
+  if (options.watermark) {
+    docDefinition.watermark = {
+      text: options.watermark,
+      color: "gray",
+      opacity: 0.3,
+      bold: true,
+      italics: false,
+    };
+  }
+
+  const pdfDoc = await printer.createPdfKitDocument(docDefinition);
+  
+  return new Promise((resolve, reject) => {
+    try {
+      const chunks: Buffer[] = [];
+      pdfDoc.on("data", (chunk: Buffer) => chunks.push(chunk));
+      pdfDoc.on("end", () => resolve(Buffer.concat(chunks)));
+      pdfDoc.end();
+    } catch (err) {
+      reject(err);
+    }
+  });
 }

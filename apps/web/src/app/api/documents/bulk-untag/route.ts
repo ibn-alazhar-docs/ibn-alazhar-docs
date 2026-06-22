@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { bulkUntagSchema } from "@/lib/validators/tag";
+import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
 
 export async function POST(request: Request) {
@@ -15,57 +15,46 @@ export async function POST(request: Request) {
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صالحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صالحة" } },
         { status: 400 },
       );
     }
 
     const { documentIds, tagId } = validation.data;
 
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id: tagId }, session),
-      select: { id: true },
-    });
-
-    if (!tag) {
-      return NextResponse.json({ error: "الوسم غير موجود" }, { status: 404 });
-    }
-
-    const documents = await prisma.document.findMany({
-      where: ownedWhere({ id: { in: documentIds }, deletedAt: null }, session),
-      select: { id: true },
-    });
-
-    if (documents.length !== documentIds.length) {
-      const found = new Set(documents.map((d) => d.id));
-      const missing = documentIds.filter((id: string) => !found.has(id));
-      return NextResponse.json(
-        {
-          error: "بعض المستندات غير موجودة",
-          details: {
-            found: documents.length,
-            requested: documentIds.length,
-            missing,
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    const { count } = await prisma.tagDocument.deleteMany({
-      where: {
+    try {
+      const removedCount = await documentUseCases.bulkUntagDocuments(
+        documentIds,
         tagId,
-        documentId: { in: documentIds },
-      },
-    });
+        session.user.id,
+        session.user.role,
+      );
 
-    return NextResponse.json({
-      success: true,
-      untaggedCount: count,
-      message: `تمت إزالة الوسم من ${count} مستند`,
-    });
+      return NextResponse.json({
+        success: true,
+        removedCount,
+        message: `تم إزالة الوسم من ${removedCount} مستند`,
+      });
+    } catch (error: unknown) {
+      if ((error as Error).message === "TAG_NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "SOME_NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "VALIDATION_ERROR", message: "بعض المستندات غير موجودة" } },
+          { status: 400 },
+        );
+      }
+      throw error;
+    }
   } catch (error: unknown) {
     logger.error(error, "[documents/bulk-untag/POST] Failed:");
-    return NextResponse.json({ error: "فشلت عملية إزالة الوسم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشلت عملية إزالة الوسم" } },
+      { status: 500 },
+    );
   }
 }

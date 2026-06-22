@@ -1,41 +1,46 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState } from "react";
 import { signIn } from "next-auth/react";
-import { useLocale, useTranslations } from "next-intl";
-import { loginSchema } from "@/lib/validators/auth";
-import { EyeIcon } from "@/components/ui/icons";
+import { useTranslations } from "next-intl";
+import { FcGoogle } from "react-icons/fc";
 
 export function LoginForm() {
-  const locale = useLocale();
   const t = useTranslations("auth");
-  const [showPassword, setShowPassword] = useState(false);
 
   const [error, submitAction, isPending] = useActionState(
-    async (_prev: string | null, formData: FormData) => {
-      const data = {
-        email: formData.get("email") as string,
-        password: formData.get("password") as string,
-      };
-
-      const validation = loginSchema.safeParse(data);
-      if (!validation.success) {
-        const firstError = validation.error.issues[0];
-        return firstError?.message || t("validationError");
-      }
-
+    async (prevState: string | null, formData: FormData) => {
       try {
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+        const isGoogle = formData.get("provider") === "google";
+
+        if (isGoogle) {
+          const result = await signIn("google", {
+            redirect: false,
+            redirectTo: "/dashboard",
+          });
+          if (result?.error) return t("loginError");
+          return null;
+        }
+
+        if (!email || !password) {
+          return t("loginError"); // or generic missing fields error
+        }
+
         const result = await signIn("credentials", {
-          email: data.email,
-          password: data.password,
+          email,
+          password,
           redirect: false,
+          redirectTo: "/dashboard",
         });
 
         if (result?.error) {
           return t("loginError");
         }
 
-        window.location.href = `/${locale}/dashboard`;
+        // Successful credentials login usually requires manual redirect or page refresh
+        window.location.href = "/dashboard";
         return null;
       } catch {
         return t("unexpectedError");
@@ -52,60 +57,58 @@ export function LoginForm() {
         </div>
       )}
 
-      <div className="space-y-5">
+      <div className="space-y-4">
         <div>
-          <label
-            htmlFor="email"
-            className="block text-xs font-semibold tracking-[0.04em] text-primary-color"
-          >
-            {t("emailLabel")}
+          <label className="mb-2 block text-xs font-bold text-[var(--text-secondary)]">
+            البريد الإلكتروني
           </label>
           <input
-            id="email"
-            name="email"
             type="email"
-            autoComplete="email"
-            required
-            className="mt-1.5 block w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 text-sm text-primary-color placeholder-[var(--text-tertiary)] transition-all focus:border-[var(--success)] focus:ring-2 focus:ring-[var(--success)]/20 focus:outline-none"
-            placeholder={t("emailPlaceholder")}
+            name="email"
+            dir="ltr"
+            className="w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text-primary)] focus:border-[var(--input-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--input-focus)]"
+            placeholder="admin@ibnalazhar.app"
           />
         </div>
-
         <div>
-          <label
-            htmlFor="password"
-            className="block text-xs font-semibold tracking-[0.04em] text-primary-color"
-          >
-            {t("passwordLabel")}
+          <label className="mb-2 block text-xs font-bold text-[var(--text-secondary)]">
+            كلمة المرور
           </label>
-          <div className="relative mt-1.5">
-            <input
-              id="password"
-              name="password"
-              type={showPassword ? "text" : "password"}
-              autoComplete="current-password"
-              required
-              className="block w-full rounded-lg border border-[var(--input-border)] bg-[var(--input-bg)] px-3 py-2.5 ps-10 text-sm text-primary-color placeholder-[var(--text-tertiary)] transition-all focus:border-[var(--success)] focus:ring-2 focus:ring-[var(--success)]/20 focus:outline-none"
-              placeholder={t("passwordPlaceholder")}
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute inset-y-0 start-0 flex items-center ps-3 text-[var(--icon-muted)] transition-colors hover:text-muted-color"
-              tabIndex={-1}
-            >
-              <EyeIcon className="h-4 w-4" />
-            </button>
-          </div>
+          <input
+            type="password"
+            name="password"
+            dir="ltr"
+            className="w-full rounded-xl border border-[var(--input-border)] bg-[var(--input-bg)] px-4 py-3 text-sm text-[var(--text-primary)] focus:border-[var(--input-focus)] focus:outline-none focus:ring-1 focus:ring-[var(--input-focus)]"
+            placeholder="••••••••"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={isPending}
+          className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50"
+        >
+          {isPending ? t("loggingIn") : t("signIn")}
+        </button>
+      </div>
+
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-[var(--border-line)]"></div>
+        </div>
+        <div className="relative flex justify-center text-sm">
+          <span className="bg-[var(--card-bg)] px-2 text-xs text-[var(--text-tertiary)]">أو</span>
         </div>
       </div>
 
       <button
         type="submit"
+        name="provider"
+        value="google"
         disabled={isPending}
-        className="w-full rounded-xl bg-[var(--btn-primary-bg)] px-4 py-3 text-xs font-bold tracking-[0.08em] text-[var(--btn-primary-text)] transition-all hover:opacity-90 hover:translate-y-[-1px] hover:shadow-[0_4px_16px_rgba(26,92,58,0.2)] disabled:opacity-40 disabled:hover:translate-y-0 disabled:hover:shadow-none"
+        className="flex w-full items-center justify-center gap-3 rounded-xl border border-[var(--input-border)] bg-[var(--card-bg)] px-4 py-3 text-sm font-bold tracking-[0.04em] text-[var(--text-primary)] transition-all hover:bg-[var(--hover-bg)] hover:shadow-sm disabled:opacity-50"
       >
-        {isPending ? t("loggingIn") : t("loginButton")}
+        <FcGoogle className="h-5 w-5" />
+        {isPending ? t("loggingIn") : t("continueWithGoogle")}
       </button>
 
       <p className="text-center text-xs text-[var(--text-tertiary)]">{t("tagline")}</p>

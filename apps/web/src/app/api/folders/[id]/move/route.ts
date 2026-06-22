@@ -1,41 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { moveFolderSchema, MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import { logger } from "@/lib/logger";
-
-async function getFolderDepth(folderId: string): Promise<number> {
-  let depth = 0;
-  let currentId: string | null = folderId;
-
-  while (currentId) {
-    const currentFolder: { parentId: string | null } | null = await prisma.folder.findUnique({
-      where: { id: currentId },
-      select: { parentId: true },
-    });
-    if (!currentFolder?.parentId) break;
-    depth++;
-    currentId = currentFolder.parentId;
-  }
-
-  return depth;
-}
-
-async function isDescendant(ancestorId: string, descendantId: string): Promise<boolean> {
-  let currentId: string | null = descendantId;
-
-  while (currentId) {
-    if (currentId === ancestorId) return true;
-
-    const currentFolder: { parentId: string | null } | null = await prisma.folder.findUnique({
-      where: { id: currentId },
-      select: { parentId: true },
-    });
-    currentId = currentFolder?.parentId ?? null;
-  }
-
-  return false;
-}
+import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -49,69 +16,58 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
     }
 
     const { parentId } = validation.data;
 
-    // Validate source folder exists and belongs to user
-    const sourceFolder = await prisma.folder.findFirst({
-      where: ownedWhere({ id, deletedAt: null }, session),
-      select: { id: true, parentId: true },
-    });
-
-    if (!sourceFolder) {
-      return NextResponse.json({ error: "المجلد غير موجود" }, { status: 404 });
-    }
-
-    // Cannot move folder into itself
-    if (id === parentId) {
-      return NextResponse.json({ error: "لا يمكن نقل المجلد إلى نفسه" }, { status: 400 });
-    }
-
-    // Validate target folder exists and belongs to user (if not root)
-    if (parentId) {
-      const targetFolder = await prisma.folder.findFirst({
-        where: ownedWhere({ id: parentId, deletedAt: null }, session),
-        select: { id: true },
-      });
-
-      if (!targetFolder) {
-        return NextResponse.json({ error: "المجلد الهدف غير موجود" }, { status: 404 });
-      }
-
-      // Check circular reference
-      const wouldCreateCircular = await isDescendant(id, parentId);
-      if (wouldCreateCircular) {
+    try {
+      const updated = await folderUseCases.moveFolder(id, session.user.id, parentId);
+      return NextResponse.json({ folder: updated });
+    } catch (error: unknown) {
+      if ((error as Error).message === "NOT_FOUND") {
         return NextResponse.json(
-          { error: "لا يمكن نقل المجلد إلى مجلد فرعي منه" },
+          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "CIRCULAR_REFERENCE") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: "لا يمكن نقل المجلد إلى نفسه أو مجلد فرعي منه",
+            },
+          },
           { status: 400 },
         );
       }
-    }
-
-    // Check depth limit
-    if (parentId) {
-      const parentDepth = await getFolderDepth(parentId);
-      if (parentDepth + 1 >= MAX_FOLDER_DEPTH) {
+      if ((error as Error).message === "TARGET_NOT_FOUND") {
         return NextResponse.json(
-          { error: `الحد الأقصى لعمق المجلدات هو ${MAX_FOLDER_DEPTH} مستويات` },
+          { error: { code: "NOT_FOUND", message: "المجلد الهدف غير موجود" } },
+          { status: 404 },
+        );
+      }
+      if ((error as Error).message === "MAX_DEPTH_REACHED") {
+        return NextResponse.json(
+          {
+            error: {
+              code: "VALIDATION_ERROR",
+              message: `الحد الأقصى لعمق المجلدات هو ${MAX_FOLDER_DEPTH} مستويات`,
+            },
+          },
           { status: 400 },
         );
       }
+      throw error;
     }
-
-    // Move folder
-    const updated = await prisma.folder.update({
-      where: { id },
-      data: { parentId: parentId || null },
-    });
-
-    return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
     logger.error(error, "[folders/[id]/move/POST] Failed:");
-    return NextResponse.json({ error: "فشل نقل المجلد" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل نقل المجلد" } },
+      { status: 500 },
+    );
   }
 }

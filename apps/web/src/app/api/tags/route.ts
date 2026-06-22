@@ -23,7 +23,10 @@ export async function GET() {
     return NextResponse.json({ tags });
   } catch (error: unknown) {
     logger.error(error, "[tags/GET] Failed:");
-    return NextResponse.json({ error: "فشل الحصول على الوسوم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على الوسوم" } },
+      { status: 500 },
+    );
   }
 }
 
@@ -38,7 +41,7 @@ export async function POST(request: Request) {
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: firstError?.message || "بيانات غير صحيحة" },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
     }
@@ -51,7 +54,12 @@ export async function POST(request: Request) {
 
     if (tagCount >= MAX_TAGS_PER_USER) {
       return NextResponse.json(
-        { error: `الحد الأقصى ${MAX_TAGS_PER_USER} وسم لكل مستخدم` },
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: `الحد الأقصى ${MAX_TAGS_PER_USER} وسم لكل مستخدم`,
+          },
+        },
         { status: 400 },
       );
     }
@@ -64,7 +72,10 @@ export async function POST(request: Request) {
     });
 
     if (existingTag) {
-      return NextResponse.json({ error: "يوجد وسم بهذا الاسم بالفعل" }, { status: 409 });
+      return NextResponse.json(
+        { error: { code: "CONFLICT", message: "يوجد وسم بهذا الاسم بالفعل" } },
+        { status: 409 },
+      );
     }
 
     const tag = await prisma.tag.create({
@@ -78,6 +89,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ tag }, { status: 201 });
   } catch (error: unknown) {
     logger.error(error, "[tags/POST] Failed:");
-    return NextResponse.json({ error: "فشل إنشاء الوسم" }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل إنشاء الوسم" } },
+      { status: 500 },
+    );
   }
 }

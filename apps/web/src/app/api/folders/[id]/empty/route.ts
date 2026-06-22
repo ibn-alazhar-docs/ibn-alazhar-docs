@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
+import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -10,35 +10,29 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
 
     const { id } = await params;
 
-    const folder = await prisma.folder.findFirst({
-      where: ownedWhere({ id, deletedAt: null }, session),
-      select: { id: true, parentId: true },
-    });
+    try {
+      const result = await folderUseCases.emptyFolder(id, session.user.id);
 
-    if (!folder) {
-      return NextResponse.json({ error: "المجلد غير موجود" }, { status: 404 });
+      return NextResponse.json({
+        message: "تم تفريغ المجلد بنجاح",
+        documentsMoved: result.documentsMoved,
+        foldersMoved: result.foldersMoved,
+      });
+    } catch (error: unknown) {
+      if ((error as Error).message === "NOT_FOUND") {
+        return NextResponse.json(
+          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
+          { status: 404 },
+        );
+      }
+      throw error;
     }
-
-    // Move documents to root (set folderId to null)
-    const docsUpdated = await prisma.document.updateMany({
-      where: ownedWhere({ folderId: id }, session),
-      data: { folderId: null },
-    });
-
-    // Move subfolders to parent (or root if parent is null)
-    const subfoldersUpdated = await prisma.folder.updateMany({
-      where: ownedWhere({ parentId: id }, session),
-      data: { parentId: folder.parentId || null },
-    });
-
-    return NextResponse.json({
-      message: "تم تفريغ المجلد بنجاح",
-      documentsMoved: docsUpdated.count,
-      foldersMoved: subfoldersUpdated.count,
-    });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? error.message : String(error);
+    const errMessage = error instanceof Error ? (error as Error).message : String(error);
     logger.error(error, "[folders/[id]/empty/POST] Failed:");
-    return NextResponse.json({ error: "فشل تفريغ المجلد", details: errMessage }, { status: 500 });
+    return NextResponse.json(
+      { error: { code: "INTERNAL_ERROR", message: "فشل تفريغ المجلد" } },
+      { status: 500 },
+    );
   }
 }

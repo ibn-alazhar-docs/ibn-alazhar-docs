@@ -1,7 +1,6 @@
 FROM node:22-slim AS builder
 WORKDIR /app
 
-# Install native dependencies for building/running on Debian
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     make \
@@ -13,23 +12,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     librsvg2-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy host pre-built node_modules and code
-COPY . .
+COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc* ./
+COPY apps/web/package.json apps/web/package.json
+COPY packages/pipeline/package.json packages/pipeline/package.json
+COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
+COPY workers/export-worker/package.json workers/export-worker/package.json
+RUN corepack enable && pnpm install --frozen-lockfile
 
-# Generate Prisma Client
+RUN pnpm rebuild
+
+COPY prisma ./prisma
 RUN npx prisma generate
 
-FROM node:22-slim AS runner
+COPY . .
+
+FROM node:22-slim AS base-runner
 WORKDIR /app
 
 ENV NODE_ENV=production
 
-# Install Python, Tesseract, and canvas runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3 \
-    python3-pip \
-    tesseract-ocr \
-    tesseract-ocr-ara \
     libcairo2 \
     libpango-1.0-0 \
     libjpeg62-turbo \
@@ -37,22 +39,47 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     librsvg2-2 \
     curl \
     openssl \
+    pandoc \
     && rm -rf /var/lib/apt/lists/*
-
-# Install python dependencies for local OCR engine (Surya/Pdfium)
-RUN pip3 install --break-system-packages pypdfium2 Pillow pytesseract
 
 RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 nextjs
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
-COPY --from=builder /app/workers ./workers
 COPY --from=builder /app/prisma ./prisma
 COPY --from=builder /app/apps/web/src/lib/auth.ts ./apps/web/src/lib/auth.ts
+COPY --from=builder /app/workers ./workers
 
 USER nextjs
 
-HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:9090/health || curl -f http://localhost:9091/health || exit 1
+FROM base-runner AS ocr-runner
 
-CMD ["npx", "tsx", "workers/ocr-worker/src/index.ts"]
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tesseract-ocr \
+    tesseract-ocr-ara \
+    ocrmypdf \
+    ghostscript \
+    python3 \
+    python3-pip \
+    python3-venv \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python3 -m venv /opt/ocr-venv && \
+    /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract
+
+ENV PATH="/opt/ocr-venv/bin:$PATH"
+
+USER nextjs
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD kill -0 1 2>/dev/null || exit 1
+
+CMD ["node", "--import", "tsx", "workers/ocr-worker/src/index.ts"]
+
+FROM base-runner AS export-runner
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=15s --retries=3 \
+  CMD kill -0 1 2>/dev/null || exit 1
+
+CMD ["node", "--import", "tsx", "workers/export-worker/src/index.ts"]

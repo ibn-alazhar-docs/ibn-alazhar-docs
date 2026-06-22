@@ -65,14 +65,28 @@ export function getQueue(queueName: string, config: PipelineConfig): Queue {
   }
 
   if (!queues[queueName]) {
-    queues[queueName] = new Queue(queueName, { connection: conn });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    queues[queueName] = new Queue(queueName, { connection: conn as any });
   }
   return queues[queueName];
 }
 
-
 export function categorizeFailure(error: Error): { category: FailureCategory; code: string } {
   const msg = error.message;
+
+  // Permanent — check before transient to prevent misclassification
+  if (msg.includes("OCR_QUOTA_EXCEEDED"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_QUOTA_EXCEEDED" };
+  if (msg.includes("PDF_ENCRYPTED"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_ENCRYPTED" };
+  if (msg.includes("PDF_CORRUPT"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_CORRUPT" };
+  if (msg.includes("PDF_TRUNCATED"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_TRUNCATED" };
+  if (msg.includes("FILE_TOO_LARGE"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "FILE_TOO_LARGE" };
+  if (msg.includes("INVALID_TYPE"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "INVALID_TYPE" };
 
   // Transient — retryable
   if (msg.includes("OCR_UPLOAD_FAILED"))
@@ -89,20 +103,6 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "REDIS_ERROR" };
   if (msg.includes("MinIO") || msg.includes("minio") || msg.includes("storage"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "STORAGE_ERROR" };
-
-  // Permanent — retryable but unlikely to succeed
-  if (msg.includes("OCR_QUOTA_EXCEEDED"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_QUOTA_EXCEEDED" };
-  if (msg.includes("PDF_ENCRYPTED"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_ENCRYPTED" };
-  if (msg.includes("PDF_CORRUPT"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_CORRUPT" };
-  if (msg.includes("PDF_TRUNCATED"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_TRUNCATED" };
-  if (msg.includes("FILE_TOO_LARGE"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "FILE_TOO_LARGE" };
-  if (msg.includes("INVALID_TYPE"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "INVALID_TYPE" };
 
   // Fatal — not retryable, goes straight to DLQ
   if (msg.includes("JOB_TIMEOUT"))
@@ -187,7 +187,8 @@ function createBaseWorker<T>(
   const concurrency = JOB_CONCURRENCY[queueName] ?? 1;
   const timeout = JOB_TIMEOUTS[queueName as keyof typeof JOB_TIMEOUTS] ?? 60_000;
   return new Worker<T>(queueName, handler, {
-    connection: getConnection(config),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    connection: getConnection(config) as any,
     concurrency,
     lockDuration: Math.max(timeout, 60_000),
     lockRenewTime: 15_000,
@@ -338,7 +339,7 @@ export async function getJobStatus(
     const queue = getQueue(queueName, config);
     const job = await queue.getJob(jobId);
     if (job) {
-      if (await job.isCompleted() || await job.isFailed()) continue;
+      if ((await job.isCompleted()) || (await job.isFailed())) continue;
       const stage = QUEUE_STAGE_MAP[queueName];
       if (!stage) continue;
       const progress = typeof job.progress === "number" ? job.progress : 0;

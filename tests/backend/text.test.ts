@@ -90,7 +90,7 @@ describe("cleanArabicText — Arabic normalization", () => {
     const input = "آيةُ الْكِتَابِ";
     // After normalization: آ→ا, removing tashkeel (ُ, ْ, ِ): اية الكتاب
     // Broken article: ال book (no broken article here since الْك is not separated by space)
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, { removeTashkeel: true });
     expect(result).toContain("اية");
     expect(result).toContain("الكتاب");
   });
@@ -105,34 +105,36 @@ describe("cleanArabicText — Arabic normalization", () => {
 // ─── 3. Tashkeel Removal (4 tests) ───────────────────────────────────────────
 
 describe("cleanArabicText — tashkeel removal", () => {
+  const opts = { removeTashkeel: true };
+
   it("removes fatha (َ)", () => {
     const input = "بَسم";
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, opts);
     expect(result).toBe("بسم");
   });
 
   it("removes damma (ُ)", () => {
     const input = "رَسُول";
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, opts);
     expect(result).toBe("رسول");
   });
 
   it("removes kasra (ِ)", () => {
     const input = "كِتَاب";
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, opts);
     expect(result).toBe("كتاب");
   });
 
   it("removes shadda (ّ)", () => {
     const input = "الله";
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, opts);
     expect(result).toBe("الله");
   });
 
   it("removes tanwin diacritics but leaves trailing alef", () => {
     // كتَابًا: tanwin fatha (\u064B) is removed, but alef (\u0627) is NOT a diacritic
     const input = "كتابًا";
-    const result = cleanArabicText(input);
+    const result = cleanArabicText(input, opts);
     // After removing tanwin: كتابا (alef remains)
     expect(result).toBe("كتابا");
   });

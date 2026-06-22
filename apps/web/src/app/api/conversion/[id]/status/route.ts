@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
@@ -23,12 +23,15 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   const { id } = await params;
 
   const document = await prisma.document.findFirst({
-    where: { id, userId: session.user.id },
+    where: ownedWhere({ id }, session),
     select: { id: true, status: true },
   });
 
   if (!document) {
-    return NextResponse.json({ error: "المستند غير موجود" }, { status: 404 });
+    return NextResponse.json(
+      { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
+      { status: 404 },
+    );
   }
 
   const normalized = DOC_STATUS_MAP[document.status] ?? "pending";

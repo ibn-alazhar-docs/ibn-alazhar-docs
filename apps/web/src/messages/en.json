@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Ibn Al-Azhar",
-    "tagline": "Documents — ready for work"
+    "name": "Ibn Al-Azhar Docs",
+    "tagline": "Documents, elevated for research."
   },
   "nav": {
     "home": "Dashboard",
@@ -19,41 +19,53 @@
   },
   "section": {
     "hero": {
-      "eyebrow": "Ibn Al-Azhar",
-      "title": "Your documents — digitized",
-      "subtitle": "Drop a PDF or image. We read it, clean it, and hand you a Word document — ready to edit.",
-      "cta": "Start",
+      "eyebrow": "Ibn Al-Azhar Docs",
+      "title": "Your Documents, Intelligently Digitized",
+      "subtitle": "Upload your PDFs or images. We meticulously extract the text, refine the content, and deliver a perfectly formatted Word document—ready for your research.",
+      "cta": "Get Started",
       "dashboardCTA": "Go to Dashboard"
     },
     "knowledgeAreas": {
-      "title": "How it works",
+      "title": "How It Works",
       "items": [
-        { "title": "Upload", "description": "PDF, JPG, PNG. Just drag and drop." },
-        { "title": "Process", "description": "Precise OCR with automatic cleanup." },
-        { "title": "Download", "description": "Word, Markdown, or plain text." }
+        { "title": "Upload", "description": "Simply drag and drop your PDFs, JPGs, or PNGs." },
+        {
+          "title": "Process",
+          "description": "Experience highly precise OCR with automated content refinement."
+        },
+        { "title": "Download", "description": "Export instantly to Word, Markdown, or plain text." }
       ]
     },
     "features": {
-      "title": "Why Ibn Al-Azhar",
+      "title": "Why Choose Ibn Al-Azhar Docs",
       "items": [
-        { "title": "Private", "description": "Fully encrypted. Nothing leaves your server." },
+        {
+          "title": "Private",
+          "description": "Fully encrypted and secure. Your data never leaves your environment."
+        },
         {
           "title": "Accurate",
-          "description": "Arabic and English text recognition at high precision."
+          "description": "State-of-the-art Arabic and English text recognition with exceptional precision."
         },
-        { "title": "Free", "description": "No subscription. No credit card." },
-        { "title": "Word", "description": "Documents ready for immediate editing." }
+        {
+          "title": "Free",
+          "description": "Completely free for the academic community. No subscriptions required."
+        },
+        {
+          "title": "Word",
+          "description": "Receive seamlessly formatted Word documents, ready for immediate editing."
+        }
       ]
     },
     "cta": {
-      "title": "Start with your first document",
-      "subtitle": "Upload a file. Get Word in seconds.",
-      "button": "Get started",
+      "title": "Transform Your First Document",
+      "subtitle": "Upload any supported file and receive a polished Word document in seconds.",
+      "button": "Begin Processing",
       "dashboardCTA": "Go to Dashboard"
     }
   },
   "footer": {
-    "copyright": "Ibn Al-Azhar © 2026",
+    "copyright": "Ibn Al-Azhar Docs © 2026",
     "tagline": "From Al-Azhar"
   },
   "common": {
@@ -110,23 +122,24 @@
     "loggingIn": "Signing in...",
     "registering": "Creating...",
     "passwordHint": "At least 8 characters — uppercase, lowercase, and a number",
-    "validationError": "Check your input",
-    "loginError": "Invalid email or password",
-    "registerError": "Could not create account",
-    "autoLoginError": "Account created — sign in now",
-    "unexpectedError": "Unexpected error. Try again.",
-    "tagline": "Documents — ready for work"
+    "validationError": "Please verify your input details.",
+    "loginError": "Invalid email or password. Please try again.",
+    "registerError": "We could not create your account. Please try again later.",
+    "autoLoginError": "Account created successfully. Please sign in.",
+    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "tagline": "Your documents, elevated for research.",
+    "continueWithGoogle": "Continue with Google"
   },
   "pipeline": {
     "upload": {
-      "dragDrop": "Drop a file here or click to choose",
-      "formats": "PDF, JPG, PNG — up to 100 MB",
+      "dragDrop": "Drag and drop a file here, or click to browse",
+      "formats": "PDF, JPG, PNG — Unlimited size",
       "uploading": "Uploading...",
-      "uploadButton": "Upload and process",
-      "progress": "Uploading file...",
-      "errorInvalidType": "Unsupported format — use PDF, JPG, or PNG",
-      "errorTooLarge": "File exceeds 100 MB limit",
-      "errorUploadFailed": "Upload failed"
+      "uploadButton": "Upload & Process",
+      "progress": "Processing...",
+      "errorInvalidType": "Unsupported file format. Please upload a PDF or image.",
+      "errorTooLarge": "The file exceeds the maximum allowed size.",
+      "errorUploadFailed": "An error occurred while uploading. Please try again."
     },
     "status": {
       "pending": "Queued",
@@ -156,6 +169,26 @@
       "downloadMd": "Download .md",
       "downloadTxt": "Download .txt",
       "downloadJson": "Download .json"
+    },
+    "exportModal": {
+      "title": "Advanced Export",
+      "format": "Format",
+      "fontSize": "Font Size",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large",
+      "watermark": "Watermark (Optional)",
+      "watermarkPlaceholder": "Enter watermark text...",
+      "destination": "Destination",
+      "download": "Download",
+      "drive": "Google Drive",
+      "cancel": "Cancel",
+      "export": "Export",
+      "exporting": "Exporting...",
+      "successDownload": "Export ready for download",
+      "successDrive": "Exported to Google Drive successfully",
+      "error": "Export failed",
+      "button": "Advanced Export"
     }
   },
   "folders": {
@@ -164,7 +197,7 @@
     "createNew": "Create folder",
     "createButton": "+ New folder",
     "allFiles": "All files",
-    "empty": "No folders yet",
+    "empty": "No folders created yet.",
     "nameLabel": "Folder name",
     "namePlaceholder": "Folder name",
     "nameRequired": "Folder name is required",
@@ -175,18 +208,27 @@
     "moveSelected": "{count} document selected",
     "moveSelectedPlural": "{count} documents selected",
     "root": "No folder",
-    "noFolders": "Create a folder to get started",
+    "noFolders": "Create a folder to organize your research and documents.",
     "moveButton": "Move ({count})",
     "deleteConfirm": "Delete this folder? Files inside will not be deleted.",
     "allFilesBreadcrumb": "All files"
   },
   "documents": {
     "title": "Documents",
-    "uploadPrompt": "Upload PDFs or images to process and extract text",
-    "empty": "No files yet — upload a document to start",
+    "uploadPrompt": "Upload PDFs or images to extract and digitize text seamlessly.",
+    "empty": "Your workspace is empty. Upload a document to begin processing.",
     "recentDocuments": "Recent Documents",
     "viewAll": "View all",
     "activeJobs": "In progress",
+    "uploading": "Loading...",
+    "preview": "Document Preview",
+    "ranges": "Split Ranges",
+    "remove": "Remove",
+    "addRange": "Add Range",
+    "uploadButton": "Upload & Process",
+    "cancel": "Cancel",
+    "from": "From",
+    "to": "To",
     "table": {
       "title": "Title",
       "status": "Status",
@@ -209,11 +251,12 @@
     "moveToFolder": "Move to...",
     "cancelSelection": "Cancel selection",
     "pagesCount": "{count} pages",
-    "pageCount": "page"
+    "pageCount": "page",
+    "addTags": "Add tags"
   },
   "search": {
     "title": "Search",
-    "subtitle": "Find anything across your documents",
+    "subtitle": "Instantly locate content across all your digitized documents.",
     "placeholder": "Search documents...",
     "searching": "Searching...",
     "searchButton": "Search",
@@ -224,7 +267,7 @@
       "content": "Content",
       "folder": "Folder"
     },
-    "noResults": "No results for",
+    "noResults": "We couldn't find any results for",
     "matchTitle": "Title",
     "matchContent": "Content",
     "previous": "Previous",
@@ -234,7 +277,7 @@
   },
   "conversions": {
     "title": "Processing",
-    "subtitle": "Track document processing status",
+    "subtitle": "Monitor the real-time progress of your document conversions.",
     "searchPlaceholder": "Job ID",
     "searchButton": "Search",
     "enterJobId": "Enter a Job ID",
@@ -249,8 +292,8 @@
     "createdAt": "Created",
     "actions": "Actions",
     "viewResults": "View Results",
-    "noConversions": "No conversions yet",
-    "noConversionsHint": "Upload a document to start processing",
+    "noConversions": "No active processing jobs.",
+    "noConversionsHint": "Upload your first document to initiate the extraction process.",
     "loading": "Loading...",
     "pending": "Pending",
     "processing": "Processing",
@@ -344,9 +387,9 @@
   "share": {
     "loading": "Loading...",
     "expired": "Link expired",
-    "notFound": "Document not found",
-    "deleted": "Document deleted",
-    "loadError": "Failed to load document",
+    "notFound": "We couldn't find the requested document.",
+    "deleted": "This document has been deleted.",
+    "loadError": "An error occurred while loading the document.",
     "connectionError": "Connection error",
     "requestNewLink": "Request a new link from the document owner",
     "download": "Download",
@@ -355,6 +398,23 @@
     "createdAt": "Created",
     "pages": "pages",
     "requestNewLinkFromOwner": "Request a new link from the document owner"
+  },
+  "shareModal": {
+    "title": "Share Document",
+    "shareLink": "Public Link",
+    "copyLink": "Copy to Clipboard",
+    "copied": "Copied!",
+    "revokeLink": "Revoke Link",
+    "createLink": "Create Public Link",
+    "expiration": "Expiration",
+    "expiresIn": "Expires In",
+    "expires7Days": "7 Days",
+    "expires30Days": "30 Days",
+    "expiresNever": "Never",
+    "cancel": "Cancel",
+    "successCreate": "Link created successfully",
+    "successRevoke": "Link revoked successfully",
+    "error": "An error occurred"
   },
   "discovery": {
     "library": "Library",

@@ -5,9 +5,11 @@
 > **Last Updated:** 2026-05-21
 
 ## Overview
+
 NextAuth.js v5 authentication foundation with Google OAuth and email/password support.
 
 ## Requirements
+
 - [ ] Google OAuth provider
 - [ ] Email/password with bcrypt
 - [ ] JWT sessions
@@ -15,4 +17,5 @@ NextAuth.js v5 authentication foundation with Google OAuth and email/password su
 - [ ] Session management
 
 ## Schema Reference
+
 - `User`, `Account`, `Session`, `VerificationToken` models in `prisma/schema.prisma`

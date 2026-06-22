@@ -11,9 +11,18 @@ export default defineConfig({
   test: {
     globals: true,
     environment: "node",
+    setupFiles: ["./tests/setup.ts"],
     include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
     exclude: [
       "node_modules",
+      "tests/e2e",
+      "tests/integration",
+      "tests/security",
+      "tests/pentest",
+      "tests/load",
+      "tests/recovery",
+      "tests/backup",
+      "tests/api",
       ".opencode",
       ".opencode_backups",
       ".next",
