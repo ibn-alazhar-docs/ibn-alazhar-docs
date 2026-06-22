@@ -1,0 +1,9 @@
+{
+  "name": "@ibn-al-azhar-docs/workers-shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "pino": "^9.0.0"
+  }
+}
