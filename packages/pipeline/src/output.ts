@@ -6,7 +6,7 @@ const require = createRequire(import.meta.url);
 const PdfPrinter = require("pdfmake/js/Printer").default;
 import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
 import path from "path";
-import { fileURLToPath } from "url";
+
 import { execFile } from "child_process";
 import { promisify } from "util";
 import { mkdtemp, writeFile, readFile, rm } from "fs/promises";
@@ -14,8 +14,7 @@ import { tmpdir } from "os";
 
 const execFileAsync = promisify(execFile);
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+
 
 export interface GenerateMdOptions {
   title?: string;
