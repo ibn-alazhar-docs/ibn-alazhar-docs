@@ -27,12 +27,12 @@ Ensure all status claims are verified and accurate.
 
 ## Violations
 
-| Violation | Action |
-|-----------|--------|
-| Claiming unverified completion | Flag, require verification |
-| Claiming unverified test passes | Run tests, correct status |
-| Claiming unverified review | Perform review, correct status |
-| Exaggerated status | Correct status, note in session record |
+| Violation                       | Action                                 |
+| ------------------------------- | -------------------------------------- |
+| Claiming unverified completion  | Flag, require verification             |
+| Claiming unverified test passes | Run tests, correct status              |
+| Claiming unverified review      | Perform review, correct status         |
+| Exaggerated status              | Correct status, note in session record |
 
 ## Reference
 

@@ -8,14 +8,14 @@
 
 ## Failure Classification
 
-| Class | Description | Example | Recovery Time |
-|-------|-------------|---------|---------------|
-| **Boot Failure** | Session cannot start | Missing memory file, corrupted runtime | < 10 min |
-| **Execution Failure** | Implementation cannot proceed | Spec ambiguity, build failure, test failure | 10 min - 2 hrs |
-| **Review Failure** | Review cannot pass | Security finding, RTL failure, brand violation | 10 min - 2 hrs |
-| **Agent Failure** | Agent cannot operate | Missing definition, conflict, timeout | 5-30 min |
-| **Model Failure** | Model is unavailable or produces bad output | API down, context limit, hallucination | 5-30 min |
-| **Runtime Degradation** | Runtime is partially functional | Missing files, stale memory, inconsistent state | 10-60 min |
+| Class                   | Description                                 | Example                                         | Recovery Time  |
+| ----------------------- | ------------------------------------------- | ----------------------------------------------- | -------------- |
+| **Boot Failure**        | Session cannot start                        | Missing memory file, corrupted runtime          | < 10 min       |
+| **Execution Failure**   | Implementation cannot proceed               | Spec ambiguity, build failure, test failure     | 10 min - 2 hrs |
+| **Review Failure**      | Review cannot pass                          | Security finding, RTL failure, brand violation  | 10 min - 2 hrs |
+| **Agent Failure**       | Agent cannot operate                        | Missing definition, conflict, timeout           | 5-30 min       |
+| **Model Failure**       | Model is unavailable or produces bad output | API down, context limit, hallucination          | 5-30 min       |
+| **Runtime Degradation** | Runtime is partially functional             | Missing files, stale memory, inconsistent state | 10-60 min      |
 
 ---
 
@@ -27,6 +27,7 @@
 **Detection:** Health check reports missing memory file.
 
 **Recovery:**
+
 1. Identify which memory file is missing.
 2. Rebuild from source doc:
    - `memory/project/project-overview.md` ← `docs/00_PROJECT_BRIEF.md` + `PROJECT_RUNTIME.md`
@@ -44,6 +45,7 @@
 **Detection:** File cannot be parsed, content is garbled, or critical fields are missing.
 
 **Recovery:**
+
 1. Identify the corrupted file.
 2. Restore from git: `git checkout HEAD -- <file>`.
 3. If git restore fails: rebuild from template or source.
@@ -57,6 +59,7 @@
 **Detection:** Phase in runtime status does not match phase in project docs.
 
 **Recovery:**
+
 1. Identify the correct phase from `docs/13_PHASE_1_PLAN.md` (or relevant phase plan).
 2. Update `runtime/runtime-status.md` to match.
 3. Update `memory/project/current-status.md` to match.
@@ -69,6 +72,7 @@
 **Detection:** All 3 preferred models + fallbacks fail availability check.
 
 **Recovery:**
+
 1. Flag to human: "All models unavailable. Non-urgent work paused."
 2. Check if this is a temporary outage (network, API rate limit).
 3. If temporary: wait and retry.
@@ -85,6 +89,7 @@
 **Detection:** Agent flags spec ambiguity during implementation.
 
 **Recovery:**
+
 1. Agent flags ambiguity to architect (escalation: Medium).
 2. Architect reviews the spec and clarifies.
 3. If architect cannot resolve: escalate to human engineer.
@@ -98,6 +103,7 @@
 **Detection:** CI fails or local build fails.
 
 **Recovery:**
+
 1. Read the build error output.
 2. Identify the failing file(s) and line(s).
 3. Fix the error(s).
@@ -111,6 +117,7 @@
 **Detection:** Vitest reports failing tests.
 
 **Recovery:**
+
 1. Read the test failure output.
 2. Determine if the failure is:
    - **Regression:** Code broke existing functionality → fix the code.
@@ -126,6 +133,7 @@
 **Detection:** Spec-guardian flags out-of-scope work.
 
 **Recovery:**
+
 1. Spec-guardian flags the scope violation.
 2. Agent stops work on out-of-scope items.
 3. Human decides:
@@ -143,6 +151,7 @@
 **Detection:** Security-reviewer reports High or Critical finding.
 
 **Recovery:**
+
 1. Read the security finding in detail.
 2. Determine the fix:
    - **Secret in code:** Remove secret, rotate if exposed, use environment variable.
@@ -160,6 +169,7 @@
 **Detection:** RTL-auditor reports failing checks.
 
 **Recovery:**
+
 1. Read the RTL finding in detail.
 2. Fix the specific issue:
    - **Direction:** Add `dir="rtl"` or use `dir="auto"`.
@@ -176,6 +186,7 @@
 **Detection:** Frontend-polish reports brand violations.
 
 **Recovery:**
+
 1. Read the brand finding in detail.
 2. Fix the violation:
    - **Wrong color:** Replace with design token (`--color-primary-600`).
@@ -191,6 +202,7 @@
 **Detection:** Human reviewer notices conflicting review findings.
 
 **Recovery:**
+
 1. Identify the conflicting reviews.
 2. Architect reviews both findings.
 3. Determine which finding takes priority:
@@ -211,6 +223,7 @@
 **Detection:** Boot sequence reports incomplete agent definition.
 
 **Recovery:**
+
 1. Identify the missing agent.
 2. Check if a template exists for the agent.
 3. If template exists: populate from template.
@@ -225,6 +238,7 @@
 **Detection:** Review outputs contradict each other.
 
 **Recovery:**
+
 1. Architect reviews both findings.
 2. Apply conflict resolution rules (see `AGENT_RULES.md`):
    - Security > RTL > Brand > Style.
@@ -237,6 +251,7 @@
 **Detection:** Session detects no agent output after timeout period.
 
 **Recovery:**
+
 1. Retry the agent request.
 2. If retry fails: try a different model.
 3. If all models fail: flag to human, continue without the agent.
@@ -252,6 +267,7 @@
 **Detection:** Model availability check fails.
 
 **Recovery:**
+
 1. Apply fallback chain per `MODEL_ROUTING.md`.
 2. Verify fallback model is responsive.
 3. Log the model switch.
@@ -263,6 +279,7 @@
 **Detection:** Human or agent identifies incorrect output.
 
 **Recovery:**
+
 1. Flag the incorrect output.
 2. Retry with a different model.
 3. If retry produces correct output: use it, log the failure.
@@ -275,6 +292,7 @@
 **Detection:** Model returns error or truncated output.
 
 **Recovery:**
+
 1. Split the task into smaller sub-tasks.
 2. Process each sub-task separately.
 3. Combine results.
@@ -288,12 +306,14 @@
 
 **Trigger:** Health check returns WARN (minor issues).
 **Behavior:**
+
 - Session continues with warnings displayed.
 - All operations proceed normally.
 - Warnings are logged in session record.
 - Issues are prioritized for next session.
 
 **Examples:**
+
 - Stale memory file (minor drift).
 - Empty auxiliary files.
 - Missing optional runtime file.
@@ -302,12 +322,14 @@
 
 **Trigger:** Health check returns FAIL on non-critical category.
 **Behavior:**
+
 - Session continues with degraded mode flag.
 - Affected operations may be limited.
 - Human is notified of the failure.
 - Recovery is attempted before proceeding.
 
 **Examples:**
+
 - Missing agent definition.
 - Model routing misconfigured.
 - Policy file missing.
@@ -316,11 +338,13 @@
 
 **Trigger:** Health check returns FAIL on critical category.
 **Behavior:**
+
 - Session is blocked until recovery.
 - Human must intervene.
 - No operations proceed until critical issue is resolved.
 
 **Examples:**
+
 - Corrupted runtime manifest.
 - All memory files missing.
 - No models available.
@@ -348,6 +372,7 @@ All recoveries are recorded in the session record:
 ## Recovery Testing
 
 Recovery procedures should be tested periodically:
+
 - **Boot failures:** Simulate missing memory file, verify recovery.
 - **Execution failures:** Introduce a known build error, verify recovery.
 - **Review failures:** Introduce a known security finding, verify recovery.

@@ -41,12 +41,12 @@ Task Intake → Model Routing → Model Selected → Task Execution
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Primary model unavailable | Apply fallback routing |
-| All models unavailable | Flag to human, pause non-urgent work |
-| Model produces incorrect output | Retry with different model |
-| Security-sensitive task | Prefer reasoning model, human review mandatory |
+| Condition                       | Action                                         |
+| ------------------------------- | ---------------------------------------------- |
+| Primary model unavailable       | Apply fallback routing                         |
+| All models unavailable          | Flag to human, pause non-urgent work           |
+| Model produces incorrect output | Retry with different model                     |
+| Security-sensitive task         | Prefer reasoning model, human review mandatory |
 
 ## Review Requirements
 

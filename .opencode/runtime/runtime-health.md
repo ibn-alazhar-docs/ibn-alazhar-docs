@@ -12,6 +12,7 @@
 **Check:** All required runtime files exist and are non-empty.
 
 **Required Files:**
+
 - `SYSTEM.md`
 - `PROJECT_RUNTIME.md`
 - `RUNTIME_MANIFESTO.md`
@@ -27,6 +28,7 @@
 - `AGENT_RULES.md`
 
 **Required Runtime Mechanics:**
+
 - `runtime/bootstrap.md`
 - `runtime/context-loading.md`
 - `runtime/escalation-rules.md`
@@ -41,13 +43,16 @@
 - `runtime/session-metrics.md`
 
 **Required Review Standards:**
+
 - `reviews/REVIEW_STANDARD.md`
 
 **Required MCP Docs:**
+
 - `mcp/runtime-hooks.md`
 - `mcp/integration-status.md`
 
 **Required Directories:**
+
 - `agents/core/` (8 agent files)
 - `skills/` (all skill files)
 - `memory/` (all memory files)
@@ -63,6 +68,7 @@
 **Check:** Memory files are consistent with project docs.
 
 **Checks:**
+
 - `memory/project/project-overview.md` matches `docs/00_PROJECT_BRIEF.md`.
 - `memory/project/current-status.md` matches actual project state.
 - `memory/brand/brand-rules.md` matches `docs/29_BRAND_IMPLEMENTATION_GUIDE.md`.
@@ -75,6 +81,7 @@
 **Check:** Phase gate status is current.
 
 **Checks:**
+
 - `runtime/runtime-status.md` exists and has current phase.
 - Phase matches `docs/13_PHASE_1_PLAN.md` (or relevant phase plan).
 - Gate status is not stale (last updated within 7 days).
@@ -86,6 +93,7 @@
 **Check:** Model routing is configured.
 
 **Checks:**
+
 - `MODEL_ROUTING.md` exists and has routing table.
 - `runtime/model-selection.md` exists.
 - Preferred models are listed.
@@ -98,6 +106,7 @@
 **Check:** Policies are loaded.
 
 **Checks:**
+
 - All policy files in `policies/` exist.
 - Policies are non-empty.
 - No policy conflicts detected.
@@ -109,6 +118,7 @@
 **Check:** All agent definitions exist and are complete.
 
 **Checks:**
+
 - All 8 agent files in `agents/core/` exist.
 - Each agent file has: role, mission, scope, inputs, outputs, escalation, boundaries, forbidden actions, workflow participation.
 
@@ -119,6 +129,7 @@
 **Check:** Recovery and rollback procedures are defined.
 
 **Checks:**
+
 - `runtime/rollback-procedures.md` exists and defines 6 rollback levels.
 - `runtime/failure-recovery.md` exists and covers all failure classes.
 - `runtime/deadlock-resolution.md` exists and defines 4 deadlock types.
@@ -131,6 +142,7 @@
 **Check:** Review artifact standards are defined.
 
 **Checks:**
+
 - `reviews/REVIEW_STANDARD.md` exists and defines artifact requirements.
 - Review template is included.
 - Severity definitions are clear.
@@ -143,6 +155,7 @@
 **Check:** MCP integration architecture is defined and status is tracked.
 
 **Checks:**
+
 - `mcp/runtime-hooks.md` exists and defines hook points.
 - `mcp/integration-status.md` exists and tracks server status.
 - Native tools are listed as operational.
@@ -161,30 +174,30 @@
 - Timestamp: YYYY-MM-DD HH:MM:SS
 - Overall: PASS | WARN | FAIL
 
-| Category | Status | Notes |
-|----------|--------|-------|
-| File Integrity | PASS/FAIL | [notes] |
-| Memory Consistency | PASS/WARN/FAIL | [notes] |
-| Phase Gate Status | PASS/WARN/FAIL | [notes] |
-| Model Routing | PASS/FAIL | [notes] |
-| Policy Enforcement | PASS/FAIL | [notes] |
-| Agent Availability | PASS/WARN/FAIL | [notes] |
-| Recovery Procedures | PASS/FAIL | [notes] |
-| Review Standards | PASS/FAIL | [notes] |
-| MCP Integration | PASS/WARN/FAIL | [notes] |
+| Category            | Status         | Notes   |
+| ------------------- | -------------- | ------- |
+| File Integrity      | PASS/FAIL      | [notes] |
+| Memory Consistency  | PASS/WARN/FAIL | [notes] |
+| Phase Gate Status   | PASS/WARN/FAIL | [notes] |
+| Model Routing       | PASS/FAIL      | [notes] |
+| Policy Enforcement  | PASS/FAIL      | [notes] |
+| Agent Availability  | PASS/WARN/FAIL | [notes] |
+| Recovery Procedures | PASS/FAIL      | [notes] |
+| Review Standards    | PASS/FAIL      | [notes] |
+| MCP Integration     | PASS/WARN/FAIL | [notes] |
 ```
 
 ---
 
 ## Health Check Frequency
 
-| Trigger | Frequency |
-|---------|-----------|
-| Session start | Every session |
-| Runtime file update | After update |
-| Phase status change | After change |
-| Manual request | On demand |
-| Scheduled | Daily (if runtime is active) |
+| Trigger             | Frequency                    |
+| ------------------- | ---------------------------- |
+| Session start       | Every session                |
+| Runtime file update | After update                 |
+| Phase status change | After change                 |
+| Manual request      | On demand                    |
+| Scheduled           | Daily (if runtime is active) |
 
 ---
 

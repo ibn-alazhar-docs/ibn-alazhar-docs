@@ -1,6 +1,7 @@
 # Runtime Status
 
 Check:
+
 - active phase
 - active specs
 - runtime source of truth

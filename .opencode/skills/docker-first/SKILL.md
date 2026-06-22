@@ -24,9 +24,10 @@ Enforce Docker-first local development practices.
 
 ### Commands
 
-- `pnpm docker:up` — Start infrastructure
-- `pnpm docker:down` — Stop infrastructure
-- `pnpm docker:logs` — View logs
+- `./ibn.sh dev-infra` — Start infrastructure (Postgres, Redis, MinIO)
+- `./ibn.sh start` — Full Docker stack (web + workers + infra)
+- `docker compose -f docker-compose.dev.yml down` — Stop infrastructure
+- `docker compose -f docker-compose.dev.yml logs -f` — View logs
 
 ### Dockerfile Standards
 

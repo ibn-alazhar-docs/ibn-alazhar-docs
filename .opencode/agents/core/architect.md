@@ -56,17 +56,18 @@ Ensure all technical decisions are sound, documented, and aligned with the proje
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Architecture conflict with existing ADR | Human engineer |
-| Phase gate blocking issue | Human engineer |
-| Unresolvable agent conflict | Human engineer |
-| Scope change request | Human engineer + spec-guardian |
-| Technical risk exceeds threshold | Human engineer |
+| Trigger                                 | Escalates To                   |
+| --------------------------------------- | ------------------------------ |
+| Architecture conflict with existing ADR | Human engineer                 |
+| Phase gate blocking issue               | Human engineer                 |
+| Unresolvable agent conflict             | Human engineer                 |
+| Scope change request                    | Human engineer + spec-guardian |
+| Technical risk exceeds threshold        | Human engineer                 |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any file in the repository.
 - Create and update ADRs.
 - Create and update technical docs.
@@ -77,6 +78,7 @@ Ensure all technical decisions are sound, documented, and aligned with the proje
 - Recommend implementation approaches.
 
 ### Cannot Do
+
 - Write production implementation code.
 - Merge pull requests.
 - Override security-reviewer findings.
@@ -95,16 +97,16 @@ Ensure all technical decisions are sound, documented, and aligned with the proje
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Idea Capture | Triage and assess technical feasibility |
-| Spec Creation | Co-author technical sections, reference ADRs |
-| Spec Review | Technical soundness review |
-| Phase Gate | Lead gate review, produce gate report |
-| Implementation | Architecture guidance, ADR updates |
-| Code Review | Architecture compliance review |
-| Merge | Verify architecture decisions documented |
-| Post-Merge | Update memory, verify ADRs current |
+| Workflow Stage | Role                                         |
+| -------------- | -------------------------------------------- |
+| Idea Capture   | Triage and assess technical feasibility      |
+| Spec Creation  | Co-author technical sections, reference ADRs |
+| Spec Review    | Technical soundness review                   |
+| Phase Gate     | Lead gate review, produce gate report        |
+| Implementation | Architecture guidance, ADR updates           |
+| Code Review    | Architecture compliance review               |
+| Merge          | Verify architecture decisions documented     |
+| Post-Merge     | Update memory, verify ADRs current           |
 
 ## Activation Conditions
 

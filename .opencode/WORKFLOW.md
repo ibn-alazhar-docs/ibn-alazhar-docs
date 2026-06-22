@@ -11,18 +11,19 @@
 Draft → Review → Approved → Locked → In Progress → Implemented → Verified → Closed
 ```
 
-| State | Description | Transition |
-|-------|-------------|------------|
-| Draft | Spec is being written | → Review when complete |
-| Review | Spec is under review by spec-guardian | → Approved or → Draft (revision) |
-| Approved | Spec passes review | → Locked at phase gate |
-| Locked | Spec is part of a locked phase | → In Progress when phase starts |
-| In Progress | Implementation is underway | → Implemented when code is ready |
-| Implemented | Code is written and in PR | → Verified when merged |
-| Verified | Code is merged and docs updated | → Closed |
-| Closed | Spec is complete | — |
+| State       | Description                           | Transition                       |
+| ----------- | ------------------------------------- | -------------------------------- |
+| Draft       | Spec is being written                 | → Review when complete           |
+| Review      | Spec is under review by spec-guardian | → Approved or → Draft (revision) |
+| Approved    | Spec passes review                    | → Locked at phase gate           |
+| Locked      | Spec is part of a locked phase        | → In Progress when phase starts  |
+| In Progress | Implementation is underway            | → Implemented when code is ready |
+| Implemented | Code is written and in PR             | → Verified when merged           |
+| Verified    | Code is merged and docs updated       | → Closed                         |
+| Closed      | Spec is complete                      | —                                |
 
 **Rules:**
+
 - Spec cannot move to In Progress without being Locked.
 - Spec cannot move to Implemented without passing all reviews.
 - Closed specs are archived but remain readable.
@@ -37,13 +38,13 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 Trigger → Automated Checks → Agent Reviews → Human Review → Decision
 ```
 
-| Stage | Trigger | Responsible | Output |
-|-------|---------|-------------|--------|
-| Trigger | PR opened or review requested | System | Review initiated |
-| Automated Checks | PR opened | GitHub Actions | Pass/fail report |
-| Agent Reviews | Automated checks pass | Security-reviewer, RTL-auditor, Frontend-polish | Review findings |
-| Human Review | Agent reviews pass | Human engineer | Approve / Request changes |
-| Decision | Human review complete | System | PR merged or returned |
+| Stage            | Trigger                       | Responsible                                     | Output                    |
+| ---------------- | ----------------------------- | ----------------------------------------------- | ------------------------- |
+| Trigger          | PR opened or review requested | System                                          | Review initiated          |
+| Automated Checks | PR opened                     | GitHub Actions                                  | Pass/fail report          |
+| Agent Reviews    | Automated checks pass         | Security-reviewer, RTL-auditor, Frontend-polish | Review findings           |
+| Human Review     | Agent reviews pass            | Human engineer                                  | Approve / Request changes |
+| Decision         | Human review complete         | System                                          | PR merged or returned     |
 
 **Parallel execution:** Automated checks and agent reviews run in parallel when possible.
 
@@ -57,14 +58,14 @@ Trigger → Automated Checks → Agent Reviews → Human Review → Decision
 Phase Complete → Gate Review → Release Candidate → Validation → Release → Post-Release
 ```
 
-| Stage | Description |
-|-------|-------------|
-| Phase Complete | All tasks in phase are implemented and merged |
-| Gate Review | Phase gate review confirms all deliverables |
-| Release Candidate | Version tagged, release notes drafted |
-| Validation | Smoke tests, manual verification |
-| Release | Version published, notes published |
-| Post-Release | Monitor metrics, collect feedback, update docs |
+| Stage             | Description                                    |
+| ----------------- | ---------------------------------------------- |
+| Phase Complete    | All tasks in phase are implemented and merged  |
+| Gate Review       | Phase gate review confirms all deliverables    |
+| Release Candidate | Version tagged, release notes drafted          |
+| Validation        | Smoke tests, manual verification               |
+| Release           | Version published, notes published             |
+| Post-Release      | Monitor metrics, collect feedback, update docs |
 
 **Release naming:** `v<major>.<minor>.<patch>` — e.g., `v1.0.0`.
 
@@ -78,16 +79,17 @@ Phase Complete → Gate Review → Release Candidate → Validation → Release 
 Identify → Draft → Review → Accept → Implement → Obsolete (optional)
 ```
 
-| Stage | Description |
-|-------|-------------|
-| Identify | Architecture decision is needed |
-| Draft | ADR is written in `docs/ADR/ADR-NNN-<title>.md` |
-| Review | ADR is reviewed by architect + human |
-| Accept | ADR is accepted and recorded |
-| Implement | Code changes follow the ADR |
-| Obsolete | ADR is superseded (status changed, not deleted) |
+| Stage     | Description                                     |
+| --------- | ----------------------------------------------- |
+| Identify  | Architecture decision is needed                 |
+| Draft     | ADR is written in `docs/ADR/ADR-NNN-<title>.md` |
+| Review    | ADR is reviewed by architect + human            |
+| Accept    | ADR is accepted and recorded                    |
+| Implement | Code changes follow the ADR                     |
+| Obsolete  | ADR is superseded (status changed, not deleted) |
 
 **ADR format:**
+
 ```markdown
 # ADR-NNN: Title
 
@@ -110,6 +112,7 @@ Phase N Complete → Gate Review → Pass → Phase N+1 Starts
 ```
 
 ### Gate Review Process
+
 1. Verify all Phase N deliverables are complete.
 2. Verify all Phase N specs are implemented and merged.
 3. Verify CI passes on main branch.
@@ -119,6 +122,7 @@ Phase N Complete → Gate Review → Pass → Phase N+1 Starts
 7. Record gate decision in `docs/19_DECISION_LOG.md`.
 
 ### Gate Pass Criteria
+
 - [ ] All deliverables verified
 - [ ] CI green on main
 - [ ] Docs updated
@@ -127,6 +131,7 @@ Phase N Complete → Gate Review → Pass → Phase N+1 Starts
 - [ ] Human approval recorded
 
 ### Gate Fail Actions
+
 - Identify blocking issues.
 - Create remediation tasks.
 - Schedule re-review.
@@ -141,18 +146,20 @@ Code Change → Detect Doc Impact → Update Docs → Verify Consistency → Rec
 ```
 
 ### When Docs Must Be Updated
-| Change Type | Docs to Update |
-|-------------|---------------|
-| New API endpoint | `docs/06_API_SPEC.md` |
-| DB schema change | `docs/07_DATABASE_SCHEMA.md`, Prisma schema |
-| Architecture change | Relevant ADR in `docs/ADR/` |
-| UI change | `docs/04_UI_DESIGN_SYSTEM.md` |
-| Security change | `docs/08_SECURITY_PRIVACY.md` |
-| Phase change | `docs/13_PHASE_1_PLAN.md` (or relevant phase plan) |
-| Scope change | `docs/27_MVP_SCOPE_LOCK.md` |
-| Decision made | `docs/19_DECISION_LOG.md` |
+
+| Change Type         | Docs to Update                                     |
+| ------------------- | -------------------------------------------------- |
+| New API endpoint    | `docs/06_API_SPEC.md`                              |
+| DB schema change    | `docs/07_DATABASE_SCHEMA.md`, Prisma schema        |
+| Architecture change | Relevant ADR in `docs/ADR/`                        |
+| UI change           | `docs/04_UI_DESIGN_SYSTEM.md`                      |
+| Security change     | `docs/08_SECURITY_PRIVACY.md`                      |
+| Phase change        | `docs/13_PHASE_1_PLAN.md` (or relevant phase plan) |
+| Scope change        | `docs/27_MVP_SCOPE_LOCK.md`                        |
+| Decision made       | `docs/19_DECISION_LOG.md`                          |
 
 ### Docs-Sync Agent Role
+
 - Detect when code changes impact docs.
 - Flag missing doc updates.
 - Verify doc consistency across files.
@@ -169,12 +176,14 @@ Session Start → Boot Sequence → Context Loaded → Task Intake
 See `BOOT_SEQUENCE.md` for the detailed boot sequence.
 
 ### Bootstrap Triggers
+
 - New session starts.
 - Runtime files are updated.
 - Phase status changes.
 - Memory is updated.
 
 ### Bootstrap Outputs
+
 - Session context loaded.
 - Model selected.
 - Agents available.
@@ -190,6 +199,7 @@ Code Ready → CI Pass → Agent Reviews → Human Review → Approve/Merge → 
 ```
 
 ### Approval Gates (All Must Pass)
+
 1. **CI:** Lint, typecheck, test, build.
 2. **CodeRabbit:** No required findings.
 3. **Security:** Security-reviewer passes.
@@ -199,6 +209,7 @@ Code Ready → CI Pass → Agent Reviews → Human Review → Approve/Merge → 
 7. **Human:** Final approval.
 
 ### Post-Merge Actions
+
 - Update spec status to Verified.
 - Update memory if project state changed.
 - Update docs if implementation changed documented behavior.

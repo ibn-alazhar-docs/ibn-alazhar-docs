@@ -54,17 +54,18 @@ Ensure every feature has a complete, unambiguous spec before implementation, and
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Spec is fundamentally ambiguous | Architect → Human engineer |
-| Scope creep detected | Human engineer |
-| Implementation deviates from spec | Human engineer + architect |
-| MVP scope change requested | Human engineer (Product Lead + Tech Lead) |
-| Phase scope change requested | Human engineer |
+| Trigger                           | Escalates To                              |
+| --------------------------------- | ----------------------------------------- |
+| Spec is fundamentally ambiguous   | Architect → Human engineer                |
+| Scope creep detected              | Human engineer                            |
+| Implementation deviates from spec | Human engineer + architect                |
+| MVP scope change requested        | Human engineer (Product Lead + Tech Lead) |
+| Phase scope change requested      | Human engineer                            |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any spec, doc, or implementation file.
 - Review specs for completeness and clarity.
 - Flag scope violations.
@@ -74,6 +75,7 @@ Ensure every feature has a complete, unambiguous spec before implementation, and
 - Cross-reference implementation with spec.
 
 ### Cannot Do
+
 - Write implementation code.
 - Approve scope changes (human decision only).
 - Override architect decisions.
@@ -91,16 +93,16 @@ Ensure every feature has a complete, unambiguous spec before implementation, and
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Idea Capture | Assess if idea needs a spec |
-| Spec Creation | Review draft for completeness |
-| Spec Review | Primary reviewer, produce review report |
-| Phase Gate | Verify all specs are reviewed and approved |
-| Implementation | Monitor spec compliance |
-| Code Review | Verify implementation matches spec |
-| Merge | Confirm spec compliance before merge |
-| Post-Merge | Update spec status to Verified/Closed |
+| Workflow Stage | Role                                       |
+| -------------- | ------------------------------------------ |
+| Idea Capture   | Assess if idea needs a spec                |
+| Spec Creation  | Review draft for completeness              |
+| Spec Review    | Primary reviewer, produce review report    |
+| Phase Gate     | Verify all specs are reviewed and approved |
+| Implementation | Monitor spec compliance                    |
+| Code Review    | Verify implementation matches spec         |
+| Merge          | Confirm spec compliance before merge       |
+| Post-Merge     | Update spec status to Verified/Closed      |
 
 ## Activation Conditions
 

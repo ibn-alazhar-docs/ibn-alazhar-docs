@@ -16,27 +16,27 @@ Enforce phase-gated development. No phase transition without gate review.
 
 ## Current Phase
 
-Phase 1D — OCR Burn-in + Real-World Stress Testing
+Phase 2C-2 — Tags ✅ (Complete)
 
-### Phase 1D Allowed
+### Phase 2C-2 Allowed
 
-- Real-world Arabic OCR simulation and comparison
-- Memory/resource stress testing
-- Pipeline throughput benchmarking
-- Cleanup quality regression auditing
-- Failure taxonomy expansion
-- Operational safety review
-- Surya OCR provider API updates
-- Related documentation
+- repo stabilization
+- governance
+- docker foundation
+- CI baseline
+- runtime setup
+- auth skeleton
+- app shell
+- RTL foundation
+- design system foundation
 
-### Phase 1D Blocked
+### Phase 2C-2 Blocked
 
-- AI reconstruction or LLM cleanup
-- Distributed inference or GPU infrastructure
-- Multimodal systems
-- New product features outside OCR reliability
-- Auth, folders, accounts, or collaboration
-- Production deployment without Phase 2 gate
+- full OCR pipeline changes
+- enhanced export features
+- sharing and collaboration
+- production deployment
+- enterprise features
 
 ## Rules
 

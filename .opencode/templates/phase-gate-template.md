@@ -31,15 +31,15 @@
 
 ## Agent Inputs
 
-| Agent | Status | Notes |
-|-------|--------|-------|
-| spec-guardian | Pass / Fail | [notes] |
-| security-reviewer | Pass / Fail | [notes] |
-| rtl-auditor | Pass / Fail / N/A | [notes] |
-| frontend-polish | Pass / Fail / N/A | [notes] |
-| docker-auditor | Pass / Fail | [notes] |
-| qa-lead | Pass / Fail | [notes] |
-| docs-sync | Pass / Fail | [notes] |
+| Agent             | Status            | Notes   |
+| ----------------- | ----------------- | ------- |
+| spec-guardian     | Pass / Fail       | [notes] |
+| security-reviewer | Pass / Fail       | [notes] |
+| rtl-auditor       | Pass / Fail / N/A | [notes] |
+| frontend-polish   | Pass / Fail / N/A | [notes] |
+| docker-auditor    | Pass / Fail       | [notes] |
+| qa-lead           | Pass / Fail       | [notes] |
+| docs-sync         | Pass / Fail       | [notes] |
 
 ## Docs Status
 

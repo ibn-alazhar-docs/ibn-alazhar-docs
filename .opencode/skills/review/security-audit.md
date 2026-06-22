@@ -45,12 +45,12 @@ Code Change → Security Audit → Findings → Fix → Pass/Fail
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Critical vulnerability | Block merge, immediate fix required |
-| Secret detected | Block merge, rotate secret |
-| Auth bypass | Block merge, fix required |
-| Security baseline not met | Block merge, fix required |
+| Condition                 | Action                              |
+| ------------------------- | ----------------------------------- |
+| Critical vulnerability    | Block merge, immediate fix required |
+| Secret detected           | Block merge, rotate secret          |
+| Auth bypass               | Block merge, fix required           |
+| Security baseline not met | Block merge, fix required           |
 
 ## Review Requirements
 

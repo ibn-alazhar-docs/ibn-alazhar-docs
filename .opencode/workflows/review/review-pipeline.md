@@ -15,6 +15,7 @@ PR Open → CI → CodeRabbit → Agent Reviews → Human Review → Merge
 
 **Trigger:** PR opened or updated.
 **Checks:**
+
 - ESLint — no errors
 - TypeScript typecheck — no errors
 - Vitest — all tests pass
@@ -27,6 +28,7 @@ PR Open → CI → CodeRabbit → Agent Reviews → Human Review → Merge
 
 **Trigger:** CI passes.
 **Categories:**
+
 - Required findings: security, privacy, data loss, broken build, scope creep, spec mismatch.
 - Advisory findings: style, optional refactoring.
 
@@ -39,14 +41,14 @@ PR Open → CI → CodeRabbit → Agent Reviews → Human Review → Merge
 
 ### Parallel Reviews
 
-| Agent | Trigger | Focus |
-|-------|---------|-------|
-| security-reviewer | Any code change | Security baseline |
-| rtl-auditor | UI change | RTL and Arabic compliance |
-| frontend-polish | UI change | Brand consistency |
-| docker-auditor | Docker change | Container compliance |
-| spec-guardian | Any change | Spec compliance |
-| qa-lead | Any change | Test coverage |
+| Agent             | Trigger         | Focus                     |
+| ----------------- | --------------- | ------------------------- |
+| security-reviewer | Any code change | Security baseline         |
+| rtl-auditor       | UI change       | RTL and Arabic compliance |
+| frontend-polish   | UI change       | Brand consistency         |
+| docker-auditor    | Docker change   | Container compliance      |
+| spec-guardian     | Any change      | Spec compliance           |
+| qa-lead           | Any change      | Test coverage             |
 
 **Pass:** All agent reviews pass.
 **Fail:** Any agent finds blocking issue. Must fix.
@@ -56,6 +58,7 @@ PR Open → CI → CodeRabbit → Agent Reviews → Human Review → Merge
 **Trigger:** All automated and agent reviews pass.
 **Reviewer:** Human engineer with review rights.
 **Focus:**
+
 - Code quality and readability
 - Spec compliance
 - Architecture consistency
@@ -70,6 +73,7 @@ PR Open → CI → CodeRabbit → Agent Reviews → Human Review → Merge
 **Trigger:** Human review approves.
 **Action:** Merge PR to main branch.
 **Post-Merge:**
+
 - Update spec status.
 - Update memory.
 - Update docs if needed.
@@ -96,15 +100,15 @@ Reviews that don't depend on each other run in parallel. Human review waits for 
 
 ## Review Escalation
 
-| Issue | Escalates To |
-|-------|-------------|
-| CI failure | PR author |
-| CodeRabbit required finding | PR author |
-| Security finding | Security-reviewer → Human |
-| RTL finding | RTL-auditor → Human |
-| Brand finding | Frontend-polish → Human |
-| Spec mismatch | Spec-guardian → Human |
-| Human review rejection | PR author |
+| Issue                       | Escalates To              |
+| --------------------------- | ------------------------- |
+| CI failure                  | PR author                 |
+| CodeRabbit required finding | PR author                 |
+| Security finding            | Security-reviewer → Human |
+| RTL finding                 | RTL-auditor → Human       |
+| Brand finding               | Frontend-polish → Human   |
+| Spec mismatch               | Spec-guardian → Human     |
+| Human review rejection      | PR author                 |
 
 ---
 

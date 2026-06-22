@@ -29,6 +29,7 @@ Rollback is triggered when:
 **Recovery:** `git checkout <file>` or restore from last known good state.
 
 **Procedure:**
+
 1. Identify the corrupted file(s).
 2. Run `git diff <file>` to see what changed.
 3. If change is in current session: revert the edit.
@@ -48,6 +49,7 @@ Rollback is triggered when:
 **Recovery:** Revert all session changes.
 
 **Procedure:**
+
 1. Identify the session to rollback (session ID in `sessions/`).
 2. List all files changed in that session (from session record).
 3. For each changed file:
@@ -69,6 +71,7 @@ Rollback is triggered when:
 **Recovery:** Return spec to Draft state, revise, re-review.
 
 **Procedure:**
+
 1. Identify the incorrect spec.
 2. Change spec status from `Locked` or `Approved` to `Draft`.
 3. Document the reason for rollback in `spec/review.md`.
@@ -92,6 +95,7 @@ Rollback is triggered when:
 **Recovery:** Revert phase changes, re-evaluate gate criteria, re-run gate.
 
 **Procedure:**
+
 1. Identify the blocking issue(s).
 2. Document the issue in `docs/19_DECISION_LOG.md`.
 3. Change phase gate status from `PASS` to `FAIL`.
@@ -117,6 +121,7 @@ Rollback is triggered when:
 **Recovery:** Restore from last known good state or rebuild from source docs.
 
 **Procedure:**
+
 1. Identify the corrupted file(s).
 2. Determine the source of truth:
    - Memory files → source docs (`docs/`, `PROJECT_RUNTIME.md`).
@@ -142,6 +147,7 @@ Rollback is triggered when:
 **Recovery:** Revert migration, restore from backup.
 
 **Procedure:**
+
 1. Stop all services that use the database.
 2. Identify the failed migration: `npx prisma migrate status`.
 3. If migration is partially applied:
@@ -162,14 +168,14 @@ Rollback is triggered when:
 
 ## Rollback Decision Matrix
 
-| Scenario | Rollback Level | Who Decides | Who Executes |
-|----------|---------------|-------------|--------------|
-| Wrong file content | Level 1 | Session agent | Session agent |
-| Bad session output | Level 2 | Human engineer | Human engineer + agents |
-| Incorrect spec | Level 3 | Architect + human | Architect + human |
-| Failed phase gate | Level 4 | Product Lead + Tech Lead | Human engineer |
-| Corrupted memory | Level 5 | Docs-sync agent | Docs-sync agent + human |
-| Bad migration | Level 6 | Human engineer | Human engineer |
+| Scenario           | Rollback Level | Who Decides              | Who Executes            |
+| ------------------ | -------------- | ------------------------ | ----------------------- |
+| Wrong file content | Level 1        | Session agent            | Session agent           |
+| Bad session output | Level 2        | Human engineer           | Human engineer + agents |
+| Incorrect spec     | Level 3        | Architect + human        | Architect + human       |
+| Failed phase gate  | Level 4        | Product Lead + Tech Lead | Human engineer          |
+| Corrupted memory   | Level 5        | Docs-sync agent          | Docs-sync agent + human |
+| Bad migration      | Level 6        | Human engineer           | Human engineer          |
 
 ---
 
@@ -207,6 +213,7 @@ All rollbacks are recorded in `docs/19_DECISION_LOG.md`:
 ## Rollback Testing
 
 Rollback procedures should be tested:
+
 - **Level 1-2:** Test during normal development (naturally occurs).
 - **Level 3-4:** Test during phase gate preparation (simulate spec/phase rollback).
 - **Level 5:** Test during runtime health checks (simulate memory corruption).

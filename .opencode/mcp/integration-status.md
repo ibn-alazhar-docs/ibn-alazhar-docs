@@ -8,13 +8,13 @@
 
 ## Status Definitions
 
-| Status | Meaning | Criteria |
-|--------|---------|----------|
-| **Operational** | MCP server is connected and verified. | Server responds to health check, tools are callable. |
-| **Planned** | MCP server is planned for future integration. | Defined in `mcp/` directory, not yet connected. |
-| **Conceptual** | MCP server is defined conceptually but not planned for immediate integration. | Described in `MCP_STACK.md`, no configuration exists. |
-| **Disconnected** | MCP server was connected but is currently unavailable. | Was operational, now failing health check. |
-| **Verified** | MCP server is operational and has passed integration testing. | Operational + tested in real session. |
+| Status           | Meaning                                                                       | Criteria                                              |
+| ---------------- | ----------------------------------------------------------------------------- | ----------------------------------------------------- |
+| **Operational**  | MCP server is connected and verified.                                         | Server responds to health check, tools are callable.  |
+| **Planned**      | MCP server is planned for future integration.                                 | Defined in `mcp/` directory, not yet connected.       |
+| **Conceptual**   | MCP server is defined conceptually but not planned for immediate integration. | Described in `MCP_STACK.md`, no configuration exists. |
+| **Disconnected** | MCP server was connected but is currently unavailable.                        | Was operational, now failing health check.            |
+| **Verified**     | MCP server is operational and has passed integration testing.                 | Operational + tested in real session.                 |
 
 ---
 
@@ -24,36 +24,36 @@
 
 These tools are built into the runtime and do not require external MCP servers:
 
-| Tool | Status | Category | Notes |
-|------|--------|----------|-------|
-| read | Operational | Filesystem | Native tool |
-| write | Operational | Filesystem | Native tool |
-| edit | Operational | Filesystem | Native tool |
-| glob | Operational | Filesystem | Native tool |
-| grep | Operational | Filesystem | Native tool |
-| bash | Operational | Shell | Native tool |
-| webfetch | Operational | Web | Native tool |
-| websearch | Operational | Web | Native tool |
-| task | Operational | Orchestration | Native tool |
-| todowrite | Operational | Orchestration | Native tool |
-| question | Operational | Communication | Native tool |
-| skill | Operational | Skill | Native tool |
-| notion-fetch | Operational | Notion | Native tool |
-| notion-create-pages | Operational | Notion | Native tool |
-| notion-update-page | Operational | Notion | Native tool |
-| notion-search | Operational | Notion | Native tool |
+| Tool                | Status      | Category      | Notes       |
+| ------------------- | ----------- | ------------- | ----------- |
+| read                | Operational | Filesystem    | Native tool |
+| write               | Operational | Filesystem    | Native tool |
+| edit                | Operational | Filesystem    | Native tool |
+| glob                | Operational | Filesystem    | Native tool |
+| grep                | Operational | Filesystem    | Native tool |
+| bash                | Operational | Shell         | Native tool |
+| webfetch            | Operational | Web           | Native tool |
+| websearch           | Operational | Web           | Native tool |
+| task                | Operational | Orchestration | Native tool |
+| todowrite           | Operational | Orchestration | Native tool |
+| question            | Operational | Communication | Native tool |
+| skill               | Operational | Skill         | Native tool |
+| notion-fetch        | Operational | Notion        | Native tool |
+| notion-create-pages | Operational | Notion        | Native tool |
+| notion-update-page  | Operational | Notion        | Native tool |
+| notion-search       | Operational | Notion        | Native tool |
 
 ### External MCP Servers (Not Yet Connected)
 
-| Server | Status | Hook | Planned Phase | Notes |
-|--------|--------|------|---------------|-------|
-| Filesystem MCP | Conceptual | H-01 | TBD | Native tools cover all current needs |
-| Shell MCP | Conceptual | H-02 | TBD | Native bash covers all current needs |
-| Prisma/PostgreSQL MCP | Conceptual | H-03 | Phase 2+ | Prisma CLI via bash is sufficient for Phase 1 |
-| Docker MCP | Conceptual | H-04 | Phase 2+ | Docker CLI via bash is sufficient for Phase 1 |
-| Git MCP | Conceptual | H-05 | TBD | Git CLI via bash is sufficient |
-| Playwright MCP | Conceptual | H-06 | Phase 2+ | Requires UI to exist first |
-| Security MCP | Conceptual | H-07 | Phase 2+ | Manual review is sufficient for Phase 1 |
+| Server                | Status     | Hook | Planned Phase | Notes                                         |
+| --------------------- | ---------- | ---- | ------------- | --------------------------------------------- |
+| Filesystem MCP        | Conceptual | H-01 | TBD           | Native tools cover all current needs          |
+| Shell MCP             | Conceptual | H-02 | TBD           | Native bash covers all current needs          |
+| Prisma/PostgreSQL MCP | Conceptual | H-03 | Phase 2+      | Prisma CLI via bash is sufficient for Phase 1 |
+| Docker MCP            | Conceptual | H-04 | Phase 2+      | Docker CLI via bash is sufficient for Phase 1 |
+| Git MCP               | Conceptual | H-05 | TBD           | Git CLI via bash is sufficient                |
+| Playwright MCP        | Conceptual | H-06 | Phase 2+      | Requires UI to exist first                    |
+| Security MCP          | Conceptual | H-07 | Phase 2+      | Manual review is sufficient for Phase 1       |
 
 ---
 
@@ -134,6 +134,7 @@ When a new MCP server is proposed:
 ## Health Check
 
 MCP server health is checked:
+
 - **At session start** — During boot sequence (Step 7: Health Checks).
 - **Before tool use** — When an agent first uses a tool from a server.
 - **Periodically** — If automated health scheduling is enabled.
@@ -146,26 +147,26 @@ MCP server health is checked:
 - Timestamp: YYYY-MM-DD HH:MM:SS
 - Overall: PASS | WARN | FAIL
 
-| Server | Status | Last Checked | Notes |
-|--------|--------|--------------|-------|
-| Filesystem MCP | Conceptual | — | Not yet connected |
-| Docker MCP | Conceptual | — | Not yet connected |
-| ... | ... | ... | ... |
+| Server         | Status     | Last Checked | Notes             |
+| -------------- | ---------- | ------------ | ----------------- |
+| Filesystem MCP | Conceptual | —            | Not yet connected |
+| Docker MCP     | Conceptual | —            | Not yet connected |
+| ...            | ...        | ...          | ...               |
 ```
 
 ---
 
 ## Current Assessment
 
-| Dimension | Status | Notes |
-|-----------|--------|-------|
-| Native tools | Operational | All 16 native tools functional |
-| External MCP servers | Conceptual | 7 servers defined, none connected |
-| Hook points | Defined | 7 hooks defined with interfaces |
-| Fallback model | Defined | Native tools cover all current needs |
-| Permission model | Defined | Agent-specific permissions for each hook |
-| Lifecycle | Defined | Registration, disconnection, deprecation processes |
-| Health check | Defined | But not yet automated |
+| Dimension            | Status      | Notes                                              |
+| -------------------- | ----------- | -------------------------------------------------- |
+| Native tools         | Operational | All 16 native tools functional                     |
+| External MCP servers | Conceptual  | 7 servers defined, none connected                  |
+| Hook points          | Defined     | 7 hooks defined with interfaces                    |
+| Fallback model       | Defined     | Native tools cover all current needs               |
+| Permission model     | Defined     | Agent-specific permissions for each hook           |
+| Lifecycle            | Defined     | Registration, disconnection, deprecation processes |
+| Health check         | Defined     | But not yet automated                              |
 
 **Assessment:** The runtime has a complete MCP integration architecture. No external MCP servers are connected, but native tools provide all required functionality for Phase 1. External MCP servers will be integrated as needed in future phases.
 

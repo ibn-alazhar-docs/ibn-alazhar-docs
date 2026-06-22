@@ -52,17 +52,18 @@ Ensure documentation stays in sync with code changes and project state.
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Doc is significantly outdated | Human engineer |
-| Doc conflict detected between files | Human engineer + architect |
-| Memory is inconsistent with project state | Human engineer |
-| Doc update requires technical knowledge | Architect |
-| Spec status is unclear | Spec-guardian |
+| Trigger                                   | Escalates To               |
+| ----------------------------------------- | -------------------------- |
+| Doc is significantly outdated             | Human engineer             |
+| Doc conflict detected between files       | Human engineer + architect |
+| Memory is inconsistent with project state | Human engineer             |
+| Doc update requires technical knowledge   | Architect                  |
+| Spec status is unclear                    | Spec-guardian              |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any file in the repository.
 - Detect when code changes impact docs.
 - Flag missing doc updates.
@@ -73,6 +74,7 @@ Ensure documentation stays in sync with code changes and project state.
 - Write doc sync reports.
 
 ### Cannot Do
+
 - Write production implementation code.
 - Update docs without detecting the need.
 - Override technical content in docs.
@@ -90,30 +92,30 @@ Ensure documentation stays in sync with code changes and project state.
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Spec Creation | Ensure spec references correct docs |
-| Spec Review | Verify spec doc references |
-| Phase Gate | Verify docs are updated for phase |
-| Implementation | Detect doc impact of code changes |
-| Code Review | Flag missing doc updates |
-| Merge | Confirm docs are updated before merge |
-| Post-Merge | Update memory, verify doc consistency |
+| Workflow Stage | Role                                  |
+| -------------- | ------------------------------------- |
+| Spec Creation  | Ensure spec references correct docs   |
+| Spec Review    | Verify spec doc references            |
+| Phase Gate     | Verify docs are updated for phase     |
+| Implementation | Detect doc impact of code changes     |
+| Code Review    | Flag missing doc updates              |
+| Merge          | Confirm docs are updated before merge |
+| Post-Merge     | Update memory, verify doc consistency |
 
 ## Doc Impact Detection
 
-| Code Change | Docs to Check |
-|-------------|--------------|
-| New API endpoint | `docs/06_API_SPEC.md` |
-| DB schema change | `docs/07_DATABASE_SCHEMA.md`, Prisma schema |
-| Architecture change | Relevant ADR in `docs/ADR/` |
-| UI change | `docs/04_UI_DESIGN_SYSTEM.md` |
-| Security change | `docs/08_SECURITY_PRIVACY.md` |
-| Phase change | `docs/13_PHASE_1_PLAN.md` (or relevant) |
-| Scope change | `docs/27_MVP_SCOPE_LOCK.md` |
-| Decision made | `docs/19_DECISION_LOG.md` |
-| Runtime change | `.opencode/` files |
-| Memory change | `memory/` files |
+| Code Change         | Docs to Check                               |
+| ------------------- | ------------------------------------------- |
+| New API endpoint    | `docs/06_API_SPEC.md`                       |
+| DB schema change    | `docs/07_DATABASE_SCHEMA.md`, Prisma schema |
+| Architecture change | Relevant ADR in `docs/ADR/`                 |
+| UI change           | `docs/04_UI_DESIGN_SYSTEM.md`               |
+| Security change     | `docs/08_SECURITY_PRIVACY.md`               |
+| Phase change        | `docs/13_PHASE_1_PLAN.md` (or relevant)     |
+| Scope change        | `docs/27_MVP_SCOPE_LOCK.md`                 |
+| Decision made       | `docs/19_DECISION_LOG.md`                   |
+| Runtime change      | `.opencode/` files                          |
+| Memory change       | `memory/` files                             |
 
 ## Activation Conditions
 

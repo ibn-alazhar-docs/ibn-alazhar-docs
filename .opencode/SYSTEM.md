@@ -113,19 +113,19 @@ The runtime layer (`.opencode/`) does **not** override product docs. It operatio
 
 ## Quick Reference
 
-| Need | Go To |
-|------|-------|
-| Start a session | `BOOT_SEQUENCE.md` |
-| Understand project context | `PROJECT_RUNTIME.md` |
-| Know what rules apply | `AI_OPERATING_RULES.md` |
-| Route a task to a model | `MODEL_ROUTING.md` |
-| Check phase gate status | `PHASE_GATES.md` |
-| Run a review | `REVIEW_PIPELINE.md` |
-| Understand workflow | `WORKFLOW.md` |
-| Load an agent | `agents/core/<agent>.md` |
-| Activate a skill | `skills/<category>/<skill>.md` |
-| Check memory | `memory/<category>/` |
-| Check runtime status | `runtime/runtime-status.md` |
+| Need                       | Go To                          |
+| -------------------------- | ------------------------------ |
+| Start a session            | `BOOT_SEQUENCE.md`             |
+| Understand project context | `PROJECT_RUNTIME.md`           |
+| Know what rules apply      | `AI_OPERATING_RULES.md`        |
+| Route a task to a model    | `MODEL_ROUTING.md`             |
+| Check phase gate status    | `PHASE_GATES.md`               |
+| Run a review               | `REVIEW_PIPELINE.md`           |
+| Understand workflow        | `WORKFLOW.md`                  |
+| Load an agent              | `agents/core/<agent>.md`       |
+| Activate a skill           | `skills/<category>/<skill>.md` |
+| Check memory               | `memory/<category>/`           |
+| Check runtime status       | `runtime/runtime-status.md`    |
 
 ---
 

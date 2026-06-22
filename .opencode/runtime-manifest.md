@@ -3,15 +3,18 @@
 Generated: Wed May 20 02:01:06 PM EEST 2026
 
 ## Current Branch
+
 001-bootstrap-spec-kit
 
 ## Active Phase
+
 # Active Phase
 
 Current Phase:
 Phase 1 — Foundation Stabilization
 
 Allowed:
+
 - repo stabilization
 - governance
 - docker foundation
@@ -23,6 +26,7 @@ Allowed:
 - design system foundation
 
 Blocked:
+
 - full OCR
 - advanced search
 - production deployment
@@ -30,6 +34,7 @@ Blocked:
 - full upload pipeline
 
 ## Governance Files
+
 governance/AGENT_POLICY.md
 governance/AI_AGENT_EXECUTION_CONTRACT.md
 governance/CHANGE_CONTROL.md
@@ -41,9 +46,11 @@ governance/SOURCE_OF_TRUTH.md
 governance/SPEC_AUTHORITY.md
 
 ## Specs
+
 specs/INDEX.md
 
 ## Runtime Files
+
 .opencode/.gitignore
 .opencode/AGENT_RULES.md
 .opencode/BOOT_SEQUENCE.md
@@ -137,4 +144,3 @@ specs/INDEX.md
 .opencode/workflows/release-flow.md
 .opencode/workflows/review-flow.md
 .opencode/workflows/spec-flow.md
-

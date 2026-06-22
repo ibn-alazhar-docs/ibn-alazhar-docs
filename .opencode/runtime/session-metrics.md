@@ -9,6 +9,7 @@
 ## Why Track Session Metrics
 
 Session metrics enable:
+
 - **Model routing optimization** — Identify which models perform best for which tasks.
 - **Session planning** — Estimate effort for similar future tasks.
 - **Quality improvement** — Track review pass rates and finding patterns.
@@ -21,65 +22,65 @@ Session metrics enable:
 
 ### 1. Session Efficiency
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Session duration | Total time from boot to wrap | Start timestamp → end timestamp |
-| Boot time | Time from session start to "Session Ready" | Step 1 start → Step 8 complete |
-| Task count | Number of tasks completed in the session | Count from session record |
-| Task success rate | Percentage of tasks completed successfully | Completed / Total × 100 |
-| Fallback count | Number of times fallback model was used | Count model switches in session record |
-| Escalation count | Number of escalations triggered | Count escalation events in session record |
+| Metric            | Description                                | How to Measure                            |
+| ----------------- | ------------------------------------------ | ----------------------------------------- |
+| Session duration  | Total time from boot to wrap               | Start timestamp → end timestamp           |
+| Boot time         | Time from session start to "Session Ready" | Step 1 start → Step 8 complete            |
+| Task count        | Number of tasks completed in the session   | Count from session record                 |
+| Task success rate | Percentage of tasks completed successfully | Completed / Total × 100                   |
+| Fallback count    | Number of times fallback model was used    | Count model switches in session record    |
+| Escalation count  | Number of escalations triggered            | Count escalation events in session record |
 
 ### 2. Model Performance
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Model used | Which model handled the session | From session record |
-| Model switches | Number of mid-session model changes | Count model switches |
-| Output quality | Subjective quality rating (1-5) | Post-session assessment |
-| Hallucination count | Number of incorrect outputs detected | Count flagged outputs |
+| Metric              | Description                                 | How to Measure                        |
+| ------------------- | ------------------------------------------- | ------------------------------------- |
+| Model used          | Which model handled the session             | From session record                   |
+| Model switches      | Number of mid-session model changes         | Count model switches                  |
+| Output quality      | Subjective quality rating (1-5)             | Post-session assessment               |
+| Hallucination count | Number of incorrect outputs detected        | Count flagged outputs                 |
 | Context utilization | Estimated percentage of context window used | Subjective estimate (Low/Medium/High) |
 
 ### 3. Review Quality
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Reviews run | Number of review types executed | Count from session record |
-| Review pass rate | Percentage of reviews that passed | Passed / Total × 100 |
-| Findings count | Total findings across all reviews | Sum of findings |
-| Required findings | Findings that blocked merge | Count required findings |
-| Advisory findings | Findings that did not block merge | Count advisory findings |
-| Review time | Time spent on reviews | Review start → review complete |
+| Metric            | Description                       | How to Measure                 |
+| ----------------- | --------------------------------- | ------------------------------ |
+| Reviews run       | Number of review types executed   | Count from session record      |
+| Review pass rate  | Percentage of reviews that passed | Passed / Total × 100           |
+| Findings count    | Total findings across all reviews | Sum of findings                |
+| Required findings | Findings that blocked merge       | Count required findings        |
+| Advisory findings | Findings that did not block merge | Count advisory findings        |
+| Review time       | Time spent on reviews             | Review start → review complete |
 
 ### 4. Agent Performance
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Agents activated | Number of agents used in the session | Count from session record |
-| Agent findings | Number of findings per agent | Count per agent |
-| Agent accuracy | Percentage of findings confirmed by human | Confirmed / Total × 100 |
-| Agent false positives | Findings that were incorrect | Count false positives |
-| Agent missed issues | Issues the agent should have found but didn't | Count missed issues |
+| Metric                | Description                                   | How to Measure            |
+| --------------------- | --------------------------------------------- | ------------------------- |
+| Agents activated      | Number of agents used in the session          | Count from session record |
+| Agent findings        | Number of findings per agent                  | Count per agent           |
+| Agent accuracy        | Percentage of findings confirmed by human     | Confirmed / Total × 100   |
+| Agent false positives | Findings that were incorrect                  | Count false positives     |
+| Agent missed issues   | Issues the agent should have found but didn't | Count missed issues       |
 
 ### 5. Code Quality (Implementation Sessions)
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Files changed | Number of files modified | Count from git diff |
-| Lines added | Lines of code added | `git diff --stat` |
-| Lines removed | Lines of code removed | `git diff --stat` |
-| Tests added | Number of new tests | Count test files/functions |
-| Tests passing | Percentage of tests passing | Passed / Total × 100 |
-| CI pass rate | Percentage of CI checks passing | Passed / Total × 100 |
+| Metric        | Description                     | How to Measure             |
+| ------------- | ------------------------------- | -------------------------- |
+| Files changed | Number of files modified        | Count from git diff        |
+| Lines added   | Lines of code added             | `git diff --stat`          |
+| Lines removed | Lines of code removed           | `git diff --stat`          |
+| Tests added   | Number of new tests             | Count test files/functions |
+| Tests passing | Percentage of tests passing     | Passed / Total × 100       |
+| CI pass rate  | Percentage of CI checks passing | Passed / Total × 100       |
 
 ### 6. Runtime Health
 
-| Metric | Description | How to Measure |
-|--------|-------------|----------------|
-| Health check result | Overall health check status | PASS / WARN / FAIL |
-| Health check categories | Per-category status | 6 categories from `runtime-health.md` |
-| Degraded mode | Whether session ran in degraded mode | Yes / No |
-| Recovery events | Number of failure recoveries | Count from session record |
+| Metric                  | Description                          | How to Measure                        |
+| ----------------------- | ------------------------------------ | ------------------------------------- |
+| Health check result     | Overall health check status          | PASS / WARN / FAIL                    |
+| Health check categories | Per-category status                  | 6 categories from `runtime-health.md` |
+| Degraded mode           | Whether session ran in degraded mode | Yes / No                              |
+| Recovery events         | Number of failure recoveries         | Count from session record             |
 
 ---
 
@@ -91,6 +92,7 @@ Each session record includes a metrics section:
 ## Session Metrics
 
 ### Efficiency
+
 - Duration: [start → end]
 - Boot time: [step 1 start → step 8 complete]
 - Tasks completed: [count]
@@ -99,6 +101,7 @@ Each session record includes a metrics section:
 - Escalations triggered: [count]
 
 ### Model
+
 - Primary model: [model name]
 - Model switches: [count]
 - Output quality: [1-5]
@@ -106,6 +109,7 @@ Each session record includes a metrics section:
 - Context utilization: [Low/Medium/High]
 
 ### Reviews
+
 - Reviews run: [count]
 - Review pass rate: [percentage]
 - Total findings: [count]
@@ -113,11 +117,13 @@ Each session record includes a metrics section:
 - Advisory findings: [count]
 
 ### Agents
+
 - Agents activated: [count]
 - Agent findings: [per-agent count]
 - Agent accuracy: [percentage]
 
 ### Code (if applicable)
+
 - Files changed: [count]
 - Lines added: [count]
 - Lines removed: [count]
@@ -125,6 +131,7 @@ Each session record includes a metrics section:
 - Tests passing: [percentage]
 
 ### Runtime Health
+
 - Health check: [PASS/WARN/FAIL]
 - Degraded mode: [Yes/No]
 - Recovery events: [count]
@@ -137,6 +144,7 @@ Each session record includes a metrics section:
 ### Per-Session Analysis
 
 After each session, the orchestrating agent reviews the metrics:
+
 1. Compare against previous sessions.
 2. Identify trends (improving, stable, degrading).
 3. Flag anomalies (unusual duration, high fallback count, low pass rate).
@@ -145,6 +153,7 @@ After each session, the orchestrating agent reviews the metrics:
 ### Aggregate Analysis
 
 After every 10 sessions:
+
 1. Compile metrics from all sessions.
 2. Calculate averages and trends.
 3. Identify patterns:
@@ -169,16 +178,16 @@ If metrics show a model consistently underperforms for a task type:
 
 ## Metric Thresholds
 
-| Metric | Green | Yellow | Red |
-|--------|-------|--------|-----|
-| Task success rate | > 90% | 70-90% | < 70% |
-| Review pass rate | > 85% | 70-85% | < 70% |
-| Output quality | 4-5 | 3 | 1-2 |
-| Hallucination count | 0 | 1-2 | > 2 |
-| Fallback count | 0 | 1 | > 1 |
-| Escalation count | 0-1 | 2-3 | > 3 |
-| Boot time | < 2 min | 2-5 min | > 5 min |
-| Agent accuracy | > 80% | 60-80% | < 60% |
+| Metric              | Green   | Yellow  | Red     |
+| ------------------- | ------- | ------- | ------- |
+| Task success rate   | > 90%   | 70-90%  | < 70%   |
+| Review pass rate    | > 85%   | 70-85%  | < 70%   |
+| Output quality      | 4-5     | 3       | 1-2     |
+| Hallucination count | 0       | 1-2     | > 2     |
+| Fallback count      | 0       | 1       | > 1     |
+| Escalation count    | 0-1     | 2-3     | > 3     |
+| Boot time           | < 2 min | 2-5 min | > 5 min |
+| Agent accuracy      | > 80%   | 60-80%  | < 60%   |
 
 ---
 
@@ -193,12 +202,12 @@ If metrics show a model consistently underperforms for a task type:
 
 ## Metrics Collection Schedule
 
-| Trigger | Action |
-|---------|--------|
-| Session end | Record metrics in session record |
-| Every 10 sessions | Aggregate analysis, update routing if needed |
-| Phase gate | Include metrics summary in gate report |
-| Health check | Include current metrics trend in health report |
+| Trigger           | Action                                         |
+| ----------------- | ---------------------------------------------- |
+| Session end       | Record metrics in session record               |
+| Every 10 sessions | Aggregate analysis, update routing if needed   |
+| Phase gate        | Include metrics summary in gate report         |
+| Health check      | Include current metrics trend in health report |
 
 ---
 

@@ -27,13 +27,13 @@ Ensure all claims about the project's state, capabilities, and progress are veri
 
 ## Violations
 
-| Violation | Action |
-|-----------|--------|
-| Unverified hosting claim | Correct claim, note in session record |
-| Unverified production claim | Correct claim, note in session record |
-| Unverified feature claim | Verify feature, correct if needed |
+| Violation                    | Action                                 |
+| ---------------------------- | -------------------------------------- |
+| Unverified hosting claim     | Correct claim, note in session record  |
+| Unverified production claim  | Correct claim, note in session record  |
+| Unverified feature claim     | Verify feature, correct if needed      |
 | Unverified performance claim | Measure performance, correct if needed |
-| Unverified security claim | Run security review, correct if needed |
+| Unverified security claim    | Run security review, correct if needed |
 
 ## Reference
 

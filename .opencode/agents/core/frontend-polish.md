@@ -58,17 +58,18 @@ Ensure every UI change meets brand standards, design quality expectations, and t
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Brand colors wrong | Human engineer |
-| Wrong font used | Human engineer + rtl-auditor |
-| Design quality below standard | Human engineer |
-| Inconsistent component styling | Human engineer |
-| Tone doesn't match product | Human engineer |
+| Trigger                        | Escalates To                 |
+| ------------------------------ | ---------------------------- |
+| Brand colors wrong             | Human engineer               |
+| Wrong font used                | Human engineer + rtl-auditor |
+| Design quality below standard  | Human engineer               |
+| Inconsistent component styling | Human engineer               |
+| Tone doesn't match product     | Human engineer               |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any UI-related file (components, pages, CSS, config).
 - Review colors, fonts, spacing, alignment.
 - Check design token usage.
@@ -79,6 +80,7 @@ Ensure every UI change meets brand standards, design quality expectations, and t
 - Activate impeccable skill for design critique.
 
 ### Cannot Do
+
 - Write production implementation code (non-UI).
 - Change brand colors or fonts (human decision only).
 - Override rtl-auditor findings.
@@ -96,15 +98,15 @@ Ensure every UI change meets brand standards, design quality expectations, and t
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Spec Creation | Verify UI states are defined (empty/loading/error/success) |
-| Spec Review | Check design requirements are specified |
-| Phase Gate | Verify brand foundation is solid |
-| Implementation | Review UI for brand consistency |
-| Code Review | Primary brand reviewer for UI changes |
-| Merge | Block merge if brand issues unresolved |
-| Post-Merge | Verify brand still consistent after merge |
+| Workflow Stage | Role                                                       |
+| -------------- | ---------------------------------------------------------- |
+| Spec Creation  | Verify UI states are defined (empty/loading/error/success) |
+| Spec Review    | Check design requirements are specified                    |
+| Phase Gate     | Verify brand foundation is solid                           |
+| Implementation | Review UI for brand consistency                            |
+| Code Review    | Primary brand reviewer for UI changes                      |
+| Merge          | Block merge if brand issues unresolved                     |
+| Post-Merge     | Verify brand still consistent after merge                  |
 
 ## Brand Audit Checklist
 

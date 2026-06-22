@@ -42,12 +42,12 @@ UI Change → RTL Audit → Findings → Fix → Pass/Fail
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| RTL direction broken | Block merge, fix required |
+| Condition                 | Action                    |
+| ------------------------- | ------------------------- |
+| RTL direction broken      | Block merge, fix required |
 | Arabic text not rendering | Block merge, fix required |
-| CSS uses LTR assumptions | Flag for fix |
-| Responsive RTL broken | Flag for fix |
+| CSS uses LTR assumptions  | Flag for fix              |
+| Responsive RTL broken     | Flag for fix              |
 
 ## Review Requirements
 

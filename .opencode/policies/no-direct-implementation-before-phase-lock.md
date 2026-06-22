@@ -24,10 +24,10 @@ Prevent implementation from starting before the phase is locked and approved.
 
 ## Violations
 
-| Violation | Action |
-|-----------|--------|
-| Implementation before phase lock | Revert, require gate review |
-| Implementation before spec lock | Revert, require spec review |
+| Violation                          | Action                         |
+| ---------------------------------- | ------------------------------ |
+| Implementation before phase lock   | Revert, require gate review    |
+| Implementation before spec lock    | Revert, require spec review    |
 | Implementation outside phase scope | Revert, require scope approval |
 
 ## Reference

@@ -12,6 +12,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 1: Runtime Identity (Critical)
 
 **Files:**
+
 - `SYSTEM.md`
 - `RUNTIME_MANIFESTO.md`
 
@@ -21,6 +22,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 2: Project Memory (Critical)
 
 **Files:**
+
 - `memory/project/project-overview.md`
 - `memory/project/phase-1-focus.md`
 - `memory/project/current-status.md`
@@ -33,6 +35,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 3: Project Context (High)
 
 **Files:**
+
 - `PROJECT_RUNTIME.md`
 - `docs/00_PROJECT_BRIEF.md`
 - `docs/27_MVP_SCOPE_LOCK.md`
@@ -44,6 +47,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 4: Operating Rules (High)
 
 **Files:**
+
 - `AI_OPERATING_RULES.md`
 - `SESSION_RULES.md`
 - `AGENT_RULES.md`
@@ -54,6 +58,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 5: Execution Framework (Medium)
 
 **Files:**
+
 - `EXECUTION_ENGINE.md`
 - `WORKFLOW.md`
 - `PHASE_GATES.md`
@@ -65,6 +70,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 6: Model & Agent Config (Medium)
 
 **Files:**
+
 - `MODEL_ROUTING.md`
 - `MCP_STACK.md`
 - `agents/core/*.md`
@@ -75,6 +81,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 7: Skills & Policies (Low)
 
 **Files:**
+
 - `skills/**/*.md`
 - `policies/**/*.md`
 
@@ -84,6 +91,7 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 ### Layer 8: Runtime Mechanics (Low)
 
 **Files:**
+
 - `runtime/*.md`
 - `templates/*.md`
 - `workflows/**/*.md`
@@ -107,13 +115,13 @@ Context is loaded in layers, from most critical to least critical. Each layer bu
 
 ## Context Loading Failure
 
-| Layer | Failure | Impact | Recovery |
-|-------|---------|--------|----------|
-| 1 | Runtime identity missing | Critical | Cannot bootstrap |
-| 2 | Memory missing | Critical | Cannot proceed without project context |
-| 3 | Project context missing | High | Load from `docs/` directly |
-| 4 | Operating rules missing | High | Use default rules from CLAUDE.md |
-| 5 | Execution framework missing | Medium | Use default execution model |
-| 6 | Model/agent config missing | Medium | Use default model and agents |
-| 7 | Skills/policies missing | Low | Load on demand |
-| 8 | Runtime mechanics missing | Low | Reference as needed |
+| Layer | Failure                     | Impact   | Recovery                               |
+| ----- | --------------------------- | -------- | -------------------------------------- |
+| 1     | Runtime identity missing    | Critical | Cannot bootstrap                       |
+| 2     | Memory missing              | Critical | Cannot proceed without project context |
+| 3     | Project context missing     | High     | Load from `docs/` directly             |
+| 4     | Operating rules missing     | High     | Use default rules from CLAUDE.md       |
+| 5     | Execution framework missing | Medium   | Use default execution model            |
+| 6     | Model/agent config missing  | Medium   | Use default model and agents           |
+| 7     | Skills/policies missing     | Low      | Load on demand                         |
+| 8     | Runtime mechanics missing   | Low      | Reference as needed                    |

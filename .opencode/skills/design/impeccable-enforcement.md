@@ -45,12 +45,12 @@ UI Change → Impeccable Enforcement → Brand Audit → Frontend-Polish Review 
 
 ## Escalation Behavior
 
-| Condition | Action |
-|-----------|--------|
-| Brand colors wrong | Flag to frontend-polish |
-| Design quality below standard | Flag to human |
-| Generic AI aesthetics detected | Flag for redesign |
-| Conflicts with RTL audit | Escalate to architect |
+| Condition                      | Action                  |
+| ------------------------------ | ----------------------- |
+| Brand colors wrong             | Flag to frontend-polish |
+| Design quality below standard  | Flag to human           |
+| Generic AI aesthetics detected | Flag for redesign       |
+| Conflicts with RTL audit       | Escalate to architect   |
 
 ## Review Requirements
 

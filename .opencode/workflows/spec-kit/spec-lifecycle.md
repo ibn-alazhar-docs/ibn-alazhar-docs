@@ -17,6 +17,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Spec author marks spec as complete.
 **Requirements:**
+
 - All spec sections filled.
 - Acceptance criteria defined (Given/When/Then).
 - UI states defined (empty/loading/error/success).
@@ -29,6 +30,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Spec passes spec-guardian review.
 **Requirements:**
+
 - All review checklist items pass.
 - No blocking ambiguities.
 - Within phase scope.
@@ -39,6 +41,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Spec fails spec-guardian review.
 **Requirements:**
+
 - Specific revision notes provided.
 - Blocking issues identified.
 
@@ -48,6 +51,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Phase gate passes.
 **Requirements:**
+
 - Phase gate review complete.
 - Spec is part of approved phase scope.
 
@@ -57,6 +61,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Phase starts, implementation assigned.
 **Requirements:**
+
 - Phase gate passed.
 - Implementation task assigned.
 
@@ -66,6 +71,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Code is written, tests pass, PR opened.
 **Requirements:**
+
 - Implementation follows spec.
 - Tests pass.
 - CI passes.
@@ -77,6 +83,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** PR merged.
 **Requirements:**
+
 - All reviews passed.
 - Code merged to main.
 - Docs updated.
@@ -87,6 +94,7 @@ Draft → Review → Approved → Locked → In Progress → Implemented → Ver
 
 **Trigger:** Post-merge verification complete.
 **Requirements:**
+
 - Feature works as expected.
 - No follow-up issues.
 - Memory updated.
@@ -106,6 +114,7 @@ specs/NNN-feature-name/
 ```
 
 ### spec.md Sections
+
 1. Title and ID
 2. Summary
 3. Problem statement
@@ -119,12 +128,14 @@ specs/NNN-feature-name/
 11. References (ADRs, docs)
 
 ### tasks.md Sections
+
 1. Task list with estimates
 2. Dependencies
 3. Ownership
 4. Status tracking
 
 ### review.md Sections
+
 1. Review history
 2. Findings
 3. Revision notes

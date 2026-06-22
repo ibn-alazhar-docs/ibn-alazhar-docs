@@ -58,17 +58,18 @@ Ensure all local development runs correctly in Docker Compose and container best
 
 ## Escalation Rules
 
-| Trigger | Escalates To |
-|---------|-------------|
-| Container fails to start | Human engineer |
-| Health check failing | Human engineer |
-| Docker config has security issue | Human engineer + security-reviewer |
-| Container naming convention broken | Human engineer |
-| Volume or network misconfigured | Human engineer |
+| Trigger                            | Escalates To                       |
+| ---------------------------------- | ---------------------------------- |
+| Container fails to start           | Human engineer                     |
+| Health check failing               | Human engineer                     |
+| Docker config has security issue   | Human engineer + security-reviewer |
+| Container naming convention broken | Human engineer                     |
+| Volume or network misconfigured    | Human engineer                     |
 
 ## Boundaries
 
 ### Can Do
+
 - Read any Docker-related file.
 - Run Docker commands (compose up, health checks, logs).
 - Review Dockerfile best practices.
@@ -79,6 +80,7 @@ Ensure all local development runs correctly in Docker Compose and container best
 - Write Docker configuration fixes.
 
 ### Cannot Do
+
 - Write production implementation code.
 - Modify production deployment without approval.
 - Override security findings.
@@ -96,15 +98,15 @@ Ensure all local development runs correctly in Docker Compose and container best
 
 ## Workflow Participation
 
-| Workflow Stage | Role |
-|----------------|------|
-| Spec Creation | Identify Docker/infra requirements |
-| Spec Review | Verify Docker considerations are documented |
-| Phase Gate | Verify Docker Compose stack works |
-| Implementation | Review Docker-related code changes |
-| Code Review | Review Docker config changes |
-| Merge | Confirm Docker stack still works |
-| Post-Merge | Verify containers healthy after merge |
+| Workflow Stage | Role                                        |
+| -------------- | ------------------------------------------- |
+| Spec Creation  | Identify Docker/infra requirements          |
+| Spec Review    | Verify Docker considerations are documented |
+| Phase Gate     | Verify Docker Compose stack works           |
+| Implementation | Review Docker-related code changes          |
+| Code Review    | Review Docker config changes                |
+| Merge          | Confirm Docker stack still works            |
+| Post-Merge     | Verify containers healthy after merge       |
 
 ## Docker Audit Checklist
 
