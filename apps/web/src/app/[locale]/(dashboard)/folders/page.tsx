@@ -42,27 +42,27 @@ export default function FoldersPage() {
 
   return (
     <PageTransition>
-    <Container>
-      <Section padding="md">
-        <Stack gap={6}>
-          {/* Header */}
-          <div>
-            <Heading level={2}>{t("title")}</Heading>
-            <Text color="muted">{t("empty")}</Text>
-          </div>
+      <Container>
+        <Section padding="md">
+          <Stack gap={6}>
+            {/* Header */}
+            <div>
+              <Heading level={2}>{t("title")}</Heading>
+              <Text color="muted">{t("empty")}</Text>
+            </div>
 
-          {/* Breadcrumbs */}
-          {breadcrumbs.length > 0 && (
-            <Breadcrumbs breadcrumbs={breadcrumbs} onNavigate={handleSelectFolder} />
-          )}
+            {/* Breadcrumbs */}
+            {breadcrumbs.length > 0 && (
+              <Breadcrumbs breadcrumbs={breadcrumbs} onNavigate={handleSelectFolder} />
+            )}
 
-          {/* Folder Tree */}
-          <div className="bg-card rounded-xl border border-line p-4">
-            <FolderTree selectedFolderId={selectedFolderId} onSelectFolder={handleSelectFolder} />
-          </div>
-        </Stack>
-      </Section>
-    </Container>
+            {/* Folder Tree */}
+            <div className="bg-card rounded-xl border border-line p-4">
+              <FolderTree selectedFolderId={selectedFolderId} onSelectFolder={handleSelectFolder} />
+            </div>
+          </Stack>
+        </Section>
+      </Container>
     </PageTransition>
   );
 }

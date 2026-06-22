@@ -15,9 +15,10 @@ export function LocaleToggle() {
 
   function switchLocale() {
     if (typeof window !== "undefined" && "hasUnsavedChanges" in window) {
-      const confirmMsg = locale === "ar" 
-        ? "لديك ملف قيد المعالجة ولم يتم رفعه بعد. تغيير اللغة سيؤدي إلى إلغاء الملف. هل أنت متأكد؟" 
-        : "You have an unuploaded file. Changing the language will discard it. Are you sure?";
+      const confirmMsg =
+        locale === "ar"
+          ? "لديك ملف قيد المعالجة ولم يتم رفعه بعد. تغيير اللغة سيؤدي إلى إلغاء الملف. هل أنت متأكد؟"
+          : "You have an unuploaded file. Changing the language will discard it. Are you sure?";
       if (!window.confirm(confirmMsg)) {
         return;
       }

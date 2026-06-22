@@ -518,7 +518,7 @@ async function main() {
       outputKeys["json"] = jsonKey;
 
       const finalFormats = ["md", "txt", "json"];
-      
+
       try {
         const docxBuffer = await generateDocx(result);
         const docxKey = await uploadExportBuffer(

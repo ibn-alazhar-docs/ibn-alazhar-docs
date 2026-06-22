@@ -1,5 +1,6 @@
 @import "tailwindcss";
-button, [role="button"] {
+button,
+[role="button"] {
   cursor: pointer;
 }
 /* trigger rebuild */

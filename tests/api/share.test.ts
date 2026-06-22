@@ -1,9 +1,18 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
 import { mockSession } from "./setup";
 import { createApiRequest } from "./helpers";
-import { POST as createDocumentShare, GET as getDocumentShare, DELETE as deleteDocumentShare } from "@/app/api/documents/[id]/share/route";
+import {
+  POST as createDocumentShare,
+  GET as getDocumentShare,
+  DELETE as deleteDocumentShare,
+} from "@/app/api/documents/[id]/share/route";
 import { GET as getPublicShare } from "@/app/api/share/[token]/route";
-import { createTestUser, cleanupTestUsers, createTestDocument, prisma } from "../integration/helpers/db";
+import {
+  createTestUser,
+  cleanupTestUsers,
+  createTestDocument,
+  prisma,
+} from "../integration/helpers/db";
 
 describe("Share API", () => {
   let userA: any;
@@ -25,12 +34,17 @@ describe("Share API", () => {
 
   afterEach(async () => {
     await prisma.shareLink.deleteMany({
-      where: { userId: { in: [userA.id, userB.id] } }
+      where: { userId: { in: [userA.id, userB.id] } },
     });
   });
 
   beforeEach(() => {
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
   });
 
   describe("POST /api/documents/[id]/share", () => {
@@ -65,7 +79,12 @@ describe("Share API", () => {
     });
 
     it("should fail to create share link if user doesn't own document", async () => {
-      mockSession.user = { id: userB.id, name: userB.name, email: userB.email, role: userB.role } as any;
+      mockSession.user = {
+        id: userB.id,
+        name: userB.name,
+        email: userB.email,
+        role: userB.role,
+      } as any;
 
       const req = createApiRequest(`/api/documents/${docA.id}/share`, {
         method: "POST",
@@ -85,7 +104,9 @@ describe("Share API", () => {
         body: JSON.stringify({}),
       });
 
-      const res = await createDocumentShare(req, { params: Promise.resolve({ id: docA_NotReady.id }) });
+      const res = await createDocumentShare(req, {
+        params: Promise.resolve({ id: docA_NotReady.id }),
+      });
       const data = await res.json();
 
       expect(res.status).toBe(400);
@@ -124,8 +145,8 @@ describe("Share API", () => {
         data: {
           documentId: docA.id,
           userId: userA.id,
-          token: "test-token-1"
-        }
+          token: "test-token-1",
+        },
       });
 
       const req = createApiRequest(`/api/documents/${docA.id}/share`, { method: "GET" });
@@ -142,7 +163,7 @@ describe("Share API", () => {
 
       const req = createApiRequest(`/api/documents/${docA.id}/share`, { method: "GET" });
       const res = await getDocumentShare(req, { params: Promise.resolve({ id: docA.id }) });
-      
+
       expect(res.status).toBe(401);
     });
   });
@@ -151,7 +172,7 @@ describe("Share API", () => {
     it("should delete existing share link", async () => {
       const freshDoc = await createTestDocument(userA.id, { status: "COMPLETED" });
       await prisma.shareLink.create({
-        data: { documentId: freshDoc.id, userId: userA.id, token: "test-token-2" }
+        data: { documentId: freshDoc.id, userId: userA.id, token: "test-token-2" },
       });
 
       const req = createApiRequest(`/api/documents/${freshDoc.id}/share`, { method: "DELETE" });
@@ -160,7 +181,7 @@ describe("Share API", () => {
 
       expect(res.status).toBe(200);
       expect(data.success).toBe(true);
-      
+
       const check = await prisma.shareLink.findFirst({ where: { documentId: freshDoc.id } });
       expect(check).toBeNull();
     });
@@ -180,7 +201,7 @@ describe("Share API", () => {
   describe("GET /api/share/[token] (Public)", () => {
     it("should return document details for valid token", async () => {
       const share = await prisma.shareLink.create({
-        data: { documentId: docA.id, userId: userA.id, token: "test-token-3" }
+        data: { documentId: docA.id, userId: userA.id, token: "test-token-3" },
       });
 
       const req = createApiRequest(`/api/share/${share.token}`, { method: "GET" });
@@ -195,7 +216,9 @@ describe("Share API", () => {
 
     it("should return 404 for non-existent token", async () => {
       const req = createApiRequest(`/api/share/invalid-token`, { method: "GET" });
-      const res = await getPublicShare(req, { params: Promise.resolve({ token: "invalid-token" }) });
+      const res = await getPublicShare(req, {
+        params: Promise.resolve({ token: "invalid-token" }),
+      });
       const data = await res.json();
 
       expect(res.status).toBe(404);
@@ -207,7 +230,7 @@ describe("Share API", () => {
       pastDate.setDate(pastDate.getDate() - 1);
 
       const share = await prisma.shareLink.create({
-        data: { documentId: docA.id, userId: userA.id, expiresAt: pastDate, token: "test-token-4" }
+        data: { documentId: docA.id, userId: userA.id, expiresAt: pastDate, token: "test-token-4" },
       });
 
       const req = createApiRequest(`/api/share/${share.token}`, { method: "GET" });
@@ -219,9 +242,12 @@ describe("Share API", () => {
     });
 
     it("should return 404 if document is deleted", async () => {
-      const delDoc = await createTestDocument(userA.id, { status: "COMPLETED", deletedAt: new Date() });
+      const delDoc = await createTestDocument(userA.id, {
+        status: "COMPLETED",
+        deletedAt: new Date(),
+      });
       const share = await prisma.shareLink.create({
-        data: { documentId: delDoc.id, userId: userA.id, token: "test-token-5" }
+        data: { documentId: delDoc.id, userId: userA.id, token: "test-token-5" },
       });
 
       const req = createApiRequest(`/api/share/${share.token}`, { method: "GET" });
@@ -235,7 +261,7 @@ describe("Share API", () => {
     it("should return 404 if document is not completed", async () => {
       const notReadyDoc = await createTestDocument(userA.id, { status: "OCR_PROCESSING" });
       const share = await prisma.shareLink.create({
-        data: { documentId: notReadyDoc.id, userId: userA.id, token: "test-token-6" }
+        data: { documentId: notReadyDoc.id, userId: userA.id, token: "test-token-6" },
       });
 
       const req = createApiRequest(`/api/share/${share.token}`, { method: "GET" });

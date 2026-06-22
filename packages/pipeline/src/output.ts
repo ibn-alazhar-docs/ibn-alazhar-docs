@@ -14,8 +14,6 @@ import { tmpdir } from "os";
 
 const execFileAsync = promisify(execFile);
 
-
-
 export interface GenerateMdOptions {
   title?: string;
   includeMetadata?: boolean;
@@ -231,15 +229,11 @@ export async function generateDocx(cleanedText: CleanedText): Promise<Buffer> {
 
     await writeFile(mdPath, markdownText, "utf8");
 
-    await execFileAsync("pandoc", [
-      mdPath,
-      "-o",
-      docxPath,
-      "-M",
-      "dir=rtl",
-      "-M",
-      "title=Document",
-    ], { timeout: 30000 });
+    await execFileAsync(
+      "pandoc",
+      [mdPath, "-o", docxPath, "-M", "dir=rtl", "-M", "title=Document"],
+      { timeout: 30000 },
+    );
 
     return await readFile(docxPath);
   } finally {
@@ -343,7 +337,7 @@ export async function generatePdf(
   }
 
   const pdfDoc = await printer.createPdfKitDocument(docDefinition);
-  
+
   return new Promise((resolve, reject) => {
     try {
       const chunks: Buffer[] = [];

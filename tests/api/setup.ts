@@ -9,9 +9,9 @@ const { mockSession } = vi.hoisted(() => ({
       id: "test-user-id",
       name: "Test User",
       email: "test@example.com",
-      role: "USER"
-    }
-  }
+      role: "USER",
+    },
+  },
 }));
 
 export { mockSession };
@@ -39,15 +39,18 @@ vi.mock("@/lib/auth-guards", () => {
       return mockSession;
     }),
     unauthorizedResponse: vi.fn().mockImplementation(() => {
-      return new Response(JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }), {
-        status: 401,
-        headers: { "Content-Type": "application/json" }
-      });
+      return new Response(
+        JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
     }),
     forbiddenResponse: vi.fn().mockImplementation(() => {
       return new Response(JSON.stringify({ error: { code: "FORBIDDEN", message: "Forbidden" } }), {
         status: 403,
-        headers: { "Content-Type": "application/json" }
+        headers: { "Content-Type": "application/json" },
       });
     }),
     isAdmin: vi.fn().mockImplementation((session) => {
@@ -56,7 +59,7 @@ vi.mock("@/lib/auth-guards", () => {
     ownedWhere: vi.fn().mockImplementation((baseWhere, session, userIdField = "userId") => {
       if (session?.user?.role === "ADMIN") return baseWhere;
       return { ...baseWhere, [userIdField]: session.user.id };
-    })
+    }),
   };
 });
 
@@ -66,6 +69,6 @@ beforeEach(() => {
     id: "test-user-id",
     name: "Test User",
     email: "test@example.com",
-    role: "USER"
+    role: "USER",
   } as any;
 });

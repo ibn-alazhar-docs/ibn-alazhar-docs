@@ -1,8 +1,17 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { createApiRequest } from "./helpers";
 import { GET as getFolders, POST as createFolder } from "@/app/api/folders/route";
-import { GET as getFolder, PATCH as renameFolder, DELETE as deleteFolder } from "@/app/api/folders/[id]/route";
-import { createTestUser, cleanupTestUsers, createTestFolder, TestUser } from "../integration/helpers/db";
+import {
+  GET as getFolder,
+  PATCH as renameFolder,
+  DELETE as deleteFolder,
+} from "@/app/api/folders/[id]/route";
+import {
+  createTestUser,
+  cleanupTestUsers,
+  createTestFolder,
+  TestUser,
+} from "../integration/helpers/db";
 import { mockSession } from "./setup";
 
 describe("Folders API", () => {
@@ -12,9 +21,14 @@ describe("Folders API", () => {
   beforeEach(async () => {
     userA = await createTestUser({ name: "User A" });
     userB = await createTestUser({ name: "User B" });
-    
+
     // Set default session to userA
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
   });
 
   afterEach(async () => {
@@ -28,7 +42,7 @@ describe("Folders API", () => {
 
       const request = createApiRequest("/api/folders");
       const response = await getFolders(request);
-      
+
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.folders).toHaveLength(1);
@@ -49,7 +63,7 @@ describe("Folders API", () => {
 
       const request = createApiRequest(`/api/folders?parentId=${parent.id}`);
       const response = await getFolders(request);
-      
+
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.folders).toHaveLength(2);
@@ -64,7 +78,7 @@ describe("Folders API", () => {
         body: JSON.stringify({ name: "New Folder", color: "#16A34A" }),
       });
       const response = await createFolder(request);
-      
+
       expect(response.status).toBe(201);
       const data = await response.json();
       expect(data.folder.name).toBe("New Folder");
@@ -77,7 +91,7 @@ describe("Folders API", () => {
         body: JSON.stringify({ name: "" }), // empty name
       });
       const response = await createFolder(request);
-      
+
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error.code).toBe("VALIDATION_ERROR");
@@ -89,7 +103,7 @@ describe("Folders API", () => {
         body: JSON.stringify({ name: "Child", parentId: "non-existent-id" }),
       });
       const response = await createFolder(request);
-      
+
       expect(response.status).toBe(404);
       const data = await response.json();
       expect(data.error.code).toBe("NOT_FOUND");
@@ -109,10 +123,10 @@ describe("Folders API", () => {
   describe("GET /api/folders/[id]", () => {
     it("should return a folder", async () => {
       const folder = await createTestFolder(userA.id, { name: "Folder A" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`);
       const response = await getFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.folder.name).toBe("Folder A");
@@ -120,10 +134,10 @@ describe("Folders API", () => {
 
     it("should return 404 if folder not found or belongs to another user", async () => {
       const folder = await createTestFolder(userB.id, { name: "Folder B" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`);
       const response = await getFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(404);
     });
 
@@ -139,13 +153,13 @@ describe("Folders API", () => {
   describe("PATCH /api/folders/[id]", () => {
     it("should rename a folder", async () => {
       const folder = await createTestFolder(userA.id, { name: "Old Name" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`, {
         method: "PATCH",
         body: JSON.stringify({ name: "New Name" }),
       });
       const response = await renameFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.folder.name).toBe("New Name");
@@ -153,25 +167,25 @@ describe("Folders API", () => {
 
     it("should return 404 if trying to rename another user's folder", async () => {
       const folder = await createTestFolder(userB.id, { name: "User B Folder" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`, {
         method: "PATCH",
         body: JSON.stringify({ name: "Hacked" }),
       });
       const response = await renameFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(404);
     });
 
     it("should return 400 for validation errors", async () => {
       const folder = await createTestFolder(userA.id, { name: "Old Name" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`, {
         method: "PATCH",
         body: JSON.stringify({ name: "" }),
       });
       const response = await renameFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(400);
       const data = await response.json();
       expect(data.error.code).toBe("VALIDATION_ERROR");
@@ -192,12 +206,12 @@ describe("Folders API", () => {
   describe("DELETE /api/folders/[id]", () => {
     it("should delete a folder", async () => {
       const folder = await createTestFolder(userA.id, { name: "To Delete" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`, {
         method: "DELETE",
       });
       const response = await deleteFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(200);
       const data = await response.json();
       expect(data.message).toBe("تم حذف المجلد بنجاح");
@@ -205,12 +219,12 @@ describe("Folders API", () => {
 
     it("should return 404 if trying to delete another user's folder", async () => {
       const folder = await createTestFolder(userB.id, { name: "User B Folder" });
-      
+
       const request = createApiRequest(`/api/folders/${folder.id}`, {
         method: "DELETE",
       });
       const response = await deleteFolder(request, { params: Promise.resolve({ id: folder.id }) });
-      
+
       expect(response.status).toBe(404);
     });
 

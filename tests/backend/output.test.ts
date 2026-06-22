@@ -437,7 +437,7 @@ describe("generatePdf", () => {
     expect(buffer).toBeInstanceOf(Buffer);
     expect(buffer.length).toBeGreaterThan(0);
   });
-  
+
   it("handles heading levels", async () => {
     const textWithHeadings = makeCleaned({ markdown: "# Heading 1\n\n## Heading 2\n\nSome text" });
     const buffer = await generatePdf(textWithHeadings);

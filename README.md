@@ -82,7 +82,7 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 | Command                 | Suite            | Tests |
 | ----------------------- | ---------------- | ----- |
-| `pnpm test`             | Unit*            | 668   |
+| `pnpm test`             | Unit\*           | 668   |
 | `pnpm test:integration` | Integration      | 95    |
 | `pnpm test:security`    | Security         | 138   |
 | `pnpm test:pentest`     | Penetration      | 56    |
@@ -90,7 +90,7 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 | `pnpm test:recovery`    | Recovery         | 60    |
 | `pnpm test:backup`      | Backup & Restore | 48    |
 
-*Unit tests are split across `tests/backend/` and `tests/frontend/`.
+\*Unit tests are split across `tests/backend/` and `tests/frontend/`.
 
 Test files: `tests/backend/` (unit), `tests/frontend/` (unit), `tests/integration/`, `tests/security/`, `tests/pentest/`, `tests/load/`, `tests/recovery/`, `tests/backup/`, `tests/e2e/`
 

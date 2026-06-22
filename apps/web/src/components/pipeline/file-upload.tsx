@@ -29,7 +29,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
     const hasUnsaved = file !== null;
     if (typeof window !== "undefined") {
       (window as unknown as Record<string, unknown>).hasUnsavedChanges = hasUnsaved;
-      
+
       if (hasUnsaved) {
         window.onbeforeunload = (e) => {
           e.preventDefault();
@@ -52,8 +52,13 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
 
   function validateFile(f: File): string | null {
     const isPdf = f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf");
-    const isImage = f.type === "image/jpeg" || f.type === "image/png" || f.name.toLowerCase().endsWith(".jpg") || f.name.toLowerCase().endsWith(".jpeg") || f.name.toLowerCase().endsWith(".png");
-    
+    const isImage =
+      f.type === "image/jpeg" ||
+      f.type === "image/png" ||
+      f.name.toLowerCase().endsWith(".jpg") ||
+      f.name.toLowerCase().endsWith(".jpeg") ||
+      f.name.toLowerCase().endsWith(".png");
+
     if (!isPdf && !isImage) {
       return t("errorInvalidType");
     }
@@ -116,7 +121,11 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
     await processUpload();
   }
 
-  if (file && showVisualSelector && (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))) {
+  if (
+    file &&
+    showVisualSelector &&
+    (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf"))
+  ) {
     return (
       <VisualRangeSelector
         file={file}
@@ -154,14 +163,17 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
           const dropped = e.dataTransfer.files[0];
           if (dropped) {
             const err = validateFile(dropped);
-              if (err) {
-                setError(err);
-              } else {
-                setFile(dropped);
-                if (dropped.type === "application/pdf" || dropped.name.toLowerCase().endsWith(".pdf")) {
-                  setShowVisualSelector(true);
-                }
+            if (err) {
+              setError(err);
+            } else {
+              setFile(dropped);
+              if (
+                dropped.type === "application/pdf" ||
+                dropped.name.toLowerCase().endsWith(".pdf")
+              ) {
+                setShowVisualSelector(true);
               }
+            }
           }
         }}
       >
@@ -178,7 +190,10 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
                 setError(err);
               } else {
                 setFile(selected);
-                if (selected.type === "application/pdf" || selected.name.toLowerCase().endsWith(".pdf")) {
+                if (
+                  selected.type === "application/pdf" ||
+                  selected.name.toLowerCase().endsWith(".pdf")
+                ) {
                   setShowVisualSelector(true);
                 }
               }

@@ -2,7 +2,13 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import { createApiRequest } from "./helpers";
 import { GET as searchGet } from "@/app/api/search/route";
 import { GET as suggestGet } from "@/app/api/search/suggest/route";
-import { createTestUser, createTestDocument, createTestFolder, cleanupTestUsers, TestUser } from "../integration/helpers/db";
+import {
+  createTestUser,
+  createTestDocument,
+  createTestFolder,
+  cleanupTestUsers,
+  TestUser,
+} from "../integration/helpers/db";
 import { mockSession } from "./setup";
 
 describe("Search API", () => {
@@ -30,7 +36,12 @@ describe("Search API", () => {
   });
 
   beforeEach(() => {
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
   });
 
   describe("GET /api/search", () => {
@@ -68,7 +79,12 @@ describe("Search API", () => {
     });
 
     it("should allow admin to search all documents", async () => {
-      mockSession.user = { id: adminUser.id, name: adminUser.name, email: adminUser.email, role: adminUser.role } as any;
+      mockSession.user = {
+        id: adminUser.id,
+        name: adminUser.name,
+        email: adminUser.email,
+        role: adminUser.role,
+      } as any;
       const req = createApiRequest("http://localhost/api/search?q=Biology", "GET");
       const res = await searchGet(req);
       expect(res.status).toBe(200);
@@ -78,7 +94,12 @@ describe("Search API", () => {
     });
 
     it("should filter by folder type", async () => {
-      mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+      mockSession.user = {
+        id: userA.id,
+        name: userA.name,
+        email: userA.email,
+        role: userA.role,
+      } as any;
       const req = createApiRequest("http://localhost/api/search?q=Science&type=folder", "GET");
       const res = await searchGet(req);
       expect(res.status).toBe(200);
@@ -96,7 +117,12 @@ describe("Search API", () => {
     });
 
     it("should return empty array if query is too short", async () => {
-      mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+      mockSession.user = {
+        id: userA.id,
+        name: userA.name,
+        email: userA.email,
+        role: userA.role,
+      } as any;
       const req = createApiRequest("http://localhost/api/search/suggest?q=a", "GET");
       const res = await suggestGet(req);
       expect(res.status).toBe(200);

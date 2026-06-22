@@ -75,8 +75,8 @@ export function PreviewView({ jobId }: PreviewViewProps) {
           } else if (markdown) {
             setLoading(false);
           } else {
-             // For the very first load, we stop the full-page spinner so we can show "processing"
-             setLoading(false);
+            // For the very first load, we stop the full-page spinner so we can show "processing"
+            setLoading(false);
           }
         }
 
@@ -160,30 +160,83 @@ export function PreviewView({ jobId }: PreviewViewProps) {
     <div className="max-w-none" dir="rtl">
       <div
         className="font-display text-primary-color"
-        style={{ fontFamily: 'var(--font-display)' }}
+        style={{ fontFamily: "var(--font-display)" }}
       >
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
-            h1: ({ children }) => <h1 className="text-3xl font-bold mt-8 mb-6 text-primary-color text-center leading-normal border-b border-line pb-4">{children}</h1>,
-            h2: ({ children }) => <h2 className="text-2xl font-bold mt-10 mb-4 text-[var(--success)] leading-normal">{children}</h2>,
-            h3: ({ children }) => <h3 className="text-xl font-bold mt-8 mb-3 text-primary-color leading-normal">{children}</h3>,
-            h4: ({ children }) => <h4 className="text-lg font-bold mt-6 mb-2 text-primary-color leading-normal">{children}</h4>,
-            p: ({ children }) => <p className="mb-6 leading-[2.2] text-justify text-xl">{children}</p>,
-            ul: ({ children }) => <ul className="list-disc ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ul>,
-            ol: ({ children }) => <ol className="list-decimal ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ol>,
+            h1: ({ children }) => (
+              <h1 className="text-3xl font-bold mt-8 mb-6 text-primary-color text-center leading-normal border-b border-line pb-4">
+                {children}
+              </h1>
+            ),
+            h2: ({ children }) => (
+              <h2 className="text-2xl font-bold mt-10 mb-4 text-[var(--success)] leading-normal">
+                {children}
+              </h2>
+            ),
+            h3: ({ children }) => (
+              <h3 className="text-xl font-bold mt-8 mb-3 text-primary-color leading-normal">
+                {children}
+              </h3>
+            ),
+            h4: ({ children }) => (
+              <h4 className="text-lg font-bold mt-6 mb-2 text-primary-color leading-normal">
+                {children}
+              </h4>
+            ),
+            p: ({ children }) => (
+              <p className="mb-6 leading-[2.2] text-justify text-xl">{children}</p>
+            ),
+            ul: ({ children }) => (
+              <ul className="list-disc ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ul>
+            ),
+            ol: ({ children }) => (
+              <ol className="list-decimal ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ol>
+            ),
             li: ({ children }) => <li>{children}</li>,
-            blockquote: ({ children }) => <blockquote className="border-s-4 border-[var(--gold)] ps-4 py-2 my-6 bg-[var(--gold-bg)] text-[var(--gold)] rounded-e-lg italic">{children}</blockquote>,
-            a: ({ href, children }) => <a href={href} className="text-[var(--info)] hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
-            strong: ({ children }) => <strong className="font-bold text-primary-color">{children}</strong>,
+            blockquote: ({ children }) => (
+              <blockquote className="border-s-4 border-[var(--gold)] ps-4 py-2 my-6 bg-[var(--gold-bg)] text-[var(--gold)] rounded-e-lg italic">
+                {children}
+              </blockquote>
+            ),
+            a: ({ href, children }) => (
+              <a
+                href={href}
+                className="text-[var(--info)] hover:underline"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {children}
+              </a>
+            ),
+            strong: ({ children }) => (
+              <strong className="font-bold text-primary-color">{children}</strong>
+            ),
             em: ({ children }) => <em className="italic">{children}</em>,
             hr: () => <hr className="my-10 border-line" />,
-            table: ({ children }) => <div className="overflow-x-auto my-8"><table className="w-full text-base text-start border-collapse border border-line">{children}</table></div>,
-            thead: ({ children }) => <thead className="bg-badge border-b border-line">{children}</thead>,
+            table: ({ children }) => (
+              <div className="overflow-x-auto my-8">
+                <table className="w-full text-base text-start border-collapse border border-line">
+                  {children}
+                </table>
+              </div>
+            ),
+            thead: ({ children }) => (
+              <thead className="bg-badge border-b border-line">{children}</thead>
+            ),
             tbody: ({ children }) => <tbody className="divide-y divide-line">{children}</tbody>,
             tr: ({ children }) => <tr>{children}</tr>,
-            th: ({ children }) => <th className="px-4 py-3 font-semibold text-primary-color border-s border-line first:border-s-0">{children}</th>,
-            td: ({ children }) => <td className="px-4 py-3 border-s border-line first:border-s-0 leading-loose">{children}</td>,
+            th: ({ children }) => (
+              <th className="px-4 py-3 font-semibold text-primary-color border-s border-line first:border-s-0">
+                {children}
+              </th>
+            ),
+            td: ({ children }) => (
+              <td className="px-4 py-3 border-s border-line first:border-s-0 leading-loose">
+                {children}
+              </td>
+            ),
           }}
         >
           {markdown}
