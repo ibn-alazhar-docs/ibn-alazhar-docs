@@ -8,12 +8,12 @@
 
 ## 📊 ما تم إنجازه حتى الآن (Phases 0-3)
 
-| Phase | الوصف | الحالة |
-|-------|-------|--------|
-| 0 | شبكة الأمان: stash + فرع `fix/production-hygiene` | ✅ |
-| 1 | إصلاح `.gitignore`: منع `.opencode/node_modules/`, `sessions/`, `snapshots/` من git | ✅ |
-| 2 | إصلاح `.env` و`.env.example`: توحيد AUTH_SECRET، توحيد ADMIN_PASSWORD، إصلاح DATABASE_URL port 5432→5433 | ✅ |
-| 3 | إدخال كل الكود غير المتعقب (517 ملف) في 8 commits منظمة | ✅ |
+| Phase | الوصف                                                                                                    | الحالة |
+| ----- | -------------------------------------------------------------------------------------------------------- | ------ |
+| 0     | شبكة الأمان: stash + فرع `fix/production-hygiene`                                                        | ✅     |
+| 1     | إصلاح `.gitignore`: منع `.opencode/node_modules/`, `sessions/`, `snapshots/` من git                      | ✅     |
+| 2     | إصلاح `.env` و`.env.example`: توحيد AUTH_SECRET، توحيد ADMIN_PASSWORD، إصلاح DATABASE_URL port 5432→5433 | ✅     |
+| 3     | إدخال كل الكود غير المتعقب (517 ملف) في 8 commits منظمة                                                  | ✅     |
 
 ### Commits المنجزة (8 commits على الفرع)
 
@@ -44,12 +44,15 @@ b7c2b62 chore: clean up deleted/archived files, update dockerignore and CI
 ### Phase 4 — Audit & تصحيح أمني
 
 #### المهمة 4.1 — إصلاح `: any` في framer-motion variants
+
 **الملفات المتأثرة (7 مواضع في 3 ملفات)**:
+
 - `apps/web/src/components/sections/hero.tsx` — سطر 45 (`containerVariants`), سطر 57 (`itemVariants`)
 - `apps/web/src/components/sections/features.tsx` — سطر 29 (`cardVariants`)
 - `apps/web/src/components/sections/knowledge-areas.tsx` — سطر 27 (`containerVariants`), سطر 35 (`itemVariants`)
 
 **الأمر التنفيذي**:
+
 ```bash
 # في hero.tsx — استبدل:
 #   const containerVariants: any = { ... }
@@ -69,9 +72,11 @@ b7c2b62 chore: clean up deleted/archived files, update dockerignore and CI
 ---
 
 #### المهمة 4.2 — إصلاح `as any` في BullMQ queue.ts
+
 **الملف**: `packages/pipeline/src/queue.ts` — سطر 69 و 191
 
 **الأمر التنفيذي**:
+
 ```bash
 # السطر 69: connection: conn as any
 # السطر 191: connection: getConnection(config) as any
@@ -88,7 +93,9 @@ b7c2b62 chore: clean up deleted/archived files, update dockerignore and CI
 ---
 
 #### المهمة 4.3 — مراجعة API authorization (عيّنة)
+
 **الأمر التنفيذي**:
+
 ```bash
 # افحص إن كل API routes بتستخدم requireAuth أو requireRole:
 grep -rn "requireAuth\|requireRole\|getSession\|getServerSession" apps/web/src/app/api/ --include="*.ts" | head -30
@@ -97,6 +104,7 @@ grep -rn "requireAuth\|requireRole\|getSession\|getServerSession" apps/web/src/a
 ```
 
 **API routes اللي لازم تتأكد منها** (كلها في `apps/web/src/app/api/`):
+
 - `documents/[id]/route.ts` — ✅ مؤكد (مقروء — فيه ownership check)
 - `auth/register/route.ts` — لازم يكون public (تسجيل جديد)
 - `auth/[...nextauth]/route.ts` — NextAuth handler (public)
@@ -113,6 +121,7 @@ grep -rn "requireAuth\|requireRole\|getSession\|getServerSession" apps/web/src/a
 ---
 
 #### المهمة 4.4 — Docker `:latest` hardening
+
 **الملف**: `docker-compose.yml`
 
 **5 images بـ `:latest`**:
@@ -125,6 +134,7 @@ grep -rn "requireAuth\|requireRole\|getSession\|getServerSession" apps/web/src/a
 | 392 | `grafana/grafana:latest` | `grafana/grafana:11.5.2` |
 
 **الأمر التنفيذي**:
+
 ```bash
 # افتح docker-compose.yml وابحث عن :latest واستبدل كل واحدة بالإصدار المقترح
 # أو استخدم sed:
@@ -143,6 +153,7 @@ docker compose config > /dev/null 2>&1 && echo "✅ Valid" || echo "❌ Invalid"
 ---
 
 #### المهمة 4.5 — Commit Phase 4
+
 ```bash
 git add -A
 git commit -m "fix(security): remove type-unsafe any, fix Docker latest tags, harden types
@@ -160,6 +171,7 @@ git commit -m "fix(security): remove type-unsafe any, fix Docker latest tags, ha
 #### المهمة 5.1 — أرشفة فروع subagent (7 فروع، كلها 30 unique commits)
 
 **الأمر التنفيذي**:
+
 ```bash
 # الخطوة 1: انشئ tags للأرشفة (تحفظ المرجع بدون ما تحذف الشغل)
 for branch in $(git branch | grep subagent | sed 's/^[+* ]*//'); do
@@ -180,6 +192,7 @@ git branch
 ```
 
 **ملاحظة مهمة**: كل فرع فيه 30 commits فريدة (ماشية في main). احفظهم كـ tags قبل الحذف عشان لو احتجتهم تقدر ترجع. لو عايز تتأكد إن الـ commits مش مهمة قبل الحذف:
+
 ```bash
 # شوف أول 3 commits من أي فرع:
 git log main..subagent-Security-DevOps-Lead-prod-sec-agent-c77c9d61 --oneline | head -3
@@ -188,7 +201,9 @@ git log main..subagent-Security-DevOps-Lead-prod-sec-agent-c77c9d61 --oneline | 
 ---
 
 #### المهمة 5.2 — معالجة `packages/config/` الفاضي
+
 **الأمر التنفيذي**:
+
 ```bash
 # تأكد إنه فعلاً فاضي:
 ls packages/config/
@@ -202,6 +217,7 @@ rm -rf packages/config
 ```
 
 **التوصية**: الخيار أ (حذف) — مجلد فاضي مفيهوش حاجة. بس تأكد إن مفيش workspace reference في package.json:
+
 ```bash
 grep -r "packages/config" package.json pnpm-workspace.yaml 2>/dev/null
 ```
@@ -209,6 +225,7 @@ grep -r "packages/config" package.json pnpm-workspace.yaml 2>/dev/null
 ---
 
 #### المهمة 5.3 — Commit Phase 5
+
 ```bash
 git add -A
 git commit -m "chore: archive subagent branches as tags, remove empty packages/config
@@ -222,7 +239,9 @@ git commit -m "chore: archive subagent branches as tags, remove empty packages/c
 ### Phase 6 — تصحيح دقّة الوثائق (Truth Reconciliation)
 
 #### المهمة 6.1 — تشغيل الاختبارات الفعلية وتسجيل الأرقام
+
 **الأمر التنفيذي** (مطلوب infra شغّال أولاً):
+
 ```bash
 # 1. شغّل البنية التحتية:
 ./ibn.sh dev-infra
@@ -256,6 +275,7 @@ pnpm test:backup 2>&1 | tee /tmp/test-back.txt
 #### المهمة 6.2 — تحديث `README.md` (سطر 81-91)
 
 **الأمر التنفيذي**:
+
 ```bash
 # افتح README.md وغيّر سطور 81-91:
 
@@ -291,6 +311,7 @@ pnpm test:backup 2>&1 | tee /tmp/test-back.txt
 #### المهمة 6.3 — تحديث `AGENTS.md` (سطر Phase status)
 
 **الأمر التنفيذي**:
+
 ```bash
 # في AGENTS.md، ابحث عن قسم "Phase status" وغيّه:
 # من:
@@ -305,6 +326,7 @@ pnpm test:backup 2>&1 | tee /tmp/test-back.txt
 #### المهمة 6.4 — تحديث `docs/production/PRODUCTION_READINESS_FINAL.md`
 
 **الأمر التنفيذي**:
+
 ```bash
 # افتح docs/production/PRODUCTION_READINESS_FINAL.md
 # ابحث عن أي أرقام اختبارات وحدّثها لتطابق الأرقام الفعلية
@@ -314,6 +336,7 @@ pnpm test:backup 2>&1 | tee /tmp/test-back.txt
 ---
 
 #### المهمة 6.5 — Commit Phase 6
+
 ```bash
 git add -A
 git commit -m "docs: fix test counts to match actual numbers from vitest output
@@ -330,12 +353,14 @@ git commit -m "docs: fix test counts to match actual numbers from vitest output
 ### Phase 7 — التحقق النهائي (Verification Gate)
 
 #### المهمة 7.1 — Typecheck
+
 ```bash
 pnpm typecheck
 # لازم يخرج صفر أخطاء (إذا تم إصلاح كل :any/as any في Phase 4)
 ```
 
 #### المهمة 7.2 — Lint
+
 ```bash
 pnpm lint
 # ESLint --max-warnings 0
@@ -344,6 +369,7 @@ pnpm lint
 ```
 
 #### المهمة 7.3 — Format check
+
 ```bash
 pnpm format:check
 # لو فيه ملفات مش منسّقة:
@@ -351,11 +377,13 @@ pnpm format:write
 ```
 
 #### المهمة 7.4 — Docker Compose validation
+
 ```bash
 docker compose config > /dev/null 2>&1 && echo "✅ Valid" || echo "❌ Invalid"
 ```
 
 #### المهمة 7.5 — Git status نظيف
+
 ```bash
 git status
 # لازم يكون: nothing to commit, working tree clean
@@ -364,6 +392,7 @@ git status
 #### المهمة 7.6 — الأخطاء المتوقعة والتعامل معها
 
 **لو typecheck فشل**:
+
 ```bash
 # شوف الخطأ:
 pnpm typecheck 2>&1 | grep "error TS"
@@ -371,6 +400,7 @@ pnpm typecheck 2>&1 | grep "error TS"
 ```
 
 **لو lint فيه أخطاء في tests** (no-explicit-any):
+
 ```bash
 # الخيار أ: أضف rule override في eslint config للـ tests
 # الخيار ب: أصلح الـ :any في ملفات الاختبار (ممكن يكون كتير)
@@ -378,6 +408,7 @@ pnpm typecheck 2>&1 | grep "error TS"
 ```
 
 **لو git status مش نظيف**:
+
 ```bash
 git add -A
 git commit -m "chore: final cleanup from verification gate"

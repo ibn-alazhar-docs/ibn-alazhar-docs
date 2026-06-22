@@ -26,7 +26,7 @@ _(Upgraded from CONDITIONAL GO after Production Readiness Sprint — all P1 bloc
 
 | Phase                  | Tests     | Passing   |
 | ---------------------- | --------- | --------- |
-| Unit Tests (3A)*       | 668       | 668       |
+| Unit Tests (3A)\*      | 668       | 668       |
 | Integration Tests (3B) | 95        | 95        |
 | Security Tests (3E)    | 138       | 138       |
 | Penetration Tests (3F) | 56        | 56        |
@@ -35,7 +35,7 @@ _(Upgraded from CONDITIONAL GO after Production Readiness Sprint — all P1 bloc
 | Backup & Restore (3I)  | 48        | 48        |
 | **Total**              | **1,041** | **1,041** |
 
-*Unit tests are split across `tests/backend/` and `tests/frontend/`.
+\*Unit tests are split across `tests/backend/` and `tests/frontend/`.
 
 ---
 

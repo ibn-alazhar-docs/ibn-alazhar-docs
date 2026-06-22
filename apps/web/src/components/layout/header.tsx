@@ -22,7 +22,11 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
   const isAdmin = role === "ADMIN";
 
   return (
-    <header role="banner" className="glass-header sticky top-0 z-50" style={{ viewTransitionName: "dashboard-header" }}>
+    <header
+      role="banner"
+      className="glass-header sticky top-0 z-50"
+      style={{ viewTransitionName: "dashboard-header" }}
+    >
       <div className="mx-auto flex h-16 max-w-full items-center justify-between gap-4 px-6">
         <div className="flex items-center gap-3">
           <button

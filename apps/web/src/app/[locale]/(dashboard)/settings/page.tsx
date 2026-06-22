@@ -23,21 +23,21 @@ export default async function SettingsPage() {
 
   return (
     <PageTransition>
-    <SessionProvider
-      session={{
-        ...session,
-        expires: new Date(Date.now() + 86400 * 1000).toISOString(),
-      }}
-    >
-      <SettingsContent
-        user={{
-          name: session.user.name,
-          email: session.user.email,
-          image: session.user.image,
-          role: session.user.role,
+      <SessionProvider
+        session={{
+          ...session,
+          expires: new Date(Date.now() + 86400 * 1000).toISOString(),
         }}
-      />
-    </SessionProvider>
+      >
+        <SettingsContent
+          user={{
+            name: session.user.name,
+            email: session.user.email,
+            image: session.user.image,
+            role: session.user.role,
+          }}
+        />
+      </SessionProvider>
     </PageTransition>
   );
 }

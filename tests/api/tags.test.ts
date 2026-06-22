@@ -22,7 +22,12 @@ describe("Tags API", () => {
   });
 
   beforeEach(() => {
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
   });
 
   afterEach(async () => {
@@ -48,12 +53,17 @@ describe("Tags API", () => {
       expect(data.tags).toHaveLength(1);
       expect(data.tags[0].name).toBe("Tag A1");
     });
-    
+
     it("should return all tags for ADMIN", async () => {
       await createTestTag(userA.id, { name: "Tag A1" });
       await createTestTag(userB.id, { name: "Tag B1" });
 
-      mockSession.user = { id: admin.id, name: admin.name, email: admin.email, role: admin.role } as any;
+      mockSession.user = {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+      } as any;
       const res = await getTags();
       expect(res.status).toBe(200);
       const data = await res.json();
@@ -67,13 +77,19 @@ describe("Tags API", () => {
   describe("POST /api/tags", () => {
     it("should return 401 if unauthorized", async () => {
       mockSession.user = null as any;
-      const req = createApiRequest("/api/tags", { method: "POST", body: JSON.stringify({ name: "New Tag" }) });
+      const req = createApiRequest("/api/tags", {
+        method: "POST",
+        body: JSON.stringify({ name: "New Tag" }),
+      });
       const res = await createTag(req);
       expect(res.status).toBe(401);
     });
 
     it("should create a tag", async () => {
-      const req = createApiRequest("/api/tags", { method: "POST", body: JSON.stringify({ name: "New Tag", color: "#FF0000" }) });
+      const req = createApiRequest("/api/tags", {
+        method: "POST",
+        body: JSON.stringify({ name: "New Tag", color: "#FF0000" }),
+      });
       const res = await createTag(req);
       expect(res.status).toBe(201);
       const data = await res.json();
@@ -83,7 +99,10 @@ describe("Tags API", () => {
     });
 
     it("should return 400 for invalid data", async () => {
-      const req = createApiRequest("/api/tags", { method: "POST", body: JSON.stringify({ name: "" }) });
+      const req = createApiRequest("/api/tags", {
+        method: "POST",
+        body: JSON.stringify({ name: "" }),
+      });
       const res = await createTag(req);
       expect(res.status).toBe(400);
       const data = await res.json();
@@ -92,7 +111,10 @@ describe("Tags API", () => {
 
     it("should return 409 if tag name already exists for user", async () => {
       await createTestTag(userA.id, { name: "Duplicate Tag" });
-      const req = createApiRequest("/api/tags", { method: "POST", body: JSON.stringify({ name: "Duplicate Tag" }) });
+      const req = createApiRequest("/api/tags", {
+        method: "POST",
+        body: JSON.stringify({ name: "Duplicate Tag" }),
+      });
       const res = await createTag(req);
       expect(res.status).toBe(409);
       const data = await res.json();
@@ -107,7 +129,10 @@ describe("Tags API", () => {
       }));
       await prisma.tag.createMany({ data: tagsToCreate });
 
-      const req = createApiRequest("/api/tags", { method: "POST", body: JSON.stringify({ name: "One more" }) });
+      const req = createApiRequest("/api/tags", {
+        method: "POST",
+        body: JSON.stringify({ name: "One more" }),
+      });
       const res = await createTag(req);
       expect(res.status).toBe(400);
       const data = await res.json();
@@ -141,7 +166,12 @@ describe("Tags API", () => {
     });
 
     it("should return 200 for ADMIN even if owned by another user", async () => {
-      mockSession.user = { id: admin.id, name: admin.name, email: admin.email, role: admin.role } as any;
+      mockSession.user = {
+        id: admin.id,
+        name: admin.name,
+        email: admin.email,
+        role: admin.role,
+      } as any;
       const tag = await createTestTag(userB.id, { name: "Admin Read Tag" });
       const req = createApiRequest(`/api/tags/${tag.id}`);
       const res = await getTag(req, { params: Promise.resolve({ id: tag.id }) });
@@ -154,14 +184,20 @@ describe("Tags API", () => {
   describe("PATCH /api/tags/[id]", () => {
     it("should return 401 if unauthorized", async () => {
       mockSession.user = null as any;
-      const req = createApiRequest("/api/tags/123", { method: "PATCH", body: JSON.stringify({ name: "Updated" }) });
+      const req = createApiRequest("/api/tags/123", {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Updated" }),
+      });
       const res = await updateTag(req, { params: Promise.resolve({ id: "123" }) });
       expect(res.status).toBe(401);
     });
 
     it("should update a tag if owned by user", async () => {
       const tag = await createTestTag(userA.id, { name: "Old Name" });
-      const req = createApiRequest(`/api/tags/${tag.id}`, { method: "PATCH", body: JSON.stringify({ name: "New Name", color: "#16A34A" }) });
+      const req = createApiRequest(`/api/tags/${tag.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: "New Name", color: "#16A34A" }),
+      });
       const res = await updateTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(200);
       const data = await res.json();
@@ -171,7 +207,10 @@ describe("Tags API", () => {
 
     it("should return 404 if trying to update someone else's tag", async () => {
       const tag = await createTestTag(userB.id, { name: "Other Tag Update" });
-      const req = createApiRequest(`/api/tags/${tag.id}`, { method: "PATCH", body: JSON.stringify({ name: "Hacked" }) });
+      const req = createApiRequest(`/api/tags/${tag.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Hacked" }),
+      });
       const res = await updateTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(404);
     });
@@ -179,7 +218,10 @@ describe("Tags API", () => {
     it("should return 409 if new name already exists for user", async () => {
       await createTestTag(userA.id, { name: "Existing Name" });
       const tag = await createTestTag(userA.id, { name: "Another Name" });
-      const req = createApiRequest(`/api/tags/${tag.id}`, { method: "PATCH", body: JSON.stringify({ name: "Existing Name" }) });
+      const req = createApiRequest(`/api/tags/${tag.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ name: "Existing Name" }),
+      });
       const res = await updateTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(409);
     });
@@ -198,7 +240,7 @@ describe("Tags API", () => {
       const req = createApiRequest(`/api/tags/${tag.id}`, { method: "DELETE" });
       const res = await deleteTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(200);
-      
+
       const dbTag = await prisma.tag.findUnique({ where: { id: tag.id } });
       expect(dbTag).toBeNull();
     });
@@ -208,7 +250,7 @@ describe("Tags API", () => {
       const req = createApiRequest(`/api/tags/${tag.id}`, { method: "DELETE" });
       const res = await deleteTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(404);
-      
+
       const dbTag = await prisma.tag.findUnique({ where: { id: tag.id } });
       expect(dbTag).not.toBeNull();
     });

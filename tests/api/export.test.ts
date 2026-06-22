@@ -20,7 +20,9 @@ vi.mock("@ibn-al-azhar-docs/pipeline", async (importOriginal) => {
   return {
     ...actual,
     fileExists: vi.fn().mockResolvedValue(true),
-    downloadFile: vi.fn().mockResolvedValue(Buffer.from(JSON.stringify({ text: "dummy ocr text" }))),
+    downloadFile: vi
+      .fn()
+      .mockResolvedValue(Buffer.from(JSON.stringify({ text: "dummy ocr text" }))),
   };
 });
 
@@ -64,7 +66,12 @@ describe("Export API Routes", () => {
   });
 
   beforeEach(() => {
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
     vi.clearAllMocks();
   });
 
@@ -73,7 +80,12 @@ describe("Export API Routes", () => {
       mockSession.user = null as any;
       const req = createApiRequest("/api/export", {
         method: "POST",
-        body: JSON.stringify({ documentId: docA1.id, format: "md", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentId: docA1.id,
+          format: "md",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await exportPost(req);
       expect(res.status).toBe(401);
@@ -93,7 +105,12 @@ describe("Export API Routes", () => {
     it("should return 404 for document not owned by user", async () => {
       const req = createApiRequest("/api/export", {
         method: "POST",
-        body: JSON.stringify({ documentId: docB1.id, format: "md", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentId: docB1.id,
+          format: "md",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await exportPost(req);
       expect(res.status).toBe(404);
@@ -102,7 +119,12 @@ describe("Export API Routes", () => {
     it("should return 200 and file for valid request (pdf)", async () => {
       const req = createApiRequest("/api/export", {
         method: "POST",
-        body: JSON.stringify({ documentId: docA1.id, format: "md", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentId: docA1.id,
+          format: "md",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await exportPost(req);
       expect(res.status).toBe(200);
@@ -113,7 +135,12 @@ describe("Export API Routes", () => {
     it("should return 200 and zip file for valid request (zip)", async () => {
       const req = createApiRequest("/api/export", {
         method: "POST",
-        body: JSON.stringify({ documentId: docA1.id, format: "zip", profile: "research", includeSource: true }),
+        body: JSON.stringify({
+          documentId: docA1.id,
+          format: "zip",
+          profile: "research",
+          includeSource: true,
+        }),
       });
       const res = await exportPost(req);
       expect(res.status).toBe(200);
@@ -126,7 +153,12 @@ describe("Export API Routes", () => {
       mockSession.user = null as any;
       const req = createApiRequest("/api/export/batch", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [docA1.id], format: "zip", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentIds: [docA1.id],
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await batchExportPost(req);
       expect(res.status).toBe(401);
@@ -144,7 +176,12 @@ describe("Export API Routes", () => {
     it("should return 404 if a document is not owned by user", async () => {
       const req = createApiRequest("/api/export/batch", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [docA1.id, docB1.id], format: "zip", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentIds: [docA1.id, docB1.id],
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await batchExportPost(req);
       expect(res.status).toBe(404);
@@ -155,7 +192,12 @@ describe("Export API Routes", () => {
     it("should return 400 if format is not zip", async () => {
       const req = createApiRequest("/api/export/batch", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [docA1.id], format: "md", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          documentIds: [docA1.id],
+          format: "md",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await batchExportPost(req);
       expect(res.status).toBe(400);
@@ -166,7 +208,12 @@ describe("Export API Routes", () => {
     it("should return 200 and zip file for valid batch export", async () => {
       const req = createApiRequest("/api/export/batch", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [docA1.id], format: "zip", profile: "research", includeSource: true }),
+        body: JSON.stringify({
+          documentIds: [docA1.id],
+          format: "zip",
+          profile: "research",
+          includeSource: true,
+        }),
       });
       const res = await batchExportPost(req);
       expect(res.status).toBe(200);
@@ -179,17 +226,34 @@ describe("Export API Routes", () => {
       mockSession.user = null as any;
       const req = createApiRequest("/api/export/folder", {
         method: "POST",
-        body: JSON.stringify({ folderId: folderA.id, format: "zip", profile: "research", includeSource: false, recursive: false }),
+        body: JSON.stringify({
+          folderId: folderA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+          recursive: false,
+        }),
       });
       const res = await folderExportPost(req);
       expect(res.status).toBe(401);
     });
 
     it("should return 404 for folder not owned by user", async () => {
-      mockSession.user = { id: userB.id, name: userB.name, email: userB.email, role: userB.role } as any;
+      mockSession.user = {
+        id: userB.id,
+        name: userB.name,
+        email: userB.email,
+        role: userB.role,
+      } as any;
       const req = createApiRequest("/api/export/folder", {
         method: "POST",
-        body: JSON.stringify({ folderId: folderA.id, format: "zip", profile: "research", includeSource: false, recursive: false }),
+        body: JSON.stringify({
+          folderId: folderA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+          recursive: false,
+        }),
       });
       const res = await folderExportPost(req);
       expect(res.status).toBe(404);
@@ -200,7 +264,13 @@ describe("Export API Routes", () => {
     it("should return 400 if format is not zip", async () => {
       const req = createApiRequest("/api/export/folder", {
         method: "POST",
-        body: JSON.stringify({ folderId: folderA.id, format: "md", profile: "research", includeSource: false, recursive: false }),
+        body: JSON.stringify({
+          folderId: folderA.id,
+          format: "md",
+          profile: "research",
+          includeSource: false,
+          recursive: false,
+        }),
       });
       const res = await folderExportPost(req);
       expect(res.status).toBe(400);
@@ -209,7 +279,13 @@ describe("Export API Routes", () => {
     it("should return 200 and zip file for valid folder export", async () => {
       const req = createApiRequest("/api/export/folder", {
         method: "POST",
-        body: JSON.stringify({ folderId: folderA.id, format: "zip", profile: "research", includeSource: false, recursive: true }),
+        body: JSON.stringify({
+          folderId: folderA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+          recursive: true,
+        }),
       });
       const res = await folderExportPost(req);
       expect(res.status).toBe(200);
@@ -222,17 +298,32 @@ describe("Export API Routes", () => {
       mockSession.user = null as any;
       const req = createApiRequest("/api/export/tag", {
         method: "POST",
-        body: JSON.stringify({ tagId: tagA.id, format: "zip", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          tagId: tagA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await tagExportPost(req);
       expect(res.status).toBe(401);
     });
 
     it("should return 404 for tag not owned by user", async () => {
-      mockSession.user = { id: userB.id, name: userB.name, email: userB.email, role: userB.role } as any;
+      mockSession.user = {
+        id: userB.id,
+        name: userB.name,
+        email: userB.email,
+        role: userB.role,
+      } as any;
       const req = createApiRequest("/api/export/tag", {
         method: "POST",
-        body: JSON.stringify({ tagId: tagA.id, format: "zip", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          tagId: tagA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await tagExportPost(req);
       expect(res.status).toBe(404);
@@ -241,7 +332,12 @@ describe("Export API Routes", () => {
     it("should return 400 if format is not zip", async () => {
       const req = createApiRequest("/api/export/tag", {
         method: "POST",
-        body: JSON.stringify({ tagId: tagA.id, format: "md", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          tagId: tagA.id,
+          format: "md",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await tagExportPost(req);
       expect(res.status).toBe(400);
@@ -250,7 +346,12 @@ describe("Export API Routes", () => {
     it("should return 200 and zip file for valid tag export", async () => {
       const req = createApiRequest("/api/export/tag", {
         method: "POST",
-        body: JSON.stringify({ tagId: tagA.id, format: "zip", profile: "research", includeSource: false }),
+        body: JSON.stringify({
+          tagId: tagA.id,
+          format: "zip",
+          profile: "research",
+          includeSource: false,
+        }),
       });
       const res = await tagExportPost(req);
       expect(res.status).toBe(200);

@@ -54,7 +54,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       });
       if (!account || !account.access_token || !account.refresh_token) {
         return NextResponse.json(
-          { error: { code: "NOT_LINKED", message: "يجب ربط حساب Google الخاص بك من الإعدادات أولاً لتتمكن من التصدير إلى Drive." } },
+          {
+            error: {
+              code: "NOT_LINKED",
+              message:
+                "يجب ربط حساب Google الخاص بك من الإعدادات أولاً لتتمكن من التصدير إلى Drive.",
+            },
+          },
           { status: 400 },
         );
       }

@@ -6,7 +6,7 @@ import {
   createTestFolder,
   createTestTag,
   TestUser,
-  prisma
+  prisma,
 } from "../integration/helpers/db";
 import { mockSession } from "./setup";
 import { createApiRequest } from "./helpers";
@@ -16,10 +16,18 @@ import { POST as bulkMove } from "@/app/api/documents/bulk-move/route";
 import { POST as bulkTag } from "@/app/api/documents/bulk-tag/route";
 import { POST as bulkUntag } from "@/app/api/documents/bulk-untag/route";
 
-import { GET as getDocument, PATCH as updateDocument, DELETE as deleteDocument } from "@/app/api/documents/[id]/route";
+import {
+  GET as getDocument,
+  PATCH as updateDocument,
+  DELETE as deleteDocument,
+} from "@/app/api/documents/[id]/route";
 import { PATCH as moveDocument } from "@/app/api/documents/[id]/move/route";
 import { PATCH as restoreDocument } from "@/app/api/documents/[id]/restore/route";
-import { GET as getDocumentTags, POST as addTagToDocument, PUT as setDocumentTags } from "@/app/api/documents/[id]/tags/route";
+import {
+  GET as getDocumentTags,
+  POST as addTagToDocument,
+  PUT as setDocumentTags,
+} from "@/app/api/documents/[id]/tags/route";
 import { DELETE as removeTagFromDocument } from "@/app/api/documents/[id]/tags/[tagId]/route";
 
 describe("Documents API", () => {
@@ -36,7 +44,12 @@ describe("Documents API", () => {
   });
 
   beforeEach(() => {
-    mockSession.user = { id: userA.id, name: userA.name, email: userA.email, role: userA.role } as any;
+    mockSession.user = {
+      id: userA.id,
+      name: userA.name,
+      email: userA.email,
+      role: userA.role,
+    } as any;
   });
 
   describe("GET /api/documents", () => {
@@ -48,9 +61,7 @@ describe("Documents API", () => {
 
       expect(res.status).toBe(200);
       expect(json.documents).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({ id: doc.id, title: "List Doc" })
-        ])
+        expect.arrayContaining([expect.objectContaining({ id: doc.id, title: "List Doc" })]),
       );
     });
 
@@ -92,7 +103,7 @@ describe("Documents API", () => {
       const doc = await createTestDocument(userA.id, { title: "Old Title" });
       const req = createApiRequest(`/api/documents/${doc.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ title: "New Title" })
+        body: JSON.stringify({ title: "New Title" }),
       });
       const res = await updateDocument(req, { params: Promise.resolve({ id: doc.id }) });
       const json = await res.json();
@@ -105,7 +116,7 @@ describe("Documents API", () => {
       const doc = await createTestDocument(userA.id);
       const req = createApiRequest(`/api/documents/${doc.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ title: "" }) // Invalid, too short
+        body: JSON.stringify({ title: "" }), // Invalid, too short
       });
       const res = await updateDocument(req, { params: Promise.resolve({ id: doc.id }) });
       expect(res.status).toBe(400);
@@ -131,7 +142,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest(`/api/documents/${doc.id}/move`, {
         method: "PATCH",
-        body: JSON.stringify({ folderId: folder.id })
+        body: JSON.stringify({ folderId: folder.id }),
       });
       const res = await moveDocument(req, { params: Promise.resolve({ id: doc.id }) });
       const json = await res.json();
@@ -174,7 +185,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest(`/api/documents/${doc.id}/tags`, {
         method: "POST",
-        body: JSON.stringify({ tagId: tag.id })
+        body: JSON.stringify({ tagId: tag.id }),
       });
       const res = await addTagToDocument(req, { params: Promise.resolve({ id: doc.id }) });
       expect(res.status).toBe(201);
@@ -188,7 +199,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest(`/api/documents/${doc.id}/tags`, {
         method: "PUT",
-        body: JSON.stringify({ tagIds: [tag2.id] })
+        body: JSON.stringify({ tagIds: [tag2.id] }),
       });
       const res = await setDocumentTags(req, { params: Promise.resolve({ id: doc.id }) });
       expect(res.status).toBe(200);
@@ -204,7 +215,9 @@ describe("Documents API", () => {
       await prisma.tagDocument.create({ data: { documentId: doc.id, tagId: tag.id } });
 
       const req = createApiRequest(`/api/documents/${doc.id}/tags/${tag.id}`, { method: "DELETE" });
-      const res = await removeTagFromDocument(req, { params: Promise.resolve({ id: doc.id, tagId: tag.id }) });
+      const res = await removeTagFromDocument(req, {
+        params: Promise.resolve({ id: doc.id, tagId: tag.id }),
+      });
       expect(res.status).toBe(200);
 
       const tags = await prisma.tagDocument.findMany({ where: { documentId: doc.id } });
@@ -220,7 +233,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest("/api/documents/bulk-move", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], folderId: folder.id })
+        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], folderId: folder.id }),
       });
       const res = await bulkMove(req);
       const json = await res.json();
@@ -236,7 +249,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest("/api/documents/bulk-tag", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], tagId: tag.id })
+        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], tagId: tag.id }),
       });
       const res = await bulkTag(req);
       const json = await res.json();
@@ -254,7 +267,7 @@ describe("Documents API", () => {
 
       const req = createApiRequest("/api/documents/bulk-untag", {
         method: "POST",
-        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], tagId: tag.id })
+        body: JSON.stringify({ documentIds: [doc1.id, doc2.id], tagId: tag.id }),
       });
       const res = await bulkUntag(req);
       const json = await res.json();

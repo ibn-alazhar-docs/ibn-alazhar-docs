@@ -65,7 +65,9 @@ export function getQueue(queueName: string, config: PipelineConfig): Queue {
   }
 
   if (!queues[queueName]) {
-    queues[queueName] = new Queue(queueName, { connection: conn as unknown as import("bullmq").ConnectionOptions });
+    queues[queueName] = new Queue(queueName, {
+      connection: conn as unknown as import("bullmq").ConnectionOptions,
+    });
   }
   return queues[queueName];
 }

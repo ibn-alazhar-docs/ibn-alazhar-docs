@@ -107,101 +107,101 @@ export default function UsersPage() {
 
   return (
     <PageTransition>
-    <Container>
-      <Section padding="md">
-        <Stack gap={6}>
-          <Heading level={2}>{t("title")}</Heading>
+      <Container>
+        <Section padding="md">
+          <Stack gap={6}>
+            <Heading level={2}>{t("title")}</Heading>
 
-          {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-xl border border-line bg-card p-4">
-              <p className="text-xs text-very-muted uppercase tracking-wide">{t("total")}</p>
-              <p className="text-2xl font-bold text-primary-color mt-1">{users.length}</p>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-xl border border-line bg-card p-4">
+                <p className="text-xs text-very-muted uppercase tracking-wide">{t("total")}</p>
+                <p className="text-2xl font-bold text-primary-color mt-1">{users.length}</p>
+              </div>
+              <div className="rounded-xl border border-line bg-card p-4">
+                <p className="text-xs text-very-muted uppercase tracking-wide">{t("admins")}</p>
+                <p className="text-2xl font-bold text-[var(--success)] mt-1">{admins}</p>
+              </div>
+              <div className="rounded-xl border border-line bg-card p-4">
+                <p className="text-xs text-very-muted uppercase tracking-wide">{t("students")}</p>
+                <p className="text-2xl font-bold text-primary-color mt-1">{students}</p>
+              </div>
             </div>
-            <div className="rounded-xl border border-line bg-card p-4">
-              <p className="text-xs text-very-muted uppercase tracking-wide">{t("admins")}</p>
-              <p className="text-2xl font-bold text-[var(--success)] mt-1">{admins}</p>
-            </div>
-            <div className="rounded-xl border border-line bg-card p-4">
-              <p className="text-xs text-very-muted uppercase tracking-wide">{t("students")}</p>
-              <p className="text-2xl font-bold text-primary-color mt-1">{students}</p>
-            </div>
-          </div>
 
-          {/* Users Table */}
-          <div className="rounded-xl border border-line bg-card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-line bg-hover">
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
-                      {t("name")}
-                    </th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
-                      {t("email")}
-                    </th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
-                      {t("role")}
-                    </th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
-                      {t("createdAt")}
-                    </th>
-                    <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
-                      {t("actions")}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map((user) => (
-                    <tr
-                      key={user.id}
-                      className="border-b border-line last:border-0 hover:bg-hover transition-colors"
-                    >
-                      <td className="px-4 py-3 font-medium text-primary-color">
-                        {user.name || "—"}
-                      </td>
-                      <td className="px-4 py-3 text-muted-color">{user.email}</td>
-                      <td className="px-4 py-3">
-                        <span
-                          className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                            user.role === "ADMIN"
-                              ? "bg-[var(--success-bg)] text-[var(--success)]"
-                              : "bg-badge text-muted-color"
-                          }`}
-                        >
-                          {user.role}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-very-muted">
-                        {new Date(user.createdAt).toLocaleDateString("ar-EG")}
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
-                          <button
-                            type="button"
-                            onClick={() => toggleRole(user.id, user.role)}
-                            className="text-xs text-muted-color hover:text-primary-color transition-colors"
-                          >
-                            {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => deleteUser(user.id)}
-                            className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80 transition-colors"
-                          >
-                            {t("delete")}
-                          </button>
-                        </div>
-                      </td>
+            {/* Users Table */}
+            <div className="rounded-xl border border-line bg-card overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-line bg-hover">
+                      <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                        {t("name")}
+                      </th>
+                      <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                        {t("email")}
+                      </th>
+                      <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                        {t("role")}
+                      </th>
+                      <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                        {t("createdAt")}
+                      </th>
+                      <th className="px-4 py-3 text-start text-xs font-semibold text-muted-color">
+                        {t("actions")}
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {users.map((user) => (
+                      <tr
+                        key={user.id}
+                        className="border-b border-line last:border-0 hover:bg-hover transition-colors"
+                      >
+                        <td className="px-4 py-3 font-medium text-primary-color">
+                          {user.name || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-muted-color">{user.email}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                              user.role === "ADMIN"
+                                ? "bg-[var(--success-bg)] text-[var(--success)]"
+                                : "bg-badge text-muted-color"
+                            }`}
+                          >
+                            {user.role}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-very-muted">
+                          {new Date(user.createdAt).toLocaleDateString("ar-EG")}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => toggleRole(user.id, user.role)}
+                              className="text-xs text-muted-color hover:text-primary-color transition-colors"
+                            >
+                              {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => deleteUser(user.id)}
+                              className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80 transition-colors"
+                            >
+                              {t("delete")}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </Stack>
-      </Section>
-    </Container>
+          </Stack>
+        </Section>
+      </Container>
     </PageTransition>
   );
 }

@@ -30,7 +30,9 @@ export async function GET(
 
   const validFormats = ["md", "txt", "json", "docx", "epub", "pdf", "searchable-pdf"] as const;
   if (
-    !validFormats.includes(format as "md" | "txt" | "json" | "docx" | "epub" | "pdf" | "searchable-pdf")
+    !validFormats.includes(
+      format as "md" | "txt" | "json" | "docx" | "epub" | "pdf" | "searchable-pdf",
+    )
   ) {
     return NextResponse.json(
       { error: { code: "BAD_REQUEST", message: "Unsupported format" } },

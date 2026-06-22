@@ -76,7 +76,10 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
       await page.waitForLoadState("networkidle");
       const status = response?.status();
       expect(status).toBeLessThan(400);
-      await page.screenshot({ path: `/tmp/ibn-test-${p.screenshot}-${p.name.toLowerCase()}.png`, fullPage: true });
+      await page.screenshot({
+        path: `/tmp/ibn-test-${p.screenshot}-${p.name.toLowerCase()}.png`,
+        fullPage: true,
+      });
       console.log(`PASS: ${p.name} (${p.path}) — status ${status}`);
     }
   });
@@ -87,8 +90,10 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
 
     const violations = await page.evaluate(() => {
       const physical = [
-        "margin-left", "margin-right",
-        "padding-left", "padding-right",
+        "margin-left",
+        "margin-right",
+        "padding-left",
+        "padding-right",
         "text-align",
       ];
       const found: string[] = [];
@@ -165,14 +170,23 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
       document.querySelectorAll("*").forEach((el) => {
         const rect = el.getBoundingClientRect();
         if (rect.width > docWidth + 2) {
-          overflowingElements.push(`${el.tagName}.${(el.className as string).toString().slice(0, 40)} (${Math.round(rect.width)}px)`);
+          overflowingElements.push(
+            `${el.tagName}.${(el.className as string).toString().slice(0, 40)} (${Math.round(rect.width)}px)`,
+          );
         }
       });
 
-      return { docWidth, scrollWidth, overflow, overflowingElements: overflowingElements.slice(0, 5) };
+      return {
+        docWidth,
+        scrollWidth,
+        overflow,
+        overflowingElements: overflowingElements.slice(0, 5),
+      };
     });
 
-    console.log(`Mobile viewport: ${overflowInfo.docWidth}px, scroll: ${overflowInfo.scrollWidth}px, overflow: ${overflowInfo.overflow}px`);
+    console.log(
+      `Mobile viewport: ${overflowInfo.docWidth}px, scroll: ${overflowInfo.scrollWidth}px, overflow: ${overflowInfo.overflow}px`,
+    );
     if (overflowInfo.overflow > 0) {
       console.log(`WARNING: ${overflowInfo.overflowingElements.length} elements overflow:`);
       overflowInfo.overflowingElements.forEach((e) => console.log(`  - ${e}`));

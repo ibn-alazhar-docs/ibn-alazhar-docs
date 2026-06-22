@@ -204,189 +204,192 @@ export default function FilesPage() {
 
   return (
     <PageTransition>
-    <Container>
-      <Section padding="md">
-        <div className="flex gap-6">
-          {/* Sidebar */}
-          <div className="w-64 shrink-0">
-            <div className="sticky top-4 space-y-6 rounded-xl border border-line bg-card p-4">
-              <FolderTree selectedFolderId={selectedFolderId} onSelectFolder={handleFolderSelect} />
-              <div className="border-t border-line pt-4">
-                <TagFilterSidebar
-                  selectedTagIds={selectedTagIds}
-                  onTagsChange={setSelectedTagIds}
+      <Container>
+        <Section padding="md">
+          <div className="flex gap-6">
+            {/* Sidebar */}
+            <div className="w-64 shrink-0">
+              <div className="sticky top-4 space-y-6 rounded-xl border border-line bg-card p-4">
+                <FolderTree
+                  selectedFolderId={selectedFolderId}
+                  onSelectFolder={handleFolderSelect}
                 />
+                <div className="border-t border-line pt-4">
+                  <TagFilterSidebar
+                    selectedTagIds={selectedTagIds}
+                    onTagsChange={setSelectedTagIds}
+                  />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Main content */}
-          <div className="min-w-0 flex-1">
-            <Stack gap={6}>
-              {/* Header */}
-              <div>
-                <Heading level={2}>{t("files")}</Heading>
-                <Text color="muted">{tDocs("uploadPrompt")}</Text>
-              </div>
-
-              {/* Breadcrumbs */}
-              {breadcrumbs.length > 0 && (
-                <Breadcrumbs breadcrumbs={breadcrumbs} onNavigate={handleFolderSelect} />
-              )}
-
-              {/* Upload Zone */}
-              <div className="rounded-xl border border-line bg-card p-6">
-                <FileUpload onUploadStart={handleUploadStart} folderId={selectedFolderId} />
-              </div>
-
-              {/* Active Jobs */}
-              <ActiveJobs
-                jobs={activeJobs}
-                completedIds={completedIds}
-                locale={locale}
-                onMarkComplete={handleMarkComplete}
-              />
-
-              {/* Document Table Skeleton */}
-              {loadingDocs && (
+            {/* Main content */}
+            <div className="min-w-0 flex-1">
+              <Stack gap={6}>
+                {/* Header */}
                 <div>
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="h-6 w-32 rounded bg-muted animate-pulse"></div>
-                  </div>
-                  <div className="overflow-x-auto rounded-xl border border-line bg-card">
-                    <table className="min-w-[640px] w-full table-auto">
-                      <thead>
-                        <tr className="border-b border-line text-start">
-                          <th className="w-10 px-3 py-3">
-                            <div className="h-4 w-4 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="px-3 py-3">
-                            <div className="h-4 w-24 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="px-3 py-3">
-                            <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="px-3 py-3">
-                            <div className="h-4 w-12 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="px-3 py-3">
-                            <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="px-3 py-3">
-                            <div className="h-4 w-20 rounded bg-muted animate-pulse"></div>
-                          </th>
-                          <th className="w-20 px-3 py-3"></th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {[...Array(5)].map((_, i) => (
-                          <tr key={i} className="border-b border-line">
-                            <td className="px-3 py-4">
-                              <div className="h-4 w-4 rounded bg-muted animate-pulse"></div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="flex flex-col gap-1.5">
-                                <div className="h-4 w-48 rounded bg-muted animate-pulse"></div>
-                                <div className="h-3 w-32 rounded bg-muted animate-pulse opacity-50"></div>
-                              </div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="h-5 w-20 rounded-full bg-muted animate-pulse"></div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="h-4 w-10 rounded bg-muted animate-pulse"></div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="h-4 w-24 rounded bg-muted animate-pulse"></div>
-                            </td>
-                            <td className="px-3 py-4">
-                              <div className="flex gap-1">
-                                <div className="h-7 w-7 rounded-lg bg-muted animate-pulse"></div>
-                                <div className="h-7 w-7 rounded-lg bg-muted animate-pulse"></div>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
+                  <Heading level={2}>{t("files")}</Heading>
+                  <Text color="muted">{tDocs("uploadPrompt")}</Text>
                 </div>
-              )}
 
-              {/* Document Table */}
-              {!loadingDocs && documents.length > 0 && (
-                <DocumentTable
-                  documents={documents}
-                  selectedDocs={selectedDocs}
-                  allSelected={allSelected}
-                  onToggleSelect={toggleDocSelection}
-                  onToggleSelectAll={toggleSelectAll}
-                  editingDocId={editingDocId}
-                  editTitle={editTitle}
-                  onEditTitleChange={setEditTitle}
-                  onStartEdit={startEditTitle}
-                  onSaveEdit={saveEditTitle}
-                  onCancelEdit={() => {
-                    setEditingDocId(null);
-                    setEditTitle("");
-                  }}
-                  onDelete={(docId) => setDeletingDocId(docId)}
-                  deletingDocId={deletingDocId}
-                  onConfirmDelete={confirmDelete}
-                  onCancelDelete={() => setDeletingDocId(null)}
-                  onBulkTag={handleBulkTag}
-                  onBulkMove={handleBulkMove}
-                  onCancelSelection={() => setSelectedDocs(new Set())}
-                  showBulkTagPicker={showBulkTagPicker}
-                  onToggleBulkTagPicker={() => setShowBulkTagPicker(!showBulkTagPicker)}
+                {/* Breadcrumbs */}
+                {breadcrumbs.length > 0 && (
+                  <Breadcrumbs breadcrumbs={breadcrumbs} onNavigate={handleFolderSelect} />
+                )}
+
+                {/* Upload Zone */}
+                <div className="rounded-xl border border-line bg-card p-6">
+                  <FileUpload onUploadStart={handleUploadStart} folderId={selectedFolderId} />
+                </div>
+
+                {/* Active Jobs */}
+                <ActiveJobs
+                  jobs={activeJobs}
+                  completedIds={completedIds}
                   locale={locale}
+                  onMarkComplete={handleMarkComplete}
                 />
-              )}
 
-              {/* Empty State */}
-              {activeJobs.length === 0 && !loadingDocs && documents.length === 0 && (
-                <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-card py-20 px-6 text-center shadow-sm transition-all duration-300">
-                  <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--success-bg)] text-[var(--success)] shadow-sm">
-                    <svg
-                      className="h-10 w-10"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                      aria-hidden="true"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                      />
-                    </svg>
+                {/* Document Table Skeleton */}
+                {loadingDocs && (
+                  <div>
+                    <div className="mb-4 flex items-center justify-between">
+                      <div className="h-6 w-32 rounded bg-muted animate-pulse"></div>
+                    </div>
+                    <div className="overflow-x-auto rounded-xl border border-line bg-card">
+                      <table className="min-w-[640px] w-full table-auto">
+                        <thead>
+                          <tr className="border-b border-line text-start">
+                            <th className="w-10 px-3 py-3">
+                              <div className="h-4 w-4 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="px-3 py-3">
+                              <div className="h-4 w-24 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="px-3 py-3">
+                              <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="px-3 py-3">
+                              <div className="h-4 w-12 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="px-3 py-3">
+                              <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="px-3 py-3">
+                              <div className="h-4 w-20 rounded bg-muted animate-pulse"></div>
+                            </th>
+                            <th className="w-20 px-3 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {[...Array(5)].map((_, i) => (
+                            <tr key={i} className="border-b border-line">
+                              <td className="px-3 py-4">
+                                <div className="h-4 w-4 rounded bg-muted animate-pulse"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="flex flex-col gap-1.5">
+                                  <div className="h-4 w-48 rounded bg-muted animate-pulse"></div>
+                                  <div className="h-3 w-32 rounded bg-muted animate-pulse opacity-50"></div>
+                                </div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="h-5 w-20 rounded-full bg-muted animate-pulse"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="h-4 w-10 rounded bg-muted animate-pulse"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="h-4 w-16 rounded bg-muted animate-pulse"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="h-4 w-24 rounded bg-muted animate-pulse"></div>
+                              </td>
+                              <td className="px-3 py-4">
+                                <div className="flex gap-1">
+                                  <div className="h-7 w-7 rounded-lg bg-muted animate-pulse"></div>
+                                  <div className="h-7 w-7 rounded-lg bg-muted animate-pulse"></div>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
-                  <Heading level={3} className="mb-3 text-primary-color">
-                    {tDocs("empty")}
-                  </Heading>
-                  <Text color="muted" className="max-w-md">
-                    {tDocs("uploadPrompt")}
-                  </Text>
-                </div>
-              )}
-            </Stack>
-          </div>
-        </div>
-      </Section>
+                )}
 
-      {/* Move Dialog */}
-      {showMoveDialog && (
-        <MoveDialog
-          selectedCount={moveCount}
-          onSubmit={handleMoveSubmit}
-          onClose={() => setShowMoveDialog(false)}
-        />
-      )}
-    </Container>
+                {/* Document Table */}
+                {!loadingDocs && documents.length > 0 && (
+                  <DocumentTable
+                    documents={documents}
+                    selectedDocs={selectedDocs}
+                    allSelected={allSelected}
+                    onToggleSelect={toggleDocSelection}
+                    onToggleSelectAll={toggleSelectAll}
+                    editingDocId={editingDocId}
+                    editTitle={editTitle}
+                    onEditTitleChange={setEditTitle}
+                    onStartEdit={startEditTitle}
+                    onSaveEdit={saveEditTitle}
+                    onCancelEdit={() => {
+                      setEditingDocId(null);
+                      setEditTitle("");
+                    }}
+                    onDelete={(docId) => setDeletingDocId(docId)}
+                    deletingDocId={deletingDocId}
+                    onConfirmDelete={confirmDelete}
+                    onCancelDelete={() => setDeletingDocId(null)}
+                    onBulkTag={handleBulkTag}
+                    onBulkMove={handleBulkMove}
+                    onCancelSelection={() => setSelectedDocs(new Set())}
+                    showBulkTagPicker={showBulkTagPicker}
+                    onToggleBulkTagPicker={() => setShowBulkTagPicker(!showBulkTagPicker)}
+                    locale={locale}
+                  />
+                )}
+
+                {/* Empty State */}
+                {activeJobs.length === 0 && !loadingDocs && documents.length === 0 && (
+                  <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-card py-20 px-6 text-center shadow-sm transition-all duration-300">
+                    <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--success-bg)] text-[var(--success)] shadow-sm">
+                      <svg
+                        className="h-10 w-10"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={1.5}
+                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
+                        />
+                      </svg>
+                    </div>
+                    <Heading level={3} className="mb-3 text-primary-color">
+                      {tDocs("empty")}
+                    </Heading>
+                    <Text color="muted" className="max-w-md">
+                      {tDocs("uploadPrompt")}
+                    </Text>
+                  </div>
+                )}
+              </Stack>
+            </div>
+          </div>
+        </Section>
+
+        {/* Move Dialog */}
+        {showMoveDialog && (
+          <MoveDialog
+            selectedCount={moveCount}
+            onSubmit={handleMoveSubmit}
+            onClose={() => setShowMoveDialog(false)}
+          />
+        )}
+      </Container>
     </PageTransition>
   );
 }

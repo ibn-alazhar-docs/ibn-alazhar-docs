@@ -422,7 +422,11 @@ function reconstructArabicLines(text: string): string {
     }
 
     // Footnote or list-starting lines — flush buffer and keep separate
-    if (/^\[?\s*\d+\s*\]?[\s\-.)]/.test(trimmed) || /^\(\d+\)/.test(trimmed) || /^[\u00B9\u00B2\u00B3]/.test(trimmed)) {
+    if (
+      /^\[?\s*\d+\s*\]?[\s\-.)]/.test(trimmed) ||
+      /^\(\d+\)/.test(trimmed) ||
+      /^[\u00B9\u00B2\u00B3]/.test(trimmed)
+    ) {
       if (buffer.length > 0) {
         result.push(buffer.join(" "));
         buffer = [];
