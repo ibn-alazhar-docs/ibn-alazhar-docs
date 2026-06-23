@@ -92,7 +92,7 @@ export async function cleanupTestUsers(userIds: string[]) {
   await prisma.tag.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.conversionJob.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.document.deleteMany({ where: { userId: { in: userIds } } });
-  const idsJoined = userIds.map((id) => `'${id}'`).join(',');
+  const idsJoined = userIds.map((id) => `'${id}'`).join(",");
   await prisma.$executeRawUnsafe(`DELETE FROM "folders" WHERE "userId" IN (${idsJoined})`);
   await prisma.userSetting.deleteMany({ where: { userId: { in: userIds } } });
   await prisma.account.deleteMany({ where: { userId: { in: userIds } } });
