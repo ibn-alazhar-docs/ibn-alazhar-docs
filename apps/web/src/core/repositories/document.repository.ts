@@ -29,7 +29,7 @@ export class DocumentRepository {
 
   async update(id: string, userId: string, data: Prisma.DocumentUncheckedUpdateInput) {
     return prisma.document.update({
-      where: { id },
+      where: { id, userId },
       data,
     });
   }
@@ -47,22 +47,10 @@ export class DocumentRepository {
     `;
   }
 
-  async findFolderById(id: string, userId: string) {
-    return prisma.folder.findFirst({
-      where: { id, userId, deletedAt: null },
-    });
-  }
-
   async updateMany(where: Prisma.DocumentWhereInput, data: Prisma.DocumentUncheckedUpdateInput) {
     return prisma.document.updateMany({
       where,
       data,
-    });
-  }
-
-  async findGoogleAccount(userId: string) {
-    return prisma.account.findFirst({
-      where: { userId, provider: "google" },
     });
   }
 }

@@ -3,46 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
-
-async function validateShareAccess(token: string) {
-  const share = await prisma.shareLink.findUnique({
-    where: { token },
-    include: {
-      document: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          language: true,
-          isRtl: true,
-          pageCount: true,
-          outputFormats: true,
-          createdAt: true,
-          status: true,
-          deletedAt: true,
-        },
-      },
-    },
-  });
-
-  if (!share) {
-    return { error: "Link not found", status: 404 as const };
-  }
-
-  if (share.document.deletedAt) {
-    return { error: "Document deleted", status: 404 as const };
-  }
-
-  if (share.document.status !== "COMPLETED") {
-    return { error: "Document not ready", status: 404 as const };
-  }
-
-  if (share.expiresAt && new Date() > share.expiresAt) {
-    return { error: "Link expired", status: 410 as const };
-  }
-
-  return { share };
-}
+import { validateShareAccess } from "@/lib/share-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const rateLimitResult = await checkRateLimit("/api/share", request);
@@ -60,7 +21,18 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
   const { token } = await params;
 
-  const result = await validateShareAccess(token);
+  const result = await validateShareAccess(token, {
+    id: true,
+    title: true,
+    description: true,
+    language: true,
+    isRtl: true,
+    pageCount: true,
+    outputFormats: true,
+    createdAt: true,
+    status: true,
+    deletedAt: true,
+  });
   if ("error" in result) {
     return NextResponse.json(
       { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
@@ -69,6 +41,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   }
 
   const { share } = result;
+  const doc = share.document as {
+    id: string;
+    title: string;
+    description: string | null;
+    language: string | null;
+    isRtl: boolean;
+    pageCount: number | null;
+    outputFormats: string[];
+    createdAt: Date;
+  };
 
   try {
     const tags = await prisma.tagDocument.findMany({
@@ -111,13 +93,13 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
     return NextResponse.json({
       document: {
-        id: share.document.id,
-        title: share.document.title,
-        description: share.document.description,
-        language: share.document.language,
-        isRtl: share.document.isRtl,
-        pageCount: share.document.pageCount,
-        createdAt: share.document.createdAt.toISOString(),
+        id: doc.id,
+        title: doc.title,
+        description: doc.description,
+        language: doc.language,
+        isRtl: doc.isRtl,
+        pageCount: doc.pageCount,
+        createdAt: doc.createdAt.toISOString(),
       },
       content: {
         markdown,
@@ -129,7 +111,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
           color: td.tag.color,
         })),
         folder: folder?.name ?? null,
-        exportFormats: share.document.outputFormats,
+        exportFormats: doc.outputFormats,
       },
     });
   } catch (error: unknown) {

@@ -24,9 +24,9 @@ export class FolderRepository {
     return prisma.folder.create({ data });
   }
 
-  async update(id: string, _userId: string, data: Prisma.FolderUncheckedUpdateInput) {
+  async update(id: string, userId: string, data: Prisma.FolderUncheckedUpdateInput) {
     return prisma.folder.update({
-      where: { id },
+      where: { id, userId },
       data,
     });
   }
@@ -41,16 +41,16 @@ export class FolderRepository {
     });
   }
 
-  async softDelete(id: string, _userId: string) {
+  async softDelete(id: string, userId: string) {
     return prisma.folder.update({
-      where: { id },
+      where: { id, userId },
       data: { deletedAt: new Date() },
     });
   }
 
-  async restore(id: string, _userId: string) {
+  async restore(id: string, userId: string) {
     return prisma.folder.update({
-      where: { id },
+      where: { id, userId },
       data: { deletedAt: null },
     });
   }
@@ -61,6 +61,12 @@ export class FolderRepository {
       _max: { order: true },
     });
     return maxOrder._max.order ?? -1;
+  }
+
+  async findFolderById(id: string, userId: string) {
+    return prisma.folder.findFirst({
+      where: { id, userId, deletedAt: null },
+    });
   }
 }
 

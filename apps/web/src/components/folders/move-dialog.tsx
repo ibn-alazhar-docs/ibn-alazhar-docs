@@ -2,17 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-
-interface FolderNode {
-  id: string;
-  name: string;
-  parentId: string | null;
-  color: string | null;
-  icon: string | null;
-  order: number;
-  children: FolderNode[];
-  _count: { documents: number; children: number };
-}
+import type { FolderNode } from "@/lib/build-folder-tree";
 
 interface MoveDialogProps {
   selectedCount: number;

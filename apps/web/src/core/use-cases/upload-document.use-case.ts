@@ -12,6 +12,7 @@ import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { documentRepository } from "../repositories/document.repository";
+import { folderRepository } from "../repositories/folder.repository";
 
 export class UploadDocumentUseCase {
   async execute(params: {
@@ -24,7 +25,7 @@ export class UploadDocumentUseCase {
 
     // Validate Folder
     if (folderId) {
-      const folder = await documentRepository.findFolderById(folderId, userId);
+      const folder = await folderRepository.findFolderById(folderId, userId);
       if (!folder) {
         throw new Error("NOT_FOUND");
       }

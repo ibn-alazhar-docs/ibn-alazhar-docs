@@ -5,8 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { LocaleToggle } from "@/components/locale/locale-toggle";
-
-const BRAND_NAME = { ar: "مستندات ابن الأزهر", en: "Ibn Al-Azhar Docs" } as const;
+import { BRAND_NAME } from "@/lib/brand";
 
 interface PublicHeaderProps {
   locale: string;

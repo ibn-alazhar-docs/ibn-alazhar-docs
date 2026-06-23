@@ -2,17 +2,7 @@ import { folderRepository } from "../repositories/folder.repository";
 import { documentRepository } from "../repositories/document.repository";
 import { tagRepository } from "../repositories/tag.repository";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
-
-export interface FolderNode {
-  id: string;
-  name: string;
-  parentId: string | null;
-  color: string | null;
-  icon: string | null;
-  order: number;
-  children: FolderNode[];
-  _count: { documents: number; children: number };
-}
+import type { FolderNode } from "@/lib/build-folder-tree";
 
 export class FolderUseCases {
   async getFolders(userId: string, role: string, parentId: string | null) {
