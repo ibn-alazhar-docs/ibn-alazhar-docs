@@ -67,12 +67,12 @@ type AuthenticatedHandler = (
 export function withAuth(handler: AuthenticatedHandler) {
   return async (
     request: NextRequest,
-    context: { params: Promise<Record<string, string | undefined>> },
+    context?: { params: Promise<Record<string, string | undefined>> },
   ) => {
     const session = await requireAuth().catch(() => null);
     if (!session) return unauthorizedResponse();
 
-    const params = await context.params;
+    const params = context?.params ? await context.params : {};
     return handler(request, { session, params });
   };
 }

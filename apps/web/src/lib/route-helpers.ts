@@ -39,10 +39,8 @@ export function handleRouteError(error: unknown, route: string, fallbackMessage:
   logger.error(error, `[${route}] Failed:`);
 
   if (mapped) {
-    return NextResponse.json(
-      { error: { code: mapped.code, message: mapped.message } },
-      { status: mapped.status },
-    );
+    const message = error instanceof Error && error.message ? error.message : mapped.message;
+    return NextResponse.json({ error: { code: mapped.code, message } }, { status: mapped.status });
   }
 
   const statusCode = getErrorStatusCode(error);
