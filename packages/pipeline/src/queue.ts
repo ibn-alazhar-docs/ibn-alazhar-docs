@@ -65,8 +65,9 @@ export function getQueue(queueName: string, config: PipelineConfig): Queue {
   }
 
   if (!queues[queueName]) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    queues[queueName] = new Queue(queueName, { connection: conn as any });
+    queues[queueName] = new Queue(queueName, {
+      connection: conn as unknown as import("bullmq").ConnectionOptions,
+    });
   }
   return queues[queueName];
 }
@@ -187,8 +188,7 @@ function createBaseWorker<T>(
   const concurrency = JOB_CONCURRENCY[queueName] ?? 1;
   const timeout = JOB_TIMEOUTS[queueName as keyof typeof JOB_TIMEOUTS] ?? 60_000;
   return new Worker<T>(queueName, handler, {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    connection: getConnection(config) as any,
+    connection: getConnection(config) as unknown as import("bullmq").ConnectionOptions,
     concurrency,
     lockDuration: Math.max(timeout, 60_000),
     lockRenewTime: 15_000,
