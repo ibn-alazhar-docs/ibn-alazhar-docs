@@ -4,7 +4,7 @@ import { handleRouteError } from "@/lib/route-helpers";
 import { documentUpdateSchema } from "@/lib/validators/document";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
-export const GET = withAuth(async (request, { session, params }) => {
+export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   try {
     const document = await documentUseCases.getDocumentById(id, session.user.id);
@@ -35,7 +35,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   }
 });
 
-export const DELETE = withAuth(async (request, { session, params }) => {
+export const DELETE = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   try {
     await documentUseCases.deleteDocument(id, session.user.id);

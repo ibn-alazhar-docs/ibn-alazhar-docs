@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/auth-guards";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 import { handleRouteError } from "@/lib/route-helpers";
 
-export const POST = withAuth(async (request, { session, params }) => {
+export const POST = withAuth(async (_request, { session, params }) => {
   const id = params.id;
   if (!id)
     return NextResponse.json(

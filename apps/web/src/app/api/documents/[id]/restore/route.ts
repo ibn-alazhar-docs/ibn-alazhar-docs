@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
-export const PATCH = withAuth(async (request, { session, params }) => {
+export const PATCH = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   try {
     const restored = await documentUseCases.restoreDocument(id, session.user.id);

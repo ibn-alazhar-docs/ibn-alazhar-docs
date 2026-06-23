@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
-import { handleRouteError } from "@/lib/route-helpers";
 import { uploadDocumentUseCase } from "@/core/use-cases/upload-document.use-case";
 
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
