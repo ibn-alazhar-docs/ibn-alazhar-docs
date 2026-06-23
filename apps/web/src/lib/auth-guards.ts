@@ -2,18 +2,9 @@ import { cache } from "react";
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse, NextRequest } from "next/server";
+import { ForbiddenError } from "./errors";
 
 const DEFAULT_LOCALE = "ar";
-
-export class AuthError extends Error {
-  constructor(
-    message: string,
-    public code: "UNAUTHORIZED" | "FORBIDDEN" = "FORBIDDEN",
-  ) {
-    super(message);
-    this.name = "AuthError";
-  }
-}
 
 export interface AuthSession {
   user: {
@@ -41,7 +32,7 @@ export async function requireRole(role: string): Promise<AuthSession> {
   const session = await requireAuth();
 
   if (session.user.role !== role) {
-    throw new AuthError("ليس لديك صلاحية للوصول", "FORBIDDEN");
+    throw new ForbiddenError();
   }
 
   return session;

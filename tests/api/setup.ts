@@ -18,13 +18,6 @@ export { mockSession };
 
 vi.mock("@/lib/auth-guards", () => {
   return {
-    AuthError: class AuthError extends Error {
-      code: string;
-      constructor(message: string, code: string) {
-        super(message);
-        this.code = code;
-      }
-    },
     requireAuth: vi.fn().mockImplementation(async () => {
       if (!mockSession.user) {
         throw new Error("Unauthorized");

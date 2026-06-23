@@ -5,6 +5,7 @@ import {
   PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import { prisma } from "@/lib/prisma";
+import { AppError } from "@/lib/errors";
 
 export async function downloadDocumentBuffer(
   storageKey: string,
@@ -17,7 +18,7 @@ export async function downloadDocumentBuffer(
       where: { userId, provider: "google" },
     });
     if (!account || !account.access_token || !account.refresh_token) {
-      throw new Error("Google account not linked or missing tokens");
+      throw new AppError("حساب Google غير مرتبط أو ينقصه التوكن", "GOOGLE_ACCOUNT_NOT_LINKED", 400);
     }
     const drive = getDriveClient(
       account.access_token,
