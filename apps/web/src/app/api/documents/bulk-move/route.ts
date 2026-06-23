@@ -6,7 +6,7 @@ import { logger } from "@/lib/logger";
 import { getErrorMessage } from "@/lib/types";
 
 const bulkMoveSchema = z.object({
-  documentIds: z.array(z.string().min(1)).min(1).max(100),
+  documentIds: z.array(z.string().min(1)).min(1).max(50),
   folderId: z.string().nullable(),
 });
 

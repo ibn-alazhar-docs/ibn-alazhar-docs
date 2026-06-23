@@ -4,6 +4,7 @@ import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipelin
 import { EXPORT_FORMATS, type ExportFormat } from "@/lib/validators/share";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
+import { contentDispositionHeader } from "@/lib/export/profiles";
 
 async function validateShareAccess(token: string) {
   const share = await prisma.shareLink.findUnique({
@@ -37,20 +38,6 @@ function sanitizeFilename(title: string): string {
     .replace(/[\\/:*?"<>|]/g, "")
     .replace(/\s+/g, "_")
     .substring(0, 100);
-}
-
-function contentDispositionHeader(filename: string): string {
-  const asciiSafe =
-    filename
-      .replace(/[^\x20-\x7E]/g, "_")
-      .replace(/\s+/g, "_")
-      .trim() || "download";
-  const encoded = encodeURIComponent(filename)
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A");
-  return `attachment; filename="${asciiSafe}"; filename*=UTF-8''${encoded}`;
 }
 
 function getContentType(format: ExportFormat): string {

@@ -19,12 +19,20 @@ export function loadConfig(): PipelineConfig {
         }
       }
 
+      const isProduction = process.env.NODE_ENV === "production";
+      const accessKey = process.env.S3_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY;
+      const secretKey = process.env.S3_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY;
+
+      if (isProduction && (!accessKey || !secretKey)) {
+        throw new Error("S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY are required in production");
+      }
+
       return {
         endpoint,
         port,
         useSSL,
-        accessKey: process.env.S3_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY ?? "minioadmin",
-        secretKey: process.env.S3_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY ?? "minioadmin",
+        accessKey: accessKey ?? "minioadmin",
+        secretKey: secretKey ?? "minioadmin",
         bucket: process.env.S3_BUCKET ?? process.env.MINIO_BUCKET ?? "ibn-al-azhar-docs",
       };
     })(),
