@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { singleExportSchema } from "@/lib/export/validators";
 import {
   resolveDocumentForExport,
@@ -12,13 +13,8 @@ import {
 import { buildZipPackage } from "@/lib/export/zip-builder";
 import { sanitizeTitle, contentDispositionHeader, getContentType } from "@/lib/export/profiles";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 
-export async function POST(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
+export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
   const parsed = singleExportSchema.safeParse(body);
 
@@ -106,7 +102,7 @@ export async function POST(request: Request) {
 
       const zipName = `${sanitizeTitle(document.title)}_${new Date().toISOString().split("T")[0]}.zip`;
 
-      return new Response(new Uint8Array(zipBuffer), {
+      return new NextResponse(new Uint8Array(zipBuffer), {
         headers: {
           "Content-Type": getContentType("zip"),
           "Content-Disposition": contentDispositionHeader(zipName),
@@ -128,7 +124,7 @@ export async function POST(request: Request) {
         );
       }
       const buffer = await downloadFile(config, exportKey);
-      return new Response(new Uint8Array(buffer), {
+      return new NextResponse(new Uint8Array(buffer), {
         headers: {
           "Content-Type": getContentType(format),
           "Content-Disposition": contentDispositionHeader(
@@ -139,7 +135,7 @@ export async function POST(request: Request) {
     }
 
     const buffer = await downloadFile(config, outputKey);
-    return new Response(new Uint8Array(buffer), {
+    return new NextResponse(new Uint8Array(buffer), {
       headers: {
         "Content-Type": getContentType(format),
         "Content-Disposition": contentDispositionHeader(
@@ -148,19 +144,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error);
-    logger.error({ errMessage }, "[export] Single export failed:");
-
-    if (errMessage.includes("not found") || errMessage.includes("Document not found")) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Document not found" } },
-        { status: 404 },
-      );
-    }
-
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Export failed" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "export", "فشل التصدير");
   }
-}
+});

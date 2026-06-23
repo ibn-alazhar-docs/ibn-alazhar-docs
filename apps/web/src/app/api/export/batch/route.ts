@@ -1,35 +1,31 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { withAuth, ownedWhere } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { batchExportSchema } from "@/lib/export/validators";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 
-export async function POST(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const body = await request.json();
-  const parsed = batchExportSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid data",
-          details: parsed.error.issues,
-        },
-      },
-      { status: 400 },
-    );
-  }
-
-  const { documentIds, format, profile, includeSource } = parsed.data;
-
+export const POST = withAuth(async (request, { session }) => {
   try {
+    const body = await request.json();
+    const parsed = batchExportSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid data",
+            details: parsed.error.issues,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    const { documentIds, format, profile, includeSource } = parsed.data;
+
     const validDocs = await prisma.document.findMany({
       where: ownedWhere(
         {
@@ -82,11 +78,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error);
-    logger.error({ errMessage }, "[export] Batch export failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Batch export failed" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "export/batch/POST", "فشل التصدير الجماعي");
   }
-}
+});

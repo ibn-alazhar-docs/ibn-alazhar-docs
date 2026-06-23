@@ -62,13 +62,13 @@ export function ownedWhere(
 type AuthenticatedHandler = (
   request: NextRequest,
   context: { session: AuthSession; params: Record<string, string | undefined> },
-) => Promise<NextResponse> | NextResponse;
+) => Promise<NextResponse | Response> | NextResponse | Response;
 
 export function withAuth(handler: AuthenticatedHandler) {
   return async (
     request: NextRequest,
     context?: { params: Promise<Record<string, string | undefined>> },
-  ) => {
+  ): Promise<Response> => {
     const session = await requireAuth().catch(() => null);
     if (!session) return unauthorizedResponse();
 

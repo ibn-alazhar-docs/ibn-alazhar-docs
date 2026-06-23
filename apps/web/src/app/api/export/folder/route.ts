@@ -1,35 +1,31 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { withAuth, ownedWhere } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { folderExportSchema } from "@/lib/export/validators";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
 
-export async function POST(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const body = await request.json();
-  const parsed = folderExportSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid data",
-          details: parsed.error.issues,
-        },
-      },
-      { status: 400 },
-    );
-  }
-
-  const { folderId, format, profile, includeSource, recursive } = parsed.data;
-
+export const POST = withAuth(async (request, { session }) => {
   try {
+    const body = await request.json();
+    const parsed = folderExportSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid data",
+            details: parsed.error.issues,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
+    const { folderId, format, profile, includeSource, recursive } = parsed.data;
+
     const folder = await prisma.folder.findFirst({
       where: ownedWhere({ id: folderId }, session),
     });
@@ -94,11 +90,6 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error);
-    logger.error({ errMessage }, "[export] Folder export failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Folder export failed" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "export/folder/POST", "فشل تصدير المجلد");
   }
-}
+});

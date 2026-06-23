@@ -1,16 +1,13 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { renameFolderSchema } from "@/lib/validators/folder";
-import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 import { getErrorMessage } from "@/lib/errors";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (_request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
+    const id = params.id!;
 
     try {
       const folder = await folderUseCases.getFolderById(id, session.user.id);
@@ -25,20 +22,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       throw error;
     }
   } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/GET] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على المجلد" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/[id]/GET", "فشل الحصول على المجلد");
   }
-}
+});
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withAuth(async (request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
+    const id = params.id!;
     const body = await request.json();
     const validation = renameFolderSchema.safeParse(body);
 
@@ -63,20 +53,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       throw error;
     }
   } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/PATCH] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل تحديث المجلد" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/[id]/PATCH", "فشل تحديث المجلد");
   }
-}
+});
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const DELETE = withAuth(async (_request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
+    const id = params.id!;
 
     try {
       await folderUseCases.deleteFolder(id, session.user.id);
@@ -91,10 +74,6 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       throw error;
     }
   } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/DELETE] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل حذف المجلد" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/[id]/DELETE", "فشل حذف المجلد");
   }
-}
+});

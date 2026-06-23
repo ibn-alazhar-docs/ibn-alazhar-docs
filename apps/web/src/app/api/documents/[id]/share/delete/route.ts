@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { withAuth, ownedWhere } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { prisma } from "@/lib/prisma";
-import { logger } from "@/lib/logger";
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
+export const DELETE = withAuth(async (_request, { session, params }) => {
+  const id = params.id!;
 
   try {
     const share = await prisma.shareLink.findFirst({
@@ -27,10 +24,10 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
 
     return NextResponse.json({ success: true, message: "Sharing disabled" });
   } catch (error: unknown) {
-    logger.error(error, "[share] Delete failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to disable sharing" } },
-      { status: 500 },
+    return handleRouteError(
+      error,
+      "documents/[id]/share/delete/DELETE",
+      "حدث خطأ أثناء تعطيل المشاركة",
     );
   }
-}
+});

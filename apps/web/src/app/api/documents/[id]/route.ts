@@ -1,41 +1,21 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { documentUpdateSchema } from "@/lib/validators/document";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { getErrorMessage } from "@/lib/errors";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
-  const { id } = await params;
-
+export const GET = withAuth(async (request, { session, params }) => {
+  const id = params.id!;
   try {
     const document = await documentUseCases.getDocumentById(id, session.user.id);
     return NextResponse.json({ document });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
   }
-}
+});
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
-  const { id } = await params;
+export const PATCH = withAuth(async (request, { session, params }) => {
+  const id = params.id!;
   const body = await request.json();
 
   const validation = documentUpdateSchema.safeParse(body);
@@ -51,46 +31,16 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updated = await documentUseCases.updateDocument(id, session.user.id, validation.data);
     return NextResponse.json({ document: updated });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
-        { status: 404 },
-      );
-    }
-    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "documents/PATCH", "حدث خطأ داخلي");
   }
-}
+});
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
-  const { id } = await params;
-
+export const DELETE = withAuth(async (request, { session, params }) => {
+  const id = params.id!;
   try {
     await documentUseCases.deleteDocument(id, session.user.id);
     return NextResponse.json({ success: true, message: "تم حذف المستند" });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "documents/DELETE", "حدث خطأ داخلي");
   }
-}
+});
