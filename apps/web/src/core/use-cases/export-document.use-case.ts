@@ -1,6 +1,7 @@
 import { documentRepository } from "../repositories/document.repository";
 import { downloadDocumentBuffer } from "@/lib/storage-helper";
 import { loadConfig, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import { NotFoundError, AppError } from "@/lib/errors";
 
 export class ExportDocumentUseCase {
   async execute(params: { id: string; format: string; userId: string }) {
@@ -9,7 +10,7 @@ export class ExportDocumentUseCase {
     const document = await documentRepository.findDocumentById(id, userId);
 
     if (!document) {
-      throw new Error("NOT_FOUND");
+      throw new NotFoundError();
     }
 
     const config = loadConfig();
@@ -32,7 +33,7 @@ export class ExportDocumentUseCase {
       } else {
         const exportExists = await fileExists(config, exportKey);
         if (!exportExists) {
-          throw new Error("NOT_READY");
+          throw new AppError("الملف جاهز للتصدير بعد", "NOT_READY", 409);
         }
         buffer = await downloadDocumentBuffer(exportKey, userId, config);
       }

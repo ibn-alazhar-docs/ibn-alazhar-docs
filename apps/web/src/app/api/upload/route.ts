@@ -87,10 +87,9 @@ export async function POST(request: Request) {
       message: "تم رفع الملف بنجاح وبدء المعالجة",
     });
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error) || "فشل رفع الملف";
     logger.error(error, "[upload] Failed:");
     return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: errMessage } },
+      { error: { code: "INTERNAL_ERROR", message: "فشل رفع الملف" } },
       { status: 500 },
     );
   }

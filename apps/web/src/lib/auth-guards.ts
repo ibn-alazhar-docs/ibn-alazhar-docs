@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 
 const DEFAULT_LOCALE = "ar";
 
@@ -66,4 +66,22 @@ export function ownedWhere(
 ): Record<string, unknown> {
   if (isAdmin(session)) return baseWhere;
   return { ...baseWhere, [userIdField]: session.user.id };
+}
+
+type AuthenticatedHandler = (
+  request: NextRequest,
+  context: { session: AuthSession; params: Record<string, string | undefined> },
+) => Promise<NextResponse> | NextResponse;
+
+export function withAuth(handler: AuthenticatedHandler) {
+  return async (
+    request: NextRequest,
+    context: { params: Promise<Record<string, string | undefined>> },
+  ) => {
+    const session = await requireAuth().catch(() => null);
+    if (!session) return unauthorizedResponse();
+
+    const params = await context.params;
+    return handler(request, { session, params });
+  };
 }

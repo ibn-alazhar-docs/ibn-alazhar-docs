@@ -9,6 +9,12 @@ export class FolderRepository {
     });
   }
 
+  async findWithDeleted(id: string, userId: string) {
+    return prisma.folder.findFirst({
+      where: { id, userId },
+    });
+  }
+
   async findMany(userId: string, options?: Prisma.FolderFindManyArgs) {
     return prisma.folder.findMany({
       ...options,
@@ -33,10 +39,7 @@ export class FolderRepository {
 
   async updateMany(where: Prisma.FolderWhereInput, data: Prisma.FolderUncheckedUpdateInput) {
     return prisma.folder.updateMany({
-      where: {
-        ...where,
-        deletedAt: null,
-      },
+      where,
       data,
     });
   }

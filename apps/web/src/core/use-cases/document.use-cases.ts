@@ -4,6 +4,7 @@ import { tagRepository } from "../repositories/tag.repository";
 import { shareRepository } from "../repositories/share.repository";
 import { randomBytes } from "crypto";
 import { expirationToMs } from "@/lib/validators/share";
+import { AppError, NotFoundError } from "@/lib/errors";
 
 export class DocumentUseCases {
   async getDocuments(
@@ -58,7 +59,7 @@ export class DocumentUseCases {
       },
     });
 
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
     return { ...document, fileSize: Number(document.fileSize) };
   }
 
@@ -68,7 +69,7 @@ export class DocumentUseCases {
     data: { title?: string; description?: string | null; folderId?: string | null },
   ) {
     const document = await documentRepository.findDocumentById(id, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const updateData: Record<string, unknown> = {};
     if (data.title !== undefined) updateData.title = data.title;
@@ -79,7 +80,7 @@ export class DocumentUseCases {
         updateData.folderId = null;
       } else {
         const folder = await folderRepository.findById(data.folderId, userId);
-        if (!folder) throw new Error("FOLDER_NOT_FOUND");
+        if (!folder) throw new AppError("المجلد غير موجود", "FOLDER_NOT_FOUND", 404);
         updateData.folderId = data.folderId;
       }
     }
@@ -99,7 +100,7 @@ export class DocumentUseCases {
 
   async deleteDocument(id: string, userId: string) {
     const document = await documentRepository.findDocumentById(id, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     await documentRepository.update(id, userId, { deletedAt: new Date() });
   }
@@ -109,7 +110,7 @@ export class DocumentUseCases {
       where: { id, userId, deletedAt: { not: null } },
     });
 
-    if (!document.length) throw new Error("NOT_FOUND");
+    if (!document.length) throw new NotFoundError();
 
     const updated = await documentRepository.update(id, userId, { deletedAt: null });
     return { ...updated, fileSize: Number(updated.fileSize) };
@@ -117,11 +118,11 @@ export class DocumentUseCases {
 
   async moveDocument(id: string, userId: string, folderId: string | null) {
     const document = await documentRepository.findDocumentById(id, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     if (folderId) {
       const folder = await folderRepository.findById(folderId, userId);
-      if (!folder) throw new Error("FOLDER_NOT_FOUND");
+      if (!folder) throw new AppError("المجلد غير موجود", "FOLDER_NOT_FOUND", 404);
     }
 
     const updated = await documentRepository.update(id, userId, { folderId });
@@ -135,12 +136,12 @@ export class DocumentUseCases {
     });
 
     if (documents.length !== ids.length) {
-      throw new Error("SOME_NOT_FOUND");
+      throw new AppError("بعض العناصر غير موجودة", "SOME_NOT_FOUND", 404);
     }
 
     if (folderId) {
       const folder = await folderRepository.findById(folderId, userId);
-      if (!folder) throw new Error("FOLDER_NOT_FOUND");
+      if (!folder) throw new AppError("المجلد غير موجود", "FOLDER_NOT_FOUND", 404);
     }
 
     const result = await documentRepository.updateMany({ id: { in: ids }, userId }, { folderId });
@@ -150,7 +151,7 @@ export class DocumentUseCases {
 
   async bulkTagDocuments(documentIds: string[], tagId: string, userId: string, role: string) {
     const tag = await tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new Error("TAG_NOT_FOUND");
+    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
 
     const documents = await documentRepository.findMany({
       where: { id: { in: documentIds }, userId, deletedAt: null },
@@ -158,7 +159,7 @@ export class DocumentUseCases {
     });
 
     if (documents.length !== documentIds.length) {
-      throw new Error("SOME_NOT_FOUND");
+      throw new AppError("بعض العناصر غير موجودة", "SOME_NOT_FOUND", 404);
     }
 
     const existingAssociations = await tagRepository.findManyTagDocuments(tagId, documentIds);
@@ -177,7 +178,7 @@ export class DocumentUseCases {
 
   async bulkUntagDocuments(documentIds: string[], tagId: string, userId: string, role: string) {
     const tag = await tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new Error("TAG_NOT_FOUND");
+    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
 
     const documents = await documentRepository.findMany({
       where: { id: { in: documentIds }, userId, deletedAt: null },
@@ -185,7 +186,7 @@ export class DocumentUseCases {
     });
 
     if (documents.length !== documentIds.length) {
-      throw new Error("SOME_NOT_FOUND");
+      throw new AppError("بعض العناصر غير موجودة", "SOME_NOT_FOUND", 404);
     }
 
     const result = await tagRepository.deleteManyTagDocuments(tagId, documentIds);
@@ -199,8 +200,9 @@ export class DocumentUseCases {
 
   async createShareLink(documentId: string, userId: string, expirationStr: string | null) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
-    if (document.status !== "COMPLETED") throw new Error("NOT_READY");
+    if (!document) throw new NotFoundError();
+    if (document.status !== "COMPLETED")
+      throw new AppError("الملف جاهز للتصدير بعد", "NOT_READY", 409);
 
     const existing = await shareRepository.findShareLinkByDocumentId(documentId, userId);
     if (existing) return existing;
@@ -219,10 +221,10 @@ export class DocumentUseCases {
 
   async regenerateShareLink(documentId: string, userId: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const existing = await shareRepository.findShareLinkByDocumentId(documentId, userId);
-    if (!existing) throw new Error("NO_SHARE_LINK");
+    if (!existing) throw new AppError("لا يوجد رابط مشاركة", "NO_SHARE_LINK", 404);
 
     const token = randomBytes(32).toString("base64url");
     return shareRepository.updateShareLinkToken(existing.id, token);
@@ -230,10 +232,10 @@ export class DocumentUseCases {
 
   async deleteShareLink(documentId: string, userId: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const existing = await shareRepository.findShareLinkByDocumentId(documentId, userId);
-    if (!existing) throw new Error("NO_SHARE_LINK");
+    if (!existing) throw new AppError("لا يوجد رابط مشاركة", "NO_SHARE_LINK", 404);
 
     await shareRepository.deleteShareLinkByDocumentId(documentId, userId);
     return true;
@@ -241,7 +243,7 @@ export class DocumentUseCases {
 
   async getDocumentTags(documentId: string, userId: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const docWithTags = (await documentRepository.findDocumentById(documentId, userId, {
       tags: { include: { tag: { select: { id: true, name: true, color: true } } } },
@@ -252,13 +254,13 @@ export class DocumentUseCases {
 
   async addTagToDocument(documentId: string, tagId: string, userId: string, role: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const tag = await tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new Error("TAG_NOT_FOUND");
+    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
 
     const existing = await tagRepository.findManyTagDocuments(tagId, [documentId]);
-    if (existing.length > 0) throw new Error("CONFLICT");
+    if (existing.length > 0) throw new AppError("الوسم مرتبط بالفعل", "CONFLICT", 409);
 
     await tagRepository.createManyTagDocuments([{ tagId, documentId }]);
     return tag;
@@ -266,13 +268,14 @@ export class DocumentUseCases {
 
   async setDocumentTags(documentId: string, tagIds: string[], userId: string, role: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     if (tagIds.length > 0) {
       const validTags = await Promise.all(
         tagIds.map((id) => tagRepository.findTagById(id, userId, role)),
       );
-      if (validTags.some((t) => !t)) throw new Error("SOME_TAGS_NOT_FOUND");
+      if (validTags.some((t) => !t))
+        throw new AppError("بعض العلامات غير موجودة", "SOME_TAGS_NOT_FOUND", 404);
     }
 
     // Delete existing tags. We can just use prisma since tagRepository deleteMany requires tagId.
@@ -287,13 +290,13 @@ export class DocumentUseCases {
 
   async removeTagFromDocument(documentId: string, tagId: string, userId: string, role: string) {
     const document = await documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new Error("NOT_FOUND");
+    if (!document) throw new NotFoundError();
 
     const tag = await tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new Error("TAG_NOT_FOUND");
+    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
 
     const result = await tagRepository.deleteManyTagDocuments(tagId, [documentId]);
-    if (result.count === 0) throw new Error("TAG_NOT_ASSIGNED");
+    if (result.count === 0) throw new AppError("الوسم غير مرتبط", "TAG_NOT_ASSIGNED", 404);
     return true;
   }
 }

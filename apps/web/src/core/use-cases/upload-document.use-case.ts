@@ -13,6 +13,7 @@ import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import { documentRepository } from "../repositories/document.repository";
 import { folderRepository } from "../repositories/folder.repository";
+import { NotFoundError } from "@/lib/errors";
 
 export class UploadDocumentUseCase {
   async execute(params: {
@@ -27,7 +28,7 @@ export class UploadDocumentUseCase {
     if (folderId) {
       const folder = await folderRepository.findFolderById(folderId, userId);
       if (!folder) {
-        throw new Error("NOT_FOUND");
+        throw new NotFoundError();
       }
     }
 

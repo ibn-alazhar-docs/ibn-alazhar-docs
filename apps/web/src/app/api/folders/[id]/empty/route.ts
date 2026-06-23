@@ -1,38 +1,24 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
-import { logger } from "@/lib/logger";
+import { withAuth } from "@/lib/auth-guards";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
-import { getErrorMessage } from "@/lib/types";
+import { handleRouteError } from "@/lib/route-helpers";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
-
-    try {
-      const result = await folderUseCases.emptyFolder(id, session.user.id);
-
-      return NextResponse.json({
-        message: "تم تفريغ المجلد بنجاح",
-        documentsMoved: result.documentsMoved,
-        foldersMoved: result.foldersMoved,
-      });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      throw error;
-    }
-  } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/empty/POST] Failed:");
+export const POST = withAuth(async (request, { session, params }) => {
+  const id = params.id;
+  if (!id)
     return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل تفريغ المجلد" } },
-      { status: 500 },
+      { error: { code: "VALIDATION_ERROR", message: "معرف المجلد مطلوب" } },
+      { status: 400 },
     );
+
+  try {
+    const result = await folderUseCases.emptyFolder(id, session.user.id);
+    return NextResponse.json({
+      message: "تم تفريغ المجلد بنجاح",
+      documentsMoved: result.documentsMoved,
+      foldersMoved: result.foldersMoved,
+    });
+  } catch (error: unknown) {
+    return handleRouteError(error, "folders/[id]/empty/POST", "فشل تفريغ المجلد");
   }
-}
+});
