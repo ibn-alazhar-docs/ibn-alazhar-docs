@@ -13,20 +13,7 @@ import { buildZipPackage } from "@/lib/export/zip-builder";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
 import { getErrorMessage } from "@/lib/types";
-
-function contentDispositionHeader(filename: string): string {
-  const asciiSafe =
-    filename
-      .replace(/[^\x20-\x7E]/g, "_")
-      .replace(/\s+/g, "_")
-      .trim() || "download";
-  const encoded = encodeURIComponent(filename)
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A");
-  return `attachment; filename="${asciiSafe}"; filename*=UTF-8''${encoded}`;
-}
+import { contentDispositionHeader } from "@/lib/export/profiles";
 
 export async function POST(request: Request) {
   const session = await requireAuth().catch(() => null);

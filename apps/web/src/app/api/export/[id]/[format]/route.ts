@@ -3,20 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
 import { getErrorMessage } from "@/lib/types";
-
-function contentDispositionHeader(filename: string): string {
-  const asciiSafe =
-    filename
-      .replace(/[^\x20-\x7E]/g, "_")
-      .replace(/\s+/g, "_")
-      .trim() || "download";
-  const encoded = encodeURIComponent(filename)
-    .replace(/'/g, "%27")
-    .replace(/\(/g, "%28")
-    .replace(/\)/g, "%29")
-    .replace(/\*/g, "%2A");
-  return `attachment; filename="${asciiSafe}"; filename*=UTF-8''${encoded}`;
-}
+import { contentDispositionHeader } from "@/lib/export/profiles";
 
 export async function GET(
   _request: Request,

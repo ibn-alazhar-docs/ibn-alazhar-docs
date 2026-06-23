@@ -3,6 +3,13 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
 
+const MIN_QUERY_LENGTH = 2;
+const DEFAULT_PAGE_LIMIT = 20;
+const MAX_PAGE_LIMIT = 50;
+const EXCERPT_MAX_LENGTH = 200;
+const EXCERPT_CONTEXT_BEFORE = 50;
+const EXCERPT_CONTEXT_AFTER = 150;
+
 export async function GET(request: Request) {
   const session = await requireAuth().catch(() => null);
   if (!session) {
@@ -16,12 +23,17 @@ export async function GET(request: Request) {
   const status = searchParams.get("status");
   const tagId = searchParams.get("tagId");
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
+  const limit = Math.min(
+    MAX_PAGE_LIMIT,
+    Math.max(1, parseInt(searchParams.get("limit") || String(DEFAULT_PAGE_LIMIT), 10)),
+  );
   const offset = (page - 1) * limit;
 
-  if (!query || query.trim().length < 2) {
+  if (!query || query.trim().length < MIN_QUERY_LENGTH) {
     return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: "Min 2 characters required" } },
+      {
+        error: { code: "VALIDATION_ERROR", message: `Min ${MIN_QUERY_LENGTH} characters required` },
+      },
       { status: 400 },
     );
   }
@@ -36,12 +48,7 @@ export async function GET(request: Request) {
     .replace(/\s+/g, " ")
     .trim();
 
-  const tsQuery = normalizedQuery
-    .split(/\s+/)
-    .filter((w) => w.length > 0)
-    .join(" & ");
-
-  if (!tsQuery) {
+  if (!normalizedQuery) {
     return NextResponse.json(
       { error: { code: "VALIDATION_ERROR", message: "Invalid search query" } },
       { status: 400 },
@@ -57,16 +64,16 @@ export async function GET(request: Request) {
     let paramIndex = isAdmin ? 1 : 2;
 
     if (type === "title") {
-      whereClause += ` AND (d.searchvector @@ to_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%')`;
-      params.push(tsQuery, query);
+      whereClause += ` AND (d.searchvector @@ plainto_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%')`;
+      params.push(normalizedQuery, query);
       paramIndex += 2;
     } else if (type === "folder") {
       whereClause += ` AND f.name ILIKE $${paramIndex}`;
       params.push(`%${query}%`);
       paramIndex++;
     } else {
-      whereClause += ` AND (d.searchvector @@ to_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%' OR d.searchpreview ILIKE '%' || $${paramIndex + 2} || '%')`;
-      params.push(tsQuery, query, query);
+      whereClause += ` AND (d.searchvector @@ plainto_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%' OR d.searchpreview ILIKE '%' || $${paramIndex + 2} || '%')`;
+      params.push(normalizedQuery, query, query);
       paramIndex += 3;
     }
 
@@ -100,9 +107,12 @@ export async function GET(request: Request) {
     const countResult = await prisma.$queryRawUnsafe<{ total: bigint }[]>(countQuery, ...params);
     const total = Number(countResult[0]?.total || 0);
 
-    const tsQueryIndex = params.indexOf(tsQuery) + 1;
+    const searchParamsList = params;
+    const tsQueryIndex = searchParamsList.indexOf(normalizedQuery) + 1;
     const rankClause =
-      tsQueryIndex > 0 ? `ts_rank(d.searchvector, to_tsquery('simple', $${tsQueryIndex}))` : `0.0`;
+      tsQueryIndex > 0
+        ? `ts_rank(d.searchvector, plainto_tsquery('simple', $${tsQueryIndex}))`
+        : `0.0`;
 
     const searchQuery = `
       SELECT
@@ -149,19 +159,22 @@ export async function GET(request: Request) {
 
     const formattedResults = results.map((r) => {
       let excerpt = r.searchPreview || "";
-      if (excerpt.length > 200) {
+      if (excerpt.length > EXCERPT_MAX_LENGTH) {
         const lowerQ = normalizedQuery.toLowerCase();
         const lowerExcerpt = excerpt.toLowerCase();
         const idx = lowerExcerpt.indexOf(lowerQ);
         if (idx >= 0) {
-          const start = Math.max(0, idx - 50);
-          const end = Math.min(excerpt.length, idx + normalizedQuery.length + 150);
+          const start = Math.max(0, idx - EXCERPT_CONTEXT_BEFORE);
+          const end = Math.min(
+            excerpt.length,
+            idx + normalizedQuery.length + EXCERPT_CONTEXT_AFTER,
+          );
           excerpt =
             (start > 0 ? "..." : "") +
             excerpt.slice(start, end) +
             (end < excerpt.length ? "..." : "");
         } else {
-          excerpt = excerpt.slice(0, 200) + "...";
+          excerpt = excerpt.slice(0, EXCERPT_MAX_LENGTH) + "...";
         }
       }
 
