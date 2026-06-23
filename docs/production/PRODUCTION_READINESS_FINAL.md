@@ -26,14 +26,14 @@ _(Upgraded from CONDITIONAL GO after Production Readiness Sprint — all P1 bloc
 
 | Phase                  | Tests     | Passing   |
 | ---------------------- | --------- | --------- |
-| Unit Tests (3A)\*      | 686       | 686       |
+| Unit Tests (3A)\*      | 677       | 677       |
 | Integration Tests (3B) | 95        | 95        |
 | Security Tests (3E)    | 138       | 138       |
 | Penetration Tests (3F) | 56        | 56        |
 | Load Tests (3G)        | 39        | 39        |
 | Recovery Tests (3H)    | 60        | 60        |
 | Backup & Restore (3I)  | 48        | 48        |
-| **Total**              | **1,122** | **1,122** |
+| **Total**              | **1,113** | **1,113** |
 
 \*Unit tests are split across `tests/backend/` and `tests/frontend/`.
 
@@ -250,7 +250,7 @@ _(Upgraded from CONDITIONAL GO after Production Readiness Sprint — all P1 bloc
 
 ## What's Solid
 
-- **1,122 tests** across 7 phases — all passing
+- **1,113 tests** across 7 phases — all passing
 - **Zero P0 vulnerabilities** — PEN-001 account takeover fixed and verified
 - **Zero data loss** — all failure, recovery, and backup scenarios verified
 - **Strong auth** — bcrypt, secure cookies, CSRF, rate limiting

@@ -78,11 +78,11 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 ## Testing
 
-**1,122 tests across 7 phases — all passing.**
+**1,113 tests across 7 phases — all passing.**
 
 | Command                 | Suite            | Tests |
 | ----------------------- | ---------------- | ----- |
-| `pnpm test`             | Unit\*           | 686   |
+| `pnpm test`             | Unit\*           | 677   |
 | `pnpm test:integration` | Integration      | 95    |
 | `pnpm test:security`    | Security         | 138   |
 | `pnpm test:pentest`     | Penetration      | 56    |
