@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { logger } from "@/lib/logger";
-import { DOC_STATUS_MAP } from "@/lib/document-status";
+import { DOC_STATUS_MAP } from "@/lib/conversion-status-utils";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);

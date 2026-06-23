@@ -3,7 +3,7 @@ import { requireAuth, unauthorizedResponse, ownedWhere, isAdmin } from "@/lib/au
 import { prisma } from "@/lib/prisma";
 import { tagExportSchema } from "@/lib/export/validators";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
 

@@ -1,11 +1,11 @@
 import { execFile } from "node:child_process";
-import { accessSync, constants } from "node:fs";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import type { PipelineConfig, OcrEngineResult } from "./types";
 import { GoogleDriveOcrProvider } from "./ocr-provider";
+import { getPythonCommand } from "./ocr-providers/types";
 
 export {
   estimateConfidence,
@@ -39,19 +39,6 @@ export interface SplitResult {
   pagePaths: string[];
   tempDir: string;
   pageCount: number;
-}
-
-function getPythonCommand(): string {
-  const envPython = process.env.SURYA_PYTHON_PATH;
-  if (envPython) return envPython;
-  try {
-    const home = process.env.HOME ?? process.env.USERPROFILE ?? ".";
-    const venvPython = join(home, ".venv", "bin", "python3");
-    accessSync(venvPython, constants.X_OK);
-    return venvPython;
-  } catch {
-    return "python3";
-  }
 }
 
 export async function splitPdfPages(fileBuffer: Buffer, dpi: number = 300): Promise<SplitResult> {

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUpdateSchema } from "@/lib/validators/document";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);

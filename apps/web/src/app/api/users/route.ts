@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { adminUserUpdateSchema } from "@/lib/validators/auth";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function GET() {
   try {

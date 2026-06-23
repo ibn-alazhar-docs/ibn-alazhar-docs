@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
-import { EXPORT_FORMATS, type ExportFormat } from "@/lib/validators/share";
+import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/lib/validators/share";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { contentDispositionHeader } from "@/lib/export/profiles";
@@ -25,7 +25,7 @@ export async function GET(
 
   const { token, format } = await params;
 
-  if (!EXPORT_FORMATS.includes(format as ExportFormat)) {
+  if (!SHARE_EXPORT_FORMATS.includes(format as ShareExportFormat)) {
     return NextResponse.json(
       { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
       { status: 400 },
@@ -42,7 +42,7 @@ export async function GET(
 
   const { share } = result;
   const doc = share.document as { title: string };
-  const exportFormat = format as ExportFormat;
+  const exportFormat = format as ShareExportFormat;
 
   try {
     const config = loadConfig();

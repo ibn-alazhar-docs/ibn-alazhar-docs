@@ -3,7 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { renameFolderSchema } from "@/lib/validators/folder";
 import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {

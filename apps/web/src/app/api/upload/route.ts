@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { uploadDocumentUseCase } from "@/core/use-cases/upload-document.use-case";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);

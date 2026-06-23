@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);

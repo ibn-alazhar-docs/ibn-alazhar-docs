@@ -13,7 +13,7 @@ import { buildZipPackage } from "@/lib/export/zip-builder";
 import { sanitizeTitle, contentDispositionHeader, getContentType } from "@/lib/export/profiles";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function POST(request: Request) {
   const session = await requireAuth().catch(() => null);

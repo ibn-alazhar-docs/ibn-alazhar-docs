@@ -487,27 +487,20 @@ function reconstructArabicLines(text: string): string {
   return result.join("\n");
 }
 
+// Shared heading detection patterns
+const HEADING_NUMBERED_PAREN = /^\(\d+\)\s/;
+const HEADING_NUMBERED = /^\d+[.)–—]\s+/;
+const HEADING_EXAMPLE = /^(المثال)\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس)/;
+const HEADING_PARTICIPATION = /^(المشاركة)\s+(الأولى|الأول|الثانية|الثاني|الثالثة|الثالث)/;
+// Superset: includes القسم + الجزء (first function) and مقدمة + خاتمة lowercase (second function)
+const HEADING_MAJOR =
+  /^(الفصل\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر|[0-9]+)|الباب\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المبحث\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المطلب\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|[0-9]+)|القسم\s+(الأول|الاول|الثاني|الثالث|الرابع|[0-9]+)|الجزء\s+(الأول|الاول|الثاني|الثالث|الرابع|[0-9]+)|الدرس\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|الوحدة\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+))/;
+const HEADING_SUB =
+  /^(سورة\s|الحديث\s|الخاتمة|المقدمة|المراجع|المصادر|الملاحق|النتائج|التوصيات|ملخص|خلاصة|تمهيد|مدخل|ملحوظة|تنبيه|فائدة|تتمة|تكملة|هامش|أسئلة|تمارين|تدريبات|أهداف|مقدمة|خاتمة)/;
+const HEADING_ORDINAL =
+  /^(اولاً?|ثانياً?|ثالثاً?|رابعاً?|خامساً?|سادساً?|سابعاً?|ثامناً?|تاسعاً?|عاشراً?|أخيراً?|أخيرا)\s*[.:]?\s+/;
+
 function detectArabicHeadings(text: string): string {
-  // Major headings (level 2): chapters, sections, major divisions
-  const MAJOR_HEADING =
-    /^(الفصل\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر|[0-9]+)|الباب\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المبحث\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المطلب\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|[0-9]+)|القسم\s+(الأول|الاول|الثاني|الثالث|الرابع|[0-9]+)|الجزء\s+(الأول|الاول|الثاني|الثالث|الرابع|[0-9]+)|الدرس\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|الوحدة\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+))/;
-
-  // Sub-headings (level 3): smaller divisions, appendices
-  const SUB_HEADING =
-    /^(سورة\s|الحديث\s|الخاتمة|المقدمة|المراجع|المصادر|الملاحق|النتائج|التوصيات|ملخص|خلاصة|تمهيد|مدخل|ملحوظة|تنبيه|فائدة|تتمة|تكملة|هامش|أسئلة|تمارين|تدريبات|أهداف)/;
-
-  const NUMBERED_PAREN = /^\(\d+\)\s/;
-
-  // Section markers: "المثال الأول", "المثال الثاني", etc.
-  const EXAMPLE_HEADING = /^(المثال)\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس)/;
-
-  // Participation markers: "المشاركة الأولى", "المشاركة الثانية", etc.
-  const PARTICIPATION_HEADING = /^(المشاركة)\s+(الأولى|الأول|الثانية|الثاني|الثالثة|الثالث)/;
-
-  // Ordinal sub-headings (after alef normalization: اولا, ثانيا, etc.)
-  const ORDINAL_HEADING =
-    /^(اولاً?|ثانياً?|ثالثاً?|رابعاً?|خامساً?|سادساً?|سابعاً?|ثامناً?|تاسعاً?|عاشراً?|أخيراً?|أخيرا)\s*[.:]?\s+/;
-
   return text
     .split("\n")
     .map((line) => {
@@ -517,12 +510,12 @@ function detectArabicHeadings(text: string): string {
         return line;
 
       const isNumbered = /^\d+[.\-)–—]\s/.test(trimmed);
-      const isParenNumbered = NUMBERED_PAREN.test(trimmed);
-      const isMajorHeading = MAJOR_HEADING.test(trimmed);
-      const isSubHeading = SUB_HEADING.test(trimmed);
-      const isExampleHeading = EXAMPLE_HEADING.test(trimmed);
-      const isParticipationHeading = PARTICIPATION_HEADING.test(trimmed);
-      const isOrdinalHeading = ORDINAL_HEADING.test(trimmed);
+      const isParenNumbered = HEADING_NUMBERED_PAREN.test(trimmed);
+      const isMajorHeading = HEADING_MAJOR.test(trimmed);
+      const isSubHeading = HEADING_SUB.test(trimmed);
+      const isExampleHeading = HEADING_EXAMPLE.test(trimmed);
+      const isParticipationHeading = HEADING_PARTICIPATION.test(trimmed);
+      const isOrdinalHeading = HEADING_ORDINAL.test(trimmed);
 
       if (
         isMajorHeading ||
@@ -544,17 +537,6 @@ function detectArabicHeadings(text: string): string {
 }
 
 function detectPostReconstructionHeadings(text: string): string {
-  const MAJOR_KW =
-    /^(الفصل\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|السابع|الثامن|التاسع|العاشر|[0-9]+)|الباب\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المبحث\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|المطلب\s+(الأول|الاول|الثاني|الثالث|الرابع|[0-9]+)|الدرس\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+)|الوحدة\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس|[0-9]+))/;
-
-  const SUB_KW =
-    /^(سورة\s|الحديث\s|الخاتمة|المقدمة|المراجع|المصادر|الملاحق|النتائج|التوصيات|ملخص|خلاصة|تمهيد|مدخل|ملحوظة|تنبيه|فائدة|تتمة|تكملة|هامش|أسئلة|تمارين|تدريبات|أهداف|مقدمة|خاتمة)/;
-
-  const NUMBERED_PAREN = /^\(\d+\)\s/;
-  const NUMBERED_HEADING = /^\d+[.)–—]\s+/;
-  const EXAMPLE_HEADING = /^(المثال)\s+(الأول|الاول|الثاني|الثالث|الرابع|الخامس|السادس)/;
-  const PARTICIPATION_HEADING = /^(المشاركة)\s+(الأولى|الأول|الثانية|الثاني|الثالثة|الثالث)/;
-
   return text
     .split("\n")
     .map((line) => {
@@ -568,16 +550,16 @@ function detectPostReconstructionHeadings(text: string): string {
         return line;
 
       if (
-        MAJOR_KW.test(trimmed) ||
-        NUMBERED_PAREN.test(trimmed) ||
-        NUMBERED_HEADING.test(trimmed) ||
-        EXAMPLE_HEADING.test(trimmed) ||
-        PARTICIPATION_HEADING.test(trimmed)
+        HEADING_MAJOR.test(trimmed) ||
+        HEADING_NUMBERED_PAREN.test(trimmed) ||
+        HEADING_NUMBERED.test(trimmed) ||
+        HEADING_EXAMPLE.test(trimmed) ||
+        HEADING_PARTICIPATION.test(trimmed)
       ) {
         return `## ${trimmed}`;
       }
 
-      if (SUB_KW.test(trimmed)) return `### ${trimmed}`;
+      if (HEADING_SUB.test(trimmed)) return `### ${trimmed}`;
 
       return line;
     })

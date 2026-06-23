@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 
 export async function GET(

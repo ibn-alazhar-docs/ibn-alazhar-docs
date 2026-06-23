@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function DELETE(
   _request: Request,

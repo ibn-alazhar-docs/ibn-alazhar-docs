@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 const bulkMoveSchema = z.object({
   documentIds: z.array(z.string().min(1)).min(1).max(50),
