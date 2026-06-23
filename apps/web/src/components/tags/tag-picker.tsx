@@ -4,12 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { TagChip } from "./tag-chip";
 import { TAG_COLORS } from "@/lib/validators/tag";
-
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-}
+import type { Tag } from "./types";
 
 interface TagPickerProps {
   selectedTagIds: string[];

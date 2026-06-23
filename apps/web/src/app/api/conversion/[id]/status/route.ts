@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
-import { DOC_STATUS_MAP } from "@/lib/conversion-status-utils";
+import { normalizeStage } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
 import { conversionUseCases } from "@/core/use-cases/conversion.use-cases";
 
@@ -14,7 +14,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
       );
 
     const document = await conversionUseCases.getJobStatus(id, session);
-    const normalized = DOC_STATUS_MAP[document.status] ?? "pending";
+    const normalized = normalizeStage(document.status);
 
     if (normalized === "completed") {
       return NextResponse.json({

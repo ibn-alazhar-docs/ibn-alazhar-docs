@@ -1,5 +1,28 @@
 import { prisma } from "@/lib/prisma";
-import type { ShareExportFormat } from "@/lib/validators/share";
+
+export { sanitizeTitle as sanitizeFilename } from "@/lib/export/profiles";
+
+export function getContentType(format: string): string {
+  switch (format) {
+    case "md":
+      return "text/markdown; charset=utf-8";
+    case "txt":
+      return "text/plain; charset=utf-8";
+    case "json":
+      return "application/json; charset=utf-8";
+    case "pdf":
+    case "searchable-pdf":
+      return "application/pdf";
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "epub":
+      return "application/epub+zip";
+    case "zip":
+      return "application/zip";
+    default:
+      return "application/octet-stream";
+  }
+}
 
 interface ShareAccessResult {
   share: {
@@ -35,31 +58,4 @@ export async function validateShareAccess(
     return { error: "Link expired", status: 410 };
 
   return { share: share as ShareAccessResult["share"] };
-}
-
-export function sanitizeFilename(title: string): string {
-  return title
-    .replace(/[\\/:*?"<>|]/g, "")
-    .replace(/\s+/g, "_")
-    .substring(0, 100);
-}
-
-export function getContentType(format: ShareExportFormat): string {
-  switch (format) {
-    case "md":
-      return "text/markdown; charset=utf-8";
-    case "txt":
-      return "text/plain; charset=utf-8";
-    case "json":
-      return "application/json; charset=utf-8";
-    case "pdf":
-    case "searchable-pdf":
-      return "application/pdf";
-    case "docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case "epub":
-      return "application/epub+zip";
-    default:
-      return "application/octet-stream";
-  }
 }

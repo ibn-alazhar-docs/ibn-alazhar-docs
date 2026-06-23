@@ -9,20 +9,17 @@ import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { TAG_COLORS } from "@/lib/validators/tag";
+import type { TagWithCount } from "@/components/tags/types";
 
-interface TagWithCount {
-  id: string;
-  name: string;
-  color: string;
+interface TagWithCountWithDate extends TagWithCount {
   createdAt: string;
-  _count: { documents: number };
 }
 
 export default function TagsPage() {
   const t = useTranslations("tags");
   const tCommon = useTranslations("common");
   const tDocs = useTranslations("documents");
-  const [tags, setTags] = useState<TagWithCount[]>([]);
+  const [tags, setTags] = useState<TagWithCountWithDate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

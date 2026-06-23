@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-
-interface TagWithCount {
-  id: string;
-  name: string;
-  color: string;
-  _count: { documents: number };
-}
+import type { TagWithCount } from "./types";
 
 interface TagFilterSidebarProps {
   selectedTagIds: string[];
