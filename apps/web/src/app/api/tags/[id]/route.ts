@@ -1,51 +1,34 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { updateTagSchema } from "@/lib/validators/tag";
-import { logger } from "@/lib/logger";
+import { tagUseCases } from "@/core/use-cases/tag.use-cases";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (_request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
-
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id }, session),
-      include: {
-        _count: {
-          select: { documents: true },
-        },
-      },
-    });
-
-    if (!tag) {
+    const id = params.id;
+    if (!id)
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
-        { status: 404 },
+        { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
+        { status: 400 },
       );
-    }
-
+    const tag = await tagUseCases.getTagById(id, session);
     return NextResponse.json({ tag });
   } catch (error: unknown) {
-    logger.error(error, "[tags/[id]/GET] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على الوسم" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "tags/[id]/GET", "فشل الحصول على الوسم");
   }
-}
+});
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const PATCH = withAuth(async (request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
+    const id = params.id;
+    if (!id)
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
+        { status: 400 },
+      );
     const body = await request.json();
     const validation = updateTagSchema.safeParse(body);
-
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
@@ -54,90 +37,24 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       );
     }
 
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id }, session),
-      select: { id: true },
-    });
-
-    if (!tag) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
-        { status: 404 },
-      );
-    }
-
-    const { name, color } = validation.data;
-
-    if (name) {
-      const existingTag = await prisma.tag.findFirst({
-        where: ownedWhere(
-          {
-            name: { equals: name, mode: "insensitive" },
-            id: { not: id },
-          },
-          session,
-        ),
-      });
-
-      if (existingTag) {
-        return NextResponse.json(
-          { error: { code: "CONFLICT", message: "يوجد وسم بهذا الاسم بالفعل" } },
-          { status: 409 },
-        );
-      }
-    }
-
-    const updated = await prisma.tag.update({
-      where: { id },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(color !== undefined && { color }),
-      },
-    });
-
-    return NextResponse.json({ tag: updated });
+    const tag = await tagUseCases.updateTag(id, validation.data, session);
+    return NextResponse.json({ tag });
   } catch (error: unknown) {
-    logger.error(error, "[tags/[id]/PATCH] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل تحديث الوسم" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "tags/[id]/PATCH", "فشل تحديث الوسم");
   }
-}
+});
 
-export async function DELETE(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const DELETE = withAuth(async (_request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
-
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id }, session),
-      select: { id: true },
-    });
-
-    if (!tag) {
+    const id = params.id;
+    if (!id)
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
-        { status: 404 },
+        { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
+        { status: 400 },
       );
-    }
-
-    await prisma.tagDocument.deleteMany({
-      where: { tagId: id },
-    });
-
-    await prisma.tag.delete({
-      where: { id },
-    });
-
+    await tagUseCases.deleteTag(id, session);
     return NextResponse.json({ success: true, message: "تم حذف الوسم بنجاح" });
   } catch (error: unknown) {
-    logger.error(error, "[tags/[id]/DELETE] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل حذف الوسم" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "tags/[id]/DELETE", "فشل حذف الوسم");
   }
-}
+});

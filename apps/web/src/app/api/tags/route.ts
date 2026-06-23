@@ -1,43 +1,22 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
-import { createTagSchema, MAX_TAGS_PER_USER } from "@/lib/validators/tag";
-import { logger } from "@/lib/logger";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
+import { createTagSchema } from "@/lib/validators/tag";
+import { tagUseCases } from "@/core/use-cases/tag.use-cases";
 
-export async function GET() {
+export const GET = withAuth(async (_request, { session }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const isAdmin = session.user.role === "ADMIN";
-    const tags = await prisma.tag.findMany({
-      where: isAdmin ? {} : { userId: session.user.id },
-      include: {
-        _count: {
-          select: { documents: true },
-        },
-      },
-      orderBy: { name: "asc" },
-    });
-
+    const tags = await tagUseCases.getTags(session);
     return NextResponse.json({ tags });
   } catch (error: unknown) {
-    logger.error(error, "[tags/GET] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على الوسوم" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "tags/GET", "فشل الحصول على الوسوم");
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { session }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
     const body = await request.json();
     const validation = createTagSchema.safeParse(body);
-
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
@@ -46,52 +25,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const { name, color } = validation.data;
-
-    const tagCount = await prisma.tag.count({
-      where: { userId: session.user.id },
-    });
-
-    if (tagCount >= MAX_TAGS_PER_USER) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: `الحد الأقصى ${MAX_TAGS_PER_USER} وسم لكل مستخدم`,
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    const existingTag = await prisma.tag.findFirst({
-      where: {
-        userId: session.user.id,
-        name: { equals: name, mode: "insensitive" },
-      },
-    });
-
-    if (existingTag) {
-      return NextResponse.json(
-        { error: { code: "CONFLICT", message: "يوجد وسم بهذا الاسم بالفعل" } },
-        { status: 409 },
-      );
-    }
-
-    const tag = await prisma.tag.create({
-      data: {
-        userId: session.user.id,
-        name,
-        color: color || "#16A34A",
-      },
-    });
-
+    const tag = await tagUseCases.createTag(validation.data.name, validation.data.color, session);
     return NextResponse.json({ tag }, { status: 201 });
   } catch (error: unknown) {
-    logger.error(error, "[tags/POST] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل إنشاء الوسم" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "tags/POST", "فشل إنشاء الوسم");
   }
-}
+});

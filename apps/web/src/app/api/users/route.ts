@@ -1,49 +1,36 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { withAuth, isAdmin } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { adminUserUpdateSchema } from "@/lib/validators/auth";
-import { getErrorMessage } from "@/lib/errors";
+import { userUseCases } from "@/core/use-cases/user.use-cases";
 
-export async function GET() {
+export const GET = withAuth(async (_request, { session }) => {
   try {
-    await requireRole("ADMIN");
-
-    const users = await prisma.user.findMany({
-      where: { deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        _count: {
-          select: { documents: true },
-        },
-      },
-      orderBy: { createdAt: "desc" },
-    });
-
-    return NextResponse.json({ users });
-  } catch (error) {
-    if (getErrorMessage(error) === "FORBIDDEN") {
+    if (!isAdmin(session)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
       );
     }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 },
-    );
-  }
-}
 
-export async function PATCH(request: Request) {
+    const users = await userUseCases.getUsers();
+    return NextResponse.json({ users });
+  } catch (error: unknown) {
+    return handleRouteError(error, "users/GET", "فشل الحصول على المستخدمين");
+  }
+});
+
+export const PATCH = withAuth(async (request, { session }) => {
   try {
-    const session = await requireRole("ADMIN");
+    if (!isAdmin(session)) {
+      return NextResponse.json(
+        { error: { code: "FORBIDDEN", message: "Admin access required" } },
+        { status: 403 },
+      );
+    }
+
     const body = await request.json();
     const validation = adminUserUpdateSchema.safeParse(body);
-
     if (!validation.success) {
       const firstError = validation.error.issues[0];
       return NextResponse.json(
@@ -52,54 +39,27 @@ export async function PATCH(request: Request) {
       );
     }
 
-    const { userId, role } = validation.data;
-
-    if (userId === session.user.id) {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Cannot change your own role" } },
-        { status: 400 },
-      );
-    }
-
-    // Verify user is not soft-deleted
-    const userExists = await prisma.user.findFirst({
-      where: { id: userId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!userExists) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } },
-        { status: 404 },
-      );
-    }
-
-    const user = await prisma.user.update({
-      where: { id: userId },
-      data: { role },
-      select: { id: true, name: true, email: true, role: true },
-    });
-
+    const user = await userUseCases.updateUserRole(
+      validation.data.userId,
+      validation.data.role,
+      session.user.id,
+    );
     return NextResponse.json({ user });
-  } catch (error) {
-    if (getErrorMessage(error) === "FORBIDDEN") {
+  } catch (error: unknown) {
+    return handleRouteError(error, "users/PATCH", "فشل تحديث المستخدم");
+  }
+});
+
+export const DELETE = withAuth(async (request, { session }) => {
+  try {
+    if (!isAdmin(session)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
       );
     }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 },
-    );
-  }
-}
 
-export async function DELETE(request: Request) {
-  try {
-    const session = await requireRole("ADMIN");
     const { userId } = await request.json();
-
     if (!userId) {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "userId required" } },
@@ -107,42 +67,9 @@ export async function DELETE(request: Request) {
       );
     }
 
-    if (userId === session.user.id) {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Cannot delete yourself" } },
-        { status: 400 },
-      );
-    }
-
-    // Verify user exists and is active
-    const userExists = await prisma.user.findFirst({
-      where: { id: userId, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!userExists) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } },
-        { status: 404 },
-      );
-    }
-
-    await prisma.user.update({
-      where: { id: userId },
-      data: { deletedAt: new Date() },
-    });
-
+    await userUseCases.deleteUser(userId, session.user.id);
     return NextResponse.json({ success: true });
-  } catch (error) {
-    if (getErrorMessage(error) === "FORBIDDEN") {
-      return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "Admin access required" } },
-        { status: 403 },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Internal server error" } },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, "users/DELETE", "فشل حذف المستخدم");
   }
-}
+});

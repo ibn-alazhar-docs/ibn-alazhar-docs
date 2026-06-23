@@ -1,30 +1,19 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
+import { withAuth } from "@/lib/auth-guards";
 import { DOC_STATUS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
+import { conversionUseCases } from "@/core/use-cases/conversion.use-cases";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
+export const GET = withAuth(async (_request, { session, params }) => {
   try {
-    const { id } = await params;
-
-    const document = await prisma.document.findFirst({
-      where: ownedWhere({ id }, session),
-      select: { id: true, status: true },
-    });
-
-    if (!document) {
+    const id = params.id;
+    if (!id)
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
-        { status: 404 },
+        { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
+        { status: 400 },
       );
-    }
 
+    const document = await conversionUseCases.getJobStatus(id, session);
     const normalized = DOC_STATUS_MAP[document.status] ?? "pending";
 
     if (normalized === "completed") {
@@ -49,8 +38,8 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
 
     const { loadConfig, getJobStatus } = await import("@ibn-al-azhar-docs/pipeline");
     const config = loadConfig();
-
     const queueStatus = await getJobStatus(config, id);
+
     if (queueStatus) {
       return NextResponse.json({
         jobId: id,
@@ -71,4 +60,4 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
   } catch (error: unknown) {
     return handleRouteError(error, "conversion/status", "فشل التحقق من حالة التحويل");
   }
-}
+});
