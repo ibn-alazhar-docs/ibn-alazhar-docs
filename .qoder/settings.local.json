@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/ | head -60)",
+      "Bash(ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.qoder/ 2>/dev/null; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/ 2>/dev/null | head -20; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/skills/ 2>/dev/null; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.husky/ 2>/dev/null; cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.prettierrc 2>/dev/null || cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/prettier.config.* 2>/dev/null; cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.editorconfig 2>/dev/null)",
+      "Bash(cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/pnpm-workspace.yaml 2>/dev/null; echo \"---\"; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/skills/ 2>/dev/null; echo \"---\"; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/apps/ 2>/dev/null; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/packages/ 2>/dev/null; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/workers/ 2>/dev/null)",
+      "Bash(ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.github/workflows/ 2>/dev/null; echo \"---\"; cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.husky/pre-commit 2>/dev/null; echo \"---\"; cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/context/active-phase.md 2>/dev/null | head -40)",
+      "Bash(ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/skills/core/ 2>/dev/null; echo \"---skills dirs---\"; ls -d /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.opencode/skills/*/ 2>/dev/null; echo \"---qoder---\"; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.qoder/ 2>/dev/null; echo \"---gh---\"; which gh 2>/dev/null; echo \"---env example---\"; cat /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/.env.example 2>/dev/null | head -30)",
+      "Bash(ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/workers/shared/ 2>/dev/null; echo \"---\"; ls /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/ 2>/dev/null)",
+      "Bash(mkdir:*)",
+      "Bash(echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/CONTRIBUTING.md\"}}' | jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; npx prettier --write \"$f\"; } 2>/dev/null || true)",
+      "Bash(find /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/{packages,apps,workers} -name \"*.ts\" -not -path \"*/node_modules/*\" -not -path \"*/.next/*\" -not -name \"*.test.ts\" -not -name \"*.d.ts\" | sort)",
+      "Bash(cd /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs && wc -l docs/tools/CODERABBIT_REVIEW_GUIDE.md docs/tools/SECRETS_POLICY.md 2>/dev/null)"
+    ]
+  }
+}

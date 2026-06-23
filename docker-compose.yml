@@ -87,7 +87,7 @@ services:
           memory: 512M
 
   pgbouncer:
-    image: pgbouncer/pgbouncer:1.23
+    image: pgbouncer/pgbouncer:1.23.0
     ports:
       - "127.0.0.1:6432:6432"
     environment:

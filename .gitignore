@@ -48,12 +48,7 @@ archive/
 
 # Agent runtime config
 .agents/
-.qoder/
 .opencode/help.mdc
-.opencode/node_modules/
-.opencode/snapshots/
-.opencode/sessions/
-.opencode/package-lock.json
 
 # Binary test data
 *.ppm

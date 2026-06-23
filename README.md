@@ -78,21 +78,19 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 ## Testing
 
-**1,059 tests across 7 phases — all passing.**
+**1,204 tests across 7 phases — all passing.**
 
 | Command                 | Suite            | Tests |
 | ----------------------- | ---------------- | ----- |
-| `pnpm test`             | Unit\*           | 686   |
+| `pnpm test`             | Unit             | 686   |
 | `pnpm test:integration` | Integration      | 95    |
-| `pnpm test:security`    | Security         | 138   |
-| `pnpm test:pentest`     | Penetration      | 56    |
+| `pnpm test:security`    | Security         | 196   |
+| `pnpm test:pentest`     | Penetration      | 61    |
 | `pnpm test:load`        | Load             | 39    |
-| `pnpm test:recovery`    | Recovery         | 60    |
+| `pnpm test:recovery`    | Recovery         | 79    |
 | `pnpm test:backup`      | Backup & Restore | 48    |
 
-\*Unit tests are split across `tests/backend/` and `tests/frontend/`.
-
-Test files: `tests/backend/` (unit), `tests/frontend/` (unit), `tests/integration/`, `tests/security/`, `tests/pentest/`, `tests/load/`, `tests/recovery/`, `tests/backup/`, `tests/e2e/`
+Full reports: [docs/testing/](docs/testing/)
 
 ## Operations
 
