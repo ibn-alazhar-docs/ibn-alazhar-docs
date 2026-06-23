@@ -50,10 +50,10 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              `script-src 'self'${process.env.NODE_ENV === "development" ? " 'unsafe-inline' 'unsafe-eval'" : ""}`,
+              "script-src 'self' 'unsafe-inline'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' blob: data:",
-              "font-src 'self' data:",
+              "img-src 'self' data: blob:",
+              "font-src 'self'",
               `connect-src 'self' https:${process.env.NODE_ENV === "development" ? " http://localhost:*" : ""}`,
               "frame-ancestors 'none'",
               "base-uri 'self'",

@@ -28,6 +28,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       throw error;
     }
   } catch (error: unknown) {
+    const errMessage = error instanceof Error ? (error as Error).message : String(error);
     logger.error(error, "[folders/[id]/empty/POST] Failed:");
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "فشل تفريغ المجلد" } },

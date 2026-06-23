@@ -24,7 +24,7 @@ export async function GET(): Promise<NextResponse> {
   try {
     await prisma.$queryRaw`SELECT 1`;
     checks.database = { status: "ok", latencyMs: Date.now() - dbStart };
-  } catch {
+  } catch (e) {
     checks.database = {
       status: "error",
       latencyMs: Date.now() - dbStart,

@@ -34,12 +34,10 @@ export function validateEnv(): { valid: boolean; missing: string[]; warnings: st
     }
   }
 
-  const KNOWN_DEFAULTS = [
-    "change-me-in-production",
-    "replace-with-local-dev-secret",
-    "dev-only-secret-do-not-use-in-production",
-  ];
-  if (KNOWN_DEFAULTS.includes(process.env.AUTH_SECRET ?? "")) {
+  if (
+    process.env.AUTH_SECRET === "change-me-in-production" ||
+    process.env.AUTH_SECRET === "dev-only-secret-do-not-use-in-production"
+  ) {
     warnings.push("AUTH_SECRET is using default value — change in production!");
   }
 
