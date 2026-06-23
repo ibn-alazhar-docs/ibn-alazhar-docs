@@ -9,7 +9,7 @@ export function LoginForm() {
   const t = useTranslations("auth");
 
   const [error, submitAction, isPending] = useActionState(
-    async (prevState: string | null, formData: FormData) => {
+    async (_prevState: string | null, formData: FormData) => {
       try {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
