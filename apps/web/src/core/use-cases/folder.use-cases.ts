@@ -4,6 +4,7 @@ import { tagRepository } from "../repositories/tag.repository";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import type { FolderNode } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { prisma } from "@/lib/prisma";
 
 export class FolderUseCases {
   async getFolders(userId: string, role: string, parentId: string | null) {
@@ -99,29 +100,33 @@ export class FolderUseCases {
     const descendantIds = getDescendantIds(id);
     const allFolderIds = [id, ...descendantIds];
 
-    await folderRepository.updateMany(
-      { id: { in: allFolderIds }, userId },
-      { deletedAt: new Date() },
-    );
-    await documentRepository.updateMany(
-      { folderId: { in: allFolderIds }, userId, deletedAt: null },
-      { folderId: null },
-    );
+    await prisma.$transaction(async (tx) => {
+      await tx.folder.updateMany({
+        where: { id: { in: allFolderIds }, userId },
+        data: { deletedAt: new Date() },
+      });
+      await tx.document.updateMany({
+        where: { folderId: { in: allFolderIds }, userId, deletedAt: null },
+        data: { folderId: null },
+      });
+    });
   }
 
   async emptyFolder(id: string, userId: string) {
     const folder = await folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
 
-    const docsUpdated = await documentRepository.updateMany(
-      { folderId: id, userId, deletedAt: null },
-      { folderId: null },
-    );
-
-    const subfoldersUpdated = await folderRepository.updateMany(
-      { parentId: id, userId },
-      { parentId: folder.parentId || null },
-    );
+    const [docsUpdated, subfoldersUpdated] = await prisma.$transaction(async (tx) => {
+      const docs = await tx.document.updateMany({
+        where: { folderId: id, userId, deletedAt: null },
+        data: { folderId: null },
+      });
+      const subs = await tx.folder.updateMany({
+        where: { parentId: id, userId },
+        data: { parentId: folder.parentId || null },
+      });
+      return [docs, subs] as const;
+    });
 
     return { documentsMoved: docsUpdated.count, foldersMoved: subfoldersUpdated.count };
   }
