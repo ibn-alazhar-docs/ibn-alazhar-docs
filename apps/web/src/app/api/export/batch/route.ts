@@ -51,7 +51,12 @@ export async function POST(request: Request) {
       const foundIds = new Set(validDocs.map((d) => d.id));
       const missing = documentIds.filter((id: string) => !foundIds.has(id));
       return NextResponse.json(
-        { error: `Missing documents: ${missing.join(", ")}` },
+        {
+          error: {
+            code: "NOT_FOUND",
+            message: `لم يتم العثور على بعض المستندات: ${missing.join(", ")}`,
+          },
+        },
         { status: 404 },
       );
     }
