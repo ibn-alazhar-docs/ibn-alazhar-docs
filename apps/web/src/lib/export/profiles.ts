@@ -1,4 +1,5 @@
 import type { ExportProfileConfig, ExportFormat, ExportProfile } from "./types";
+export { getContentType } from "@/lib/share-helpers";
 
 export const EXPORT_PROFILE_CONFIGS: Record<ExportProfile, ExportProfileConfig> = {
   research: {
@@ -82,19 +83,4 @@ export function contentDispositionHeader(filename: string): string {
     .replace(/\*/g, "%2A");
 
   return `attachment; filename="${asciiSafe}"; filename*=UTF-8''${encoded}`;
-}
-
-export function getContentType(format: ExportFormat): string {
-  switch (format) {
-    case "md":
-      return "text/markdown; charset=utf-8";
-    case "txt":
-      return "text/plain; charset=utf-8";
-    case "json":
-      return "application/json; charset=utf-8";
-    case "zip":
-      return "application/zip";
-    default:
-      return "application/octet-stream";
-  }
 }

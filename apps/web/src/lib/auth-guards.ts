@@ -50,6 +50,10 @@ export function isAdmin(session: AuthSession): boolean {
   return session.user.role === "ADMIN";
 }
 
+export function isAdminRole(role: string): boolean {
+  return role === "ADMIN";
+}
+
 export function ownedWhere(
   baseWhere: Record<string, unknown>,
   session: AuthSession,
