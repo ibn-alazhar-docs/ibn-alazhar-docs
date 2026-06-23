@@ -38,7 +38,7 @@ export class AuthorizationError extends AppError {
 }
 
 export class ForbiddenError extends AppError {
-  constructor(message = "Forbidden") {
+  constructor(message = "ليس لديك صلاحية للوصول") {
     super(message, "FORBIDDEN", 403);
     this.name = "ForbiddenError";
   }

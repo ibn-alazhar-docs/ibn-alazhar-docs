@@ -28,6 +28,8 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   CONFLICT: { code: "CONFLICT", message: "تعارض", status: 409 },
   UNAUTHORIZED: { code: "UNAUTHORIZED", message: "يجب تسجيل الدخول", status: 401 },
   FORBIDDEN: { code: "FORBIDDEN", message: "ليس لديك صلاحية للوصول", status: 403 },
+  SOME_TAGS_NOT_FOUND: { code: "NOT_FOUND", message: "بعض الأوسمة غير موجودة", status: 404 },
+  TAG_NOT_ASSIGNED: { code: "NOT_FOUND", message: "الوسم غير مرتبط بالمستند", status: 404 },
 };
 
 export function handleRouteError(error: unknown, route: string, fallbackMessage: string) {
