@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ROLE_VALUES } from "@/lib/errors";
 
 export const loginSchema = z.object({
   email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
@@ -42,7 +43,7 @@ export const profileUpdateSchema = z.object({
 
 export const adminUserUpdateSchema = z.object({
   userId: z.string().min(1, "معرف المستخدم مطلوب"),
-  role: z.enum(["ADMIN", "STUDENT", "TEACHER"] as const, {
+  role: z.enum(ROLE_VALUES, {
     message: "دور المستخدم غير صالح",
   }),
 });

@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 const moveSchema = z.object({
   folderId: z.string().nullable(),

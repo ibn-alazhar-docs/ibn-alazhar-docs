@@ -29,7 +29,7 @@ export const createShareSchema = z.object({
 
 export type CreateShareInput = z.infer<typeof createShareSchema>;
 
-export const EXPORT_FORMATS = [
+export const SHARE_EXPORT_FORMATS = [
   "md",
   "txt",
   "json",
@@ -38,4 +38,4 @@ export const EXPORT_FORMATS = [
   "epub",
   "searchable-pdf",
 ] as const;
-export type ExportFormat = (typeof EXPORT_FORMATS)[number];
+export type ShareExportFormat = (typeof SHARE_EXPORT_FORMATS)[number];

@@ -33,10 +33,10 @@ export {
 export {
   createShareSchema,
   EXPIRATION_OPTIONS,
-  EXPORT_FORMATS,
+  SHARE_EXPORT_FORMATS,
   expirationToMs,
   msToExpirationOption,
   type CreateShareInput,
   type ExpirationOption,
-  type ExportFormat,
+  type ShareExportFormat,
 } from "./share";

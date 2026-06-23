@@ -51,6 +51,9 @@ export function getErrorMessage(error: unknown): string {
   return "UNKNOWN_ERROR";
 }
 
+export type Role = "ADMIN" | "STUDENT" | "TEACHER";
+export const ROLE_VALUES = ["ADMIN", "STUDENT", "TEACHER"] as const;
+
 export function getErrorStatusCode(error: unknown): number {
   if (error instanceof AppError) return error.statusCode;
   return 500;

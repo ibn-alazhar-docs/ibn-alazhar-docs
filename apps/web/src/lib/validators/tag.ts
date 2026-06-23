@@ -53,12 +53,6 @@ export const bulkTagSchema = z.object({
   tagId: z.string().min(1, "معرف الوسم مطلوب"),
 });
 
-export const bulkUntagSchema = z.object({
-  documentIds: z
-    .array(z.string())
-    .min(1, "اختر مستنداً واحداً على الأقل")
-    .max(50, "الحد الأقصى 50 مستنداً في الدفعة الواحدة"),
-  tagId: z.string().min(1, "معرف الوسم مطلوب"),
-});
+export const bulkUntagSchema = bulkTagSchema;
 
 export { MAX_TAGS_PER_USER };

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
-import { DOC_STATUS_MAP, DOC_PROGRESS_MAP } from "@/lib/document-status";
+import { DOC_STATUS_MAP, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 
 async function getPrismaStatus(jobId: string): Promise<{ stage: string; progress: number } | null> {
   try {

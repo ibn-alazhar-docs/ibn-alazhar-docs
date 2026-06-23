@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
+import { BRAND_NAME } from "./brand";
 
-export const siteName = "Ibn Al-Azhar Docs";
-export const siteNameAr = "مستندات ابن الأزهر";
+export const siteName = BRAND_NAME.en;
+export const siteNameAr = BRAND_NAME.ar;
 const siteUrl = "https://ibnalazhar-docs.vercel.app";
 
 export function getLocaleUrl(locale: string, path: string = ""): string {

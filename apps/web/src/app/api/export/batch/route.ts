@@ -5,7 +5,7 @@ import { batchExportSchema } from "@/lib/export/validators";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
 import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/types";
+import { getErrorMessage } from "@/lib/errors";
 
 export async function POST(request: Request) {
   const session = await requireAuth().catch(() => null);

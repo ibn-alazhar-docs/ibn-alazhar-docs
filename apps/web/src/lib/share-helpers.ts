@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { ExportFormat } from "@/lib/validators/share";
+import type { ShareExportFormat } from "@/lib/validators/share";
 
 interface ShareAccessResult {
   share: {
@@ -44,7 +44,7 @@ export function sanitizeFilename(title: string): string {
     .substring(0, 100);
 }
 
-export function getContentType(format: ExportFormat): string {
+export function getContentType(format: ShareExportFormat): string {
   switch (format) {
     case "md":
       return "text/markdown; charset=utf-8";
