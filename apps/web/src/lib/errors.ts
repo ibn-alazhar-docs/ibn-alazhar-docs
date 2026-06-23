@@ -47,7 +47,8 @@ export class ForbiddenError extends AppError {
 export function getErrorMessage(error: unknown): string {
   if (error instanceof AppError) return error.code;
   if (error instanceof Error) return error.message;
-  return String(error);
+  if (typeof error === "string") return error;
+  return "UNKNOWN_ERROR";
 }
 
 export function getErrorStatusCode(error: unknown): number {

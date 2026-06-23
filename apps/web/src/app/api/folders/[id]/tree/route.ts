@@ -26,13 +26,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       throw error;
     }
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error);
     logger.error(error, "[folders/[id]/tree/GET] Failed:");
     return NextResponse.json(
-      {
-        error: { code: "FOLDER_TREE_ERROR", message: "فشل تحميل شجرة المجلدات" },
-        details: errMessage,
-      },
+      { error: { code: "FOLDER_TREE_ERROR", message: "فشل تحميل شجرة المجلدات" } },
       { status: 500 },
     );
   }

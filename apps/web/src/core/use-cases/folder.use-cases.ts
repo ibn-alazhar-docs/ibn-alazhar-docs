@@ -3,6 +3,7 @@ import { documentRepository } from "../repositories/document.repository";
 import { tagRepository } from "../repositories/tag.repository";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import type { FolderNode } from "@/lib/build-folder-tree";
+import { AppError, NotFoundError } from "@/lib/errors";
 
 export class FolderUseCases {
   async getFolders(userId: string, role: string, parentId: string | null) {
@@ -29,7 +30,7 @@ export class FolderUseCases {
     if (data.parentId) {
       const parentFolder = await folderRepository.findById(data.parentId, userId);
       if (!parentFolder) {
-        throw new Error("NOT_FOUND");
+        throw new NotFoundError();
       }
     }
 
@@ -55,20 +56,20 @@ export class FolderUseCases {
       },
     });
 
-    if (!folder) throw new Error("NOT_FOUND");
+    if (!folder) throw new NotFoundError();
     return folder;
   }
 
   async renameFolder(id: string, userId: string, name: string) {
     const folder = await folderRepository.findById(id, userId);
-    if (!folder) throw new Error("NOT_FOUND");
+    if (!folder) throw new NotFoundError();
 
     return folderRepository.update(id, userId, { name });
   }
 
   async deleteFolder(id: string, userId: string) {
     const folder = await folderRepository.findById(id, userId);
-    if (!folder) throw new Error("NOT_FOUND");
+    if (!folder) throw new NotFoundError();
 
     const allUserFolders = await folderRepository.findMany(userId, {
       select: { id: true, parentId: true },
@@ -110,7 +111,7 @@ export class FolderUseCases {
 
   async emptyFolder(id: string, userId: string) {
     const folder = await folderRepository.findById(id, userId);
-    if (!folder) throw new Error("NOT_FOUND");
+    if (!folder) throw new NotFoundError();
 
     const docsUpdated = await documentRepository.updateMany(
       { folderId: id, userId, deletedAt: null },
@@ -127,13 +128,13 @@ export class FolderUseCases {
 
   async moveFolder(id: string, userId: string, parentId?: string | null) {
     const sourceFolder = await folderRepository.findById(id, userId);
-    if (!sourceFolder) throw new Error("NOT_FOUND");
+    if (!sourceFolder) throw new NotFoundError();
 
-    if (id === parentId) throw new Error("CIRCULAR_REFERENCE");
+    if (id === parentId) throw new AppError("مرجع دائري", "CIRCULAR_REFERENCE", 400);
 
     if (parentId) {
       const targetFolder = await folderRepository.findById(parentId, userId);
-      if (!targetFolder) throw new Error("TARGET_NOT_FOUND");
+      if (!targetFolder) throw new AppError("المجلد الهدف غير موجود", "TARGET_NOT_FOUND", 404);
     }
 
     const allUserFolders = await folderRepository.findMany(userId, {
@@ -148,7 +149,7 @@ export class FolderUseCases {
     if (parentId) {
       let currentId: string | null = parentId;
       while (currentId) {
-        if (currentId === id) throw new Error("CIRCULAR_REFERENCE");
+        if (currentId === id) throw new AppError("مرجع دائري", "CIRCULAR_REFERENCE", 400);
         const f = folderMap.get(currentId);
         currentId = f?.parentId ?? null;
       }
@@ -162,25 +163,20 @@ export class FolderUseCases {
         currentId = f.parentId;
       }
 
-      if (depth + 1 >= MAX_FOLDER_DEPTH) throw new Error("MAX_DEPTH_REACHED");
+      if (depth + 1 >= MAX_FOLDER_DEPTH)
+        throw new AppError("تم الوصول للحد الأقصى من العمق", "MAX_DEPTH_REACHED", 400);
     }
 
     return folderRepository.update(id, userId, { parentId: parentId || null });
   }
 
   async restoreFolder(id: string, userId: string) {
-    const folder = await folderRepository.findMany(userId, {
-      where: { id },
-      take: 1,
-    });
+    const folderToRestore = await folderRepository.findWithDeleted(id, userId);
 
-    if (!folder.length) throw new Error("NOT_FOUND");
-
-    const folderToRestore = folder[0];
-    if (!folderToRestore) throw new Error("NOT_FOUND");
+    if (!folderToRestore) throw new NotFoundError();
     if (folderToRestore.parentId) {
       const parent = await folderRepository.findById(folderToRestore.parentId, userId);
-      if (!parent) throw new Error("PARENT_DELETED");
+      if (!parent) throw new AppError("المجلد الأصل محذوف", "PARENT_DELETED", 404);
     }
 
     return folderRepository.restore(id, userId);
@@ -188,7 +184,7 @@ export class FolderUseCases {
 
   async getFolderTree(id: string, userId: string) {
     const targetFolder = await folderRepository.findById(id, userId);
-    if (!targetFolder) throw new Error("NOT_FOUND");
+    if (!targetFolder) throw new NotFoundError();
 
     const allFolders = await folderRepository.findMany(userId, {
       orderBy: { order: "asc" },

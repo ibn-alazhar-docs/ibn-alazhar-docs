@@ -1,48 +1,23 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
-import { logger } from "@/lib/logger";
+import { withAuth } from "@/lib/auth-guards";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
-import { getErrorMessage } from "@/lib/types";
+import { handleRouteError } from "@/lib/route-helpers";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
-
-    try {
-      const restored = await folderUseCases.restoreFolder(id, session.user.id);
-      return NextResponse.json({
-        message: "تم استعادة المجلد بنجاح",
-        folder: restored,
-      });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      if (getErrorMessage(error) === "PARENT_DELETED") {
-        return NextResponse.json(
-          {
-            error: {
-              code: "VALIDATION_ERROR",
-              message:
-                "لا يمكن استعادة المجلد لأن المجلد الأب محذوف. يرجى استعادة المجلد الأب أولاً.",
-            },
-          },
-          { status: 400 },
-        );
-      }
-      throw error;
-    }
-  } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/restore/POST] Failed:");
+export const POST = withAuth(async (request, { session, params }) => {
+  const id = params.id;
+  if (!id)
     return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل استعادة المجلد" } },
-      { status: 500 },
+      { error: { code: "VALIDATION_ERROR", message: "معرف المجلد مطلوب" } },
+      { status: 400 },
     );
+
+  try {
+    const restored = await folderUseCases.restoreFolder(id, session.user.id);
+    return NextResponse.json({
+      message: "تم استعادة المجلد بنجاح",
+      folder: restored,
+    });
+  } catch (error: unknown) {
+    return handleRouteError(error, "folders/[id]/restore/POST", "فشل استعادة المجلد");
   }
-}
+});
