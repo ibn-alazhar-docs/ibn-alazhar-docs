@@ -1,14 +1,10 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 
-export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
+export const POST = withAuth(async (_request, { session, params }) => {
+  const id = params.id!;
 
   try {
     const updated = await documentUseCases.regenerateShareLink(id, session.user.id);
@@ -26,22 +22,10 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
       message: "Link regenerated. Old link is now invalid.",
     });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Document not found" } },
-        { status: 404 },
-      );
-    }
-    if (getErrorMessage(error) === "NO_SHARE_LINK") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "No share link exists" } },
-        { status: 404 },
-      );
-    }
-    logger.error(error, "[share] Regenerate failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to regenerate link" } },
-      { status: 500 },
+    return handleRouteError(
+      error,
+      "documents/[id]/share/regenerate/POST",
+      "حدث خطأ أثناء إعادة إنشاء الرابط",
     );
   }
-}
+});

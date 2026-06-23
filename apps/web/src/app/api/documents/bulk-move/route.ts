@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 
 const bulkMoveSchema = z.object({
   documentIds: z.array(z.string().min(1)).min(1).max(50),
@@ -12,12 +11,7 @@ const bulkMoveSchema = z.object({
 
 const MAX_BULK_SIZE = 50;
 
-export async function POST(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
+export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
   const parsed = bulkMoveSchema.safeParse(body);
 
@@ -47,22 +41,6 @@ export async function POST(request: Request) {
       message: `تم نقل ${moved} مستند${moved > 1 ? "ات" : ""}`,
     });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "SOME_NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "بعض المستندات غير موجودة" } },
-        { status: 400 },
-      );
-    }
-    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-        { status: 404 },
-      );
-    }
-    logger.error(error, "[documents/bulk-move/POST] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "documents/bulk-move/POST", "حدث خطأ داخلي");
   }
-}
+});

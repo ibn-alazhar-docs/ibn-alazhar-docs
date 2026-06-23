@@ -1,13 +1,9 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 
-export async function GET(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
+export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
   const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
   const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
@@ -16,8 +12,6 @@ export async function GET(request: Request) {
   const folderId = searchParams.get("folderId");
   const search = searchParams.get("search");
 
-  // Since use cases currently expect 'skip', 'take', 'folderId', 'search', 'deleted'
-  // Let's pass what we have
   try {
     const { documents, total } = await documentUseCases.getDocuments(
       session.user.id,
@@ -27,7 +21,7 @@ export async function GET(request: Request) {
         take: limit,
         folderId: folderId ?? undefined,
         search: search ?? undefined,
-        deleted: false, // Default to not returning deleted documents unless specified?
+        deleted: false,
       },
     );
 
@@ -45,10 +39,7 @@ export async function GET(request: Request) {
         totalPages: Math.ceil(total / limit),
       },
     });
-  } catch {
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
   }
-}
+});

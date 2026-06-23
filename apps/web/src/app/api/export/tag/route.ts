@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse, ownedWhere, isAdmin } from "@/lib/auth-guards";
+import { withAuth, ownedWhere, isAdmin } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { tagExportSchema } from "@/lib/export/validators";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
 
-export async function POST(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
+export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
   const parsed = tagExportSchema.safeParse(body);
 
@@ -92,18 +88,13 @@ export async function POST(request: Request) {
       `Tag_${tag.name}_${new Date().toISOString().split("T")[0]}.zip`,
     );
 
-    return new Response(new Uint8Array(zipBuffer), {
+    return new NextResponse(new Uint8Array(zipBuffer), {
       headers: {
         "Content-Type": "application/zip",
         "Content-Disposition": contentDispositionHeader(zipName),
       },
     });
   } catch (error: unknown) {
-    const errMessage = getErrorMessage(error);
-    logger.error({ errMessage }, "[export] Tag export failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Tag export failed" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "export/tag", "فشل تصدير الوسم");
   }
-}
+});

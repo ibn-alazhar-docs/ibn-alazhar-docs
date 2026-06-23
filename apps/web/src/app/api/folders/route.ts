@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { createFolderSchema } from "@/lib/validators/folder";
-import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 import { getErrorMessage } from "@/lib/errors";
 
-export async function GET(request: Request) {
+export const GET = withAuth(async (request, { session }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
     const { searchParams } = new URL(request.url);
     const parentId = searchParams.get("parentId");
 
@@ -17,19 +14,12 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ folders });
   } catch (error: unknown) {
-    logger.error(error, "[folders/GET] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل الحصول على المجلدات" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/GET", "فشل الحصول على المجلدات");
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = withAuth(async (request, { session }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
     const body = await request.json();
     const validation = createFolderSchema.safeParse(body);
 
@@ -54,10 +44,6 @@ export async function POST(request: Request) {
       throw error;
     }
   } catch (error: unknown) {
-    logger.error(error, "[folders/POST] Failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل إنشاء المجلد" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/POST", "فشل إنشاء المجلد");
   }
-}
+});

@@ -1,18 +1,17 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
-import { requireAuth } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { prisma } from "@/lib/prisma";
 import { profileUpdateSchema } from "@/lib/validators/auth";
-import { logger } from "@/lib/logger";
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1),
 });
 
-export async function PATCH(request: Request) {
+export const PATCH = withAuth(async (request, { session }) => {
   try {
-    const session = await requireAuth();
     const body = await request.json();
     const validation = profileUpdateSchema.safeParse(body);
 
@@ -33,19 +32,13 @@ export async function PATCH(request: Request) {
     });
 
     return NextResponse.json({ user });
-  } catch (error) {
-    logger.error(error, "[profile] Update failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل حفظ البيانات" } },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, "profile", "فشل حفظ البيانات");
   }
-}
+});
 
-export async function DELETE(request: Request) {
+export const DELETE = withAuth(async (request, { session }) => {
   try {
-    const session = await requireAuth();
-
     const body = await request.json();
     const parsed = deleteAccountSchema.safeParse(body);
 
@@ -82,11 +75,7 @@ export async function DELETE(request: Request) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    logger.error(error, "[profile] Delete failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "فشل حذف الحساب" } },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, "profile", "فشل حذف الحساب");
   }
-}
+});

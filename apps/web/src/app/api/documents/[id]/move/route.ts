@@ -1,20 +1,15 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { getErrorMessage } from "@/lib/errors";
 
 const moveSchema = z.object({
   folderId: z.string().nullable(),
 });
 
-export async function PATCH(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
-  const { id } = await params;
+export const PATCH = withAuth(async (request, { session, params }) => {
+  const id = params.id!;
   const body = await request.json();
 
   const validation = moveSchema.safeParse(body);
@@ -35,21 +30,6 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       document: updated,
     });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
-        { status: 404 },
-      );
-    }
-    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المجلد الهدف غير موجود" } },
-        { status: 404 },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ داخلي" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "documents/move/PATCH", "حدث خطأ داخلي");
   }
-}
+});

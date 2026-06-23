@@ -1,15 +1,11 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { createShareSchema } from "@/lib/validators/share";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
-import { logger } from "@/lib/logger";
-import { getErrorMessage } from "@/lib/errors";
 
-export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
+export const POST = withAuth(async (request, { session, params }) => {
+  const id = params.id!;
   const body = await request.json();
   const parsed = createShareSchema.safeParse(body);
 
@@ -49,31 +45,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { status: 201 },
     );
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Document not found" } },
-        { status: 404 },
-      );
-    }
-    if (getErrorMessage(error) === "NOT_READY") {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Document not ready" } },
-        { status: 400 },
-      );
-    }
-    logger.error(error, "[share] Create failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to create share link" } },
-      { status: 500 },
+    return handleRouteError(
+      error,
+      "documents/[id]/share/POST",
+      "حدث خطأ أثناء إنشاء رابط المشاركة",
     );
   }
-}
+});
 
-export async function GET(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
+export const GET = withAuth(async (_request, { session, params }) => {
+  const id = params.id!;
 
   try {
     const share = await documentUseCases.getShareLink(id, session.user.id);
@@ -95,40 +76,25 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
       createdAt: share.createdAt.toISOString(),
     });
   } catch (error: unknown) {
-    logger.error(error, "[share] Get failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to get share info" } },
-      { status: 500 },
+    return handleRouteError(
+      error,
+      "documents/[id]/share/GET",
+      "حدث خطأ أثناء جلب معلومات المشاركة",
     );
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: { params: Promise<{ id: string }> }) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) return unauthorizedResponse();
-
-  const { id } = await params;
+export const DELETE = withAuth(async (_request, { session, params }) => {
+  const id = params.id!;
 
   try {
     await documentUseCases.deleteShareLink(id, session.user.id);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: unknown) {
-    if (getErrorMessage(error) === "NOT_FOUND") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Document not found" } },
-        { status: 404 },
-      );
-    }
-    if (getErrorMessage(error) === "NO_SHARE_LINK") {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "No share link exists" } },
-        { status: 404 },
-      );
-    }
-    logger.error(error, "[share] Delete failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to delete share link" } },
-      { status: 500 },
+    return handleRouteError(
+      error,
+      "documents/[id]/share/DELETE",
+      "حدث خطأ أثناء حذف رابط المشاركة",
     );
   }
-}
+});

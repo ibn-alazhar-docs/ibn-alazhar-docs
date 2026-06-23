@@ -1,15 +1,12 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
-import { logger } from "@/lib/logger";
+import { withAuth } from "@/lib/auth-guards";
+import { handleRouteError } from "@/lib/route-helpers";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
 import { getErrorMessage } from "@/lib/errors";
 
-export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
+export const GET = withAuth(async (_request, { session, params }) => {
   try {
-    const session = await requireAuth().catch(() => null);
-    if (!session) return unauthorizedResponse();
-
-    const { id } = await params;
+    const id = params.id!;
 
     try {
       const result = await folderUseCases.getFolderTree(id, session.user.id);
@@ -26,10 +23,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       throw error;
     }
   } catch (error: unknown) {
-    logger.error(error, "[folders/[id]/tree/GET] Failed:");
-    return NextResponse.json(
-      { error: { code: "FOLDER_TREE_ERROR", message: "فشل تحميل شجرة المجلدات" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "folders/[id]/tree/GET", "فشل تحميل شجرة المجلدات");
   }
-}
+});
