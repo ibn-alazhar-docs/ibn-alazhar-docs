@@ -84,6 +84,9 @@ export async function GET(request: Request) {
     return NextResponse.json({ suggestions: allSuggestions });
   } catch (error) {
     logger.error(error, "Search suggest error:");
-    return NextResponse.json({ suggestions: [] });
+    return NextResponse.json(
+      { error: { code: "SEARCH_SUGGEST_ERROR", message: "فشل تحميل الاقتراحات" } },
+      { status: 500 },
+    );
   }
 }

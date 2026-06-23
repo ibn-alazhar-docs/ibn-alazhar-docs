@@ -70,12 +70,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     });
   } catch (error: unknown) {
     logger.error(error, "[conversion/status] Failed:");
-    return NextResponse.json({
-      jobId: id,
-      status: normalized,
-      progress: 0,
-      outputs: null,
-      readyForExport: false,
-    });
+    return NextResponse.json(
+      { error: { code: "CONVERSION_STATUS_ERROR", message: "فشل التحقق من حالة التحويل" } },
+      { status: 500 },
+    );
   }
 }

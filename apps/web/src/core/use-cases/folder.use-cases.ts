@@ -1,5 +1,4 @@
 import { folderRepository } from "../repositories/folder.repository";
-import { documentRepository } from "../repositories/document.repository";
 import { tagRepository } from "../repositories/tag.repository";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import type { FolderNode } from "@/lib/build-folder-tree";
