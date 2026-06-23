@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 export async function DELETE(
   _request: Request,
@@ -17,19 +18,19 @@ export async function DELETE(
       await documentUseCases.removeTagFromDocument(id, tagId, session.user.id, session.user.role);
       return NextResponse.json({ success: true, message: "Tag removed" });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Document not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "TAG_NOT_FOUND") {
+      if (getErrorMessage(error) === "TAG_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Tag not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "TAG_NOT_ASSIGNED") {
+      if (getErrorMessage(error) === "TAG_NOT_ASSIGNED") {
         return NextResponse.json({ success: true, message: "Tag was not assigned" });
       }
       throw error;

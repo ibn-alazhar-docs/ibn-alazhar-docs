@@ -3,6 +3,7 @@ import { z } from "zod";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 const bulkMoveSchema = z.object({
   documentIds: z.array(z.string().min(1)).min(1).max(100),
@@ -46,13 +47,13 @@ export async function POST(request: Request) {
       message: `تم نقل ${moved} مستند${moved > 1 ? "ات" : ""}`,
     });
   } catch (error: unknown) {
-    if ((error as Error).message === "SOME_NOT_FOUND") {
+    if (getErrorMessage(error) === "SOME_NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "بعض المستندات غير موجودة" } },
         { status: 400 },
       );
     }
-    if ((error as Error).message === "FOLDER_NOT_FOUND") {
+    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
         { status: 404 },

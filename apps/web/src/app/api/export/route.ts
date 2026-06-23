@@ -13,6 +13,7 @@ import { buildZipPackage } from "@/lib/export/zip-builder";
 import { sanitizeTitle, contentDispositionHeader, getContentType } from "@/lib/export/profiles";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 export async function POST(request: Request) {
   const session = await requireAuth().catch(() => null);
@@ -147,7 +148,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? (error as Error).message : String(error);
+    const errMessage = getErrorMessage(error);
     logger.error({ errMessage }, "[export] Single export failed:");
 
     if (errMessage.includes("not found") || errMessage.includes("Document not found")) {

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { uploadDocumentUseCase } from "@/core/use-cases/upload-document.use-case";
+import { getErrorMessage } from "@/lib/types";
 
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);
@@ -60,13 +61,13 @@ export async function POST(request: Request) {
       });
     } catch (error: unknown) {
       if (error instanceof Error) {
-        if ((error as Error).message === "NOT_FOUND") {
+        if (getErrorMessage(error) === "NOT_FOUND") {
           return NextResponse.json(
             { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
             { status: 404 },
           );
         }
-        if ((error as Error).message === "AUTH_ERROR") {
+        if (getErrorMessage(error) === "AUTH_ERROR") {
           return NextResponse.json(
             { error: { code: "AUTH_ERROR", message: "يجب ربط حساب Google الخاص بك لرفع الملفات" } },
             { status: 400 },
@@ -86,7 +87,7 @@ export async function POST(request: Request) {
       message: "تم رفع الملف بنجاح وبدء المعالجة",
     });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? (error as Error).message : "فشل رفع الملف";
+    const errMessage = getErrorMessage(error) || "فشل رفع الملف";
     logger.error(error, "[upload] Failed:");
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: errMessage } },

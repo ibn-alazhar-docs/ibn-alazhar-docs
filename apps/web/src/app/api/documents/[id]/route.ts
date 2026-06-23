@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUpdateSchema } from "@/lib/validators/document";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);
@@ -15,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
     const document = await documentUseCases.getDocumentById(id, session.user.id);
     return NextResponse.json({ document });
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
         { status: 404 },
@@ -50,13 +51,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
     const updated = await documentUseCases.updateDocument(id, session.user.id, validation.data);
     return NextResponse.json({ document: updated });
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
         { status: 404 },
       );
     }
-    if ((error as Error).message === "FOLDER_NOT_FOUND") {
+    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
         { status: 404 },
@@ -81,7 +82,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     await documentUseCases.deleteDocument(id, session.user.id);
     return NextResponse.json({ success: true, message: "تم حذف المستند" });
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
         { status: 404 },

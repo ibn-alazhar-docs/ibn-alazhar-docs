@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth-guards";
 import { prisma } from "@/lib/prisma";
 import { adminUserUpdateSchema } from "@/lib/validators/auth";
+import { getErrorMessage } from "@/lib/types";
 
 export async function GET() {
   try {
@@ -24,7 +25,7 @@ export async function GET() {
 
     return NextResponse.json({ users });
   } catch (error) {
-    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+    if (getErrorMessage(error) === "FORBIDDEN") {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
@@ -81,7 +82,7 @@ export async function PATCH(request: Request) {
 
     return NextResponse.json({ user });
   } catch (error) {
-    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+    if (getErrorMessage(error) === "FORBIDDEN") {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
@@ -133,7 +134,7 @@ export async function DELETE(request: Request) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    if (error instanceof Error && (error as Error).message === "FORBIDDEN") {
+    if (getErrorMessage(error) === "FORBIDDEN") {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },

@@ -9,3 +9,9 @@ export const toUserId = (id: string): UserId => id as UserId;
 export const toDocumentId = (id: string): DocumentId => id as DocumentId;
 export const toFolderId = (id: string): FolderId => id as FolderId;
 export const toTagId = (id: string): TagId => id as TagId;
+
+export function getErrorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  if (typeof error === "string") return error;
+  return "UNKNOWN_ERROR";
+}

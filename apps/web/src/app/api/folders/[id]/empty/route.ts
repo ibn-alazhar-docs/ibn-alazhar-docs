@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 export async function POST(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -19,7 +20,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
         foldersMoved: result.foldersMoved,
       });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },

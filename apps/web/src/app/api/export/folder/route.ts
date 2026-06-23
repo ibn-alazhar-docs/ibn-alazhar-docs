@@ -12,6 +12,7 @@ import type {
 import { buildZipPackage } from "@/lib/export/zip-builder";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 function contentDispositionHeader(filename: string): string {
   const asciiSafe =
@@ -293,7 +294,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? (error as Error).message : String(error);
+    const errMessage = getErrorMessage(error);
     logger.error({ errMessage }, "[export] Folder export failed:");
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "Folder export failed" } },

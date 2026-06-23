@@ -3,6 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { addTagToDocumentSchema, setDocumentTagsSchema } from "@/lib/validators/tag";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       const tags = await documentUseCases.getDocumentTags(id, session.user.id);
       return NextResponse.json({ tags });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Document not found" } },
           { status: 404 },
@@ -60,19 +61,19 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       );
       return NextResponse.json({ success: true, tag }, { status: 201 });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Document not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "TAG_NOT_FOUND") {
+      if (getErrorMessage(error) === "TAG_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Tag not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "CONFLICT") {
+      if (getErrorMessage(error) === "CONFLICT") {
         return NextResponse.json(
           { error: { code: "CONFLICT", message: "Tag already assigned" } },
           { status: 409 },
@@ -117,13 +118,13 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
       );
       return NextResponse.json({ success: true, tagCount });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Document not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "SOME_TAGS_NOT_FOUND") {
+      if (getErrorMessage(error) === "SOME_TAGS_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "VALIDATION_ERROR", message: "Some tags not found" } },
           { status: 400 },

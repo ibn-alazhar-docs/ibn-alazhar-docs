@@ -3,6 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { createShareSchema } from "@/lib/validators/share";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const session = await requireAuth().catch(() => null);
@@ -48,13 +49,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       { status: 201 },
     );
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Document not found" } },
         { status: 404 },
       );
     }
-    if ((error as Error).message === "NOT_READY") {
+    if (getErrorMessage(error) === "NOT_READY") {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "Document not ready" } },
         { status: 400 },
@@ -112,13 +113,13 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ i
     await documentUseCases.deleteShareLink(id, session.user.id);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "Document not found" } },
         { status: 404 },
       );
     }
-    if ((error as Error).message === "NO_SHARE_LINK") {
+    if (getErrorMessage(error) === "NO_SHARE_LINK") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "No share link exists" } },
         { status: 404 },

@@ -3,6 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { bulkTagSchema } from "@/lib/validators/tag";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
 import { logger } from "@/lib/logger";
+import { getErrorMessage } from "@/lib/types";
 
 export async function POST(request: Request) {
   try {
@@ -37,13 +38,13 @@ export async function POST(request: Request) {
         message: `تم وسم ${taggedCount} مستند`,
       });
     } catch (error: unknown) {
-      if ((error as Error).message === "TAG_NOT_FOUND") {
+      if (getErrorMessage(error) === "TAG_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "الوسم غير موجود" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "SOME_NOT_FOUND") {
+      if (getErrorMessage(error) === "SOME_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "VALIDATION_ERROR", message: "بعض المستندات غير موجودة" } },
           { status: 400 },

@@ -3,6 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { moveFolderSchema, MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -27,13 +28,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const updated = await folderUseCases.moveFolder(id, session.user.id, parentId);
       return NextResponse.json({ folder: updated });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "CIRCULAR_REFERENCE") {
+      if (getErrorMessage(error) === "CIRCULAR_REFERENCE") {
         return NextResponse.json(
           {
             error: {
@@ -44,13 +45,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           { status: 400 },
         );
       }
-      if ((error as Error).message === "TARGET_NOT_FOUND") {
+      if (getErrorMessage(error) === "TARGET_NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد الهدف غير موجود" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "MAX_DEPTH_REACHED") {
+      if (getErrorMessage(error) === "MAX_DEPTH_REACHED") {
         return NextResponse.json(
           {
             error: {
