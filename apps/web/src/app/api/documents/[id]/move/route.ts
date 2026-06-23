@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 const moveSchema = z.object({
   folderId: z.string().nullable(),
@@ -34,13 +35,13 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       document: updated,
     });
   } catch (error: unknown) {
-    if ((error as Error).message === "NOT_FOUND") {
+    if (getErrorMessage(error) === "NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المستند غير موجود" } },
         { status: 404 },
       );
     }
-    if ((error as Error).message === "FOLDER_NOT_FOUND") {
+    if (getErrorMessage(error) === "FOLDER_NOT_FOUND") {
       return NextResponse.json(
         { error: { code: "NOT_FOUND", message: "المجلد الهدف غير موجود" } },
         { status: 404 },

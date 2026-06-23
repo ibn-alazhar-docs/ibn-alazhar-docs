@@ -80,7 +80,7 @@ services:
           memory: 256M
 
   pgbouncer:
-    image: pgbouncer/pgbouncer:latest
+    image: pgbouncer/pgbouncer:1.23.0
     ports:
       - "127.0.0.1:${STAGING_PGBOUNCER_PORT:-6433}:6432"
     environment:

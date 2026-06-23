@@ -3,6 +3,7 @@ import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { renameFolderSchema } from "@/lib/validators/folder";
 import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -15,7 +16,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       const folder = await folderUseCases.getFolderById(id, session.user.id);
       return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, no-store" } });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },
@@ -53,7 +54,7 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
       const updated = await folderUseCases.renameFolder(id, session.user.id, validation.data.name);
       return NextResponse.json({ folder: updated });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },
@@ -81,7 +82,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
       await folderUseCases.deleteFolder(id, session.user.id);
       return NextResponse.json({ message: "تم حذف المجلد بنجاح" });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },

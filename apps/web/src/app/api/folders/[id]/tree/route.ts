@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { getErrorMessage } from "@/lib/types";
 
 export async function GET(_request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -16,7 +17,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
         headers: { "Cache-Control": "public, max-age=30, s-maxage=30" },
       });
     } catch (error: unknown) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
           { status: 404 },
@@ -25,7 +26,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ id:
       throw error;
     }
   } catch (error: unknown) {
-    const errMessage = error instanceof Error ? (error as Error).message : String(error);
+    const errMessage = getErrorMessage(error);
     logger.error(error, "[folders/[id]/tree/GET] Failed:");
     return NextResponse.json(
       {

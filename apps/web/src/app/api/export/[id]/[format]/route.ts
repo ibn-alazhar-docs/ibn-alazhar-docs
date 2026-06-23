@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { logger } from "@/lib/logger";
 import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
+import { getErrorMessage } from "@/lib/types";
 
 function contentDispositionHeader(filename: string): string {
   const asciiSafe =
@@ -69,13 +70,13 @@ export async function GET(
     });
   } catch (error: unknown) {
     if (error instanceof Error) {
-      if ((error as Error).message === "NOT_FOUND") {
+      if (getErrorMessage(error) === "NOT_FOUND") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Document not found" } },
           { status: 404 },
         );
       }
-      if ((error as Error).message === "NOT_READY") {
+      if (getErrorMessage(error) === "NOT_READY") {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Export not ready" } },
           { status: 404 },
