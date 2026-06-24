@@ -1,9 +1,21 @@
-import type { Tag, TagDocument } from "@prisma/client";
+import type { Tag, TagDocument, Prisma } from "@prisma/client";
 import type { DomainTag } from "../types";
 
 export type BatchCount = { count: number };
 
 export interface ITagRepository {
+  findMany(
+    where?: Prisma.TagWhereInput,
+    include?: Prisma.TagInclude,
+  ): Promise<(Tag & { _count: { documents: number } })[]>;
+  findFirst(
+    where: Prisma.TagWhereInput,
+    include?: Prisma.TagInclude,
+  ): Promise<(Tag & { _count: { documents: number } }) | null>;
+  count(where: Prisma.TagWhereInput): Promise<number>;
+  create(data: Prisma.TagUncheckedCreateInput): Promise<Tag>;
+  update(id: string, data: Prisma.TagUncheckedUpdateInput): Promise<Tag>;
+  delete(id: string): Promise<void>;
   findFolderTags(
     userId: string,
     role: string,
