@@ -1,5 +1,6 @@
-import { prisma } from "@/lib/prisma";
 import { ValidationError } from "@/lib/errors";
+import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
+import { searchRepository } from "@/domain/repositories/search.repository.interface";
 
 const MIN_QUERY_LENGTH = 2;
 const DEFAULT_PAGE_LIMIT = 20;
@@ -33,6 +34,8 @@ export interface SearchResult {
 }
 
 export class SearchUseCases {
+  constructor(private readonly searchRepository: ISearchRepository) {}
+
   private normalizeArabic(text: string): string {
     return text
       .replace(/[أإآ]/g, "ا")
@@ -106,7 +109,10 @@ export class SearchUseCases {
       WHERE ${whereClause}
     `;
 
-    const countResult = await prisma.$queryRawUnsafe<{ total: bigint }[]>(countQuery, ...params);
+    const countResult = await this.searchRepository.queryRaw<{ total: bigint }[]>(
+      countQuery,
+      ...params,
+    );
     const total = Number(countResult[0]?.total || 0);
 
     const searchParamsList = params;
@@ -141,7 +147,7 @@ export class SearchUseCases {
 
     params.push(limit, offset);
 
-    const results = await prisma.$queryRawUnsafe<
+    const results = await this.searchRepository.queryRaw<
       {
         id: string;
         title: string;
@@ -210,7 +216,7 @@ export class SearchUseCases {
   async getSuggestions(userId: string, query: string) {
     if (!query || query.trim().length < 2) return [];
 
-    const titleSuggestions = await prisma.$queryRawUnsafe<
+    const titleSuggestions = await this.searchRepository.queryRaw<
       { text: string; type: string; count: bigint }[]
     >(
       `SELECT DISTINCT title as text, 'title' as type, COUNT(*) as count
@@ -222,7 +228,7 @@ export class SearchUseCases {
       `%${query}%`,
     );
 
-    const folderSuggestions = await prisma.$queryRawUnsafe<
+    const folderSuggestions = await this.searchRepository.queryRaw<
       { text: string; type: string; count: bigint }[]
     >(
       `SELECT DISTINCT name as text, 'folder' as type, COUNT(*) as count
@@ -234,7 +240,7 @@ export class SearchUseCases {
       `%${query}%`,
     );
 
-    const tagSuggestions = await prisma.$queryRawUnsafe<
+    const tagSuggestions = await this.searchRepository.queryRaw<
       { text: string; type: string; count: bigint; id: string }[]
     >(
       `SELECT DISTINCT t.name as text, 'tag' as type, COUNT(td."documentId") as count, t.id
@@ -263,4 +269,4 @@ export class SearchUseCases {
   }
 }
 
-export const searchUseCases = new SearchUseCases();
+export const searchUseCases = new SearchUseCases(searchRepository);
