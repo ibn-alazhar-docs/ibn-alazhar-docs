@@ -23,6 +23,10 @@ export class DocumentRepository implements IDocumentRepository {
     });
   }
 
+  async findFirst(where: Prisma.DocumentWhereInput, select?: Prisma.DocumentSelect) {
+    return prisma.document.findFirst({ where, select });
+  }
+
   async findMany(options: Prisma.DocumentFindManyArgs) {
     return prisma.document.findMany(options);
   }
