@@ -1,11 +1,15 @@
 import { prisma } from "@/lib/prisma";
 import type { Document, Prisma } from "@prisma/client";
+import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
+import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 
-export class DocumentRepository {
-  async createDocument(data: Prisma.DocumentUncheckedCreateInput): Promise<Document> {
-    return prisma.document.create({
-      data,
-    });
+export class DocumentRepository implements IDocumentRepository {
+  async createDocument(data: CreateDocumentInput): Promise<Document> {
+    return this.createDocumentRaw(data as unknown as Prisma.DocumentUncheckedCreateInput);
+  }
+
+  async createDocumentRaw(data: Prisma.DocumentUncheckedCreateInput): Promise<Document> {
+    return prisma.document.create({ data });
   }
 
   async findDocumentById(id: string, userId: string, include?: Prisma.DocumentInclude) {
@@ -27,7 +31,14 @@ export class DocumentRepository {
     return prisma.document.count(options);
   }
 
-  async update(id: string, userId: string, data: Prisma.DocumentUncheckedUpdateInput) {
+  async update(id: string, userId: string, data: UpdateDocumentInput) {
+    return prisma.document.update({
+      where: { id, userId },
+      data: data as unknown as Prisma.DocumentUncheckedUpdateInput,
+    });
+  }
+
+  async updateRaw(id: string, userId: string, data: Prisma.DocumentUncheckedUpdateInput) {
     return prisma.document.update({
       where: { id, userId },
       data,
@@ -35,7 +46,6 @@ export class DocumentRepository {
   }
 
   async updateSearchVector(id: string, title?: string, description?: string | null) {
-    // Only execute if title or description are changing
     return prisma.$executeRaw`
       UPDATE documents
       SET searchvector =

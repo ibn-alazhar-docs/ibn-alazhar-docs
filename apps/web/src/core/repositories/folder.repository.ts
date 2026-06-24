@@ -1,7 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
+import type { CreateFolderInput } from "@/domain/types";
+import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 
-export class FolderRepository {
+export class FolderRepository implements IFolderRepository {
   async findById(id: string, userId: string, include?: Prisma.FolderInclude) {
     return prisma.folder.findFirst({
       where: { id, userId, deletedAt: null },
@@ -26,7 +28,11 @@ export class FolderRepository {
     });
   }
 
-  async create(data: Prisma.FolderUncheckedCreateInput) {
+  async create(data: CreateFolderInput) {
+    return this.createRaw(data as unknown as Prisma.FolderUncheckedCreateInput);
+  }
+
+  async createRaw(data: Prisma.FolderUncheckedCreateInput) {
     return prisma.folder.create({ data });
   }
 
