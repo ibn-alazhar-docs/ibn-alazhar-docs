@@ -1,0 +1,73 @@
+import { Queue, type Job } from "bullmq";
+import IORedis from "ioredis";
+import type { PipelineConfig } from "../types";
+
+let connection: IORedis | null = null;
+let lastRedisHost = "";
+let lastRedisPort = 0;
+let lastRedisPassword: string | undefined = undefined;
+
+const queues: Record<string, Queue> = {};
+
+export function getConnection(config: PipelineConfig): IORedis {
+  if (
+    !connection ||
+    lastRedisHost !== config.redis.host ||
+    lastRedisPort !== config.redis.port ||
+    lastRedisPassword !== config.redis.password
+  ) {
+    if (connection) {
+      connection.disconnect();
+    }
+    connection = new IORedis({
+      host: config.redis.host,
+      port: config.redis.port,
+      password: config.redis.password,
+      maxRetriesPerRequest: null,
+      retryStrategy: (times: number) => {
+        if (times > 5) return null;
+        return Math.min(1000 * 2 ** times, 10000);
+      },
+    });
+    lastRedisHost = config.redis.host;
+    lastRedisPort = config.redis.port;
+    lastRedisPassword = config.redis.password;
+  }
+  return connection;
+}
+
+export function getQueue(queueName: string, config: PipelineConfig): Queue {
+  const conn = getConnection(config);
+  const hostChanged = lastRedisHost !== config.redis.host || lastRedisPort !== config.redis.port;
+
+  if (hostChanged) {
+    for (const name of Object.keys(queues)) {
+      const q = queues[name];
+      if (q) {
+        q.close().catch(() => {});
+      }
+      delete queues[name];
+    }
+  }
+
+  if (!queues[queueName]) {
+    queues[queueName] = new Queue(queueName, {
+      connection: conn as unknown as import("bullmq").ConnectionOptions,
+    });
+  }
+  return queues[queueName];
+}
+
+export async function closeQueueConnections(): Promise<void> {
+  for (const name of Object.keys(queues)) {
+    const q = queues[name];
+    if (q) {
+      await q.close();
+    }
+    delete queues[name];
+  }
+  if (connection) {
+    await connection.quit();
+    connection = null;
+  }
+}
