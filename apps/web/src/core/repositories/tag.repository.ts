@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-// No imports from @prisma/client needed
+import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 
-export class TagRepository {
+export class TagRepository implements ITagRepository {
   async findFolderTags(userId: string, role: string, folderId: string | null) {
     const isRoot = folderId === "root";
     const whereFolder = isRoot ? { folderId: null } : { folderId };
