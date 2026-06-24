@@ -9,6 +9,10 @@ export interface IDocumentRepository {
     userId: string,
     include?: Prisma.DocumentInclude,
   ): Promise<Document | null>;
+  findFirst(
+    where: Prisma.DocumentWhereInput,
+    select?: Prisma.DocumentSelect,
+  ): Promise<Document | null>;
   findMany(options: Prisma.DocumentFindManyArgs): Promise<Document[]>;
   count(options: Prisma.DocumentCountArgs): Promise<number>;
   update(id: string, userId: string, data: UpdateDocumentInput): Promise<Document>;

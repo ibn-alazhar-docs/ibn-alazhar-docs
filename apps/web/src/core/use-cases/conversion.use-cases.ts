@@ -1,14 +1,22 @@
-import { prisma } from "@/lib/prisma";
 import { NotFoundError } from "@/lib/errors";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
 import type { Prisma } from "@prisma/client";
+import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
+import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
+import { documentRepository } from "../repositories/document.repository";
+import { conversionJobRepository } from "../repositories/conversion-job.repository";
 
 export class ConversionUseCases {
+  constructor(
+    private readonly documentRepository: IDocumentRepository,
+    private readonly conversionJobRepository: IConversionJobRepository,
+  ) {}
+
   async startConversion(documentId: string, session: AuthSession) {
-    const document = await prisma.document.findFirst({
-      where: ownedWhere({ id: documentId, deletedAt: null }, session),
-      select: { id: true, fileName: true, fileSize: true, mimeType: true, storageKey: true },
-    });
+    const document = await this.documentRepository.findFirst(
+      ownedWhere({ id: documentId, deletedAt: null }, session),
+      { id: true, fileName: true, fileSize: true, mimeType: true, storageKey: true },
+    );
     if (!document) throw new NotFoundError("المستند غير موجود");
 
     const { loadConfig, enqueueSplitting } = await import("@ibn-al-azhar-docs/pipeline");
@@ -47,7 +55,7 @@ export class ConversionUseCases {
     }
 
     const [jobs, total] = await Promise.all([
-      prisma.conversionJob.findMany({
+      this.conversionJobRepository.findMany({
         where,
         orderBy: { createdAt: "desc" },
         skip: (page - 1) * limit,
@@ -68,7 +76,7 @@ export class ConversionUseCases {
           },
         },
       }),
-      prisma.conversionJob.count({ where }),
+      this.conversionJobRepository.count(where),
     ]);
 
     return {
@@ -78,9 +86,9 @@ export class ConversionUseCases {
   }
 
   async getJobStatus(id: string, session: AuthSession) {
-    const document = await prisma.document.findFirst({
-      where: ownedWhere({ id }, session),
-      select: { id: true, status: true },
+    const document = await this.documentRepository.findFirst(ownedWhere({ id }, session), {
+      id: true,
+      status: true,
     });
     if (!document) throw new NotFoundError("المستند غير موجود");
 
@@ -88,4 +96,7 @@ export class ConversionUseCases {
   }
 }
 
-export const conversionUseCases = new ConversionUseCases();
+export const conversionUseCases = new ConversionUseCases(
+  documentRepository,
+  conversionJobRepository,
+);
