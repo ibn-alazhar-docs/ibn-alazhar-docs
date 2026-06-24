@@ -1,7 +1,39 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 
 export class TagRepository implements ITagRepository {
+  async findMany(where?: Prisma.TagWhereInput, include?: Prisma.TagInclude) {
+    return prisma.tag.findMany({
+      where: where ?? {},
+      include: include ?? { _count: { select: { documents: true } } },
+      orderBy: { name: "asc" },
+    });
+  }
+
+  async findFirst(where: Prisma.TagWhereInput, include?: Prisma.TagInclude) {
+    return prisma.tag.findFirst({
+      where,
+      include: include ?? { _count: { select: { documents: true } } },
+    });
+  }
+
+  async count(where: Prisma.TagWhereInput) {
+    return prisma.tag.count({ where });
+  }
+
+  async create(data: Prisma.TagUncheckedCreateInput) {
+    return prisma.tag.create({ data });
+  }
+
+  async update(id: string, data: Prisma.TagUncheckedUpdateInput) {
+    return prisma.tag.update({ where: { id }, data });
+  }
+
+  async delete(id: string) {
+    await prisma.tag.delete({ where: { id } });
+  }
+
   async findFolderTags(userId: string, role: string, folderId: string | null) {
     const isRoot = folderId === "root";
     const whereFolder = isRoot ? { folderId: null } : { folderId };
