@@ -88,6 +88,10 @@ export class FolderRepository implements IFolderRepository {
       where: { id, userId, deletedAt: null },
     });
   }
+
+  async transaction<T>(fn: (tx: import("@prisma/client").Prisma.TransactionClient) => Promise<T>) {
+    return prisma.$transaction(fn);
+  }
 }
 
 export const folderRepository = new FolderRepository();
