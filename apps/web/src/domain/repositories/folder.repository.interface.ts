@@ -4,7 +4,8 @@ import type { CreateFolderInput } from "../types";
 export interface IFolderRepository {
   findById(id: string, userId: string, include?: Prisma.FolderInclude): Promise<Folder | null>;
   findWithDeleted(id: string, userId: string): Promise<Folder | null>;
-  findMany(userId: string, options?: Prisma.FolderFindManyArgs): Promise<Folder[]>;
+  findFirst(where: Prisma.FolderWhereInput): Promise<Folder | null>;
+  findMany(userIdOrOptions: string | Prisma.FolderFindManyArgs): Promise<Folder[]>;
   create(data: CreateFolderInput): Promise<Folder>;
   createRaw(data: Prisma.FolderUncheckedCreateInput): Promise<Folder>;
   update(id: string, userId: string, data: Prisma.FolderUncheckedUpdateInput): Promise<Folder>;

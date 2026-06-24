@@ -17,15 +17,26 @@ export class FolderRepository implements IFolderRepository {
     });
   }
 
-  async findMany(userId: string, options?: Prisma.FolderFindManyArgs) {
-    return prisma.folder.findMany({
-      ...options,
-      where: {
-        ...options?.where,
-        userId,
-        deletedAt: null,
-      },
-    });
+  async findFirst(where: Prisma.FolderWhereInput) {
+    return prisma.folder.findFirst({ where });
+  }
+
+  async findMany(
+    userIdOrOptions: string | Prisma.FolderFindManyArgs,
+    options?: Prisma.FolderFindManyArgs,
+  ) {
+    if (typeof userIdOrOptions === "string") {
+      const userId = userIdOrOptions;
+      return prisma.folder.findMany({
+        ...options,
+        where: {
+          ...options?.where,
+          userId,
+          deletedAt: null,
+        },
+      });
+    }
+    return prisma.folder.findMany(userIdOrOptions);
   }
 
   async create(data: CreateFolderInput) {

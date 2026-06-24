@@ -1,8 +1,11 @@
-import type { TagDocument } from "@prisma/client";
+import type { TagDocument, Prisma } from "@prisma/client";
 import type { BatchCount } from "./tag.repository.interface";
 
 export interface ITagDocumentRepository {
-  findMany(where: { documentId?: string; tagId?: string }): Promise<TagDocument[]>;
+  findMany(args: {
+    where: { documentId?: string; tagId?: string };
+    include?: Prisma.TagDocumentInclude;
+  }): Promise<(TagDocument & { document?: Record<string, unknown> })[]>;
   findManyByTagId(tagId: string, documentIds: string[]): Promise<Pick<TagDocument, "documentId">[]>;
   createMany(data: { tagId: string; documentId: string }[]): Promise<BatchCount>;
   deleteMany(where: { tagId: string }): Promise<BatchCount>;
