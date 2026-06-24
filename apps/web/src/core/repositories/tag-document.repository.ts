@@ -1,9 +1,18 @@
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
 
 export class TagDocumentRepository implements ITagDocumentRepository {
-  async findMany(where: { documentId: string }) {
-    return prisma.tagDocument.findMany({ where });
+  async findMany(args: {
+    where: { documentId?: string; tagId?: string };
+    include?: Prisma.TagDocumentInclude;
+  }) {
+    return prisma.tagDocument.findMany({
+      where: args.where,
+      include: args.include,
+    }) as Promise<
+      (import("@prisma/client").TagDocument & { document?: Record<string, unknown> })[]
+    >;
   }
 
   async findManyByTagId(tagId: string, documentIds: string[]) {
