@@ -1,14 +1,20 @@
-import { folderRepository } from "../repositories/folder.repository";
-import { tagRepository } from "../repositories/tag.repository";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import type { FolderNode } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
+import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
+import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
+import { folderRepository } from "../repositories/folder.repository";
+import { tagRepository } from "../repositories/tag.repository";
 
 export class FolderUseCases {
+  constructor(
+    private readonly folderRepository: IFolderRepository,
+    private readonly tagRepository: ITagRepository,
+  ) {}
+
   async getFolders(userId: string, role: string, parentId: string | null) {
     const isAdmin = role === "ADMIN";
-    return folderRepository.findMany(userId, {
+    return this.folderRepository.findMany(userId, {
       where: {
         ...(isAdmin ? {} : { userId }),
         parentId: parentId || null,
@@ -16,9 +22,7 @@ export class FolderUseCases {
       },
       orderBy: { order: "asc" },
       include: {
-        _count: {
-          select: { documents: true, children: true },
-        },
+        _count: { select: { documents: true, children: true } },
       },
     });
   }
@@ -28,15 +32,13 @@ export class FolderUseCases {
     data: { name: string; parentId?: string | null; color?: string | null; icon?: string | null },
   ) {
     if (data.parentId) {
-      const parentFolder = await folderRepository.findById(data.parentId, userId);
-      if (!parentFolder) {
-        throw new NotFoundError();
-      }
+      const parentFolder = await this.folderRepository.findById(data.parentId, userId);
+      if (!parentFolder) throw new NotFoundError();
     }
 
-    const currentMaxOrder = await folderRepository.getMaxOrder(userId, data.parentId || null);
+    const currentMaxOrder = await this.folderRepository.getMaxOrder(userId, data.parentId || null);
 
-    return folderRepository.create({
+    return this.folderRepository.create({
       userId,
       name: data.name,
       parentId: data.parentId || null,
@@ -47,31 +49,25 @@ export class FolderUseCases {
   }
 
   async getFolderById(id: string, userId: string) {
-    const folder = await folderRepository.findById(id, userId, {
-      _count: {
-        select: { documents: true, children: true },
-      },
-      parent: {
-        select: { id: true, name: true },
-      },
+    const folder = await this.folderRepository.findById(id, userId, {
+      _count: { select: { documents: true, children: true } },
+      parent: { select: { id: true, name: true } },
     });
-
     if (!folder) throw new NotFoundError();
     return folder;
   }
 
   async renameFolder(id: string, userId: string, name: string) {
-    const folder = await folderRepository.findById(id, userId);
+    const folder = await this.folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
-
-    return folderRepository.update(id, userId, { name });
+    return this.folderRepository.update(id, userId, { name });
   }
 
   async deleteFolder(id: string, userId: string) {
-    const folder = await folderRepository.findById(id, userId);
+    const folder = await this.folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
 
-    const allUserFolders = await folderRepository.findMany(userId, {
+    const allUserFolders = await this.folderRepository.findMany(userId, {
       select: { id: true, parentId: true },
     });
 
@@ -99,7 +95,7 @@ export class FolderUseCases {
     const descendantIds = getDescendantIds(id);
     const allFolderIds = [id, ...descendantIds];
 
-    await prisma.$transaction(async (tx) => {
+    await this.folderRepository.transaction(async (tx) => {
       await tx.folder.updateMany({
         where: { id: { in: allFolderIds }, userId },
         data: { deletedAt: new Date() },
@@ -112,10 +108,10 @@ export class FolderUseCases {
   }
 
   async emptyFolder(id: string, userId: string) {
-    const folder = await folderRepository.findById(id, userId);
+    const folder = await this.folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
 
-    const [docsUpdated, subfoldersUpdated] = await prisma.$transaction(async (tx) => {
+    const [docsUpdated, subfoldersUpdated] = await this.folderRepository.transaction(async (tx) => {
       const docs = await tx.document.updateMany({
         where: { folderId: id, userId, deletedAt: null },
         data: { folderId: null },
@@ -131,17 +127,17 @@ export class FolderUseCases {
   }
 
   async moveFolder(id: string, userId: string, parentId?: string | null) {
-    const sourceFolder = await folderRepository.findById(id, userId);
+    const sourceFolder = await this.folderRepository.findById(id, userId);
     if (!sourceFolder) throw new NotFoundError();
 
     if (id === parentId) throw new AppError("مرجع دائري", "CIRCULAR_REFERENCE", 400);
 
     if (parentId) {
-      const targetFolder = await folderRepository.findById(parentId, userId);
+      const targetFolder = await this.folderRepository.findById(parentId, userId);
       if (!targetFolder) throw new AppError("المجلد الهدف غير موجود", "TARGET_NOT_FOUND", 404);
     }
 
-    const allUserFolders = await folderRepository.findMany(userId, {
+    const allUserFolders = await this.folderRepository.findMany(userId, {
       select: { id: true, parentId: true },
     });
 
@@ -171,30 +167,26 @@ export class FolderUseCases {
         throw new AppError("تم الوصول للحد الأقصى من العمق", "MAX_DEPTH_REACHED", 400);
     }
 
-    return folderRepository.update(id, userId, { parentId: parentId || null });
+    return this.folderRepository.update(id, userId, { parentId: parentId || null });
   }
 
   async restoreFolder(id: string, userId: string) {
-    const folderToRestore = await folderRepository.findWithDeleted(id, userId);
-
+    const folderToRestore = await this.folderRepository.findWithDeleted(id, userId);
     if (!folderToRestore) throw new NotFoundError();
     if (folderToRestore.parentId) {
-      const parent = await folderRepository.findById(folderToRestore.parentId, userId);
+      const parent = await this.folderRepository.findById(folderToRestore.parentId, userId);
       if (!parent) throw new AppError("المجلد الأصل محذوف", "PARENT_DELETED", 404);
     }
-
-    return folderRepository.restore(id, userId);
+    return this.folderRepository.restore(id, userId);
   }
 
   async getFolderTree(id: string, userId: string) {
-    const targetFolder = await folderRepository.findById(id, userId);
+    const targetFolder = await this.folderRepository.findById(id, userId);
     if (!targetFolder) throw new NotFoundError();
 
-    const allFolders = await folderRepository.findMany(userId, {
+    const allFolders = await this.folderRepository.findMany(userId, {
       orderBy: { order: "asc" },
-      include: {
-        _count: { select: { documents: true, children: true } },
-      },
+      include: { _count: { select: { documents: true, children: true } } },
     });
 
     const buildTree = (
@@ -223,17 +215,11 @@ export class FolderUseCases {
   }
 
   async getFolderTags(id: string, userId: string, role: string) {
-    const tags = await tagRepository.findFolderTags(userId, role, id === "root" ? null : id);
-
+    const tags = await this.tagRepository.findFolderTags(userId, role, id === "root" ? null : id);
     return tags
-      .map((t) => ({
-        id: t.id,
-        name: t.name,
-        color: t.color,
-        count: t._count.documents,
-      }))
+      .map((t) => ({ id: t.id, name: t.name, color: t.color, count: t._count.documents }))
       .sort((a, b) => b.count - a.count);
   }
 }
 
-export const folderUseCases = new FolderUseCases();
+export const folderUseCases = new FolderUseCases(folderRepository, tagRepository);
