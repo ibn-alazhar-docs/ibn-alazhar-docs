@@ -89,6 +89,7 @@ export async function checkRateLimit(
   pathname: string,
   request: Request,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  startCleanupIfNeeded();
   const rule = RATE_LIMITS[pathname];
   if (!rule) return { allowed: true };
 
@@ -151,6 +152,11 @@ export function cleanupExpiredEntries(): void {
   }
 }
 
-if (typeof setInterval !== "undefined") {
-  setInterval(cleanupExpiredEntries, 60_000);
+let cleanupStarted = false;
+function startCleanupIfNeeded(): void {
+  if (cleanupStarted) return;
+  cleanupStarted = true;
+  if (typeof setInterval !== "undefined") {
+    setInterval(cleanupExpiredEntries, 60_000);
+  }
 }
