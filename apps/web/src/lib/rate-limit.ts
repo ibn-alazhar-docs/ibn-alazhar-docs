@@ -1,4 +1,5 @@
 import type { Redis } from "ioredis";
+import { logger } from "@/lib/logger";
 
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 const MAX_MAP_SIZE = 10000;
@@ -47,14 +48,14 @@ async function getRedisClient(): Promise<Redis | null> {
         });
       }
       redisClient.on("error", (err: unknown) => {
-        console.error("Redis rate limit client error:", err);
+        logger.error(err, "Redis rate limit client error:");
         redisFailed = true;
         redisRetryAt = Date.now() + 30_000;
         redisClient = null;
       });
       return redisClient;
     } catch (e) {
-      console.error("Failed to initialize Redis rate limit client:", e);
+      logger.error(e, "Failed to initialize Redis rate limit client:");
       redisFailed = true;
       redisRetryAt = Date.now() + 30_000;
       return null;
@@ -120,7 +121,7 @@ export async function checkRateLimit(
         }
       }
     } catch (err) {
-      console.error("Redis rate limit check failed, falling back to memory:", err);
+      logger.error(err, "Redis rate limit check failed, falling back to memory:");
     }
   }
 
