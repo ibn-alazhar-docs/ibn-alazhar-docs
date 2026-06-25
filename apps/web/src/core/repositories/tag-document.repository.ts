@@ -10,9 +10,7 @@ export class TagDocumentRepository implements ITagDocumentRepository {
     return prisma.tagDocument.findMany({
       where: args.where,
       include: args.include,
-    }) as Promise<
-      (import("@prisma/client").TagDocument & { document?: Record<string, unknown> })[]
-    >;
+    }) as Promise<(import("@prisma/client").TagDocument & Record<string, unknown>)[]>;
   }
 
   async findManyByTagId(tagId: string, documentIds: string[]) {

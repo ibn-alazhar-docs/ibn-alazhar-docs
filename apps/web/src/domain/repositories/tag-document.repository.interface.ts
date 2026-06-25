@@ -5,7 +5,7 @@ export interface ITagDocumentRepository {
   findMany(args: {
     where: { documentId?: string; tagId?: string };
     include?: Prisma.TagDocumentInclude;
-  }): Promise<(TagDocument & { document?: Record<string, unknown> })[]>;
+  }): Promise<(TagDocument & Record<string, unknown>)[]>;
   findManyByTagId(tagId: string, documentIds: string[]): Promise<Pick<TagDocument, "documentId">[]>;
   createMany(data: { tagId: string; documentId: string }[]): Promise<BatchCount>;
   deleteMany(where: { tagId: string }): Promise<BatchCount>;
