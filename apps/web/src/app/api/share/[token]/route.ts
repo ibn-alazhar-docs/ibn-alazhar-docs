@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { validateShareAccess } from "@/lib/share-helpers";
+import { tagDocumentRepository, folderRepository } from "@/core/repositories";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const rateLimitResult = await checkRateLimit("/api/share", request);
@@ -53,7 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   };
 
   try {
-    const tags = await prisma.tagDocument.findMany({
+    const tags = await tagDocumentRepository.findMany({
       where: { documentId: share.documentId },
       include: { tag: { select: { name: true, color: true } } },
     });
@@ -85,9 +85,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     }
 
     const folder = share.document
-      ? await prisma.folder.findFirst({
-          where: { documents: { some: { id: share.documentId } } },
-          select: { name: true },
+      ? await folderRepository.findFirst({
+          documents: { some: { id: share.documentId } },
         })
       : null;
 
@@ -106,10 +105,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
         rawText,
       },
       metadata: {
-        tags: tags.map((td) => ({
-          name: td.tag.name,
-          color: td.tag.color,
-        })),
+        tags: tags.map((td) => {
+          const tag = td.tag as { name: string; color: string };
+          return { name: tag.name, color: tag.color };
+        }),
         folder: folder?.name ?? null,
         exportFormats: doc.outputFormats,
       },

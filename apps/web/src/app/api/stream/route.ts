@@ -1,15 +1,14 @@
 import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
-import { prisma } from "@/lib/prisma";
 import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
+import { documentRepository } from "@/core/repositories";
 
-async function getPrismaStatus(jobId: string): Promise<{ stage: string; progress: number } | null> {
+async function getDocumentStatus(
+  jobId: string,
+): Promise<{ stage: string; progress: number } | null> {
   try {
-    const doc = await prisma.document.findUnique({
-      where: { id: jobId },
-      select: { status: true },
-    });
+    const doc = await documentRepository.findFirst({ id: jobId }, { status: true });
     if (!doc) return null;
     const stage = normalizeStage(doc.status);
     const progress = DOC_PROGRESS_MAP[doc.status] ?? 0;
@@ -36,10 +35,10 @@ export async function GET(request: Request) {
       );
     }
 
-    const document = await prisma.document.findFirst({
-      where: { id: jobId, userId: session.user.id, deletedAt: null },
-      select: { id: true },
-    });
+    const document = await documentRepository.findFirst(
+      { id: jobId, userId: session.user.id, deletedAt: null },
+      { id: true },
+    );
     if (!document) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "غير مصرح" } },
@@ -124,7 +123,7 @@ export async function GET(request: Request) {
                 setTimeout(closeStream, 500);
               }
             } else {
-              const prismaStatus = await getPrismaStatus(jobId);
+              const prismaStatus = await getDocumentStatus(jobId);
 
               if (prismaStatus) {
                 if (prismaStatus.stage === "completed" || prismaStatus.stage === "failed") {
