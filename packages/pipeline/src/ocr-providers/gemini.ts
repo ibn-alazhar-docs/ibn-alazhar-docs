@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
+import { logger } from "../logger";
 
 export class GeminiOcrProvider implements OcrProvider {
   readonly name = "Gemini 1.5 Flash OCR";
@@ -75,9 +76,9 @@ IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this
     for (let i = 0; i < pageGetters.length; i += BATCH_SIZE) {
       const batchGetters = pageGetters.slice(i, i + BATCH_SIZE);
       try {
-        // eslint-disable-next-line no-console
-        console.log(
-          `[gemini] Processing batch pages ${i + 1} to ${i + batchGetters.length} of ${pageGetters.length}`,
+        logger.info(
+          "gemini",
+          `Processing batch pages ${i + 1} to ${i + batchGetters.length} of ${pageGetters.length}`,
         );
 
         const parts: Array<string | { inlineData: { data: string; mimeType: string } }> = [
@@ -110,9 +111,9 @@ IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[gemini] Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`,
+        logger.warn(
+          "gemini",
+          `Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`,
         );
         for (let j = 0; j < batchGetters.length; j++) {
           pages.push({ number: i + j + 1, text: "", confidence: 0.0 });

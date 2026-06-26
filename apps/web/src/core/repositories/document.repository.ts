@@ -5,11 +5,9 @@ import type { IDocumentRepository } from "@/domain/repositories/document.reposit
 
 export class DocumentRepository implements IDocumentRepository {
   async createDocument(data: CreateDocumentInput): Promise<Document> {
-    return this.createDocumentRaw(data as unknown as Prisma.DocumentUncheckedCreateInput);
-  }
-
-  async createDocumentRaw(data: Prisma.DocumentUncheckedCreateInput): Promise<Document> {
-    return prisma.document.create({ data });
+    return prisma.document.create({
+      data: data as unknown as Prisma.DocumentUncheckedCreateInput,
+    });
   }
 
   async findDocumentById(id: string, userId: string, include?: Prisma.DocumentInclude) {
@@ -39,13 +37,6 @@ export class DocumentRepository implements IDocumentRepository {
     return prisma.document.update({
       where: { id, userId },
       data: data as unknown as Prisma.DocumentUncheckedUpdateInput,
-    });
-  }
-
-  async updateRaw(id: string, userId: string, data: Prisma.DocumentUncheckedUpdateInput) {
-    return prisma.document.update({
-      where: { id, userId },
-      data,
     });
   }
 

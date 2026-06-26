@@ -3,8 +3,7 @@ import { MAX_TAGS_PER_USER } from "@/lib/validators/tag";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
-import { tagRepository } from "../repositories/tag.repository";
-import { tagDocumentRepository } from "../repositories/tag-document.repository";
+import { prisma } from "@/lib/prisma";
 
 export class TagUseCases {
   constructor(
@@ -88,17 +87,16 @@ export class TagUseCases {
     const existingDocIds = new Set(existingTarget.map((td) => td.documentId));
     const newDocIds = sourceDocs.map((td) => td.documentId).filter((id) => !existingDocIds.has(id));
 
-    if (newDocIds.length > 0) {
-      await this.tagDocumentRepository.createMany(
-        newDocIds.map((documentId) => ({ tagId: targetTagId, documentId })),
-      );
-    }
-
-    await this.tagDocumentRepository.deleteMany({ tagId: sourceTagId });
-    await this.tagRepository.delete(sourceTagId);
+    await prisma.$transaction(async (tx) => {
+      if (newDocIds.length > 0) {
+        await tx.tagDocument.createMany({
+          data: newDocIds.map((documentId) => ({ tagId: targetTagId, documentId })),
+        });
+      }
+      await tx.tagDocument.deleteMany({ where: { tagId: sourceTagId } });
+      await tx.tag.delete({ where: { id: sourceTagId } });
+    });
 
     return { affectedDocuments: newDocIds.length };
   }
 }
-
-export const tagUseCases = new TagUseCases(tagRepository, tagDocumentRepository);

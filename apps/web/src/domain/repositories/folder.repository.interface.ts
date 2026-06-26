@@ -12,12 +12,15 @@ export interface IFolderRepository {
     options?: Prisma.FolderFindManyArgs,
   ): Promise<Folder[]>;
   create(data: CreateFolderInput): Promise<Folder>;
-  createRaw(data: Prisma.FolderUncheckedCreateInput): Promise<Folder>;
-  update(id: string, userId: string, data: Prisma.FolderUncheckedUpdateInput): Promise<Folder>;
+  update(
+    id: string,
+    userId: string,
+    data: { name?: string; parentId?: string | null },
+  ): Promise<Folder>;
   updateMany(
     where: Prisma.FolderWhereInput,
-    data: Prisma.FolderUncheckedUpdateInput,
-  ): Promise<Prisma.BatchPayload>;
+    data: { parentId?: string | null; order?: number },
+  ): Promise<{ count: number }>;
   softDelete(id: string, userId: string): Promise<Folder>;
   restore(id: string, userId: string): Promise<Folder>;
   getMaxOrder(userId: string, parentId: string | null): Promise<number>;

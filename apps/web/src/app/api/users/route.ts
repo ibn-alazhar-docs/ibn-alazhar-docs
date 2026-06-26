@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { withAuth, isAdmin } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { adminUserUpdateSchema } from "@/lib/validators/auth";
-import { userUseCases } from "@/core/use-cases/user.use-cases";
+import { useCases } from "@/core/composition-root";
+import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
+import type { Role } from "@/domain/auth";
 
 export const GET = withAuth(async (_request, { session }) => {
   try {
@@ -13,7 +15,7 @@ export const GET = withAuth(async (_request, { session }) => {
       );
     }
 
-    const users = await userUseCases.getUsers();
+    const users = await useCases.user.getUsers();
     return NextResponse.json({ users });
   } catch (error: unknown) {
     return handleRouteError(error, "users/GET", "فشل الحصول على المستخدمين");
@@ -39,11 +41,20 @@ export const PATCH = withAuth(async (request, { session }) => {
       );
     }
 
-    const user = await userUseCases.updateUserRole(
+    const user = await useCases.user.updateUserRole(
       validation.data.userId,
-      validation.data.role,
+      validation.data.role as Role,
       session.user.id,
     );
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.USER_ROLE_CHANGE,
+      entity: "user",
+      entityId: validation.data.userId,
+      metadata: { newRole: validation.data.role },
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
     return NextResponse.json({ user });
   } catch (error: unknown) {
     return handleRouteError(error, "users/PATCH", "فشل تحديث المستخدم");
@@ -67,7 +78,15 @@ export const DELETE = withAuth(async (request, { session }) => {
       );
     }
 
-    await userUseCases.deleteUser(userId, session.user.id);
+    await useCases.user.deleteUser(userId, session.user.id);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.USER_DELETE,
+      entity: "user",
+      entityId: userId,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     return handleRouteError(error, "users/DELETE", "فشل حذف المستخدم");

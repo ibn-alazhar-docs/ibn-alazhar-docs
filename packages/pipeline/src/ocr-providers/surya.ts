@@ -3,6 +3,7 @@ import { mkdtemp, writeFile, unlink, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
+import { logger } from "../logger";
 import type { OcrProvider } from "./types";
 import { getPythonCommand } from "./types";
 
@@ -119,7 +120,10 @@ export class SuryaOcrProvider implements OcrProvider {
       }
 
       if (pageErrors.length > 0) {
-        console.warn(`[ocr-provider:surya] Page-level failures for ${fileName}:`, pageErrors);
+        logger.warn(
+          "ocr-provider:surya",
+          `Page-level failures for ${fileName}: ${JSON.stringify(pageErrors)}`,
+        );
       }
 
       return {

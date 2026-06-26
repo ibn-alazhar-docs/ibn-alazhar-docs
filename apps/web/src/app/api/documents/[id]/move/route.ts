@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 const moveSchema = z.object({
   folderId: z.string().nullable(),
@@ -24,7 +24,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   const { folderId } = validation.data;
 
   try {
-    const updated = await documentUseCases.moveDocument(id, session.user.id, folderId);
+    const updated = await useCases.documentMove.moveDocument(id, session.user.id, folderId);
     return NextResponse.json({
       success: true,
       document: updated,

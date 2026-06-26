@@ -30,13 +30,6 @@ export class ConflictError extends AppError {
   }
 }
 
-export class AuthorizationError extends AppError {
-  constructor(message = "Unauthorized") {
-    super(message, "UNAUTHORIZED", 401);
-    this.name = "AuthorizationError";
-  }
-}
-
 export class ForbiddenError extends AppError {
   constructor(message = "ليس لديك صلاحية للوصول") {
     super(message, "FORBIDDEN", 403);
@@ -50,9 +43,6 @@ export function getErrorMessage(error: unknown): string {
   if (typeof error === "string") return error;
   return "UNKNOWN_ERROR";
 }
-
-export type Role = "ADMIN" | "STUDENT" | "TEACHER";
-export const ROLE_VALUES = ["ADMIN", "STUDENT", "TEACHER"] as const;
 
 export function getErrorStatusCode(error: unknown): number {
   if (error instanceof AppError) return error.statusCode;

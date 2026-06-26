@@ -4,7 +4,7 @@ import type {
   UserListItem,
   UserRoleUpdate,
 } from "@/domain/repositories/user.repository.interface";
-import type { Role } from "@/lib/errors";
+import type { Role } from "@/domain/auth";
 import type { Prisma } from "@prisma/client";
 
 export class UserRepository implements IUserRepository {

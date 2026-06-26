@@ -1,9 +1,12 @@
-import { prisma } from "@/lib/prisma";
-import { NotFoundError, ValidationError, type Role } from "@/lib/errors";
+import { NotFoundError, ValidationError } from "@/lib/errors";
+import type { Role } from "@/domain/auth";
+import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 
 export class UserUseCases {
+  constructor(private readonly userRepository: IUserRepository) {}
+
   async getUsers() {
-    return prisma.user.findMany({
+    return this.userRepository.findMany({
       where: { deletedAt: null },
       select: {
         id: true,
@@ -22,17 +25,13 @@ export class UserUseCases {
       throw new ValidationError("Cannot change your own role");
     }
 
-    const userExists = await prisma.user.findFirst({
+    const userExists = await this.userRepository.findFirst({
       where: { id: userId, deletedAt: null },
       select: { id: true },
     });
     if (!userExists) throw new NotFoundError("المستخدم غير موجود");
 
-    return prisma.user.update({
-      where: { id: userId },
-      data: { role },
-      select: { id: true, name: true, email: true, role: true },
-    });
+    return this.userRepository.updateRole(userId, role);
   }
 
   async deleteUser(userId: string, adminUserId: string) {
@@ -40,17 +39,12 @@ export class UserUseCases {
       throw new ValidationError("Cannot delete yourself");
     }
 
-    const userExists = await prisma.user.findFirst({
+    const userExists = await this.userRepository.findFirst({
       where: { id: userId, deletedAt: null },
       select: { id: true },
     });
     if (!userExists) throw new NotFoundError("المستخدم غير موجود");
 
-    await prisma.user.update({
-      where: { id: userId },
-      data: { deletedAt: new Date() },
-    });
+    await this.userRepository.softDelete(userId);
   }
 }
-
-export const userUseCases = new UserUseCases();

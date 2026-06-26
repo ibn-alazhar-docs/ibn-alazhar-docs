@@ -2,6 +2,13 @@ import fs from "node:fs";
 import { promises as fsPromises } from "node:fs";
 import path from "node:path";
 import { cache } from "react";
+import { JOURNEY_DEFINITIONS } from "./content/journeys-data";
+import {
+  CATEGORY_LABELS,
+  CATEGORY_DESCRIPTIONS,
+  CATEGORY_ICONS,
+  THEME_LABELS,
+} from "./content/i18n-data";
 
 function resolveContentDir(): string {
   const fromCwd = path.join(process.cwd(), "content");
@@ -172,66 +179,18 @@ export async function getDocBySlug(locale: string, slug: string): Promise<DocEnt
 }
 
 export function getCategoryLabel(id: string, locale: string): string {
-  const labels: Record<string, Record<string, string>> = {
-    introduction: {
-      ar: "مقدمة",
-      en: "Introduction",
-    },
-    organization: {
-      ar: "تنظيم المعرفة",
-      en: "Knowledge Organization",
-    },
-    "talab-alilm": {
-      ar: "طلب العلم",
-      en: "Seeking Knowledge",
-    },
-  };
-  return labels[id]?.[locale] ?? id;
+  return CATEGORY_LABELS[id]?.[locale] ?? id;
 }
 
 export function getCategoryDescription(id: string, locale: string): string {
-  const descriptions: Record<string, Record<string, string>> = {
-    introduction: {
-      ar: "مستندات تعريفية بالمنصة ورؤيتها ومنهجية العمل، تمنح القارئ فهمًا متكاملاً لأساسيات ابن الأزهر دوكس.",
-      en: "Introductory documents about the platform, its vision, and work methodology, giving readers a comprehensive understanding of Ibn Al-Azhar Docs foundations.",
-    },
-    organization: {
-      ar: "نظام تصنيف المعرفة وتنظيم المحتوى، يشرح كيفية هيكلة المواد العلمية وتصنيفها وتنظيمها في المكتبة.",
-      en: "Knowledge classification and content organization system, explaining how scholarly materials are structured, classified, and organized in the library.",
-    },
-    "talab-alilm": {
-      ar: "مجموعة متكاملة من المستندات حول فقه طلب العلم ومنهجيته، من فضل العلم وأولوياته إلى آدابه وطرق التأليف والتصنيف. رحلة معرفية من التأسيس إلى التركيب.",
-      en: "A comprehensive collection of documents on the fiqh of seeking knowledge and its methodology, from the virtue and priorities of knowledge to its etiquette and methods of authorship. An intellectual journey from foundation to synthesis.",
-    },
-  };
-  return descriptions[id]?.[locale] ?? "";
+  return CATEGORY_DESCRIPTIONS[id]?.[locale] ?? "";
 }
 
 export function getCategoryIcon(id: string): string {
-  const icons: Record<string, string> = {
-    introduction: "I",
-    organization: "O",
-    "talab-alilm": "T",
-  };
-  return icons[id] ?? "-";
+  return CATEGORY_ICONS[id] ?? "-";
 }
 
 export async function getCategoryThemes(id: string, locale: string): Promise<ThematicGroup[]> {
-  const themeLabels: Record<string, Record<string, string>> = {
-    methodology: { ar: "منهجية", en: "Methodology" },
-    principles: { ar: "مبادئ", en: "Principles" },
-    workflow: { ar: "سير العمل", en: "Workflow" },
-    taxonomy: { ar: "تصنيف", en: "Taxonomy" },
-    standards: { ar: "معايير", en: "Standards" },
-    overview: { ar: "نظرة عامة", en: "Overview" },
-    foundational: { ar: "تأسيسي", en: "Foundational" },
-    intermediate: { ar: "متوسط", en: "Intermediate" },
-    advanced: { ar: "متقدم", en: "Advanced" },
-    synthesis: { ar: "تركيبي", en: "Synthesis" },
-    fiqh: { ar: "فقه", en: "Fiqh" },
-    ethics: { ar: "آداب", en: "Ethics" },
-    heritage: { ar: "تراث", en: "Heritage" },
-  };
 
   const all = await getAllDocs(locale);
   const categoryDocs = all.filter((d) => d.category === id);
@@ -249,7 +208,7 @@ export async function getCategoryThemes(id: string, locale: string): Promise<The
   return Array.from(groups.entries())
     .map(([theme, docs]) => ({
       theme,
-      label: themeLabels[theme]?.[locale] ?? theme,
+      label: THEME_LABELS[theme]?.[locale] ?? theme,
       docs,
     }))
     .sort((a, b) => b.docs.length - a.docs.length);
@@ -321,103 +280,7 @@ export async function getContinuationDoc(
 export async function getJourneys(locale: string): Promise<JourneyEntry[]> {
   const all = await getAllDocs(locale);
 
-  const definitions: {
-    slug: string;
-    title: Record<string, string>;
-    description: Record<string, string>;
-    icon: string;
-    docSlugs: string[];
-  }[] = [
-    {
-      slug: "beginner-path",
-      title: { ar: "طريق المبتدئ", en: "Beginner's Path" },
-      description: {
-        ar: "مسيرة قراءة منظمة للقادم الجديد إلى المنصة، تبدأ من التعريف العام وصولًا إلى فهم نظام التصنيف.",
-        en: "An organized reading journey for newcomers, starting with the general overview and progressing to understanding the classification system.",
-      },
-      icon: "01",
-      docSlugs: [
-        "doc-001-platform-overview",
-        "doc-002-methodology-principles",
-        "doc-003-knowledge-taxonomies",
-      ],
-    },
-    {
-      slug: "methodology-path",
-      title: { ar: "منهجية التوثيق", en: "Documentation Methodology" },
-      description: {
-        ar: "رحلة متعمقة في منهجية التوثيق العلمي، من المبادئ الأساسية إلى معايير الجودة والتحقيق.",
-        en: "An in-depth journey into scholarly documentation methodology, from core principles to quality standards and verification.",
-      },
-      icon: "02",
-      docSlugs: ["doc-002-methodology-principles", "doc-001-platform-overview"],
-    },
-    {
-      slug: "knowledge-organization",
-      title: { ar: "تنظيم المعرفة", en: "Knowledge Organization" },
-      description: {
-        ar: "استكشاف نظام تصنيف المعرفة في المنصة، من التقسيم الهرمي إلى معايير التصنيف.",
-        en: "Exploring the knowledge classification system, from hierarchical division to classification standards.",
-      },
-      icon: "03",
-      docSlugs: ["doc-003-knowledge-taxonomies", "doc-002-methodology-principles"],
-    },
-    {
-      slug: "quest-foundational",
-      title: { ar: "المسار التأسيسي", en: "Foundational Path" },
-      description: {
-        ar: "مدخل إلى فقه طلب العلم: فضل العلم، فقه الأولويات، والتمييز بين علوم المقاصد وعلوم الآلة.",
-        en: "An introduction to the fiqh of seeking knowledge: the virtue of knowledge, priority fiqh, and distinguishing purposive from instrumental sciences.",
-      },
-      icon: "04",
-      docSlugs: ["quest-001-fadl-alilm", "quest-002-priority-fiqh", "quest-003-alat-waqasd"],
-    },
-    {
-      slug: "quest-methodology",
-      title: { ar: "منهجية الطلب", en: "Learning Methodology" },
-      description: {
-        ar: "منهج التدرج وآداب الطلب: كيف يبني طالب العلم مسيرته التعليمية خطوة بخطوة.",
-        en: "The method of gradual progression and the etiquette of learning: how a student builds their educational journey step by step.",
-      },
-      icon: "05",
-      docSlugs: ["quest-002-priority-fiqh", "quest-004-tadarruj", "quest-005-adab-alilm"],
-    },
-    {
-      slug: "quest-specialization",
-      title: { ar: "التخصص والتركيب", en: "Specialization & Synthesis" },
-      description: {
-        ar: "من التوازن بين التخصص والشمول إلى التأليف والتصنيف ونموذج عملي لطلب العلم.",
-        en: "From balancing specialization and breadth to authorship, classification, and a practical model for seeking knowledge.",
-      },
-      icon: "06",
-      docSlugs: [
-        "quest-003-alat-waqasd",
-        "quest-006-tawazun",
-        "quest-007-talif",
-        "quest-008-namudhaj",
-      ],
-    },
-    {
-      slug: "quest-complete",
-      title: { ar: "الرحلة الكاملة", en: "Complete Journey" },
-      description: {
-        ar: "الرحلة المتكاملة في فقه طلب العلم: من البدايات إلى التأليف والنماذج العملية.",
-        en: "The complete journey in the fiqh of seeking knowledge: from beginnings to authorship and practical models.",
-      },
-      icon: "07",
-      docSlugs: [
-        "quest-001-fadl-alilm",
-        "quest-002-priority-fiqh",
-        "quest-003-alat-waqasd",
-        "quest-004-tadarruj",
-        "quest-005-adab-alilm",
-        "quest-006-tawazun",
-        "quest-007-talif",
-        "quest-008-namudhaj",
-      ],
-    },
-  ];
-
+  const definitions = JOURNEY_DEFINITIONS;
   return definitions.map((def) => {
     const docs = def.docSlugs
       .map((slug) => all.find((d) => d.slug === slug))
@@ -443,37 +306,6 @@ export async function getJourney(slug: string, locale: string): Promise<JourneyE
 export async function getDocJourneys(locale: string, docSlug: string): Promise<JourneyEntry[]> {
   const journeys = await getJourneys(locale);
   return journeys.filter((j) => j.docs.some((d) => d.slug === docSlug));
-}
-
-export interface SearchIndexEntry {
-  id: string;
-  title: string;
-  subtitle: string;
-  category: string;
-  categoryLabel: string;
-  slug: string;
-  path: string;
-  readingTime: number;
-  date: string;
-  themes: string[];
-}
-
-export async function generateSearchIndex(locale: string): Promise<SearchIndexEntry[]> {
-  const all = await getAllDocs(locale);
-  return all
-    .filter((d) => d.metadata.id)
-    .map((doc) => ({
-      id: doc.metadata.id,
-      title: doc.metadata.title,
-      subtitle: doc.metadata.subtitle,
-      category: doc.category,
-      categoryLabel: getCategoryLabel(doc.category, locale),
-      slug: doc.slug,
-      path: `/${locale}/docs/${doc.category}/${doc.slug}`,
-      readingTime: doc.metadata.readingTime,
-      date: doc.metadata.date,
-      themes: doc.metadata.themes ?? [],
-    }));
 }
 
 export async function getRecentDocs(locale: string, limit: number = 4): Promise<DocEntry[]> {

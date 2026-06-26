@@ -1,27 +1,13 @@
 import { NextResponse } from "next/server";
-import { withAuth, ownedWhere } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { prisma } from "@/lib/prisma";
+import { useCases } from "@/core/composition-root";
 
 export const DELETE = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    const share = await prisma.shareLink.findFirst({
-      where: ownedWhere({ documentId: id }, session),
-    });
-
-    if (!share) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Share link not found" } },
-        { status: 404 },
-      );
-    }
-
-    await prisma.shareLink.delete({
-      where: { id: share.id },
-    });
-
+    await useCases.documentShare.deleteShareLink(id, session.user.id);
     return NextResponse.json({ success: true, message: "Sharing disabled" });
   } catch (error: unknown) {
     return handleRouteError(

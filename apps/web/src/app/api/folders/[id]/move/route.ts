@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { moveFolderSchema } from "@/lib/validators/folder";
-import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 
 export const POST = withAuth(async (request, { session, params }) => {
@@ -25,7 +25,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     }
 
     const { parentId } = validation.data;
-    const updated = await folderUseCases.moveFolder(id, session.user.id, parentId);
+    const updated = await useCases.folder.moveFolder(id, session.user.id, parentId);
     return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/move/POST", "فشل نقل المجلد");

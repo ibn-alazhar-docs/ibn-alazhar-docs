@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import bcrypt from "bcryptjs";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { prisma } from "@/lib/prisma";
+import { AppError } from "@/lib/errors";
 import { profileUpdateSchema } from "@/lib/validators/auth";
+import { profileUseCases } from "@/core/use-cases/profile.use-cases";
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1),
@@ -23,13 +23,7 @@ export const PATCH = withAuth(async (request, { session }) => {
       );
     }
 
-    const { name } = validation.data;
-
-    const user = await prisma.user.update({
-      where: { id: session.user.id },
-      data: { name },
-      select: { id: true, name: true, email: true, role: true },
-    });
+    const user = await profileUseCases.updateProfile(session.user.id, validation.data.name);
 
     return NextResponse.json({ user });
   } catch (error: unknown) {
@@ -49,33 +43,16 @@ export const DELETE = withAuth(async (request, { session }) => {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { passwordHash: true },
-    });
-
-    if (!user) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "المستخدم غير موجود" } },
-        { status: 404 },
-      );
-    }
-
-    const valid = await bcrypt.compare(parsed.data.password, user.passwordHash ?? "");
-    if (!valid) {
-      return NextResponse.json(
-        { error: { code: "UNAUTHORIZED", message: "كلمة المرور غير صحيحة" } },
-        { status: 401 },
-      );
-    }
-
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { deletedAt: new Date() },
-    });
+    await profileUseCases.deleteAccount(session.user.id, parsed.data.password);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message } },
+        { status: error.statusCode },
+      );
+    }
     return handleRouteError(error, "profile", "فشل حذف الحساب");
   }
 });

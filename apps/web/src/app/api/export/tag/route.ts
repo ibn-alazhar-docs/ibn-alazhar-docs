@@ -1,91 +1,35 @@
 import { NextResponse } from "next/server";
-import { withAuth, ownedWhere, isAdmin } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { prisma } from "@/lib/prisma";
-import { tagExportSchema } from "@/lib/export/validators";
 import { contentDispositionHeader } from "@/lib/export/profiles";
-import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
+import { tagExportSchema } from "@/lib/export/validators";
+import { useCases } from "@/core/composition-root";
+import { NotFoundError, AppError } from "@/lib/errors";
 
 export const POST = withAuth(async (request, { session }) => {
-  const body = await request.json();
-  const parsed = tagExportSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid data",
-          details: parsed.error.issues,
-        },
-      },
-      { status: 400 },
-    );
-  }
-
-  const { tagId, format, profile, includeSource } = parsed.data;
-
   try {
-    const tag = await prisma.tag.findFirst({
-      where: ownedWhere({ id: tagId }, session),
-    });
+    const body = await request.json();
+    const parsed = tagExportSchema.safeParse(body);
 
-    if (!tag) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "Tag not found" } },
-        { status: 404 },
-      );
-    }
-
-    const tagDocs = await prisma.tagDocument.findMany({
-      where: { tagId },
-      include: { document: true },
-    });
-
-    type DocData = {
-      id: string;
-      userId: string;
-      deletedAt: Date | null;
-      title: string;
-      description: string | null;
-      fileName: string;
-      originalName: string;
-      mimeType: string;
-      fileSize: bigint;
-      pageCount: number | null;
-      outputFormats: string[];
-      language: string | null;
-      isRtl: boolean;
-      createdAt: Date;
-      updatedAt: Date;
-      status: string;
-      folderId: string | null;
-    };
-    const allTagDocEntries = tagDocs as unknown as Array<{ document: DocData }>;
-    const allDocuments = allTagDocEntries.map((td) => td.document);
-    const documents = allDocuments.filter(
-      (doc) => doc.deletedAt === null && (isAdmin(session) || doc.userId === session.user.id),
-    ) as DocData[];
-
-    if (documents.length === 0) {
-      return NextResponse.json(
-        { error: { code: "NOT_FOUND", message: "No documents with this tag" } },
-        { status: 404 },
-      );
-    }
-
-    if (format !== "zip") {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Tag export requires ZIP" } },
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid data",
+            details: parsed.error.issues,
+          },
+        },
         { status: 400 },
       );
     }
 
-    const { zipBuffer, zipName } = await executeBulkExport(
-      documents,
-      { userId: session.user.id, includeSource, profile },
-      "exp_tag",
-      `Tag_${tag.name}_${new Date().toISOString().split("T")[0]}.zip`,
+    const { tagId, format, profile, includeSource } = parsed.data;
+
+    const { zipBuffer, zipName } = await useCases.export.exportByTag(
+      tagId,
+      { format, profile, includeSource },
+      session,
     );
 
     return new NextResponse(new Uint8Array(zipBuffer), {
@@ -95,6 +39,12 @@ export const POST = withAuth(async (request, { session }) => {
       },
     });
   } catch (error: unknown) {
+    if (error instanceof NotFoundError || error instanceof AppError) {
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message } },
+        { status: error.statusCode },
+      );
+    }
     return handleRouteError(error, "export/tag", "فشل تصدير الوسم");
   }
 });

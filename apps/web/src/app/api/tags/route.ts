@@ -2,11 +2,12 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { createTagSchema } from "@/lib/validators/tag";
-import { tagUseCases } from "@/core/use-cases/tag.use-cases";
+import { useCases } from "@/core/composition-root";
+import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 
 export const GET = withAuth(async (_request, { session }) => {
   try {
-    const tags = await tagUseCases.getTags(session);
+    const tags = await useCases.tag.getTags(session);
     return NextResponse.json({ tags });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/GET", "فشل الحصول على الوسوم");
@@ -25,7 +26,16 @@ export const POST = withAuth(async (request, { session }) => {
       );
     }
 
-    const tag = await tagUseCases.createTag(validation.data.name, validation.data.color, session);
+    const tag = await useCases.tag.createTag(validation.data.name, validation.data.color, session);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.TAG_CREATE,
+      entity: "tag",
+      entityId: tag.id,
+      metadata: { name: validation.data.name },
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
     return NextResponse.json({ tag }, { status: 201 });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/POST", "فشل إنشاء الوسم");

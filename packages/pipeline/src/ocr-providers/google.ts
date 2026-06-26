@@ -2,6 +2,7 @@ import { drive_v3 } from "@googleapis/drive";
 import type { PipelineConfig, OcrEngineType, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
 import { estimateConfidence, toOcrPageResult } from "./types";
+import { logger } from "../logger";
 
 let driveClient: drive_v3.Drive | null = null;
 let lastGoogleEmail = "";
@@ -71,9 +72,9 @@ export class GoogleDriveOcrProvider implements OcrProvider {
         } catch (err: unknown) {
           lastErr = err;
           const msg = err instanceof Error ? err.message : String(err);
-          console.warn(
-            `[ocr-provider:google] Export attempt ${attempt}/5 failed for file ${fileId}:`,
-            msg,
+          logger.warn(
+            "ocr-provider:google",
+            `Export attempt ${attempt}/5 failed for file ${fileId}: ${msg}`,
           );
           if (attempt < 5) {
             await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt - 1)));
@@ -178,7 +179,10 @@ export class GoogleDriveOcrProvider implements OcrProvider {
     const confidence = estimateConfidence(fullText);
 
     if (errors.length > 0) {
-      console.warn(`[ocr-provider:google] Page-level failures for ${fileName}:`, errors);
+      logger.warn(
+        "ocr-provider:google",
+        `Page-level failures for ${fileName}: ${JSON.stringify(errors)}`,
+      );
     }
 
     return {

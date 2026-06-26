@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 const bulkMoveSchema = z.object({
   documentIds: z.array(z.string().min(1)).min(1).max(50),
@@ -33,7 +33,11 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   try {
-    const moved = await documentUseCases.bulkMoveDocuments(documentIds, session.user.id, folderId);
+    const moved = await useCases.documentMove.bulkMoveDocuments(
+      documentIds,
+      session.user.id,
+      folderId,
+    );
     return NextResponse.json({
       success: true,
       moved,

@@ -1,14 +1,14 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    const updated = await documentUseCases.regenerateShareLink(id, session.user.id);
-    const document = await documentUseCases.getDocumentById(id, session.user.id);
+    const updated = await useCases.documentShare.regenerateShareLink(id, session.user.id);
+    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
 
     const url = `/share/${updated.token}`;
 

@@ -1,6 +1,5 @@
 import { ValidationError } from "@/lib/errors";
-import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
-import { searchRepository } from "@/domain/repositories/search.repository.interface";
+import { SearchRepository, type SearchDocumentRow } from "@/core/repositories/search.repository";
 
 const MIN_QUERY_LENGTH = 2;
 const DEFAULT_PAGE_LIMIT = 20;
@@ -34,7 +33,7 @@ export interface SearchResult {
 }
 
 export class SearchUseCases {
-  constructor(private readonly searchRepository: ISearchRepository) {}
+  constructor(private readonly searchRepository: SearchRepository) {}
 
   private normalizeArabic(text: string): string {
     return text
@@ -62,110 +61,26 @@ export class SearchUseCases {
     if (!normalizedQuery) throw new ValidationError("Invalid search query");
 
     const isAdmin = role === "ADMIN";
-    let whereClause = isAdmin
-      ? `d."deletedAt" IS NULL`
-      : `d."userId" = $1 AND d."deletedAt" IS NULL`;
-    const params: (string | number)[] = isAdmin ? [] : [userId];
-    let paramIndex = isAdmin ? 1 : 2;
 
-    if (type === "title") {
-      whereClause += ` AND (d.searchvector @@ plainto_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%')`;
-      params.push(normalizedQuery, query);
-      paramIndex += 2;
-    } else if (type === "folder") {
-      whereClause += ` AND f.name ILIKE $${paramIndex}`;
-      params.push(`%${query}%`);
-      paramIndex++;
-    } else {
-      whereClause += ` AND (d.searchvector @@ plainto_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%' OR d.searchpreview ILIKE '%' || $${paramIndex + 2} || '%')`;
-      params.push(normalizedQuery, query, query);
-      paramIndex += 3;
-    }
+    const searchParams = {
+      userId,
+      isAdmin,
+      normalizedQuery,
+      rawQuery: query,
+      type,
+      folderId,
+      status,
+      tagId,
+      limit,
+      offset,
+    };
 
-    if (folderId) {
-      whereClause += ` AND d."folderId" = $${paramIndex}`;
-      params.push(folderId);
-      paramIndex++;
-    }
+    const [total, rows] = await Promise.all([
+      this.searchRepository.countDocuments(searchParams),
+      this.searchRepository.searchDocuments(searchParams),
+    ]);
 
-    if (status) {
-      whereClause += ` AND d.status = $${paramIndex}`;
-      params.push(status);
-      paramIndex++;
-    }
-
-    let tagJoin = "";
-    if (tagId) {
-      tagJoin = `INNER JOIN tag_documents td ON d.id = td."documentId" AND td."tagId" = $${paramIndex}`;
-      params.push(tagId);
-      paramIndex++;
-    }
-
-    const countQuery = `
-      SELECT COUNT(*) as total
-      FROM documents d
-      LEFT JOIN folders f ON d."folderId" = f.id
-      ${tagJoin}
-      WHERE ${whereClause}
-    `;
-
-    const countResult = await this.searchRepository.queryRaw<{ total: bigint }[]>(
-      countQuery,
-      ...params,
-    );
-    const total = Number(countResult[0]?.total || 0);
-
-    const searchParamsList = params;
-    const tsQueryIndex = searchParamsList.indexOf(normalizedQuery) + 1;
-    const rankClause =
-      tsQueryIndex > 0
-        ? `ts_rank(d.searchvector, plainto_tsquery('simple', $${tsQueryIndex}))`
-        : `0.0`;
-
-    const searchQuery = `
-      SELECT
-        d.id,
-        d.title,
-        d."fileName",
-        d.status,
-        d."pageCount",
-        d."fileSize",
-        d."outputFormats",
-        d."createdAt",
-        d."folderId",
-        d.searchpreview,
-        d.wordcount,
-        ${rankClause} AS rank,
-        f.name as "folderName"
-      FROM documents d
-      LEFT JOIN folders f ON d."folderId" = f.id
-      ${tagJoin}
-      WHERE ${whereClause}
-      ORDER BY rank DESC, d."createdAt" DESC
-      LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
-    `;
-
-    params.push(limit, offset);
-
-    const results = await this.searchRepository.queryRaw<
-      {
-        id: string;
-        title: string;
-        fileName: string;
-        status: string;
-        pageCount: number | null;
-        fileSize: number;
-        outputFormats: string[];
-        createdAt: Date;
-        folderId: string | null;
-        searchpreview: string | null;
-        wordcount: number | null;
-        rank: number;
-        folderName: string | null;
-      }[]
-    >(searchQuery, ...params);
-
-    const formattedResults: SearchResult[] = results.map((r) => {
+    const formattedResults: SearchResult[] = rows.map((r) => {
       let excerpt = r.searchpreview || "";
       if (excerpt.length > EXCERPT_MAX_LENGTH) {
         const lowerQ = normalizedQuery.toLowerCase();
@@ -216,43 +131,11 @@ export class SearchUseCases {
   async getSuggestions(userId: string, query: string) {
     if (!query || query.trim().length < 2) return [];
 
-    const titleSuggestions = await this.searchRepository.queryRaw<
-      { text: string; type: string; count: bigint }[]
-    >(
-      `SELECT DISTINCT title as text, 'title' as type, COUNT(*) as count
-       FROM documents
-       WHERE "userId" = $1 AND "deletedAt" IS NULL
-         AND normalize_arabic(title) ILIKE normalize_arabic($2)
-       GROUP BY title LIMIT 5`,
-      userId,
-      `%${query}%`,
-    );
-
-    const folderSuggestions = await this.searchRepository.queryRaw<
-      { text: string; type: string; count: bigint }[]
-    >(
-      `SELECT DISTINCT name as text, 'folder' as type, COUNT(*) as count
-       FROM folders
-       WHERE "userId" = $1 AND "deletedAt" IS NULL
-         AND normalize_arabic(name) ILIKE normalize_arabic($2)
-       GROUP BY name LIMIT 3`,
-      userId,
-      `%${query}%`,
-    );
-
-    const tagSuggestions = await this.searchRepository.queryRaw<
-      { text: string; type: string; count: bigint; id: string }[]
-    >(
-      `SELECT DISTINCT t.name as text, 'tag' as type, COUNT(td."documentId") as count, t.id
-       FROM tags t
-       LEFT JOIN tag_documents td ON t.id = td."tagId"
-       WHERE t."userId" = $1
-         AND normalize_arabic(t.name) ILIKE normalize_arabic($2)
-       GROUP BY t.id, t.name
-       ORDER BY count DESC LIMIT 3`,
-      userId,
-      `%${query}%`,
-    );
+    const [titleSuggestions, folderSuggestions, tagSuggestions] = await Promise.all([
+      this.searchRepository.getTitleSuggestions(userId, query),
+      this.searchRepository.getFolderSuggestions(userId, query),
+      this.searchRepository.getTagSuggestions(userId, query),
+    ]);
 
     return [
       ...titleSuggestions.map((s) => ({ text: s.text, type: s.type, count: Number(s.count) })),
@@ -268,5 +151,3 @@ export class SearchUseCases {
       .slice(0, 8);
   }
 }
-
-export const searchUseCases = new SearchUseCases(searchRepository);

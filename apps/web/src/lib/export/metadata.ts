@@ -56,26 +56,33 @@ export async function resolveFolderForExport(
 ): Promise<ExportFolderData | null> {
   if (!folderId) return null;
 
-  const ancestors: string[] = [];
-  let currentId: string | null = folderId;
+  const result = await prisma.$queryRaw<Array<{ id: string; name: string; parentId: string | null }>>`
+    WITH RECURSIVE folder_tree AS (
+      SELECT id, name, "parentId", 1 as level
+      FROM folders
+      WHERE id = ${folderId}
 
-  while (currentId) {
-    const currentFolder: { id: string; name: string; parentId: string | null } | null =
-      await prisma.folder.findUnique({
-        where: { id: currentId },
-        select: { id: true, name: true, parentId: true },
-      });
+      UNION ALL
 
-    if (!currentFolder) break;
+      SELECT f.id, f.name, f."parentId", t.level + 1
+      FROM folders f
+      INNER JOIN folder_tree t ON f.id = t."parentId"
+    )
+    SELECT id, name, "parentId"
+    FROM folder_tree
+    ORDER BY level DESC;
+  `;
 
-    ancestors.unshift(currentFolder.name);
-    currentId = currentFolder.parentId;
+  if (result.length === 0) {
+    return {
+      name: "Unknown",
+      path: "",
+      ancestors: [],
+    };
   }
 
-  const targetFolder = await prisma.folder.findUnique({
-    where: { id: folderId },
-    select: { name: true },
-  });
+  const ancestors = result.map((f) => f.name);
+  const targetFolder = result[result.length - 1];
 
   return {
     name: targetFolder?.name ?? "Unknown",

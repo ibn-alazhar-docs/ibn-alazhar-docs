@@ -14,18 +14,20 @@ datasource db {
 // ============================================
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String    @unique
-  emailVerified DateTime?
-  image         String?
-  passwordHash  String?
-  role          Role      @default(STUDENT)
-  locale        String    @default("ar")
-  timezone      String    @default("Africa/Cairo")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  passwordHash        String?
+  role                Role      @default(STUDENT)
+  locale              String    @default("ar")
+  timezone            String    @default("Africa/Cairo")
+  failedLoginAttempts Int       @default(0)
+  lockedAt            DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
 
   accounts      Account[]
   sessions      Session[]

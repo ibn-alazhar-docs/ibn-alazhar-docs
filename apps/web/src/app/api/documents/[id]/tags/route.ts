@@ -2,13 +2,13 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { addTagToDocumentSchema, setDocumentTagsSchema } from "@/lib/validators/tag";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    const tags = await documentUseCases.getDocumentTags(id, session.user.id);
+    const tags = await useCases.documentTag.getDocumentTags(id, session.user.id);
     return NextResponse.json({ tags });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/[id]/tags/GET", "حدث خطأ أثناء تحميل الأوسمة");
@@ -31,7 +31,7 @@ export const POST = withAuth(async (request, { session, params }) => {
   const { tagId } = validation.data;
 
   try {
-    const tag = await documentUseCases.addTagToDocument(
+    const tag = await useCases.documentTag.addTagToDocument(
       id,
       tagId,
       session.user.id,
@@ -59,7 +59,7 @@ export const PUT = withAuth(async (request, { session, params }) => {
   const { tagIds } = validation.data;
 
   try {
-    const tagCount = await documentUseCases.setDocumentTags(
+    const tagCount = await useCases.documentTag.setDocumentTags(
       id,
       tagIds,
       session.user.id,

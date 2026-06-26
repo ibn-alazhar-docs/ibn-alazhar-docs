@@ -5,7 +5,7 @@ import { tagRepository } from "./repositories/tag.repository";
 import { tagDocumentRepository } from "./repositories/tag-document.repository";
 import { conversionJobRepository } from "./repositories/conversion-job.repository";
 import { shareRepository } from "./repositories/share.repository";
-import { searchRepository } from "@/domain/repositories/search.repository.interface";
+import { SearchRepository } from "./repositories/search.repository";
 
 import { RegistrationUseCases } from "./use-cases/registration.use-cases";
 import { ProfileUseCases } from "./use-cases/profile.use-cases";
@@ -16,7 +16,10 @@ import { ExportUseCases } from "./use-cases/export.use-cases";
 import { FolderUseCases } from "./use-cases/folder.use-cases";
 import { SearchUseCases } from "./use-cases/search.use-cases";
 import { DocumentCrudUseCases } from "./use-cases/document-crud.use-cases";
+import { DocumentMoveUseCases } from "./use-cases/document-move.use-cases";
+import { DocumentTagUseCases } from "./use-cases/document-tag.use-cases";
 import { DocumentShareUseCases } from "./use-cases/document-share.use-cases";
+import { UploadDocumentUseCase } from "./use-cases/upload-document.use-case";
 
 // Repositories
 export const repos = {
@@ -27,14 +30,14 @@ export const repos = {
   tagDocument: tagDocumentRepository,
   conversionJob: conversionJobRepository,
   share: shareRepository,
-  search: searchRepository,
+  search: new SearchRepository(),
 } as const;
 
 // Use-cases
 export const useCases = {
   registration: new RegistrationUseCases(userRepository),
   profile: new ProfileUseCases(userRepository),
-  user: new UserUseCases(),
+  user: new UserUseCases(userRepository),
   tag: new TagUseCases(tagRepository, tagDocumentRepository),
   conversion: new ConversionUseCases(documentRepository, conversionJobRepository),
   export: new ExportUseCases(
@@ -44,7 +47,10 @@ export const useCases = {
     tagDocumentRepository,
   ),
   folder: new FolderUseCases(folderRepository, tagRepository),
-  search: new SearchUseCases(searchRepository),
+  search: new SearchUseCases(new SearchRepository()),
   documentCrud: new DocumentCrudUseCases(documentRepository, folderRepository),
+  documentMove: new DocumentMoveUseCases(documentRepository, folderRepository),
+  documentTag: new DocumentTagUseCases(documentRepository, tagRepository),
   documentShare: new DocumentShareUseCases(documentRepository, shareRepository),
+  uploadDocument: new UploadDocumentUseCase(documentRepository, folderRepository),
 } as const;

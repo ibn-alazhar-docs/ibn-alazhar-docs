@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
 export const POST = withAuth(async (request, { session, params }) => {
@@ -33,7 +33,7 @@ export const POST = withAuth(async (request, { session, params }) => {
   }
 
   try {
-    const document = await documentUseCases.getDocumentById(id, session.user.id);
+    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
 
     if (document.status !== "COMPLETED") {
       return NextResponse.json(

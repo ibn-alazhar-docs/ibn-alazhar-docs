@@ -3,8 +3,6 @@ import type { FolderNode } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
-import { folderRepository } from "../repositories/folder.repository";
-import { tagRepository } from "../repositories/tag.repository";
 
 export class FolderUseCases {
   constructor(
@@ -221,5 +219,3 @@ export class FolderUseCases {
       .sort((a, b) => b.count - a.count);
   }
 }
-
-export const folderUseCases = new FolderUseCases(folderRepository, tagRepository);

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
     const folderId = params.id!;
 
-    const formattedTags = await folderUseCases.getFolderTags(
+    const formattedTags = await useCases.folder.getFolderTags(
       folderId,
       session.user.id,
       session.user.role,

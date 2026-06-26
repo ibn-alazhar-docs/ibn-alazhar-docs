@@ -12,6 +12,7 @@ import type { ExportProfile } from "../../apps/web/src/lib/export/types";
 
 vi.mock("../../apps/web/src/lib/prisma", () => ({
   prisma: {
+    $queryRaw: vi.fn(),
     document: {
       findFirst: vi.fn(),
       findUnique: vi.fn(),
@@ -89,11 +90,11 @@ describe("Export Metadata Helpers", () => {
     });
 
     it("resolves folder path and ancestors", async () => {
-      vi.mocked(prisma.folder.findUnique)
-        .mockResolvedValueOnce({ id: "f3", name: "Child", parentId: "f2" } as any)
-        .mockResolvedValueOnce({ id: "f2", name: "Parent", parentId: "f1" } as any)
-        .mockResolvedValueOnce({ id: "f1", name: "Root", parentId: null } as any)
-        .mockResolvedValueOnce({ name: "Child" } as any); // Final target folder check
+      vi.mocked(prisma.$queryRaw).mockResolvedValueOnce([
+        { id: "f1", name: "Root", parentId: null },
+        { id: "f2", name: "Parent", parentId: "f1" },
+        { id: "f3", name: "Child", parentId: "f2" },
+      ]);
 
       const result = await resolveFolderForExport("f3");
       expect(result?.name).toBe("Child");
