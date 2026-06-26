@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { isAdmin, requireAuth } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/auth-guards";
+import { isAdminRole } from "@/domain/auth";
 import { prisma } from "@/lib/prisma";
 import { DashboardContent } from "../dashboard-content";
 import { PageTransition } from "@/components/ui/page-transition";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: DashboardPageProps): Promise<
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  const admin = isAdmin(session);
+  const admin = isAdminRole(session.user.role);
   const docWhere = admin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null };
   const folderWhere = admin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null };
   const tagWhere = admin ? {} : { userId: session.user.id };

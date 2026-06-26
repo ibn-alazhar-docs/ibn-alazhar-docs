@@ -1,4 +1,5 @@
-import { ownedWhere, isAdmin, type AuthSession } from "@/lib/auth-guards";
+import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { isAdminRole } from "@/domain/auth";
 import { NotFoundError, AppError } from "@/lib/errors";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
 import {
@@ -193,7 +194,7 @@ export class ExportUseCases {
         typeof doc === "object" &&
         "deletedAt" in doc &&
         doc.deletedAt === null &&
-        (isAdmin(session) || ("userId" in doc && doc.userId === session.user.id)),
+        (isAdminRole(session.user.role) || ("userId" in doc && doc.userId === session.user.id)),
     ) as import("@prisma/client").Document[];
 
     if (documents.length === 0) throw new NotFoundError("No documents with this tag");

@@ -3,6 +3,7 @@ import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse, NextRequest } from "next/server";
 import { ForbiddenError } from "./errors";
+import { isAdminRole } from "@/domain/auth";
 
 const DEFAULT_LOCALE = "ar";
 
@@ -46,16 +47,12 @@ export function forbiddenResponse(message = "ليس لديك صلاحية للو
   return NextResponse.json({ error: { code: "FORBIDDEN", message } }, { status: 403 });
 }
 
-export function isAdmin(session: AuthSession): boolean {
-  return session.user.role === "ADMIN";
-}
-
 export function ownedWhere(
   baseWhere: Record<string, unknown>,
   session: AuthSession,
   userIdField = "userId",
 ): Record<string, unknown> {
-  if (isAdmin(session)) return baseWhere;
+  if (isAdminRole(session.user.role)) return baseWhere;
   return { ...baseWhere, [userIdField]: session.user.id };
 }
 

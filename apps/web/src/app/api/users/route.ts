@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { withAuth, isAdmin } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
+import { isAdminRole } from "@/domain/auth";
 import { handleRouteError } from "@/lib/route-helpers";
 import { adminUserUpdateSchema } from "@/lib/validators/auth";
 import { useCases } from "@/core/composition-root";
@@ -8,7 +9,7 @@ import type { Role } from "@/domain/auth";
 
 export const GET = withAuth(async (_request, { session }) => {
   try {
-    if (!isAdmin(session)) {
+    if (!isAdminRole(session.user.role)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
@@ -24,7 +25,7 @@ export const GET = withAuth(async (_request, { session }) => {
 
 export const PATCH = withAuth(async (request, { session }) => {
   try {
-    if (!isAdmin(session)) {
+    if (!isAdminRole(session.user.role)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
@@ -63,7 +64,7 @@ export const PATCH = withAuth(async (request, { session }) => {
 
 export const DELETE = withAuth(async (request, { session }) => {
   try {
-    if (!isAdmin(session)) {
+    if (!isAdminRole(session.user.role)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
