@@ -2,17 +2,10 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { singleExportSchema } from "@/lib/export/validators";
-import {
-  resolveDocumentForExport,
-  resolveTagsForExport,
-  resolveFolderForExport,
-  resolveOcrData,
-  resolvePipelineData,
-  buildExportMetadata,
-} from "@/lib/export/metadata";
-import { buildZipPackage } from "@/lib/export/zip-builder";
-import { sanitizeTitle, contentDispositionHeader, getContentType } from "@/lib/export/profiles";
-import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import { contentDispositionHeader } from "@/lib/export/profiles";
+import { useCases } from "@/core/composition-root";
+import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
+import { checkUserRateLimit } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
@@ -30,117 +23,42 @@ export const POST = withAuth(async (request, { session }) => {
     );
   }
 
+  const rateLimit = await checkUserRateLimit("export:single", session.user.id);
+  if (!rateLimit.allowed) {
+    return NextResponse.json(
+      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimit.retryAfterMs ?? 60_000) / 1000)),
+        },
+      },
+    );
+  }
+
   const { documentId, format, profile, includeSource } = parsed.data;
 
   try {
-    const document = await resolveDocumentForExport(documentId, session);
-    const [tags, folder, ocr, pipeline] = await Promise.all([
-      resolveTagsForExport(documentId),
-      resolveFolderForExport(null),
-      resolveOcrData(documentId),
-      resolvePipelineData(documentId),
-    ]);
-    const metadata = await buildExportMetadata(document, tags, folder, ocr, pipeline, profile);
+    const result = await useCases.export.exportSingle(
+      documentId,
+      { format, includeSource, profile },
+      session,
+    );
 
-    if (format === "zip") {
-      let rawText = "";
-      let markdown = "";
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.EXPORT_SINGLE,
+      entity: "document",
+      entityId: documentId,
+      metadata: { format, profile },
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
 
-      const config = loadConfig();
-
-      // Try to fetch raw OCR text first
-      const ocrKey = `${config.paths.ocrResults}/${documentId}/text.json`;
-      const ocrExists = await fileExists(config, ocrKey);
-      if (ocrExists) {
-        const ocrBuffer = await downloadFile(config, ocrKey);
-        try {
-          const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
-          rawText = ocrData.text || "";
-        } catch {
-          rawText = "";
-        }
-      }
-
-      // Fetch generated markdown
-      const outputKey = `${config.paths.exports}/${documentId}/output.md`;
-      const mdExists = await fileExists(config, outputKey);
-      if (mdExists) {
-        const mdBuffer = await downloadFile(config, outputKey);
-        markdown = mdBuffer.toString("utf-8");
-        if (!rawText) rawText = markdown;
-      }
-
-      let sourceBuffer: Buffer | undefined;
-      if (includeSource) {
-        const sourceKey = `${config.paths.uploads}/${documentId}/${document.fileName}`;
-        const srcExists = await fileExists(config, sourceKey);
-        if (srcExists) {
-          sourceBuffer = await downloadFile(config, sourceKey);
-        }
-      }
-
-      const exportId = `exp_${documentId}_${Date.now()}`;
-      const zipBuffer = await buildZipPackage({
-        exportId,
-        documents: [
-          {
-            id: document.id,
-            title: document.title,
-            tags: tags.map((t) => t.name),
-            folderPath: folder?.path ?? "",
-            pageCount: document.pageCount,
-            metadata,
-            rawText,
-            markdown,
-            sourceBuffer,
-            sourceFileName: document.originalName,
-          },
-        ],
-        profile,
-        includeSource,
-      });
-
-      const zipName = `${sanitizeTitle(document.title)}_${new Date().toISOString().split("T")[0]}.zip`;
-
-      return new NextResponse(new Uint8Array(zipBuffer), {
-        headers: {
-          "Content-Type": getContentType("zip"),
-          "Content-Disposition": contentDispositionHeader(zipName),
-        },
-      });
-    }
-
-    const config = loadConfig();
-    const outputKey = `${config.paths.exports}/${documentId}/output.${format}`;
-    const exists = await fileExists(config, outputKey);
-
-    if (!exists) {
-      const exportKey = `${config.paths.exports}/${documentId}/export.${format}`;
-      const exportExists = await fileExists(config, exportKey);
-      if (!exportExists) {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "Export not ready" } },
-          { status: 404 },
-        );
-      }
-      const buffer = await downloadFile(config, exportKey);
-      return new NextResponse(new Uint8Array(buffer), {
-        headers: {
-          "Content-Type": getContentType(format),
-          "Content-Disposition": contentDispositionHeader(
-            `${sanitizeTitle(document.title)}.${format}`,
-          ),
-        },
-      });
-    }
-
-    const buffer = await downloadFile(config, outputKey);
-    return new NextResponse(new Uint8Array(buffer), {
+    return new NextResponse(Buffer.from(result.buffer), {
       headers: {
-        "Content-Type": getContentType(format),
-        "Content-Disposition": contentDispositionHeader(
-          `${sanitizeTitle(document.title)}.${format}`,
-        ),
+        "Content-Type": result.contentType,
+        "Content-Disposition": contentDispositionHeader(result.fileName),
       },
     });
   } catch (error: unknown) {

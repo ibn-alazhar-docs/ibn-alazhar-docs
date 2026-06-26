@@ -4,6 +4,10 @@ import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
+import { auditLog, AUDIT_ACTIONS } from "./audit";
+
+const MAX_FAILED_ATTEMPTS = 5;
+const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
 
 declare module "next-auth" {
   interface Session {
@@ -88,13 +92,72 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             image: true,
             passwordHash: true,
             deletedAt: true,
+            failedLoginAttempts: true,
+            lockedAt: true,
           },
         });
 
         if (!user || user.deletedAt || !user.passwordHash) return null;
 
+        // Check lockout
+        if (user.lockedAt) {
+          const lockoutEnd = user.lockedAt.getTime() + LOCKOUT_DURATION_MS;
+          if (Date.now() < lockoutEnd) {
+            await auditLog({
+              userId: user.id,
+              action: AUDIT_ACTIONS.LOGIN_LOCKED,
+              entity: "user",
+              entityId: user.id,
+              metadata: { email, remainingMs: lockoutEnd - Date.now() },
+            });
+            return null;
+          }
+          // Lockout expired — reset
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedAt: null },
+          });
+        }
+
         const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
+        if (!valid) {
+          const newAttempts = user.failedLoginAttempts + 1;
+          const updateData: { failedLoginAttempts: number; lockedAt?: Date } = {
+            failedLoginAttempts: newAttempts,
+          };
+          if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+            updateData.lockedAt = new Date();
+          }
+          await prisma.user.update({
+            where: { id: user.id },
+            data: updateData,
+          });
+
+          await auditLog({
+            userId: user.id,
+            action: AUDIT_ACTIONS.LOGIN_FAILED,
+            entity: "user",
+            entityId: user.id,
+            metadata: { email, attempts: newAttempts, locked: newAttempts >= MAX_FAILED_ATTEMPTS },
+          });
+          return null;
+        }
+
+        // Successful login — reset attempts
+        if (user.failedLoginAttempts > 0) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { failedLoginAttempts: 0, lockedAt: null },
+          });
+        }
+
+        await auditLog({
+          userId: user.id,
+          action: AUDIT_ACTIONS.LOGIN_SUCCESS,
+          entity: "user",
+          entityId: user.id,
+          metadata: { email, provider: "credentials" },
+        });
 
         return {
           id: user.id,

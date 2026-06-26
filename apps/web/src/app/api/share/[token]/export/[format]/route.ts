@@ -3,8 +3,8 @@ import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipelin
 import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/lib/validators/share";
 import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
-import { contentDispositionHeader } from "@/lib/export/profiles";
-import { validateShareAccess, sanitizeFilename, getContentType } from "@/lib/share-helpers";
+import { contentDispositionHeader, sanitizeTitle, getContentType } from "@/lib/export/profiles";
+import { validateShareAccess } from "@/lib/share-helpers";
 
 export async function GET(
   request: Request,
@@ -60,7 +60,7 @@ export async function GET(
         );
       }
       const buffer = await downloadFile(config, altKey);
-      const filename = `${sanitizeFilename(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
+      const filename = `${sanitizeTitle(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
       return new Response(new Uint8Array(buffer), {
         headers: {
           "Content-Type": getContentType(exportFormat),
@@ -70,7 +70,7 @@ export async function GET(
     }
 
     const buffer = await downloadFile(config, outputKey);
-    const filename = `${sanitizeFilename(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
+    const filename = `${sanitizeTitle(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
     return new Response(new Uint8Array(buffer), {
       headers: {
         "Content-Type": getContentType(exportFormat),

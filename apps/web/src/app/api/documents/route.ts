@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
@@ -13,7 +13,7 @@ export const GET = withAuth(async (request, { session }) => {
   const search = searchParams.get("search");
 
   try {
-    const { documents, total } = await documentUseCases.getDocuments(
+    const { documents, total } = await useCases.documentCrud.getDocuments(
       session.user.id,
       session.user.role,
       {

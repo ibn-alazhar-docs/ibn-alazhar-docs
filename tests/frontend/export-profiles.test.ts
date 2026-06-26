@@ -4,7 +4,6 @@ import {
   contentDispositionHeader,
   getContentType,
   getProfileConfig,
-  getProfileFormats,
   EXPORT_PROFILE_CONFIGS,
 } from "@/lib/export/profiles";
 
@@ -148,24 +147,6 @@ describe("getProfileConfig", () => {
       expect(config).toHaveProperty("includeFolderPath");
       expect(config).toHaveProperty("metadataLevel");
     }
-  });
-});
-
-describe("getProfileFormats", () => {
-  it("research returns md and json", () => {
-    expect(getProfileFormats("research")).toEqual(["md", "json"]);
-  });
-
-  it("archive returns md, txt, json", () => {
-    expect(getProfileFormats("archive")).toEqual(["md", "txt", "json"]);
-  });
-
-  it("plain returns txt only", () => {
-    expect(getProfileFormats("plain")).toEqual(["txt"]);
-  });
-
-  it("developer returns json only", () => {
-    expect(getProfileFormats("developer")).toEqual(["json"]);
   });
 });
 

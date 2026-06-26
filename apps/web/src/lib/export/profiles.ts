@@ -1,5 +1,26 @@
 import type { ExportProfileConfig, ExportFormat, ExportProfile } from "./types";
-export { getContentType } from "@/lib/share-helpers";
+
+export function getContentType(format: string): string {
+  switch (format) {
+    case "md":
+      return "text/markdown; charset=utf-8";
+    case "txt":
+      return "text/plain; charset=utf-8";
+    case "json":
+      return "application/json; charset=utf-8";
+    case "pdf":
+    case "searchable-pdf":
+      return "application/pdf";
+    case "docx":
+      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+    case "epub":
+      return "application/epub+zip";
+    case "zip":
+      return "application/zip";
+    default:
+      return "application/octet-stream";
+  }
+}
 
 export const EXPORT_PROFILE_CONFIGS: Record<ExportProfile, ExportProfileConfig> = {
   research: {
@@ -46,10 +67,6 @@ export const EXPORT_PROFILE_CONFIGS: Record<ExportProfile, ExportProfileConfig> 
 
 export function getProfileConfig(profile: ExportProfile): ExportProfileConfig {
   return EXPORT_PROFILE_CONFIGS[profile];
-}
-
-export function getProfileFormats(profile: ExportProfile): ExportFormat[] {
-  return EXPORT_PROFILE_CONFIGS[profile].formats;
 }
 
 export function sanitizeTitle(title: string): string {

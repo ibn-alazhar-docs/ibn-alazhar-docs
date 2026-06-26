@@ -1,145 +1,66 @@
-# REFACTORING_MASTER_PLAN.md — Ibn Al-Azhar Docs
+# REFACTORING_MASTER_PLAN.md
 
-> **Updated:** 2026-06-23 (v2 — includes frontend audit findings)
-> **Scope:** Architecture-level refactoring across entire codebase
-> **Constraint:** Preserve all behavior, tests, APIs, and security
-> **Gate:** All 677 unit tests must remain green after each phase
+> **Level:** Principal Engineer / Staff Engineer
+> **System:** Ibn Al-Azhar Docs
+> **Objective:** Transform the codebase into a world-class, staff-level architecture.
+> **Constraint:** Zero behavior change, zero API signature change, 100% test preservation.
 
----
-
-## Phase Overview
-
-| Phase  | Focus                             | Files    | Risk   | Status       |
-| ------ | --------------------------------- | -------- | ------ | ------------ |
-| **0**  | Dead code + DRY cleanup (backend) | 36       | LOW    | ✅ `731018a` |
-| **1**  | Error handling consolidation      | 8        | LOW    | ✅ `1fae152` |
-| **2**  | Missing use-case layers           | 15       | MEDIUM | ✅ `a001ceb` |
-| **3**  | DocumentUseCases split            | 8        | MEDIUM | ⬜ NEXT      |
-| **4**  | Route modernization               | 32       | LOW    | ⬜           |
-| **5**  | Frontend dead code cleanup        | 20       | LOW    | ⬜           |
-| **6**  | Frontend DRY consolidation        | 15       | LOW    | ⬜           |
-| **7**  | Frontend bug fixes                | 6        | MEDIUM | ⬜           |
-| **8**  | Pipeline quality fixes            | 6        | LOW    | ⬜           |
-| **9**  | Worker improvements               | 2        | LOW    | ⬜           |
-| **10** | Export subsystem cleanup          | 4        | LOW    | ⬜           |
-|        | **Total**                         | **~152** |        |              |
+## Execution Rules
+- **Rule 1:** Understand the code. Do not refactor code you do not fully comprehend.
+- **Rule 2:** Run all tests after every file change. A red test means immediate rollback.
+- **Rule 3:** Execute strictly in the order defined below. Architecture first, details last.
+- **Rule 4:** Leave the codebase cleaner, safer, and more observable than you found it.
 
 ---
 
-## Phase 3: DocumentUseCases Split
+### PHASE 1: Architecture & Domain Foundation
+*Focus: Boundaries, Interfaces, and Dependency Inversion.*
 
-**Goal:** Break the 304-line god class into 4 focused use-case classes.
+1. **Establish Interfaces:** Define pure `Repository` interfaces for Document, Folder, Tag, User, and ShareLink inside a domain folder.
+2. **Segregate God Classes:** Break `DocumentUseCases` (304 lines) into:
+   - `DocumentCrudUseCases`
+   - `DocumentMoveUseCases`
+   - `DocumentTagUseCases`
+   - `DocumentShareUseCases`
+3. **Decouple Prisma:** Modify all new Use Cases to depend on Repository interfaces, not direct Prisma imports.
 
-### 3.1 Create `DocumentCrudUseCases`
+### PHASE 2: Database Layer
+*Focus: Performance, Indexes, and Integrity.*
 
-- **Methods:** `getDocuments`, `getDocumentById`, `updateDocument`, `deleteDocument`, `restoreDocument`
-- **Lines:** ~100
+1. **Optimize Folder Queries:** Refactor `resolveFolderForExport` to utilize a single `$queryRaw` Recursive CTE, eliminating the N+1 loop.
+2. **Implement Repositories:** Ensure Prisma implementations exist for all interfaces defined in Phase 1.
+3. **Transaction Boundaries:** Audit and wrap bulk operations (tagging, moving) in `prisma.$transaction`.
 
-### 3.2 Create `DocumentMoveUseCases`
+### PHASE 3: Backend & API Modernization
+*Focus: Consistency, Error Handling, and SOLID.*
 
-- **Methods:** `moveDocument`, `bulkMoveDocuments`
-- **Lines:** ~60
+1. **Universal Error Handling:** Wrap ALL 45 API routes in `withAuth` and `handleRouteError` wrappers. Eliminate bespoke try/catch blocks in API routes.
+2. **Eliminate Route Logic:** Move all tag merge algorithms and raw Prisma calls out of Next.js route handlers into their respective Use Case classes.
+3. **Extract Validators:** Move inline Zod schemas to a dedicated definitions module.
 
-### 3.3 Create `DocumentTagUseCases`
+### PHASE 4: Frontend Optimization
+*Focus: Dead Code, Reusability, and Security.*
 
-- **Methods:** `getDocumentTags`, `addTagToDocument`, `setDocumentTags`, `removeTagFromDocument`, `bulkTagDocuments`, `bulkUntagDocuments`
-- **Lines:** ~100
+1. **Purge:** Delete the 20 unused component files (e.g., `drawer-dialog.tsx`, unused `settings-form` variants).
+2. **DRY Components:** Create a generic `<DeleteConfirmDialog />` and replace the 3 identical implementations.
+3. **Sanitize:** Add DOMPurify to `dangerouslySetInnerHTML` in `template-preview.tsx`.
+4. **Style Integrity:** Replace all legacy physical CSS properties (`ml-`, `mr-`) with logical properties (`ms-`, `me-`).
 
-### 3.4 Create `DocumentShareUseCases`
+### PHASE 5: Worker & Pipeline Resilience
+*Focus: God Modules, Idempotency, and Scale.*
 
-- **Methods:** `getShareLink`, `createShareLink`, `regenerateShareLink`, `deleteShareLink`
-- **Lines:** ~80
+1. **Deconstruct `queue.ts`:** Split the 437-line god module into discrete `BullProvider`, `WorkerFactory`, and `JobService` modules.
+2. **Deconstruct `ocr-worker/index.ts`:** Split the 600-line god file into separate processing strategies. Ensure idempotent database updates.
+3. **Parallelize:** Refactor Redis polling in `getJobStatus` to use `Promise.all` or `redis.pipeline()`.
 
-### 3.5 Update barrel export + route imports
+### PHASE 6: Security & Observability Polish
+*Focus: Leaks, Injection, and Telemetry.*
 
----
-
-## Phase 4: Route Modernization
-
-**Goal:** Migrate all remaining routes to `withAuth` + `handleRouteError`.
-
-### 4.1 Migrate document routes (15 files)
-
-### 4.2 Migrate folder routes (4 files)
-
-### 4.3 Migrate export routes (5 files)
-
-### 4.4 Migrate remaining routes (profile, stream, auth/register)
-
-### 4.5 Remove duplicate share delete route
-
----
-
-## Phase 5: Frontend Dead Code Cleanup
-
-**Goal:** Remove 20 dead/unused component files.
-
-### Files to delete:
-
-| File                                                | Reason                   |
-| --------------------------------------------------- | ------------------------ |
-| `components/ui/drawer-dialog.tsx`                   | Entirely commented out   |
-| `components/ui/toast.tsx`                           | Entirely commented out   |
-| `components/ui/tubelight-navbar.tsx`                | Not imported anywhere    |
-| `components/ui/direction-aware-hover.tsx`           | Not imported anywhere    |
-| `components/ui/setting-card.tsx`                    | Not imported by any view |
-| `components/settings/settings-form.tsx`             | Entirely commented out   |
-| `components/settings/settings-header.tsx`           | Entirely commented out   |
-| `components/settings/general-settings-form.tsx`     | Not imported by any view |
-| `components/settings/advanced-settings-form.tsx`    | Not imported by any view |
-| `components/settings/storage-settings-form.tsx`     | Not imported by any view |
-| `components/settings/cache-settings-form.tsx`       | Not imported by any view |
-| `components/settings/integration-settings-form.tsx` | Not imported by any view |
-| `components/layout/layout-shell.tsx`                | Entirely commented out   |
-| `components/layout/sidebar-layout.tsx`              | Not imported by any page |
-| `components/layout/auth-layout.tsx`                 | Not imported by any page |
-| `app/[locale]/(dashboard)/settings/view.tsx`        | Entirely commented out   |
+1. **Patch Drive Injection:** Escape `folderName` inputs in Google Drive provider.
+2. **Sterilize Errors:** Modify `/health` and global error handlers to mask Prisma/Zod internals from unauthenticated callers.
+3. **Standardize Logging:** Replace `console.warn` in pipeline libraries with the centralized structured logger.
 
 ---
 
-## Phase 6: Frontend DRY Consolidation
-
-**Goal:** Extract shared constants and deduplicate patterns.
-
-### 6.1 Create `lib/constants.ts` with shared values:
-
-- `formatBytes`, `formatDate`, `formatConfidence`
-- `LANGUAGES`, `OCR_LANGUAGES`, `STORAGE_PROVIDERS`, `CACHE_STRATEGIES`
-- `WEBHOOK_EVENTS`, `API_SCOPES`
-
-### 6.2 Create generic `DeleteConfirmDialog` component
-
-- Replace 3 identical delete dialog components
-
-### 6.3 Update all consumers to import from shared locations
-
----
-
-## Phase 7: Frontend Bug Fixes
-
-**Goal:** Fix 6 identified bugs.
-
-| Bug                                 | File                   | Fix                             |
-| ----------------------------------- | ---------------------- | ------------------------------- |
-| `as` prop unused                    | `typography.tsx`       | Implement polymorphic rendering |
-| `<slot>` invalid JSX                | `form.tsx`             | Change to `<Slot>` from Radix   |
-| Locale double-prefix                | `login-form.tsx`       | Remove locale from callbackUrl  |
-| XSS via dangerouslySetInnerHTML     | `template-preview.tsx` | Add DOMPurify sanitization      |
-| CardTitle=CardDescription className | `card.tsx`             | Differentiate styles            |
-| Overlay color inconsistency         | `alert-dialog.tsx`     | Standardize to bg-black/60      |
-
----
-
-## Phase 8-10: Pipeline, Workers, Export
-
-See original plan phases 5-7 (unchanged).
-
----
-
-## Execution Order
-
-```
-Phase 3 → Phase 4 → Phase 5 → Phase 6 → Phase 7 → Phase 8 → Phase 9 → Phase 10
-```
-
-Phases 5-7 (frontend) are independent of Phases 3-4 (backend) and can be interleaved.
+### Exit Criteria
+Upon completion of Phase 6, the agent must update `FINAL_REFACTOR_REPORT.md` and verify that all 1,113 tests pass against the new architecture.

@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { updateTagSchema } from "@/lib/validators/tag";
-import { tagUseCases } from "@/core/use-cases/tag.use-cases";
+import { useCases } from "@/core/composition-root";
+import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
@@ -12,7 +13,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
         { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
         { status: 400 },
       );
-    const tag = await tagUseCases.getTagById(id, session);
+    const tag = await useCases.tag.getTagById(id, session);
     return NextResponse.json({ tag });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/[id]/GET", "فشل الحصول على الوسم");
@@ -37,14 +38,14 @@ export const PATCH = withAuth(async (request, { session, params }) => {
       );
     }
 
-    const tag = await tagUseCases.updateTag(id, validation.data, session);
+    const tag = await useCases.tag.updateTag(id, validation.data, session);
     return NextResponse.json({ tag });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/[id]/PATCH", "فشل تحديث الوسم");
   }
 });
 
-export const DELETE = withAuth(async (_request, { session, params }) => {
+export const DELETE = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id;
     if (!id)
@@ -52,7 +53,15 @@ export const DELETE = withAuth(async (_request, { session, params }) => {
         { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
         { status: 400 },
       );
-    await tagUseCases.deleteTag(id, session);
+    await useCases.tag.deleteTag(id, session);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.TAG_DELETE,
+      entity: "tag",
+      entityId: id,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
     return NextResponse.json({ success: true, message: "تم حذف الوسم بنجاح" });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/[id]/DELETE", "فشل حذف الوسم");

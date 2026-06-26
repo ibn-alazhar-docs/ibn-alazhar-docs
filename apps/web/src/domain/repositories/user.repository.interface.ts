@@ -1,5 +1,5 @@
 import type { User, Prisma } from "@prisma/client";
-import type { Role } from "@/lib/errors";
+import type { Role } from "@/domain/auth";
 
 export type UserListItem = Pick<User, "id" | "name" | "email" | "role" | "createdAt"> & {
   _count: { documents: number };

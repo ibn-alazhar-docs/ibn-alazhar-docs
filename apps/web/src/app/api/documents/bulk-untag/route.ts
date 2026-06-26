@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { bulkUntagSchema } from "@/lib/validators/tag";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
@@ -19,7 +19,7 @@ export const POST = withAuth(async (request, { session }) => {
   const { documentIds, tagId } = validation.data;
 
   try {
-    const removedCount = await documentUseCases.bulkUntagDocuments(
+    const removedCount = await useCases.documentTag.bulkUntagDocuments(
       documentIds,
       tagId,
       session.user.id,

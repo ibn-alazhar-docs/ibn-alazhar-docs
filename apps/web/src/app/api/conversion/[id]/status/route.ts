@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { normalizeStage } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
-import { conversionUseCases } from "@/core/use-cases/conversion.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
@@ -13,7 +13,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
         { status: 400 },
       );
 
-    const document = await conversionUseCases.getJobStatus(id, session);
+    const document = await useCases.conversion.getJobStatus(id, session);
     const normalized = normalizeStage(document.status);
 
     if (normalized === "completed") {

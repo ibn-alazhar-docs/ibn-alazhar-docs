@@ -1,20 +1,31 @@
 import { ownedWhere, isAdmin, type AuthSession } from "@/lib/auth-guards";
 import { NotFoundError, AppError } from "@/lib/errors";
 import { executeBulkExport } from "@/lib/export/bulk-export-helpers";
+import {
+  resolveDocumentForExport,
+  resolveTagsForExport,
+  resolveFolderForExport,
+  resolveOcrData,
+  resolvePipelineData,
+  buildExportMetadata,
+} from "@/lib/export/metadata";
+import { buildZipPackage } from "@/lib/export/zip-builder";
+import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import type { ExportMetadata } from "@/lib/export/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
-import { documentRepository } from "../repositories/document.repository";
-import { tagRepository } from "../repositories/tag.repository";
-import { folderRepository } from "../repositories/folder.repository";
-import { tagDocumentRepository } from "../repositories/tag-document.repository";
 
 type ExportOptions = {
   format: string;
   includeSource: boolean;
   profile: "research" | "archive" | "plain" | "developer";
 };
+
+type SingleExportResult =
+  | { type: "zip"; buffer: Uint8Array; contentType: string; fileName: string }
+  | { type: "file"; buffer: Uint8Array; contentType: string; fileName: string };
 
 export class ExportUseCases {
   constructor(
@@ -23,6 +34,148 @@ export class ExportUseCases {
     private readonly folderRepository: IFolderRepository,
     private readonly tagDocumentRepository: ITagDocumentRepository,
   ) {}
+
+  async exportSingle(
+    documentId: string,
+    options: ExportOptions,
+    session: AuthSession,
+  ): Promise<SingleExportResult> {
+    const document = await resolveDocumentForExport(documentId, session);
+    const [tags, folder, ocr, pipeline] = await Promise.all([
+      resolveTagsForExport(documentId),
+      resolveFolderForExport(null),
+      resolveOcrData(documentId),
+      resolvePipelineData(documentId),
+    ]);
+    const metadata = await buildExportMetadata(
+      document,
+      tags,
+      folder,
+      ocr,
+      pipeline,
+      options.profile,
+    );
+
+    if (options.format === "zip") {
+      return this.buildZipExport(document, tags, folder, metadata, options);
+    }
+
+    return this.buildSingleFileExport(document, options.format);
+  }
+
+  private async buildZipExport(
+    document: {
+      id: string;
+      title: string;
+      fileName: string;
+      originalName: string;
+      pageCount: number | null;
+    },
+    tags: { name: string }[],
+    folder: { path: string } | null,
+    metadata: ExportMetadata,
+    options: ExportOptions,
+  ): Promise<SingleExportResult> {
+    const config = loadConfig();
+    let rawText = "";
+    let markdown = "";
+
+    const ocrKey = `${config.paths.ocrResults}/${document.id}/text.json`;
+    const ocrExists = await fileExists(config, ocrKey);
+    if (ocrExists) {
+      const ocrBuffer = await downloadFile(config, ocrKey);
+      try {
+        const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
+        rawText = ocrData.text || "";
+      } catch {
+        rawText = "";
+      }
+    }
+
+    const outputKey = `${config.paths.exports}/${document.id}/output.md`;
+    const mdExists = await fileExists(config, outputKey);
+    if (mdExists) {
+      const mdBuffer = await downloadFile(config, outputKey);
+      markdown = mdBuffer.toString("utf-8");
+      if (!rawText) rawText = markdown;
+    }
+
+    let sourceBuffer: Buffer | undefined;
+    if (options.includeSource) {
+      const sourceKey = `${config.paths.uploads}/${document.id}/${document.fileName}`;
+      const srcExists = await fileExists(config, sourceKey);
+      if (srcExists) {
+        sourceBuffer = await downloadFile(config, sourceKey);
+      }
+    }
+
+    const exportId = `exp_${document.id}_${Date.now()}`;
+    const zipBuffer = await buildZipPackage({
+      exportId,
+      documents: [
+        {
+          id: document.id,
+          title: document.title,
+          tags: tags.map((t) => t.name),
+          folderPath: folder?.path ?? "",
+          pageCount: document.pageCount,
+          metadata,
+          rawText,
+          markdown,
+          sourceBuffer,
+          sourceFileName: document.originalName,
+        },
+      ],
+      profile: options.profile,
+      includeSource: options.includeSource,
+    });
+
+    const { sanitizeTitle, getContentType, contentDispositionHeader } =
+      await import("@/lib/export/profiles");
+    const zipName = `${sanitizeTitle(document.title)}_${new Date().toISOString().split("T")[0]}.zip`;
+
+    return {
+      type: "zip",
+      buffer: new Uint8Array(zipBuffer),
+      contentType: getContentType("zip"),
+      fileName: zipName,
+    };
+  }
+
+  private async buildSingleFileExport(
+    document: { id: string; title: string },
+    format: string,
+  ): Promise<SingleExportResult> {
+    const config = loadConfig();
+    const { sanitizeTitle, getContentType, contentDispositionHeader } =
+      await import("@/lib/export/profiles");
+
+    const outputKey = `${config.paths.exports}/${document.id}/output.${format}`;
+    const exists = await fileExists(config, outputKey);
+
+    if (!exists) {
+      const exportKey = `${config.paths.exports}/${document.id}/export.${format}`;
+      const exportExists = await fileExists(config, exportKey);
+      if (!exportExists) {
+        throw new NotFoundError("Export not ready");
+      }
+      const buffer = await downloadFile(config, exportKey);
+      return {
+        type: "file",
+        buffer: new Uint8Array(buffer),
+        contentType: getContentType(format),
+        fileName: `${sanitizeTitle(document.title)}.${format}`,
+      };
+    }
+
+    const buffer = await downloadFile(config, outputKey);
+    return {
+      type: "file",
+      buffer: new Uint8Array(buffer),
+      contentType: getContentType(format),
+      fileName: `${sanitizeTitle(document.title)}.${format}`,
+    };
+  }
 
   async exportByTag(tagId: string, options: ExportOptions, session: AuthSession) {
     const tag = await this.tagRepository.findFirst(ownedWhere({ id: tagId }, session));
@@ -124,10 +277,3 @@ export class ExportUseCases {
     );
   }
 }
-
-export const exportUseCases = new ExportUseCases(
-  documentRepository,
-  tagRepository,
-  folderRepository,
-  tagDocumentRepository,
-);

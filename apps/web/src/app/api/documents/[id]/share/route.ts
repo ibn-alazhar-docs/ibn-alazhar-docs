@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { createShareSchema } from "@/lib/validators/share";
-import { documentUseCases } from "@/core/use-cases/document.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
@@ -23,7 +23,7 @@ export const POST = withAuth(async (request, { session, params }) => {
   }
 
   try {
-    const share = await documentUseCases.createShareLink(
+    const share = await useCases.documentShare.createShareLink(
       id,
       session.user.id,
       parsed.data.expiration || null,
@@ -31,7 +31,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     const url = `${request.headers.get("origin") || "http://localhost:3000"}/share/${share.token}`;
 
     // We fetch the document title just for the response, since createShareLink doesn't return it
-    const document = await documentUseCases.getDocumentById(id, session.user.id);
+    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
 
     return NextResponse.json(
       {
@@ -57,7 +57,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    const share = await documentUseCases.getShareLink(id, session.user.id);
+    const share = await useCases.documentShare.getShareLink(id, session.user.id);
 
     if (!share) {
       return NextResponse.json({ shared: false }, { status: 200 });
@@ -88,7 +88,7 @@ export const DELETE = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    await documentUseCases.deleteShareLink(id, session.user.id);
+    await useCases.documentShare.deleteShareLink(id, session.user.id);
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error: unknown) {
     return handleRouteError(

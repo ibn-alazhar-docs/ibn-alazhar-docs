@@ -2,15 +2,16 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { renameFolderSchema } from "@/lib/validators/folder";
-import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { useCases } from "@/core/composition-root";
 import { getErrorMessage } from "@/lib/errors";
+import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
     const id = params.id!;
 
     try {
-      const folder = await folderUseCases.getFolderById(id, session.user.id);
+      const folder = await useCases.folder.getFolderById(id, session.user.id);
       return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, no-store" } });
     } catch (error: unknown) {
       if (getErrorMessage(error) === "NOT_FOUND") {
@@ -41,7 +42,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
     }
 
     try {
-      const updated = await folderUseCases.renameFolder(id, session.user.id, validation.data.name);
+      const updated = await useCases.folder.renameFolder(id, session.user.id, validation.data.name);
       return NextResponse.json({ folder: updated });
     } catch (error: unknown) {
       if (getErrorMessage(error) === "NOT_FOUND") {
@@ -57,12 +58,20 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   }
 });
 
-export const DELETE = withAuth(async (_request, { session, params }) => {
+export const DELETE = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
 
     try {
-      await folderUseCases.deleteFolder(id, session.user.id);
+      await useCases.folder.deleteFolder(id, session.user.id);
+      await auditLog({
+        userId: session.user.id,
+        action: AUDIT_ACTIONS.FOLDER_DELETE,
+        entity: "folder",
+        entityId: id,
+        ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+        userAgent: request.headers.get("user-agent") ?? undefined,
+      });
       return NextResponse.json({ message: "تم حذف المجلد بنجاح" });
     } catch (error: unknown) {
       if (getErrorMessage(error) === "NOT_FOUND") {

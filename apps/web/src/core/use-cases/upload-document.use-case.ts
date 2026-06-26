@@ -11,11 +11,16 @@ import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
-import { documentRepository } from "../repositories/document.repository";
-import { folderRepository } from "../repositories/folder.repository";
+import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
+import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import { NotFoundError } from "@/lib/errors";
 
 export class UploadDocumentUseCase {
+  constructor(
+    private readonly documentRepository: IDocumentRepository,
+    private readonly folderRepository: IFolderRepository,
+  ) {}
+
   async execute(params: {
     file: File;
     folderId: string | null;
@@ -26,7 +31,7 @@ export class UploadDocumentUseCase {
 
     // Validate Folder
     if (folderId) {
-      const folder = await folderRepository.findFolderById(folderId, userId);
+      const folder = await this.folderRepository.findFolderById(folderId, userId);
       if (!folder) {
         throw new NotFoundError();
       }
@@ -56,7 +61,7 @@ export class UploadDocumentUseCase {
     await unlink(tempPath).catch(() => {});
 
     // Create Document record
-    const document = await documentRepository.createDocument({
+    const document = await this.documentRepository.createDocument({
       id: jobId,
       userId: userId,
       title: fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, ""),
@@ -89,5 +94,3 @@ export class UploadDocumentUseCase {
     return document;
   }
 }
-
-export const uploadDocumentUseCase = new UploadDocumentUseCase();

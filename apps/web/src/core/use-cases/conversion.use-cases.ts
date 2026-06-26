@@ -3,8 +3,6 @@ import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
 import type { Prisma } from "@prisma/client";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
-import { documentRepository } from "../repositories/document.repository";
-import { conversionJobRepository } from "../repositories/conversion-job.repository";
 
 export class ConversionUseCases {
   constructor(
@@ -95,8 +93,3 @@ export class ConversionUseCases {
     return document;
   }
 }
-
-export const conversionUseCases = new ConversionUseCases(
-  documentRepository,
-  conversionJobRepository,
-);

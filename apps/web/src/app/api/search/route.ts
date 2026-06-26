@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { searchUseCases } from "@/core/use-cases/search.use-cases";
+import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (request, { session }) => {
   try {
     const { searchParams } = new URL(request.url);
 
-    const result = await searchUseCases.search(session.user.id, session.user.role, {
+    const result = await useCases.search.search(session.user.id, session.user.role, {
       query: searchParams.get("q") || "",
       type: searchParams.get("type") || undefined,
       folderId: searchParams.get("folderId") || undefined,

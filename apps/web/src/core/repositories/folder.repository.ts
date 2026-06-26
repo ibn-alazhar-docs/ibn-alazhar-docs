@@ -40,14 +40,12 @@ export class FolderRepository implements IFolderRepository {
   }
 
   async create(data: CreateFolderInput) {
-    return this.createRaw(data as unknown as Prisma.FolderUncheckedCreateInput);
+    return prisma.folder.create({
+      data: data as unknown as Prisma.FolderUncheckedCreateInput,
+    });
   }
 
-  async createRaw(data: Prisma.FolderUncheckedCreateInput) {
-    return prisma.folder.create({ data });
-  }
-
-  async update(id: string, userId: string, data: Prisma.FolderUncheckedUpdateInput) {
+  async update(id: string, userId: string, data: { name?: string; parentId?: string | null }) {
     return prisma.folder.update({
       where: { id, userId },
       data,

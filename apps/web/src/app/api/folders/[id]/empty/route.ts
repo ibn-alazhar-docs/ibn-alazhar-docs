@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
-import { folderUseCases } from "@/core/use-cases/folder.use-cases";
+import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 
 export const POST = withAuth(async (_request, { session, params }) => {
@@ -12,7 +12,7 @@ export const POST = withAuth(async (_request, { session, params }) => {
     );
 
   try {
-    const result = await folderUseCases.emptyFolder(id, session.user.id);
+    const result = await useCases.folder.emptyFolder(id, session.user.id);
     return NextResponse.json({
       message: "تم تفريغ المجلد بنجاح",
       documentsMoved: result.documentsMoved,

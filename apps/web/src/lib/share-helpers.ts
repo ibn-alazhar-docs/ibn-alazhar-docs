@@ -1,29 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-export { sanitizeTitle as sanitizeFilename } from "@/lib/export/profiles";
-
-export function getContentType(format: string): string {
-  switch (format) {
-    case "md":
-      return "text/markdown; charset=utf-8";
-    case "txt":
-      return "text/plain; charset=utf-8";
-    case "json":
-      return "application/json; charset=utf-8";
-    case "pdf":
-    case "searchable-pdf":
-      return "application/pdf";
-    case "docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case "epub":
-      return "application/epub+zip";
-    case "zip":
-      return "application/zip";
-    default:
-      return "application/octet-stream";
-  }
-}
-
 interface ShareAccessResult {
   share: {
     documentId: string;
