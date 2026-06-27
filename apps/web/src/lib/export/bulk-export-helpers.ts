@@ -104,25 +104,35 @@ export async function fetchDocumentFiles(
     return keys;
   });
 
-  const existenceResults = await Promise.all(
-    allStorageKeys.map((k) => fileExists(config, k.key).then((exists) => ({ ...k, exists }))),
-  );
+  const BATCH_SIZE = 10;
+  const existenceResults: { docId: string; type: string; key: string; exists: boolean }[] = [];
+
+  for (let i = 0; i < allStorageKeys.length; i += BATCH_SIZE) {
+    const batch = allStorageKeys.slice(i, i + BATCH_SIZE);
+    const results = await Promise.all(
+      batch.map((k) => fileExists(config, k.key).then((exists) => ({ ...k, exists }))),
+    );
+    existenceResults.push(...results);
+  }
 
   const existingKeys = existenceResults.filter((r) => r.exists);
 
-  const fetchResults = await Promise.all(
-    existingKeys.map((r) =>
-      downloadFile(config, r.key).then((buffer) => ({
-        docId: r.docId,
-        type: r.type,
-        buffer,
-      })),
-    ),
-  );
-
   const filesByDocAndType = new Map<string, Buffer>();
-  for (const fr of fetchResults) {
-    filesByDocAndType.set(`${fr.docId}:${fr.type}`, fr.buffer);
+
+  for (let i = 0; i < existingKeys.length; i += BATCH_SIZE) {
+    const batch = existingKeys.slice(i, i + BATCH_SIZE);
+    const fetchResults = await Promise.all(
+      batch.map((r) =>
+        downloadFile(config, r.key).then((buffer) => ({
+          docId: r.docId,
+          type: r.type,
+          buffer,
+        })),
+      ),
+    );
+    for (const fr of fetchResults) {
+      filesByDocAndType.set(`${fr.docId}:${fr.type}`, fr.buffer);
+    }
   }
 
   return filesByDocAndType;

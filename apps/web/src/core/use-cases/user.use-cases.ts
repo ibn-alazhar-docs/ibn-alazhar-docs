@@ -5,19 +5,38 @@ import type { IUserRepository } from "@/domain/repositories/user.repository.inte
 export class UserUseCases {
   constructor(private readonly userRepository: IUserRepository) {}
 
-  async getUsers() {
-    return this.userRepository.findMany({
-      where: { deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        role: true,
-        createdAt: true,
-        _count: { select: { documents: true } },
+  async getUsers(page: number = 1, limit: number = 50) {
+    const safePage = Math.max(1, page);
+    const safeLimit = Math.min(Math.max(1, limit), 100);
+    const skip = (safePage - 1) * safeLimit;
+
+    const [users, total] = await Promise.all([
+      this.userRepository.findMany({
+        where: { deletedAt: null },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          createdAt: true,
+          _count: { select: { documents: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        skip,
+        take: safeLimit,
+      }),
+      this.userRepository.count({ where: { deletedAt: null } }),
+    ]);
+
+    return {
+      users,
+      pagination: {
+        page: safePage,
+        limit: safeLimit,
+        total,
+        totalPages: Math.ceil(total / safeLimit),
       },
-      orderBy: { createdAt: "desc" },
-    });
+    };
   }
 
   async updateUserRole(userId: string, role: Role, adminUserId: string) {

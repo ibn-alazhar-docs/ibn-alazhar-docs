@@ -19,7 +19,8 @@ export async function ensureDriveFolder(
   drive: drive_v3.Drive,
   folderName: string = "Ibn Al-Azhar",
 ): Promise<string> {
-  const q = `mimeType='application/vnd.google-apps.folder' and name='${folderName}' and trashed=false`;
+  const escapedName = folderName.replace(/'/g, "\\'");
+  const q = `mimeType='application/vnd.google-apps.folder' and name='${escapedName}' and trashed=false`;
   const res = await drive.files.list({ q, spaces: "drive", fields: "files(id, name)" });
 
   if (res.data.files && res.data.files.length > 0) {

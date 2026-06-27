@@ -7,7 +7,7 @@ import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 import type { Role } from "@/domain/auth";
 
-export const GET = withAuth(async (_request, { session }) => {
+export const GET = withAuth(async (request, { session }) => {
   try {
     if (!isAdminRole(session.user.role)) {
       return NextResponse.json(
@@ -16,8 +16,12 @@ export const GET = withAuth(async (_request, { session }) => {
       );
     }
 
-    const users = await useCases.user.getUsers();
-    return NextResponse.json({ users });
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "1", 10);
+    const limit = parseInt(searchParams.get("limit") || "50", 10);
+
+    const result = await useCases.user.getUsers(page, limit);
+    return NextResponse.json(result);
   } catch (error: unknown) {
     return handleRouteError(error, "users/GET", "فشل الحصول على المستخدمين");
   }

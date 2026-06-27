@@ -75,6 +75,10 @@ export class TesseractOcrProvider implements OcrProvider {
       }
 
       const lang = config.ocr.language === "ar" ? "ara" : "eng";
+      const allowedLangs = new Set(["ara", "eng", "fra", "deu", "spa"]);
+      if (!allowedLangs.has(lang)) {
+        throw new Error(`TESSERACT_INVALID_LANG: Unsupported language "${lang}"`);
+      }
 
       const script = `
 import json, sys
@@ -83,6 +87,7 @@ from PIL import Image
 import cv2
 import numpy as np
 
+lang_arg = sys.argv[1]
 paths = [] # To be replaced
 results = []
 for i, path in enumerate(paths):
@@ -90,8 +95,8 @@ for i, path in enumerate(paths):
         img_cv = cv2.imread(path, cv2.IMREAD_GRAYSCALE)
         _, thresh = cv2.threshold(img_cv, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
         img = Image.fromarray(thresh)
-        text = pytesseract.image_to_string(img, lang="${lang}")
-        conf_data = pytesseract.image_to_data(img, lang="${lang}", output_type=pytesseract.Output.DICT)
+        text = pytesseract.image_to_string(img, lang=lang_arg)
+        conf_data = pytesseract.image_to_data(img, lang=lang_arg, output_type=pytesseract.Output.DICT)
         confs = [float(c) for c in conf_data["conf"] if float(c) > 0]
         avg_conf = sum(confs) / len(confs) if confs else 0.0
         results.append({"text": text.strip(), "confidence": round(avg_conf / 100, 3)})
@@ -118,7 +123,7 @@ print(json.dumps(results))
             const python = getPythonCommand();
             const proc = execFile(
               python,
-              ["-c", batchScript],
+              ["-c", batchScript, lang],
               {
                 timeout: 300_000,
                 maxBuffer: 50 * 1024 * 1024,

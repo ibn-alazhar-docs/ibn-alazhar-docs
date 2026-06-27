@@ -79,6 +79,16 @@ export class TagRepository implements ITagRepository {
     });
   }
 
+  async findManyTagsByIds(ids: string[], userId: string, role: string) {
+    const isAdmin = role === "ADMIN";
+    return prisma.tag.findMany({
+      where: {
+        id: { in: ids },
+        ...(isAdmin ? {} : { userId }),
+      },
+    });
+  }
+
   async findManyTagDocuments(tagId: string, documentIds: string[]) {
     return prisma.tagDocument.findMany({
       where: {

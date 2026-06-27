@@ -22,6 +22,7 @@ export interface ITagRepository {
     folderId: string | null,
   ): Promise<(Tag & { _count: { documents: number } })[]>;
   findTagById(id: string, userId: string, role: string): Promise<DomainTag | null>;
+  findManyTagsByIds(ids: string[], userId: string, role: string): Promise<DomainTag[]>;
   findManyTagDocuments(
     tagId: string,
     documentIds: string[],

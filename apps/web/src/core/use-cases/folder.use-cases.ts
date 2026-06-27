@@ -66,33 +66,12 @@ export class FolderUseCases {
     const folder = await this.folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
 
-    const allUserFolders = await this.folderRepository.findMany(userId, {
-      select: { id: true, parentId: true },
+    const childFolders = await this.folderRepository.findMany(userId, {
+      where: { parentId: id },
+      select: { id: true },
     });
 
-    const childMap = new Map<string, string[]>();
-    for (const f of allUserFolders) {
-      const children = childMap.get(f.parentId ?? "") ?? [];
-      children.push(f.id);
-      childMap.set(f.parentId ?? "", children);
-    }
-
-    const getDescendantIds = (parentId: string): string[] => {
-      const ids: string[] = [];
-      const stack = [parentId];
-      while (stack.length > 0) {
-        const currentId = stack.pop()!;
-        const children = childMap.get(currentId) ?? [];
-        for (const childId of children) {
-          ids.push(childId);
-          stack.push(childId);
-        }
-      }
-      return ids;
-    };
-
-    const descendantIds = getDescendantIds(id);
-    const allFolderIds = [id, ...descendantIds];
+    const allFolderIds = [id, ...childFolders.map((f) => f.id)];
 
     await this.folderRepository.transaction(async (tx) => {
       await tx.folder.updateMany({
