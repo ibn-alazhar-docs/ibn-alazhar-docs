@@ -107,7 +107,14 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-0"
+          role="dialog"
+          aria-modal="true"
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onClose();
+          }}
+        >
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}

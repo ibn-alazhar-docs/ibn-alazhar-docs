@@ -20,7 +20,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
   const loadFolders = useCallback(async () => {
     try {
       const response = await fetch("/api/folders");
-      if (!response.ok) throw new Error("Failed to load folders");
+      if (!response.ok) throw new Error(t("loadError"));
       const data = await response.json();
 
       interface FlatFolder {
@@ -54,8 +54,8 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
       }
 
       setFolders(rootFolders);
-    } catch (error) {
-      console.error("Failed to load folders:", error);
+    } catch {
+      // Silently ignore — folders will remain empty
     } finally {
       setLoading(false);
     }
@@ -76,7 +76,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
           className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
             isSelected ? "bg-[var(--success-bg)] text-[var(--success)]" : "text-primary-color"
           }`}
-          style={{ paddingRight: `${indent + 12}px` }}
+          style={{ paddingInlineEnd: `${indent + 12}px` }}
           onClick={() => setSelectedFolderId(folder.id)}
         >
           <span className="text-lg">
@@ -105,7 +105,17 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      role="dialog"
+      aria-modal="true"
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+      }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-primary-color mb-2">{t("moveTitle")}</h2>

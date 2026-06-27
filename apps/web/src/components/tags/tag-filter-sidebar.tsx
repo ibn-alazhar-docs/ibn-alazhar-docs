@@ -23,7 +23,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
         setTags(data.tags);
       }
     } catch {
-      console.error("Failed to fetch tags");
+      // Silently ignore — tags will remain empty
     } finally {
       setLoading(false);
     }
@@ -47,8 +47,11 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
 
   if (loading) {
     return (
-      <div className="p-3">
-        <div className="text-xs text-very-muted">...</div>
+      <div className="space-y-2">
+        <div className="h-3 w-16 animate-pulse rounded bg-hover" />
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="h-10 animate-pulse rounded-lg bg-hover" />
+        ))}
       </div>
     );
   }
@@ -81,7 +84,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
             <button
               key={tag.id}
               type="button"
-              className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+              className={`w-full flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition-colors ${
                 isSelected
                   ? "bg-[var(--success-bg)] text-[var(--success)] font-medium"
                   : "text-primary-color hover:bg-hover"

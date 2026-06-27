@@ -3,10 +3,12 @@
 import { useActionState } from "react";
 import { signIn } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 
 export function LoginForm() {
   const t = useTranslations("auth");
+  const router = useRouter();
 
   const [error, submitAction, isPending] = useActionState(
     async (_prevState: string | null, formData: FormData) => {
@@ -40,7 +42,7 @@ export function LoginForm() {
         }
 
         // Successful credentials login usually requires manual redirect or page refresh
-        window.location.href = "/dashboard";
+        router.push("/dashboard");
         return null;
       } catch {
         return t("unexpectedError");

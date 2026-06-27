@@ -73,7 +73,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
           <button
             onClick={() => signOut({ callbackUrl: `/${locale}` })}
             className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-color transition-all hover:bg-hover hover:text-[var(--danger)]"
-            title={tCommon("logout")}
+            aria-label={tCommon("logout")}
           >
             <svg
               className="h-4 w-4"

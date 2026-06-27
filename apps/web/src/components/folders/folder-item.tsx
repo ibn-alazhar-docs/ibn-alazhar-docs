@@ -53,7 +53,7 @@ export function FolderItem({
         {/* Expand/Collapse */}
         <button
           type="button"
-          className={`w-5 h-5 flex items-center justify-center text-very-muted hover:text-muted-color transition-colors ${
+          className={`min-h-11 min-w-11 flex items-center justify-center text-very-muted hover:text-muted-color transition-colors ${
             hasChildren ? "visible" : "invisible"
           }`}
           onClick={(e) => {
@@ -110,7 +110,7 @@ export function FolderItem({
         <div className="relative">
           <button
             type="button"
-            className="w-6 h-6 flex items-center justify-center text-very-muted hover:text-muted-color rounded"
+            className="min-h-11 min-w-11 flex items-center justify-center text-very-muted hover:text-muted-color rounded"
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);
