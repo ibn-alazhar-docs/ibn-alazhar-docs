@@ -17,19 +17,19 @@ export const GET = withAuth(async (_request, { session, params }) => {
 });
 
 export const PATCH = withAuth(async (request, { session, params }) => {
-  const id = params.id!;
-  const body = await request.json();
-
-  const validation = documentUpdateSchema.safeParse(body);
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-      { status: 400 },
-    );
-  }
-
   try {
+    const id = params.id!;
+    const body = await request.json();
+
+    const validation = documentUpdateSchema.safeParse(body);
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
+        { status: 400 },
+      );
+    }
+
     const updated = await useCases.documentCrud.updateDocument(
       id,
       session.user.id,
