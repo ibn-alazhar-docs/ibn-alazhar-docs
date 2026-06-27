@@ -36,8 +36,6 @@ export function PreviewView({ jobId }: PreviewViewProps) {
             isCompleted = true; // Stop polling on 404
             return;
           }
-          // Don't throw immediately, just log and retry later to handle transient errors like 401 during compilation
-          console.error("Status fetch failed with", res.status);
           return;
         }
 
@@ -63,9 +61,8 @@ export function PreviewView({ jobId }: PreviewViewProps) {
           // Still processing
           if (isMounted) setMarkdown(t("processing"));
         }
-      } catch (err: unknown) {
-        console.error("Preview fetch error:", err);
-        // We do not set error state for network issues during polling, we just wait for next tick
+      } catch {
+        // Network issues during polling — retry on next tick
       } finally {
         isFetching = false;
         if (isMounted) {

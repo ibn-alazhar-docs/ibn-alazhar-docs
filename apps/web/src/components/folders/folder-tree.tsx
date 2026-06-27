@@ -15,6 +15,7 @@ interface FolderTreeProps {
 
 export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps) {
   const t = useTranslations("folders");
+  const tCommon = useTranslations("common");
   const [folders, setFolders] = useState<FolderNode[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -26,12 +27,12 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   const loadFolders = useCallback(async () => {
     try {
       const response = await fetch("/api/folders");
-      if (!response.ok) throw new Error("Failed to load folders");
+      if (!response.ok) throw new Error(t("loadError"));
       const data = await response.json();
       const rootFolders = buildFolderTree(data.folders);
       setFolders(rootFolders);
-    } catch (error) {
-      console.error("Failed to load folders:", error);
+    } catch {
+      // Silently ignore — folders will remain empty
     } finally {
       setLoading(false);
     }
@@ -42,25 +43,20 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   }, [loadFolders]);
 
   async function handleCreate(name: string): Promise<void> {
-    try {
-      const response = await fetch("/api/folders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, parentId: createParentId }),
-      });
+    const response = await fetch("/api/folders", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, parentId: createParentId }),
+    });
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to create folder");
-      }
-
-      await loadFolders();
-      setShowCreateDialog(false);
-      setCreateParentId(null);
-    } catch (error) {
-      console.error("Failed to create folder:", error);
-      throw error;
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error || t("createError"));
     }
+
+    await loadFolders();
+    setShowCreateDialog(false);
+    setCreateParentId(null);
   }
 
   async function handleRename(folderId: string, newName: string) {
@@ -73,12 +69,12 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to rename folder");
+        throw new Error(data.error || t("renameError"));
       }
 
       await loadFolders();
-    } catch (error) {
-      console.error("Failed to rename folder:", error);
+    } catch {
+      // Silently ignore
     }
   }
 
@@ -90,7 +86,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
 
       if (!response.ok) {
         const data = await response.json();
-        throw new Error(data.error || "Failed to delete folder");
+        throw new Error(data.error || t("deleteError"));
       }
 
       if (selectedFolderId === folderId) {
@@ -98,8 +94,8 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       }
 
       await loadFolders();
-    } catch (error) {
-      console.error("Failed to delete folder:", error);
+    } catch {
+      // Silently ignore
     } finally {
       setDeleteConfirmId(null);
     }
@@ -123,8 +119,8 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         setMovingFolderId(null);
         await loadFolders();
       }
-    } catch (error) {
-      console.error("Failed to move folder:", error);
+    } catch {
+      // Silently ignore
     }
   }
 
@@ -258,8 +254,8 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         <ConfirmDialog
           title={t("deleteTitle", { fallback: "حذف المجلد" })}
           message={t("deleteConfirm")}
-          confirmLabel="حذف"
-          cancelLabel="إلغاء"
+          confirmLabel={tCommon("delete")}
+          cancelLabel={tCommon("cancel")}
           variant="danger"
           onConfirm={() => handleDelete(deleteConfirmId)}
           onCancel={() => setDeleteConfirmId(null)}

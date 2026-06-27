@@ -211,7 +211,11 @@
     "noFolders": "ابدأ بإنشاء مجلد لتنظيم أبحاثك ومستنداتك.",
     "moveButton": "نقل ({count})",
     "deleteConfirm": "حذف هذا المجلد؟ لن تُحذف الملفات بداخله.",
-    "allFilesBreadcrumb": "كل الملفات"
+    "allFilesBreadcrumb": "كل الملفات",
+    "loadError": "فشل تحميل المجلدات",
+    "createError": "فشل إنشاء المجلد",
+    "renameError": "فشل إعادة تسمية المجلد",
+    "deleteError": "فشل حذف المجلد"
   },
   "documents": {
     "title": "المستندات",

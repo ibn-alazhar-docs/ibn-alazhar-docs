@@ -37,7 +37,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
         );
       }
     } catch {
-      console.error("Failed to fetch tags");
+      // Silently ignore — tags will remain empty
     } finally {
       setLoading(false);
     }
@@ -78,10 +78,10 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
         setIsCreating(false);
       } else {
         const err = await res.json();
-        setError(err.error || "Failed to create tag");
+        setError(err.error || tCommon("error"));
       }
     } catch {
-      setError("Error");
+      setError(tCommon("error"));
     }
   };
 
@@ -183,7 +183,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
               <button
                 key={color}
                 type="button"
-                className={`w-6 h-6 rounded-full transition-transform ${
+                className={`min-h-11 min-w-11 rounded-full transition-transform ${
                   newTagColor === color ? "scale-125 ring-2 ring-offset-1" : ""
                 }`}
                 style={{ backgroundColor: color }}

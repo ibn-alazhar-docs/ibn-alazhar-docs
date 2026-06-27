@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 
 interface CreateFolderDialogProps {
@@ -38,8 +38,23 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
     }
   }
 
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div
+      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div className="bg-card border border-line rounded-xl shadow-xl w-full max-w-md mx-4">
         <div className="p-6">
           <h2 className="text-lg font-semibold text-primary-color mb-4">{t("createNew")}</h2>

@@ -38,7 +38,7 @@ export function BulkActions({
           {tDocs("addTags", { fallback: "إضافة وسوم" })}
         </button>
         {showBulkTagPicker && (
-          <div className="absolute right-0 top-full z-10 mt-2 w-64 shadow-lg">
+          <div className="absolute end-0 top-full z-10 mt-2 w-64 shadow-lg">
             <TagPicker
               selectedTagIds={[]}
               onTagsChange={(ids) => {

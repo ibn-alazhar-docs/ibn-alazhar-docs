@@ -211,7 +211,11 @@
     "noFolders": "Create a folder to organize your research and documents.",
     "moveButton": "Move ({count})",
     "deleteConfirm": "Delete this folder? Files inside will not be deleted.",
-    "allFilesBreadcrumb": "All files"
+    "allFilesBreadcrumb": "All files",
+    "loadError": "Failed to load folders",
+    "createError": "Failed to create folder",
+    "renameError": "Failed to rename folder",
+    "deleteError": "Failed to delete folder"
   },
   "documents": {
     "title": "Documents",

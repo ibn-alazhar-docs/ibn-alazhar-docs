@@ -22,7 +22,7 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
         <button
           onClick={onBack}
           className="text-muted-color hover:text-primary-color transition-colors p-1"
-          title={t("back")}
+          aria-label={t("back")}
         >
           <svg
             className="w-5 h-5"
@@ -48,35 +48,35 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
         <button
           onClick={() => handleExport("md")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
+          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
         >
           .md
         </button>
         <button
           onClick={() => handleExport("txt")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
+          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
         >
           .txt
         </button>
         <button
           onClick={() => handleExport("json")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-md hover:bg-badge transition-colors"
+          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
         >
           .json
         </button>
         <button
           onClick={() => handleExport("docx")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md hover:bg-primary-hover transition-colors shadow-sm"
+          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
         >
           .docx
         </button>
         <button
           onClick={() => handleExport("epub")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md hover:bg-primary-hover transition-colors shadow-sm"
+          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
         >
           .epub
         </button>

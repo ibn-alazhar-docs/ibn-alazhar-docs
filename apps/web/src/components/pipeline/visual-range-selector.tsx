@@ -44,15 +44,14 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
         setNumPages(pdf.numPages);
         setRanges([{ id: Date.now().toString(), from: 1, to: pdf.numPages }]);
         setIsLoading(false);
-      } catch (err) {
-        console.error("Failed to load PDF", err);
+      } catch {
         setIsLoading(false);
       }
     };
     loadPdf();
     return () => {
       active = false;
-      if (pdfDoc) (pdfDoc as unknown as { destroy: () => void }).destroy();
+      if (pdfDoc) (pdfDoc as unknown as { destroy(): void }).destroy();
     };
   }, [file]);
 

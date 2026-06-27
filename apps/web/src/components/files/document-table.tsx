@@ -82,11 +82,11 @@ export function DocumentTable({
   onToggleBulkTagPicker,
   locale,
 }: DocumentTableProps) {
-  const tDocs = useTranslations("documents") as (
+  const tDocs = useTranslations("documents") as unknown as (
     key: string,
     opts?: Record<string, unknown>,
   ) => string;
-  const tCommon = useTranslations("common") as (key: string) => string;
+  const tCommon = useTranslations("common") as unknown as (key: string) => string;
 
   return (
     <div>

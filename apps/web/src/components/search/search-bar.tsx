@@ -20,8 +20,10 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -48,7 +50,7 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
           setSuggestions(data.suggestions);
         }
       } catch {
-        console.error("Failed to fetch suggestions");
+        // Silently ignore — suggestions will remain empty
       } finally {
         setLoading(false);
       }
@@ -56,6 +58,10 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
 
     return () => clearTimeout(timer);
   }, [query]);
+
+  useEffect(() => {
+    setSelectedIndex(-1);
+  }, [suggestions]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -71,6 +77,40 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
     setShowSuggestions(false);
   }
 
+  function handleKeyDown(e: React.KeyboardEvent) {
+    if (!showSuggestions || suggestions.length === 0) return;
+
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setSelectedIndex((i) => (i < suggestions.length - 1 ? i + 1 : 0));
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setSelectedIndex((i) => (i > 0 ? i - 1 : suggestions.length - 1));
+        break;
+      case "Enter": {
+        const selected = suggestions[selectedIndex];
+        if (selected) {
+          e.preventDefault();
+          handleSuggestionClick(selected.text);
+        }
+        break;
+      }
+      case "Escape":
+        setShowSuggestions(false);
+        inputRef.current?.focus();
+        break;
+    }
+  }
+
+  useEffect(() => {
+    if (selectedIndex >= 0 && listRef.current) {
+      const items = listRef.current.querySelectorAll('[role="option"]');
+      items[selectedIndex]?.scrollIntoView({ block: "nearest" });
+    }
+  }, [selectedIndex]);
+
   return (
     <div ref={containerRef} className="relative w-full">
       <form onSubmit={handleSubmit} className="relative">
@@ -83,8 +123,13 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
             setShowSuggestions(true);
           }}
           onFocus={() => setShowSuggestions(true)}
+          onKeyDown={handleKeyDown}
           placeholder={placeholder || t("placeholder")}
           className="w-full px-4 py-2 ps-10 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--success)] text-sm"
+          role="combobox"
+          aria-expanded={showSuggestions && suggestions.length > 0}
+          aria-autocomplete="list"
+          aria-activedescendant={selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined}
         />
         <span className="absolute start-3 top-1/2 -translate-y-1/2 text-very-muted">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -100,18 +145,24 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
 
       {showSuggestions && (suggestions.length > 0 || loading) && (
         <div
+          ref={listRef}
           className="absolute top-full mt-1 w-full bg-card rounded-lg shadow-lg border border-line py-1 z-10"
           role="listbox"
           aria-label="Search suggestions"
         >
           {loading && <div className="px-4 py-2 text-sm text-muted-color">{t("searching")}</div>}
-          {suggestions.map((s) => (
+          {suggestions.map((s, i) => (
             <button
               key={`${s.type}-${s.text}`}
+              id={`suggestion-${i}`}
               type="button"
               role="option"
-              className="w-full px-4 py-2 text-start text-sm hover:bg-badge flex items-center gap-2"
+              aria-selected={i === selectedIndex}
+              className={`w-full px-4 py-2 text-start text-sm flex items-center gap-2 ${
+                i === selectedIndex ? "bg-badge" : "hover:bg-badge"
+              }`}
               onClick={() => handleSuggestionClick(s.text)}
+              onMouseEnter={() => setSelectedIndex(i)}
             >
               <span>
                 {s.type === "folder" ? (

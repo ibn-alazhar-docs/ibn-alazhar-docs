@@ -31,6 +31,11 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
         <div
           className="fixed inset-0 z-30 bg-overlay lg:hidden"
           onClick={onClose}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") onClose();
+          }}
+          role="dialog"
+          aria-modal="true"
           aria-hidden="true"
         />
       )}
