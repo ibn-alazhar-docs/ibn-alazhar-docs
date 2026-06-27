@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
@@ -7,7 +8,7 @@ import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
 
-  let body: { format?: string; options?: Record<string, unknown> };
+  let body: unknown;
   try {
     body = await request.json();
   } catch {
@@ -17,20 +18,28 @@ export const POST = withAuth(async (request, { session, params }) => {
     );
   }
 
-  const format = body.format;
-  const options = body.options;
+  const exportSchema = z.object({
+    format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
+      message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
+    }),
+    options: z.record(z.string(), z.unknown()).optional(),
+  });
 
-  if (!format || !["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"].includes(format)) {
+  const validation = exportSchema.safeParse(body);
+  if (!validation.success) {
+    const firstError = validation.error.issues[0];
     return NextResponse.json(
       {
         error: {
           code: "VALIDATION_ERROR",
-          message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
+          message: firstError?.message || "Invalid payload",
         },
       },
       { status: 400 },
     );
   }
+
+  const { format, options } = validation.data;
 
   try {
     const document = await useCases.documentCrud.getDocumentById(id, session.user.id);

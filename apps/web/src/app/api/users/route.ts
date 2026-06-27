@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { isAdminRole } from "@/domain/auth";
 import { handleRouteError } from "@/lib/route-helpers";
-import { adminUserUpdateSchema } from "@/lib/validators/auth";
+import { adminUserUpdateSchema, adminUserDeleteSchema } from "@/lib/validators/auth";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 import type { Role } from "@/domain/auth";
@@ -71,13 +71,16 @@ export const DELETE = withAuth(async (request, { session }) => {
       );
     }
 
-    const { userId } = await request.json();
-    if (!userId) {
+    const body = await request.json();
+    const validation = adminUserDeleteSchema.safeParse(body);
+    if (!validation.success) {
+      const firstError = validation.error.issues[0];
       return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "userId required" } },
+        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "userId required" } },
         { status: 400 },
       );
     }
+    const { userId } = validation.data;
 
     await useCases.user.deleteUser(userId, session.user.id);
     await auditLog({
