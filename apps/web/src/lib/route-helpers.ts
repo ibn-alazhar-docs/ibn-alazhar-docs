@@ -30,6 +30,11 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   FORBIDDEN: { code: "FORBIDDEN", message: "ليس لديك صلاحية للوصول", status: 403 },
   SOME_TAGS_NOT_FOUND: { code: "NOT_FOUND", message: "بعض الأوسمة غير موجودة", status: 404 },
   TAG_NOT_ASSIGNED: { code: "NOT_FOUND", message: "الوسم غير مرتبط بالمستند", status: 404 },
+  AUTH_ERROR: {
+    code: "AUTH_ERROR",
+    message: "يجب ربط حساب Google الخاص بك لرفع الملفات",
+    status: 400,
+  },
 };
 
 export function handleRouteError(error: unknown, route: string, fallbackMessage: string) {
