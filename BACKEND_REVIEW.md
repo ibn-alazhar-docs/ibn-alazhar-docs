@@ -7,21 +7,24 @@
 ## 1. API Review
 
 **Status:** The API surface is vast but lacks uniform structural conventions.
+
 - **Inconsistent Error Handling:** 31 out of 45 routes manually handle errors instead of leveraging the central `handleRouteError` middleware/wrapper.
 - **Inconsistent Authorization:** Multiple competing error classes (`AuthError`, `AuthorizationError`, `ForbiddenError`). Route-level authorization logic is duplicated instead of abstracted.
 
 ## 2. Service & Use Case Review
 
 **The "God Class" Anti-Pattern:**
+
 - `DocumentUseCases` (304 lines) violates the Single Responsibility Principle. It manages Document CRUD, folder assignment, tag application, and share link generation.
 - `content.ts` (491 lines) handles parsing, navigation, user journeys, search, and categorization.
 
 **Hidden Side Effects:**
+
 - `rate-limit.ts` maintains a module-level `setInterval` for cache cleanup, which leaks into the testing environment and worker processes causing memory/handle leaks.
 
 ## 3. SOLID & DRY Deficiencies
 
-- **DRY Violations:** 
+- **DRY Violations:**
   - `getPythonCommand` logic is duplicated across multiple worker files.
   - Heading detection regexes are copy-pasted.
   - Zod schemas for identical DTOs are defined inline inside API routes.

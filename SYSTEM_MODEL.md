@@ -9,35 +9,41 @@
 The system operates across three core domain verticals: **Identity**, **Asset Management**, and **Processing**.
 
 ### 1.1 Identity Domain
+
 - **User (Aggregate Root):** Owner of all resources. Distinguishes between `STUDENT` and `ADMIN` roles. Governs quota, state, and permissions.
 - **Session:** Volatile authentication token lifecycle.
 
 ### 1.2 Asset Management Domain (Core)
+
 - **Folder (Aggregate Root):** Hierarchical container for Documents. Subject to ownership and nesting invariants (e.g., maximum depth, acyclic paths).
 - **Document (Aggregate Root):** The primary asset. Composed of raw media (PDF, Images) and processed text outputs (Markdown). Contains state transitions (`UPLOADED` -> `PROCESSING` -> `READY` -> `FAILED`).
 - **Tag (Value Object / Entity):** Metadata grouping for Documents.
 - **ShareLink (Entity):** Access delegation mechanism granting time-bound or indefinite read access to external principals.
 
 ### 1.3 Processing Domain (Asynchronous)
+
 - **OCR Job (Entity):** Represents a finite state machine for document processing.
 - **Export Job (Entity):** Represents the generation of physical artifacts (PDF, ZIP) from structured data.
 
 ## 2. Architecture
 
 ### 2.1 Layered Architecture
-The system attempts Clean Architecture but suffers from Layer Bleed. 
+
+The system attempts Clean Architecture but suffers from Layer Bleed.
 **Target Architecture:**
+
 1. **Domain Layer:** Pure TypeScript, zero dependencies. Entities, Enums, Interfaces.
 2. **Use Case (Application) Layer:** Orchestrates domain entities. Defines input/output boundaries.
 3. **Interface Adapters (Controllers/Resolvers):** Next.js App Router API handlers, TRPC, or simple controllers. Translates HTTP/Web requests into Use Case commands.
 4. **Infrastructure Layer:** Repositories (Prisma), Queue Adapters (BullMQ), File Storage (MinIO).
 
 ### 2.2 Subsystems & Relationships
+
 1. **Web App (Next.js):** Primary UI and API Gateway. Handles Auth, routing, rendering.
 2. **Pipeline (Shared Lib):** Core logic for text extraction, OCR invocation, and storage handling. Currently acts as a God Module.
 3. **Workers (Node.js/tsx):**
-   - *OCR Worker:* Consumes PDF/Images, produces Markdown.
-   - *Export Worker:* Consumes Document data, produces downloadable archives.
+   - _OCR Worker:_ Consumes PDF/Images, produces Markdown.
+   - _Export Worker:_ Consumes Document data, produces downloadable archives.
 
 ## 3. Dependency Graph
 
@@ -54,6 +60,7 @@ The system attempts Clean Architecture but suffers from Layer Bleed.
 `Workers` ---> `Use Cases` ---> `Repository Interfaces`
 
 ## 4. Ownership & Data Flow
+
 - **Data Ownership:** `User` owns `Folder` and `Document`. All database queries MUST enforce tenant isolation (`where: { userId }`).
 - **Flow:**
   1. User uploads PDF.
@@ -65,6 +72,7 @@ The system attempts Clean Architecture but suffers from Layer Bleed.
   7. Frontend receives state updates.
 
 ## 5. System Constraints & Invariants
+
 - **Security:** Strict multi-tenant isolation. No document or folder can be accessed without explicit ownership verification or valid ShareLink.
 - **Resilience:** The OCR pipeline must handle poison pills (corrupted PDFs) without crashing the worker process.
 - **Data Integrity:** Folders cannot have cyclical parent-child relationships. Documents cannot be orphaned.

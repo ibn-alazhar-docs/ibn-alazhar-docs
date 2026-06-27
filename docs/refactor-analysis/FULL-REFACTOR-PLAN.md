@@ -30,7 +30,7 @@ search results, and queue processing must remain IDENTICAL.
 
 | #   | Fowler           | Target                                                                       | Risk   |
 | --- | ---------------- | ---------------------------------------------------------------------------- | ------ |
-| 2.1 | Move Method      | `lib/share-helpers.ts` ↔ `lib/export/profiles.ts` circular re-exports        | Medium |
+| 2.1 | Move Method      | `lib/share-helpers.ts` ↔ `lib/export/profiles.ts` circular re-exports       | Medium |
 | 2.2 | Remove Re-export | `lib/errors.ts` re-exporting `Role, ROLE, isAdminRole` from `domain/auth.ts` | Medium |
 
 **Verification**: `pnpm typecheck && pnpm test`

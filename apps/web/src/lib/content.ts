@@ -191,7 +191,6 @@ export function getCategoryIcon(id: string): string {
 }
 
 export async function getCategoryThemes(id: string, locale: string): Promise<ThematicGroup[]> {
-
   const all = await getAllDocs(locale);
   const categoryDocs = all.filter((d) => d.category === id);
 

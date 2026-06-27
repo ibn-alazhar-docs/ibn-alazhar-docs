@@ -7,6 +7,7 @@
 ## 1. Folder Structure & Navigation
 
 **Observations:**
+
 - The repository structure maps reasonably well to a Turborepo/pnpm monorepo.
 - **Flaws Detected:**
   - Domain logic is scattered between `apps/web/src/core`, `apps/web/src/lib`, and `packages/pipeline`. The boundary between "what is Web" and "what is Core Business Logic" is indistinguishable.
@@ -15,6 +16,7 @@
 ## 2. Code Conventions & Naming
 
 **Observations:**
+
 - **Role Typing:** The `role` concept is currently primitive strings (`"ADMIN" | "STUDENT"`) scattered everywhere, rather than imported from a unified type definition.
 - **Export Formats:** There is a name collision involving `ExportFormat`. Two different types with the same name represent different concepts.
 - **Error Codes:** Developers are forced to rely on tribal knowledge to know whether to use `AuthError`, `AuthorizationError`, or `ForbiddenError`.
@@ -22,6 +24,7 @@
 ## 3. Tooling & Onboarding
 
 **Observations:**
+
 - TypeScript strict mode and ESLint zero-tolerance are excellent.
 - **Flaws Detected:**
   - Building/Running typechecks requires executing 4 separate commands (`tsc --noEmit`), which is frustrating.

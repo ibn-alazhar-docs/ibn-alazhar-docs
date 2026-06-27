@@ -57,7 +57,9 @@ export async function resolveFolderForExport(
 ): Promise<ExportFolderData | null> {
   if (!folderId) return null;
 
-  const result = await prisma.$queryRaw<Array<{ id: string; name: string; parentId: string | null }>>`
+  const result = await prisma.$queryRaw<
+    Array<{ id: string; name: string; parentId: string | null }>
+  >`
     WITH RECURSIVE folder_tree AS (
       SELECT id, name, "parentId", 1 as level
       FROM folders
