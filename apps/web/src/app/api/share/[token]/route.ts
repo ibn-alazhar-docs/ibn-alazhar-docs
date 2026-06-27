@@ -6,53 +6,53 @@ import { tagDocumentRepository, folderRepository } from "@/core/repositories";
 import { handleRouteError } from "@/lib/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
-  const rateLimitResult = await checkRateLimit("/api/share", request);
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-        },
-      },
-    );
-  }
-
-  const { token } = await params;
-
-  const result = await validateShareAccess(token, {
-    id: true,
-    title: true,
-    description: true,
-    language: true,
-    isRtl: true,
-    pageCount: true,
-    outputFormats: true,
-    createdAt: true,
-    status: true,
-    deletedAt: true,
-  });
-  if ("error" in result) {
-    return NextResponse.json(
-      { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
-      { status: result.status },
-    );
-  }
-
-  const { share } = result;
-  const doc = share.document as {
-    id: string;
-    title: string;
-    description: string | null;
-    language: string | null;
-    isRtl: boolean;
-    pageCount: number | null;
-    outputFormats: string[];
-    createdAt: Date;
-  };
-
   try {
+    const rateLimitResult = await checkRateLimit("/api/share", request);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
+      );
+    }
+
+    const { token } = await params;
+
+    const result = await validateShareAccess(token, {
+      id: true,
+      title: true,
+      description: true,
+      language: true,
+      isRtl: true,
+      pageCount: true,
+      outputFormats: true,
+      createdAt: true,
+      status: true,
+      deletedAt: true,
+    });
+    if ("error" in result) {
+      return NextResponse.json(
+        { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
+        { status: result.status },
+      );
+    }
+
+    const { share } = result;
+    const doc = share.document as {
+      id: string;
+      title: string;
+      description: string | null;
+      language: string | null;
+      isRtl: boolean;
+      pageCount: number | null;
+      outputFormats: string[];
+      createdAt: Date;
+    };
+
     const tags = await tagDocumentRepository.findMany({
       where: { documentId: share.documentId },
       include: { tag: { select: { name: true, color: true } } },

@@ -10,41 +10,41 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ token: string; format: string }> },
 ) {
-  const rateLimitResult = await checkRateLimit("/api/share", request);
-  if (!rateLimitResult.allowed) {
-    return NextResponse.json(
-      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-        },
-      },
-    );
-  }
-
-  const { token, format } = await params;
-
-  if (!SHARE_EXPORT_FORMATS.includes(format as ShareExportFormat)) {
-    return NextResponse.json(
-      { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
-      { status: 400 },
-    );
-  }
-
-  const result = await validateShareAccess(token);
-  if ("error" in result) {
-    return NextResponse.json(
-      { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
-      { status: result.status },
-    );
-  }
-
-  const { share } = result;
-  const doc = share.document as { title: string };
-  const exportFormat = format as ShareExportFormat;
-
   try {
+    const rateLimitResult = await checkRateLimit("/api/share", request);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
+      );
+    }
+
+    const { token, format } = await params;
+
+    if (!SHARE_EXPORT_FORMATS.includes(format as ShareExportFormat)) {
+      return NextResponse.json(
+        { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
+        { status: 400 },
+      );
+    }
+
+    const result = await validateShareAccess(token);
+    if ("error" in result) {
+      return NextResponse.json(
+        { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },
+        { status: result.status },
+      );
+    }
+
+    const { share } = result;
+    const doc = share.document as { title: string };
+    const exportFormat = format as ShareExportFormat;
+
     const config = loadConfig();
 
     const outputKey = `${config.paths.exports}/${share.documentId}/${exportFormat === "searchable-pdf" ? "searchable.pdf" : `output.${exportFormat}`}`;
