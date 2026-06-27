@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
-import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { validateShareAccess } from "@/lib/share-helpers";
 import { tagDocumentRepository, folderRepository } from "@/core/repositories";
+import { handleRouteError } from "@/lib/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   const rateLimitResult = await checkRateLimit("/api/share", request);
@@ -114,10 +114,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       },
     });
   } catch (error: unknown) {
-    logger.error(error, "[share] Access failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Failed to load document" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "share/[token]", "Failed to load document");
   }
 }
