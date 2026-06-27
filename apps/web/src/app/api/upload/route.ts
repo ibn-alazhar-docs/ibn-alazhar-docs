@@ -62,21 +62,6 @@ export const POST = withAuth(async (request, { session }) => {
       message: "تم رفع الملف بنجاح وبدء المعالجة",
     });
   } catch (error) {
-    if (error instanceof Error) {
-      const msg = error.message;
-      if (msg === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      if (msg === "AUTH_ERROR") {
-        return NextResponse.json(
-          { error: { code: "AUTH_ERROR", message: "يجب ربط حساب Google الخاص بك لرفع الملفات" } },
-          { status: 400 },
-        );
-      }
-    }
     return handleRouteError(error, "upload", "فشل رفع الملف");
   }
 });
