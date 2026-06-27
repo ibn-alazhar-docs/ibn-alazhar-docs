@@ -1,6 +1,8 @@
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import type { FolderNode } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { ERROR_CODES } from "@/lib/constants";
+import { isAdminRole } from "@/domain/auth";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 
@@ -11,10 +13,10 @@ export class FolderUseCases {
   ) {}
 
   async getFolders(userId: string, role: string, parentId: string | null) {
-    const isAdmin = role === "ADMIN";
+    const admin = isAdminRole(role);
     return this.folderRepository.findMany(userId, {
       where: {
-        ...(isAdmin ? {} : { userId }),
+        ...(admin ? {} : { userId }),
         parentId: parentId || null,
         deletedAt: null,
       },
@@ -108,11 +110,12 @@ export class FolderUseCases {
     const sourceFolder = await this.folderRepository.findById(id, userId);
     if (!sourceFolder) throw new NotFoundError();
 
-    if (id === parentId) throw new AppError("مرجع دائري", "CIRCULAR_REFERENCE", 400);
+    if (id === parentId) throw new AppError("مرجع دائري", ERROR_CODES.CIRCULAR_REFERENCE, 400);
 
     if (parentId) {
       const targetFolder = await this.folderRepository.findById(parentId, userId);
-      if (!targetFolder) throw new AppError("المجلد الهدف غير موجود", "TARGET_NOT_FOUND", 404);
+      if (!targetFolder)
+        throw new AppError("المجلد الهدف غير موجود", ERROR_CODES.TARGET_NOT_FOUND, 404);
     }
 
     const allUserFolders = await this.folderRepository.findMany(userId, {
@@ -127,7 +130,7 @@ export class FolderUseCases {
     if (parentId) {
       let currentId: string | null = parentId;
       while (currentId) {
-        if (currentId === id) throw new AppError("مرجع دائري", "CIRCULAR_REFERENCE", 400);
+        if (currentId === id) throw new AppError("مرجع دائري", ERROR_CODES.CIRCULAR_REFERENCE, 400);
         const f = folderMap.get(currentId);
         currentId = f?.parentId ?? null;
       }
@@ -154,7 +157,7 @@ export class FolderUseCases {
 
       const sourceMaxDepth = getDescendantMaxDepth(id, 0);
       if (depth + 1 + sourceMaxDepth >= MAX_FOLDER_DEPTH)
-        throw new AppError("تم الوصول للحد الأقصى من العمق", "MAX_DEPTH_REACHED", 400);
+        throw new AppError("تم الوصول للحد الأقصى من العمق", ERROR_CODES.MAX_DEPTH_REACHED, 400);
     }
 
     return this.folderRepository.update(id, userId, { parentId: parentId || null });
@@ -165,7 +168,7 @@ export class FolderUseCases {
     if (!folderToRestore) throw new NotFoundError();
     if (folderToRestore.parentId) {
       const parent = await this.folderRepository.findById(folderToRestore.parentId, userId);
-      if (!parent) throw new AppError("المجلد الأصل محذوف", "PARENT_DELETED", 404);
+      if (!parent) throw new AppError("المجلد الأصل محذوف", ERROR_CODES.PARENT_DELETED, 404);
     }
     return this.folderRepository.restore(id, userId);
   }

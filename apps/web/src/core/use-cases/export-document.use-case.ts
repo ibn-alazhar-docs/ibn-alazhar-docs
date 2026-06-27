@@ -1,13 +1,16 @@
-import { documentRepository } from "../repositories/document.repository";
+import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import { downloadDocumentBuffer } from "@/lib/storage-helper";
 import { loadConfig, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { NotFoundError, AppError } from "@/lib/errors";
+import { ERROR_CODES } from "@/lib/constants";
 
 export class ExportDocumentUseCase {
+  constructor(private readonly documentRepository: IDocumentRepository) {}
+
   async execute(params: { id: string; format: string; userId: string }) {
     const { id, format, userId } = params;
 
-    const document = await documentRepository.findDocumentById(id, userId);
+    const document = await this.documentRepository.findDocumentById(id, userId);
 
     if (!document) {
       throw new NotFoundError();
@@ -33,7 +36,7 @@ export class ExportDocumentUseCase {
       } else {
         const exportExists = await fileExists(config, exportKey);
         if (!exportExists) {
-          throw new AppError("الملف جاهز للتصدير بعد", "NOT_READY", 409);
+          throw new AppError("الملف جاهز للتصدير بعد", ERROR_CODES.NOT_READY, 409);
         }
         buffer = await downloadDocumentBuffer(exportKey, userId, config);
       }
@@ -47,5 +50,3 @@ export class ExportDocumentUseCase {
     };
   }
 }
-
-export const exportDocumentUseCase = new ExportDocumentUseCase();

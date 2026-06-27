@@ -2,16 +2,16 @@ import { NextResponse } from "next/server";
 import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
 import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
-import { documentRepository } from "@/core/repositories";
+import { repos } from "@/core/composition-root";
+import { ERROR_CODES, LIMITS } from "@/lib/constants";
 
 const sseConnectionsByUser = new Map<string, number>();
-const MAX_SSE_CONNECTIONS_PER_USER = 3;
 
 async function getDocumentStatus(
   jobId: string,
 ): Promise<{ stage: string; progress: number } | null> {
   try {
-    const doc = await documentRepository.findFirst({ id: jobId }, { status: true });
+    const doc = await repos.document.findFirst({ id: jobId }, { status: true });
     if (!doc) return null;
     const stage = normalizeStage(doc.status);
     const progress = DOC_PROGRESS_MAP[doc.status] ?? 0;
@@ -28,9 +28,9 @@ export async function GET(request: Request) {
   }
 
   const currentConnections = sseConnectionsByUser.get(session.user.id) ?? 0;
-  if (currentConnections >= MAX_SSE_CONNECTIONS_PER_USER) {
+  if (currentConnections >= LIMITS.MAX_SSE_CONNECTIONS_PER_USER) {
     return NextResponse.json(
-      { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى للاتصالات" } },
+      { error: { code: ERROR_CODES.RATE_LIMITED, message: "تم تجاوز الحد الأقصى للاتصالات" } },
       { status: 429 },
     );
   }
@@ -43,18 +43,18 @@ export async function GET(request: Request) {
 
     if (!jobId) {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "jobId مطلوب" } },
+        { error: { code: ERROR_CODES.BAD_REQUEST, message: "jobId مطلوب" } },
         { status: 400 },
       );
     }
 
-    const document = await documentRepository.findFirst(
+    const document = await repos.document.findFirst(
       { id: jobId, userId: session.user.id, deletedAt: null },
       { id: true },
     );
     if (!document) {
       return NextResponse.json(
-        { error: { code: "FORBIDDEN", message: "غير مصرح" } },
+        { error: { code: ERROR_CODES.FORBIDDEN, message: "غير مصرح" } },
         { status: 403 },
       );
     }
@@ -81,20 +81,18 @@ export async function GET(request: Request) {
 
         let consecutiveCompleteChecks = 0;
         let pollCount = 0;
-        const MAX_POLLS = 300;
-        const TIMEOUT_MS = 10 * 60 * 1000;
 
         const timeoutId = setTimeout(() => {
           if (!closed) {
             sendEvent(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
             closeStream();
           }
-        }, TIMEOUT_MS);
+        }, LIMITS.SSE_TIMEOUT_MS);
 
         const interval = setInterval(async () => {
           pollCount++;
 
-          if (pollCount >= MAX_POLLS) {
+          if (pollCount >= LIMITS.MAX_SSE_POLL_COUNT) {
             clearInterval(interval);
             clearTimeout(timeoutId);
             if (!closed) {

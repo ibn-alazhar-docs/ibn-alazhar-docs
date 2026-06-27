@@ -1,16 +1,18 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import type { IShareRepository } from "@/domain/repositories/share.repository.interface";
 
 export class ShareRepository implements IShareRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
   async findShareLinkByDocumentId(documentId: string, userId: string) {
-    return prisma.shareLink.findFirst({
+    return this.prisma.shareLink.findFirst({
       where: { documentId, userId },
       include: { document: { select: { title: true } } },
     });
   }
 
   async findShareLinkByToken(token: string, documentSelect?: Record<string, boolean>) {
-    return prisma.shareLink.findUnique({
+    return this.prisma.shareLink.findUnique({
       where: { token },
       include: {
         document: {
@@ -33,23 +35,21 @@ export class ShareRepository implements IShareRepository {
     userId: string;
     expiresAt: Date | null;
   }) {
-    return prisma.shareLink.create({
+    return this.prisma.shareLink.create({
       data,
     });
   }
 
   async updateShareLinkToken(id: string, token: string) {
-    return prisma.shareLink.update({
+    return this.prisma.shareLink.update({
       where: { id },
       data: { token },
     });
   }
 
   async deleteShareLinkByDocumentId(documentId: string, userId: string) {
-    return prisma.shareLink.deleteMany({
+    return this.prisma.shareLink.deleteMany({
       where: { documentId, userId },
     });
   }
 }
-
-export const shareRepository = new ShareRepository();

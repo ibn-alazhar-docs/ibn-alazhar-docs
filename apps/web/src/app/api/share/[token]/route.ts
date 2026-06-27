@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { validateShareAccess } from "@/lib/share-helpers";
-import { tagDocumentRepository, folderRepository } from "@/core/repositories";
+import { repos } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -53,7 +53,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       createdAt: Date;
     };
 
-    const tags = await tagDocumentRepository.findMany({
+    const tags = await repos.tagDocument.findMany({
       where: { documentId: share.documentId },
       include: { tag: { select: { name: true, color: true } } },
     });
@@ -85,7 +85,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     }
 
     const folder = share.document
-      ? await folderRepository.findFirst({
+      ? await repos.folder.findFirst({
           documents: { some: { id: share.documentId } },
         })
       : null;

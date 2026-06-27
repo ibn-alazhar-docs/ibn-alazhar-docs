@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 
 export interface SearchQueryParams {
   userId?: string;
@@ -41,6 +41,8 @@ export interface SuggestionRow {
 }
 
 export class SearchRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
   async countDocuments(params: SearchQueryParams): Promise<number> {
     const { whereClause, tagJoin, params: sqlParams } = this.buildWhereClause(params);
 
@@ -52,7 +54,10 @@ export class SearchRepository {
       WHERE ${whereClause}
     `;
 
-    const countResult = await prisma.$queryRawUnsafe<SearchCountResult[]>(countQuery, ...sqlParams);
+    const countResult = await this.prisma.$queryRawUnsafe<SearchCountResult[]>(
+      countQuery,
+      ...sqlParams,
+    );
     return Number(countResult[0]?.total || 0);
   }
 
@@ -84,7 +89,7 @@ export class SearchRepository {
       LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
     `;
 
-    return prisma.$queryRawUnsafe<SearchDocumentRow[]>(
+    return this.prisma.$queryRawUnsafe<SearchDocumentRow[]>(
       searchQuery,
       ...sqlParams,
       params.limit,
@@ -93,7 +98,7 @@ export class SearchRepository {
   }
 
   async getTitleSuggestions(userId: string, query: string): Promise<SuggestionRow[]> {
-    return prisma.$queryRawUnsafe<SuggestionRow[]>(
+    return this.prisma.$queryRawUnsafe<SuggestionRow[]>(
       `SELECT DISTINCT title as text, 'title' as type, COUNT(*) as count
        FROM documents
        WHERE "userId" = $1 AND "deletedAt" IS NULL
@@ -105,7 +110,7 @@ export class SearchRepository {
   }
 
   async getFolderSuggestions(userId: string, query: string): Promise<SuggestionRow[]> {
-    return prisma.$queryRawUnsafe<SuggestionRow[]>(
+    return this.prisma.$queryRawUnsafe<SuggestionRow[]>(
       `SELECT DISTINCT name as text, 'folder' as type, COUNT(*) as count
        FROM folders
        WHERE "userId" = $1 AND "deletedAt" IS NULL
@@ -117,7 +122,7 @@ export class SearchRepository {
   }
 
   async getTagSuggestions(userId: string, query: string): Promise<SuggestionRow[]> {
-    return prisma.$queryRawUnsafe<SuggestionRow[]>(
+    return this.prisma.$queryRawUnsafe<SuggestionRow[]>(
       `SELECT DISTINCT t.name as text, 'tag' as type, COUNT(td."documentId") as count, t.id
        FROM tags t
        LEFT JOIN tag_documents td ON t.id = td."tagId"

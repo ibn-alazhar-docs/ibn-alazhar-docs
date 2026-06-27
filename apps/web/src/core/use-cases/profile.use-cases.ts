@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { ERROR_CODES } from "@/lib/constants";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
-import { userRepository } from "../repositories/user.repository";
 
 export class ProfileUseCases {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -16,12 +16,10 @@ export class ProfileUseCases {
     if (!user) throw new NotFoundError();
 
     const valid = await bcrypt.compare(password, user.passwordHash ?? "");
-    if (!valid) throw new AppError("كلمة المرور غير صحيحة", "UNAUTHORIZED", 401);
+    if (!valid) throw new AppError("كلمة المرور غير صحيحة", ERROR_CODES.UNAUTHORIZED, 401);
 
     await this.userRepository.softDelete(userId);
 
     return true;
   }
 }
-
-export const profileUseCases = new ProfileUseCases(userRepository);

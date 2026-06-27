@@ -1,4 +1,5 @@
 import { NotFoundError, ValidationError } from "@/lib/errors";
+import { LIMITS } from "@/lib/constants";
 import type { Role } from "@/domain/auth";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 
@@ -7,7 +8,7 @@ export class UserUseCases {
 
   async getUsers(page: number = 1, limit: number = 50) {
     const safePage = Math.max(1, page);
-    const safeLimit = Math.min(Math.max(1, limit), 100);
+    const safeLimit = Math.min(Math.max(1, limit), LIMITS.MAX_PAGE_LIMIT);
     const skip = (safePage - 1) * safeLimit;
 
     const [users, total] = await Promise.all([

@@ -1,12 +1,7 @@
 import { ValidationError } from "@/lib/errors";
+import { isAdminRole } from "@/domain/auth";
+import { LIMITS } from "@/lib/constants";
 import { SearchRepository } from "@/core/repositories/search.repository";
-
-const MIN_QUERY_LENGTH = 2;
-const DEFAULT_PAGE_LIMIT = 20;
-const MAX_PAGE_LIMIT = 50;
-const EXCERPT_MAX_LENGTH = 200;
-const EXCERPT_CONTEXT_BEFORE = 50;
-const EXCERPT_CONTEXT_AFTER = 150;
 
 export interface SearchFilters {
   query: string;
@@ -50,21 +45,24 @@ export class SearchUseCases {
   async search(userId: string, role: string, filters: SearchFilters) {
     const { query, type = "all", folderId, status, tagId } = filters;
     const page = Math.max(1, filters.page || 1);
-    const limit = Math.min(MAX_PAGE_LIMIT, Math.max(1, filters.limit || DEFAULT_PAGE_LIMIT));
+    const limit = Math.min(
+      LIMITS.SEARCH_MAX_PAGE_LIMIT,
+      Math.max(1, filters.limit || LIMITS.SEARCH_DEFAULT_PAGE_LIMIT),
+    );
     const offset = (page - 1) * limit;
 
-    if (!query || query.trim().length < MIN_QUERY_LENGTH) {
-      throw new ValidationError(`Min ${MIN_QUERY_LENGTH} characters required`);
+    if (!query || query.trim().length < LIMITS.MIN_SEARCH_QUERY_LENGTH) {
+      throw new ValidationError(`Min ${LIMITS.MIN_SEARCH_QUERY_LENGTH} characters required`);
     }
 
     const normalizedQuery = this.normalizeArabic(query);
     if (!normalizedQuery) throw new ValidationError("Invalid search query");
 
-    const isAdmin = role === "ADMIN";
+    const admin = isAdminRole(role);
 
     const searchParams = {
       userId,
-      isAdmin,
+      isAdmin: admin,
       normalizedQuery,
       rawQuery: query,
       type,
@@ -82,22 +80,22 @@ export class SearchUseCases {
 
     const formattedResults: SearchResult[] = rows.map((r) => {
       let excerpt = r.searchpreview || "";
-      if (excerpt.length > EXCERPT_MAX_LENGTH) {
+      if (excerpt.length > LIMITS.SEARCH_EXCERPT_MAX_LENGTH) {
         const lowerQ = normalizedQuery.toLowerCase();
         const lowerExcerpt = excerpt.toLowerCase();
         const idx = lowerExcerpt.indexOf(lowerQ);
         if (idx >= 0) {
-          const start = Math.max(0, idx - EXCERPT_CONTEXT_BEFORE);
+          const start = Math.max(0, idx - LIMITS.SEARCH_EXCERPT_CONTEXT_BEFORE);
           const end = Math.min(
             excerpt.length,
-            idx + normalizedQuery.length + EXCERPT_CONTEXT_AFTER,
+            idx + normalizedQuery.length + LIMITS.SEARCH_EXCERPT_CONTEXT_AFTER,
           );
           excerpt =
             (start > 0 ? "..." : "") +
             excerpt.slice(start, end) +
             (end < excerpt.length ? "..." : "");
         } else {
-          excerpt = excerpt.slice(0, EXCERPT_MAX_LENGTH) + "...";
+          excerpt = excerpt.slice(0, LIMITS.SEARCH_EXCERPT_MAX_LENGTH) + "...";
         }
       }
 

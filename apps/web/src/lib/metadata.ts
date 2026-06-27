@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { BRAND_NAME } from "./brand";
+import { SITE_URL } from "./constants";
 
 export const siteName = BRAND_NAME.en;
 export const siteNameAr = BRAND_NAME.ar;
-const siteUrl = "https://ibnalazhar-docs.vercel.app";
 
 export function getLocaleUrl(locale: string, path: string = ""): string {
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
-  return `${siteUrl}/${locale}${cleanPath}`;
+  return `${SITE_URL}/${locale}${cleanPath}`;
 }
 
 export interface PageMetadataOptions {
@@ -37,7 +37,7 @@ export function generatePageMetadata({
   return {
     title,
     description,
-    metadataBase: new URL(siteUrl),
+    metadataBase: new URL(SITE_URL),
     alternates: {
       canonical: url,
       languages: {

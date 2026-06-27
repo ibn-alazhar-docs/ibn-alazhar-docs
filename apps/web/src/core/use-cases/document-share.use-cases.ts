@@ -3,6 +3,7 @@ import type { IShareRepository } from "../../domain/repositories/share.repositor
 import { randomBytes } from "crypto";
 import { expirationToMs } from "@/lib/validators/share";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { ERROR_CODES } from "@/lib/constants";
 
 export class DocumentShareUseCases {
   constructor(
@@ -18,7 +19,7 @@ export class DocumentShareUseCases {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
     if (!document) throw new NotFoundError();
     if (document.status !== "COMPLETED")
-      throw new AppError("الملف جاهز للتصدير بعد", "NOT_READY", 409);
+      throw new AppError("الملف جاهز للتصدير بعد", ERROR_CODES.NOT_READY, 409);
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
     if (existing) return existing;
@@ -40,7 +41,7 @@ export class DocumentShareUseCases {
     if (!document) throw new NotFoundError();
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
-    if (!existing) throw new AppError("لا يوجد رابط مشاركة", "NO_SHARE_LINK", 404);
+    if (!existing) throw new AppError("لا يوجد رابط مشاركة", ERROR_CODES.NO_SHARE_LINK, 404);
 
     const token = randomBytes(32).toString("base64url");
     return this.shareRepository.updateShareLinkToken(existing.id, token);
@@ -51,7 +52,7 @@ export class DocumentShareUseCases {
     if (!document) throw new NotFoundError();
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
-    if (!existing) throw new AppError("لا يوجد رابط مشاركة", "NO_SHARE_LINK", 404);
+    if (!existing) throw new AppError("لا يوجد رابط مشاركة", ERROR_CODES.NO_SHARE_LINK, 404);
 
     await this.shareRepository.deleteShareLinkByDocumentId(documentId, userId);
     return true;

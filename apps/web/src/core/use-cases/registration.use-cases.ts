@@ -1,7 +1,7 @@
 import bcrypt from "bcryptjs";
 import { ConflictError } from "@/lib/errors";
+import { ROLE } from "@/domain/auth";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
-import { userRepository } from "../repositories/user.repository";
 
 export class RegistrationUseCases {
   constructor(private readonly userRepository: IUserRepository) {}
@@ -21,12 +21,10 @@ export class RegistrationUseCases {
       name,
       email: normalizedEmail,
       passwordHash,
-      role: "STUDENT",
+      role: ROLE.STUDENT,
       locale: "ar",
     });
 
     return user;
   }
 }
-
-export const registrationUseCases = new RegistrationUseCases(userRepository);

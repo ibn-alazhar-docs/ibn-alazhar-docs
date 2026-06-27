@@ -4,6 +4,7 @@ import type { DomainTag } from "../types";
 export type BatchCount = { count: number };
 
 export interface ITagRepository {
+  transaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T>;
   findMany(
     where?: Prisma.TagWhereInput,
     include?: Prisma.TagInclude,

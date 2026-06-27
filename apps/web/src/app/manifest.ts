@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { DEFAULT_TAG_COLOR } from "@/lib/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
@@ -8,7 +9,7 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/ar",
     display: "standalone",
     background_color: "#ffffff",
-    theme_color: "#16A34A",
+    theme_color: DEFAULT_TAG_COLOR,
     icons: [{ src: "/logo.png", sizes: "512x512", type: "image/png" }],
   };
 }

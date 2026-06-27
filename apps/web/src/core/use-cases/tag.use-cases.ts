@@ -1,9 +1,10 @@
 import { NotFoundError, ConflictError, ValidationError } from "@/lib/errors";
 import { MAX_TAGS_PER_USER } from "@/lib/validators/tag";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { isAdminRole } from "@/domain/auth";
+import { DEFAULT_TAG_COLOR, LIMITS } from "@/lib/constants";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
-import { prisma } from "@/lib/prisma";
 
 export class TagUseCases {
   constructor(
@@ -12,8 +13,8 @@ export class TagUseCases {
   ) {}
 
   async getTags(session: AuthSession) {
-    const isAdmin = session.user.role === "ADMIN";
-    return this.tagRepository.findMany(isAdmin ? {} : { userId: session.user.id });
+    const admin = isAdminRole(session.user.role);
+    return this.tagRepository.findMany(admin ? {} : { userId: session.user.id });
   }
 
   async getTagById(id: string, session: AuthSession) {
@@ -37,7 +38,7 @@ export class TagUseCases {
     return this.tagRepository.create({
       userId: session.user.id,
       name,
-      color: color || "#16A34A",
+      color: color || DEFAULT_TAG_COLOR,
     });
   }
 
@@ -79,21 +80,19 @@ export class TagUseCases {
     if (!sourceTag) throw new NotFoundError("الوسم المصدري غير موجود");
     if (!targetTag) throw new NotFoundError("الوسم الهدف غير موجود");
 
-    const MAX_MERGE_DOCS = 10000;
-
     const sourceDocs = await this.tagDocumentRepository.findMany({
       where: { tagId: sourceTagId },
-      take: MAX_MERGE_DOCS,
+      take: LIMITS.MAX_MERGE_DOCS,
     });
     const existingTarget = await this.tagDocumentRepository.findMany({
       where: { tagId: targetTagId },
-      take: MAX_MERGE_DOCS,
+      take: LIMITS.MAX_MERGE_DOCS,
     });
 
     const existingDocIds = new Set(existingTarget.map((td) => td.documentId));
     const newDocIds = sourceDocs.map((td) => td.documentId).filter((id) => !existingDocIds.has(id));
 
-    await prisma.$transaction(async (tx) => {
+    await this.tagRepository.transaction(async (tx) => {
       if (newDocIds.length > 0) {
         await tx.tagDocument.createMany({
           data: newDocIds.map((documentId) => ({ tagId: targetTagId, documentId })),

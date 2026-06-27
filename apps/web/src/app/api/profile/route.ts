@@ -4,7 +4,7 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { AppError } from "@/lib/errors";
 import { profileUpdateSchema } from "@/lib/validators/auth";
-import { profileUseCases } from "@/core/use-cases/profile.use-cases";
+import { useCases } from "@/core/composition-root";
 
 const deleteAccountSchema = z.object({
   password: z.string().min(1),
@@ -23,7 +23,7 @@ export const PATCH = withAuth(async (request, { session }) => {
       );
     }
 
-    const user = await profileUseCases.updateProfile(session.user.id, validation.data.name);
+    const user = await useCases.profile.updateProfile(session.user.id, validation.data.name);
 
     return NextResponse.json({ user });
   } catch (error: unknown) {
@@ -43,7 +43,7 @@ export const DELETE = withAuth(async (request, { session }) => {
       );
     }
 
-    await profileUseCases.deleteAccount(session.user.id, parsed.data.password);
+    await useCases.profile.deleteAccount(session.user.id, parsed.data.password);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

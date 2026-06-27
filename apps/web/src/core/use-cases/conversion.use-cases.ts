@@ -1,5 +1,7 @@
 import { NotFoundError } from "@/lib/errors";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { isAdminRole } from "@/domain/auth";
+import { LIMITS } from "@/lib/constants";
 import type { Prisma } from "@prisma/client";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
@@ -42,10 +44,13 @@ export class ConversionUseCases {
     filters: { page?: number; limit?: number; status?: string },
   ) {
     const page = Math.max(1, filters.page || 1);
-    const limit = Math.min(100, Math.max(1, filters.limit || 50));
+    const limit = Math.min(
+      LIMITS.MAX_PAGE_LIMIT,
+      Math.max(1, filters.limit || LIMITS.DEFAULT_PAGE_LIMIT),
+    );
 
     const where: Prisma.ConversionJobWhereInput = {};
-    if (session.user.role !== "ADMIN") {
+    if (!isAdminRole(session.user.role)) {
       where.userId = session.user.id;
     }
     if (filters.status) {
