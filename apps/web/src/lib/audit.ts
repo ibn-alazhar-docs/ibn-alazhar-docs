@@ -44,6 +44,7 @@ export const AUDIT_ACTIONS = {
   TAG_DELETE: "tag.delete",
   TAG_MERGE: "tag.merge",
   FOLDER_CREATE: "folder.create",
+  FOLDER_RENAME: "folder.rename",
   FOLDER_DELETE: "folder.delete",
   SHARE_CREATE: "share.create",
   SHARE_DELETE: "share.delete",
