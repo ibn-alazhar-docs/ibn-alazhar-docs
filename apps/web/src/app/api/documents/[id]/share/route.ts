@@ -5,24 +5,24 @@ import { createShareSchema } from "@/lib/validators/share";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session, params }) => {
-  const id = params.id!;
-  const body = await request.json();
-  const parsed = createShareSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid data",
-          details: parsed.error.issues,
-        },
-      },
-      { status: 400 },
-    );
-  }
-
   try {
+    const id = params.id!;
+    const body = await request.json();
+    const parsed = createShareSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "VALIDATION_ERROR",
+            message: "Invalid data",
+            details: parsed.error.issues,
+          },
+        },
+        { status: 400 },
+      );
+    }
+
     const share = await useCases.documentShare.createShareLink(
       id,
       session.user.id,
