@@ -1,11 +1,11 @@
 import { readFile, rm, writeFile } from "node:fs/promises";
-import { exec } from "node:child_process";
+import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
 import os from "node:os";
 import { randomUUID } from "node:crypto";
 
-const execAsync = promisify(exec);
+const execFileAsync = promisify(execFile);
 
 import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
@@ -21,7 +21,7 @@ import {
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, type DocStatus } from "@prisma/client";
 import { logger } from "../../shared/logger";
 
 const prisma = new PrismaClient();
@@ -80,16 +80,18 @@ export async function uploadExportBuffer(
 
 export async function updateDocStatus(
   documentId: string,
-  status: string,
+  status: DocStatus,
   extra?: Record<string, unknown>,
-) {
+): Promise<boolean> {
   try {
     await prisma.document.update({
       where: { id: documentId },
-      data: { status: status as never, ...extra },
+      data: { status, ...extra },
     });
+    return true;
   } catch (err) {
-    logger.warn(err, `[doc-status] Failed to update document ${documentId}:`);
+    logger.error(err, `[doc-status] Failed to update document ${documentId} to ${status}`);
+    return false;
   }
 }
 
@@ -112,7 +114,7 @@ export async function generateSearchablePdf(
       await writeFile(imgPath, pageBuf);
 
       const scriptPath = path.join(__dirname, "generate_pdf.py");
-      await execAsync(`python3 "${scriptPath}" "${imgPath}" "${pdfPath}"`);
+      await execFileAsync("python3", [scriptPath, imgPath, pdfPath]);
 
       const pdfBuf = await readFile(pdfPath);
       const doc = await PDFDocument.load(pdfBuf);
