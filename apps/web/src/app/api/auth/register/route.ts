@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { registerSchema } from "@/lib/validators/auth";
 import { registrationUseCases } from "@/core/use-cases/registration.use-cases";
-import { AppError } from "@/lib/errors";
+import { handleRouteError } from "@/lib/route-helpers";
 
 export async function POST(request: Request) {
   try {
@@ -25,15 +25,6 @@ export async function POST(request: Request) {
       { status: 201 },
     );
   } catch (error: unknown) {
-    if (error instanceof AppError) {
-      return NextResponse.json(
-        { error: { code: error.code, message: error.message } },
-        { status: error.statusCode },
-      );
-    }
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "حدث خطأ غير متوقع" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "auth/register", "حدث خطأ غير متوقع");
   }
 }
