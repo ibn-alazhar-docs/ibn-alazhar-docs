@@ -3,25 +3,13 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { renameFolderSchema } from "@/lib/validators/folder";
 import { useCases } from "@/core/composition-root";
-import { getErrorMessage } from "@/lib/errors";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
     const id = params.id!;
-
-    try {
-      const folder = await useCases.folder.getFolderById(id, session.user.id);
-      return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, no-store" } });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      throw error;
-    }
+    const folder = await useCases.folder.getFolderById(id, session.user.id);
+    return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/GET", "فشل الحصول على المجلد");
   }
@@ -41,18 +29,8 @@ export const PATCH = withAuth(async (request, { session, params }) => {
       );
     }
 
-    try {
-      const updated = await useCases.folder.renameFolder(id, session.user.id, validation.data.name);
-      return NextResponse.json({ folder: updated });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      throw error;
-    }
+    const updated = await useCases.folder.renameFolder(id, session.user.id, validation.data.name);
+    return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/PATCH", "فشل تحديث المجلد");
   }
@@ -61,27 +39,16 @@ export const PATCH = withAuth(async (request, { session, params }) => {
 export const DELETE = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
-
-    try {
-      await useCases.folder.deleteFolder(id, session.user.id);
-      await auditLog({
-        userId: session.user.id,
-        action: AUDIT_ACTIONS.FOLDER_DELETE,
-        entity: "folder",
-        entityId: id,
-        ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
-        userAgent: request.headers.get("user-agent") ?? undefined,
-      });
-      return NextResponse.json({ message: "تم حذف المجلد بنجاح" });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد غير موجود" } },
-          { status: 404 },
-        );
-      }
-      throw error;
-    }
+    await useCases.folder.deleteFolder(id, session.user.id);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.FOLDER_DELETE,
+      entity: "folder",
+      entityId: id,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
+    return NextResponse.json({ message: "تم حذف المجلد بنجاح" });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/DELETE", "فشل حذف المجلد");
   }
