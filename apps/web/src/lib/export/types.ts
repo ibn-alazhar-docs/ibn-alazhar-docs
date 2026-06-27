@@ -19,6 +19,7 @@ export interface ExportDocumentData {
   id: string;
   title: string;
   description: string | null;
+  folderId: string | null;
   fileName: string;
   originalName: string;
   mimeType: string;

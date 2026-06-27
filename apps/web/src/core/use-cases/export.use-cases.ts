@@ -44,7 +44,7 @@ export class ExportUseCases {
     const document = await resolveDocumentForExport(documentId, session);
     const [tags, folder, ocr, pipeline] = await Promise.all([
       resolveTagsForExport(documentId),
-      resolveFolderForExport(null),
+      resolveFolderForExport(document.folderId),
       resolveOcrData(documentId),
       resolvePipelineData(documentId),
     ]);

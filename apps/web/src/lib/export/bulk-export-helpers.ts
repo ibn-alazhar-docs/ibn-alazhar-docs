@@ -161,6 +161,7 @@ export async function buildZipDocuments(
           id: doc.id,
           title: doc.title,
           description: doc.description,
+          folderId: doc.folderId,
           fileName: doc.fileName,
           originalName: doc.originalName,
           mimeType: doc.mimeType,
