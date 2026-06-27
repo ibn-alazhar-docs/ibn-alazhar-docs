@@ -22,7 +22,13 @@ export const POST = withAuth(async (request, { session, params }) => {
     format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
       message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
     }),
-    options: z.record(z.string(), z.unknown()).optional(),
+    options: z
+      .object({
+        destination: z.enum(["local", "drive"]).optional(),
+        includeSource: z.boolean().optional(),
+        profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
+      })
+      .optional(),
   });
 
   const validation = exportSchema.safeParse(body);

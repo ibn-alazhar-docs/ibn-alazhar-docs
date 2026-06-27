@@ -48,6 +48,14 @@ async function checkMinio(): Promise<{ status: string; latencyMs: number }> {
   const start = Date.now();
   try {
     const endpoint = process.env.S3_ENDPOINT || "http://localhost:9000";
+    const parsedUrl = new URL(endpoint);
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return { status: "unhealthy", latencyMs: Date.now() - start };
+    }
+    const allowedHosts = new Set(["localhost", "127.0.0.1", "minio"]);
+    if (!allowedHosts.has(parsedUrl.hostname)) {
+      return { status: "unhealthy", latencyMs: Date.now() - start };
+    }
     const response = await fetch(`${endpoint}/minio/health/live`, {
       signal: AbortSignal.timeout(3000),
     });

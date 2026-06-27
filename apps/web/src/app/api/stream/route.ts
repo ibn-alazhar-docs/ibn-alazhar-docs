@@ -4,6 +4,9 @@ import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils"
 import { handleRouteError } from "@/lib/route-helpers";
 import { documentRepository } from "@/core/repositories";
 
+const sseConnectionsByUser = new Map<string, number>();
+const MAX_SSE_CONNECTIONS_PER_USER = 3;
+
 async function getDocumentStatus(
   jobId: string,
 ): Promise<{ stage: string; progress: number } | null> {
@@ -23,6 +26,16 @@ export async function GET(request: Request) {
   if (!session) {
     return unauthorizedResponse();
   }
+
+  const currentConnections = sseConnectionsByUser.get(session.user.id) ?? 0;
+  if (currentConnections >= MAX_SSE_CONNECTIONS_PER_USER) {
+    return NextResponse.json(
+      { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى للاتصالات" } },
+      { status: 429 },
+    );
+  }
+
+  sseConnectionsByUser.set(session.user.id, currentConnections + 1);
 
   try {
     const { searchParams } = new URL(request.url);
@@ -186,6 +199,8 @@ export async function GET(request: Request) {
           clearInterval(interval);
           clearTimeout(timeoutId);
           controller.close();
+          const count = sseConnectionsByUser.get(session.user.id) ?? 0;
+          if (count > 0) sseConnectionsByUser.set(session.user.id, count - 1);
         });
       },
     });

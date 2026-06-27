@@ -79,9 +79,15 @@ export class TagUseCases {
     if (!sourceTag) throw new NotFoundError("الوسم المصدري غير موجود");
     if (!targetTag) throw new NotFoundError("الوسم الهدف غير موجود");
 
-    const sourceDocs = await this.tagDocumentRepository.findMany({ where: { tagId: sourceTagId } });
+    const MAX_MERGE_DOCS = 10000;
+
+    const sourceDocs = await this.tagDocumentRepository.findMany({
+      where: { tagId: sourceTagId },
+      take: MAX_MERGE_DOCS,
+    });
     const existingTarget = await this.tagDocumentRepository.findMany({
       where: { tagId: targetTagId },
+      take: MAX_MERGE_DOCS,
     });
 
     const existingDocIds = new Set(existingTarget.map((td) => td.documentId));

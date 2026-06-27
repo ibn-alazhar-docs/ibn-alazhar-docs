@@ -222,11 +222,17 @@ export class ExportUseCases {
     const folderIds: string[] = [folderId];
 
     if (options.recursive) {
-      const childFolders = await this.folderRepository.findMany({
-        where: ownedWhere({ parentId: folderId }, session),
-        select: { id: true },
-      });
-      folderIds.push(...childFolders.map((f) => f.id));
+      const collectChildFolderIds = async (parentId: string): Promise<void> => {
+        const children = await this.folderRepository.findMany({
+          where: ownedWhere({ parentId }, session),
+          select: { id: true },
+        });
+        for (const child of children) {
+          folderIds.push(child.id);
+          await collectChildFolderIds(child.id);
+        }
+      };
+      await collectChildFolderIds(folderId);
     }
 
     const documents = await this.documentRepository.findMany({

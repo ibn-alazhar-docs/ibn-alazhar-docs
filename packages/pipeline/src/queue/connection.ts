@@ -6,34 +6,44 @@ let connection: IORedis | null = null;
 let lastRedisHost = "";
 let lastRedisPort = 0;
 let lastRedisPassword: string | undefined = undefined;
+let connectionLock = false;
 
 const queues: Record<string, Queue> = {};
 
 export function getConnection(config: PipelineConfig): IORedis {
+  if (connectionLock) {
+    if (connection) return connection;
+  }
+
   if (
     !connection ||
     lastRedisHost !== config.redis.host ||
     lastRedisPort !== config.redis.port ||
     lastRedisPassword !== config.redis.password
   ) {
-    if (connection) {
-      connection.disconnect();
+    connectionLock = true;
+    try {
+      if (connection) {
+        connection.disconnect();
+      }
+      connection = new IORedis({
+        host: config.redis.host,
+        port: config.redis.port,
+        password: config.redis.password,
+        maxRetriesPerRequest: null,
+        retryStrategy: (times: number) => {
+          if (times > 5) return null;
+          return Math.min(1000 * 2 ** times, 10000);
+        },
+      });
+      lastRedisHost = config.redis.host;
+      lastRedisPort = config.redis.port;
+      lastRedisPassword = config.redis.password;
+    } finally {
+      connectionLock = false;
     }
-    connection = new IORedis({
-      host: config.redis.host,
-      port: config.redis.port,
-      password: config.redis.password,
-      maxRetriesPerRequest: null,
-      retryStrategy: (times: number) => {
-        if (times > 5) return null;
-        return Math.min(1000 * 2 ** times, 10000);
-      },
-    });
-    lastRedisHost = config.redis.host;
-    lastRedisPort = config.redis.port;
-    lastRedisPassword = config.redis.password;
   }
-  return connection;
+  return connection!;
 }
 
 export function getQueue(queueName: string, config: PipelineConfig): Queue {

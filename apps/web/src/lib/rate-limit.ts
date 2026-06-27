@@ -24,11 +24,19 @@ const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
 function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
-    const first = forwarded.split(",")[0];
-    if (first) return first.trim();
+    const parts = forwarded.split(",");
+    const first = parts[0];
+    if (first) {
+      const ip = first.trim();
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || ip.includes(":")) {
+        return ip;
+      }
+    }
   }
   const realIp = request.headers.get("x-real-ip");
-  if (realIp) return realIp;
+  if (realIp && (/^\d{1,3}(\.\d{1,3}){3}$/.test(realIp) || realIp.includes(":"))) {
+    return realIp;
+  }
   return "unknown";
 }
 

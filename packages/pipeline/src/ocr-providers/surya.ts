@@ -142,7 +142,8 @@ export class SuryaOcrProvider implements OcrProvider {
   }
 
   private async runSuryaBatch(imagePaths: string[], _language: string): Promise<SuryaPageResult[]> {
-    const pathsJson = JSON.stringify(imagePaths);
+    const pathsJsonPath = join(await mkdtemp(join(tmpdir(), "surya-paths-")), "paths.json");
+    await writeFile(pathsJsonPath, JSON.stringify(imagePaths));
     const script = `
 import json, sys, gc
 from PIL import Image as PILImage
@@ -153,7 +154,8 @@ det_predictor = DetectionPredictor()
 foundation = FoundationPredictor()
 rec_predictor = RecognitionPredictor(foundation)
 
-paths = ${pathsJson}
+with open(sys.argv[1], "r") as f:
+    paths = json.load(f)
 BATCH_SIZE = 2
 all_results = []
 total = len(paths)
@@ -232,7 +234,7 @@ print(json.dumps(all_results))
       const python = getPythonCommand();
       const proc = execFile(
         python,
-        ["-c", script],
+        ["-c", script, pathsJsonPath],
         {
           timeout: SURYA_TIMEOUT - 5_000,
           maxBuffer: 50 * 1024 * 1024,
@@ -240,6 +242,7 @@ print(json.dumps(all_results))
         },
         (err, stdout, stderr) => {
           clearTimeout(timeout);
+          unlink(pathsJsonPath).catch(() => {});
           if (err) {
             const stderrSnippet = stderr ? stderr.slice(-2000) : "";
             reject(new Error(`SURYA_EXECUTION_FAILED: ${err.message}\nSTDERR: ${stderrSnippet}`));

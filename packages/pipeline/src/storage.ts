@@ -29,8 +29,13 @@ let lastPort = 0;
 let lastUseSSL = false;
 let lastAccessKey = "";
 let lastSecretKey = "";
+let clientLock = false;
 
 export function getStorageClient(config: PipelineConfig): MinioClient {
+  if (clientLock) {
+    if (client) return client;
+  }
+
   const changed =
     !client ||
     lastEndpoint !== config.minio.endpoint ||
@@ -40,18 +45,23 @@ export function getStorageClient(config: PipelineConfig): MinioClient {
     lastSecretKey !== config.minio.secretKey;
 
   if (changed) {
-    client = new MinioClient({
-      endPoint: config.minio.endpoint,
-      port: config.minio.port,
-      useSSL: config.minio.useSSL,
-      accessKey: config.minio.accessKey,
-      secretKey: config.minio.secretKey,
-    });
-    lastEndpoint = config.minio.endpoint;
-    lastPort = config.minio.port;
-    lastUseSSL = config.minio.useSSL;
-    lastAccessKey = config.minio.accessKey;
-    lastSecretKey = config.minio.secretKey;
+    clientLock = true;
+    try {
+      client = new MinioClient({
+        endPoint: config.minio.endpoint,
+        port: config.minio.port,
+        useSSL: config.minio.useSSL,
+        accessKey: config.minio.accessKey,
+        secretKey: config.minio.secretKey,
+      });
+      lastEndpoint = config.minio.endpoint;
+      lastPort = config.minio.port;
+      lastUseSSL = config.minio.useSSL;
+      lastAccessKey = config.minio.accessKey;
+      lastSecretKey = config.minio.secretKey;
+    } finally {
+      clientLock = false;
+    }
   }
   return client!;
 }
@@ -213,11 +223,21 @@ export async function uploadBuffer(
 
 export async function downloadFile(config: PipelineConfig, key: string): Promise<Buffer> {
   const mc = getStorageClient(config);
+  const MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024;
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
+    let totalSize = 0;
     mc.getObject(config.minio.bucket, key)
       .then((stream) => {
-        stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+        stream.on("data", (chunk: Buffer) => {
+          totalSize += chunk.length;
+          if (totalSize > MAX_DOWNLOAD_SIZE) {
+            stream.destroy();
+            reject(new Error("File too large"));
+            return;
+          }
+          chunks.push(chunk);
+        });
         stream.on("end", () => resolve(Buffer.concat(chunks)));
         stream.on("error", reject);
       })

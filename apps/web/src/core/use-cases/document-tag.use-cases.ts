@@ -10,12 +10,11 @@ export class DocumentTagUseCases {
   ) {}
 
   async getDocumentTags(documentId: string, userId: string) {
-    const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
-
     const docWithTags = (await this.documentRepository.findDocumentById(documentId, userId, {
       tags: { include: { tag: { select: { id: true, name: true, color: true } } } },
-    })) as unknown as { tags: { tag: { id: string; name: string; color: string } }[] };
+    })) as unknown as { tags: { tag: { id: string; name: string; color: string } }[] } | null;
+
+    if (!docWithTags) throw new NotFoundError();
 
     return docWithTags.tags.map((td) => td.tag);
   }
@@ -39,10 +38,8 @@ export class DocumentTagUseCases {
     if (!document) throw new NotFoundError();
 
     if (tagIds.length > 0) {
-      const validTags = await Promise.all(
-        tagIds.map((id) => this.tagRepository.findTagById(id, userId, role)),
-      );
-      if (validTags.some((t) => !t))
+      const validTags = await this.tagRepository.findManyTagsByIds(tagIds, userId, role);
+      if (validTags.length !== tagIds.length)
         throw new AppError("بعض العلامات غير موجودة", "SOME_TAGS_NOT_FOUND", 404);
     }
 
