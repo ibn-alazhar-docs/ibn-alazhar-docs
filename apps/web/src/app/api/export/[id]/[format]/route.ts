@@ -3,9 +3,23 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
 import { contentDispositionHeader } from "@/lib/export/profiles";
+import { checkRateLimit } from "@/lib/rate-limit";
 
-export const GET = withAuth(async (_request, { session, params }) => {
+export const GET = withAuth(async (request, { session, params }) => {
   try {
+    const rateLimitResult = await checkRateLimit("/api/export", request);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
+      );
+    }
+
     const id = params.id!;
     const format = params.format!;
 
