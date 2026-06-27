@@ -1,46 +1,16 @@
 import { PrismaClient } from "@prisma/client";
-
-export interface SearchQueryParams {
-  userId?: string;
-  isAdmin: boolean;
-  normalizedQuery: string;
-  rawQuery: string;
-  type: string;
-  folderId?: string;
-  status?: string;
-  tagId?: string;
-  limit: number;
-  offset: number;
-}
+import type {
+  ISearchRepository,
+  SearchQueryParams,
+  SearchDocumentRow,
+  SuggestionRow,
+} from "@/domain/repositories/search.repository.interface";
 
 export interface SearchCountResult {
   total: bigint;
 }
 
-export interface SearchDocumentRow {
-  id: string;
-  title: string;
-  fileName: string;
-  status: string;
-  pageCount: number | null;
-  fileSize: number;
-  outputFormats: string[];
-  createdAt: Date;
-  folderId: string | null;
-  searchpreview: string | null;
-  wordcount: number | null;
-  rank: number;
-  folderName: string | null;
-}
-
-export interface SuggestionRow {
-  text: string;
-  type: string;
-  count: bigint;
-  id?: string;
-}
-
-export class SearchRepository {
+export class SearchRepository implements ISearchRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async countDocuments(params: SearchQueryParams): Promise<number> {
