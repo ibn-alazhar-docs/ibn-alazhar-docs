@@ -1,4 +1,4 @@
-import { Queue, type Job } from "bullmq";
+import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import type { PipelineConfig } from "../types";
 

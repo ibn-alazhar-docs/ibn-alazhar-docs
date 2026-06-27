@@ -1,4 +1,4 @@
-import type { ExportProfileConfig, ExportFormat, ExportProfile } from "./types";
+import type { ExportProfileConfig, ExportProfile } from "./types";
 
 export function getContentType(format: string): string {
   switch (format) {

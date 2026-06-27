@@ -18,7 +18,6 @@ import {
   downloadFromDrive,
   ensureDriveFolder,
   uploadToDrive,
-  fileExists,
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";

@@ -131,8 +131,7 @@ export class ExportUseCases {
       includeSource: options.includeSource,
     });
 
-    const { sanitizeTitle, getContentType, contentDispositionHeader } =
-      await import("@/lib/export/profiles");
+    const { sanitizeTitle, getContentType } = await import("@/lib/export/profiles");
     const zipName = `${sanitizeTitle(document.title)}_${new Date().toISOString().split("T")[0]}.zip`;
 
     return {
@@ -148,8 +147,7 @@ export class ExportUseCases {
     format: string,
   ): Promise<SingleExportResult> {
     const config = loadConfig();
-    const { sanitizeTitle, getContentType, contentDispositionHeader } =
-      await import("@/lib/export/profiles");
+    const { sanitizeTitle, getContentType } = await import("@/lib/export/profiles");
 
     const outputKey = `${config.paths.exports}/${document.id}/output.${format}`;
     const exists = await fileExists(config, outputKey);
