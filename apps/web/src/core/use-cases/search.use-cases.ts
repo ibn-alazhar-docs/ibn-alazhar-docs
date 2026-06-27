@@ -1,5 +1,5 @@
 import { ValidationError } from "@/lib/errors";
-import { SearchRepository, type SearchDocumentRow } from "@/core/repositories/search.repository";
+import { SearchRepository } from "@/core/repositories/search.repository";
 
 const MIN_QUERY_LENGTH = 2;
 const DEFAULT_PAGE_LIMIT = 20;

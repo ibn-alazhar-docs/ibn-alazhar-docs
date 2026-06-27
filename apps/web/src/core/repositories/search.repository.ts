@@ -59,7 +59,7 @@ export class SearchRepository {
   async searchDocuments(params: SearchQueryParams): Promise<SearchDocumentRow[]> {
     const { whereClause, tagJoin, params: sqlParams, rankClause } = this.buildWhereClause(params);
 
-    let paramIndex = sqlParams.length + 1;
+    const paramIndex = sqlParams.length + 1;
 
     const searchQuery = `
       SELECT

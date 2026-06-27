@@ -6,10 +6,10 @@ function formatMessage(level: string, module: string, msg: string): string {
 
 export const logger = {
   debug: (module: string, msg: string, ...args: unknown[]) => {
-    if (isDev) console.debug(formatMessage("debug", module, msg), ...args);
+    if (isDev) console.debug(formatMessage("debug", module, msg), ...args); // eslint-disable-line no-console
   },
   info: (module: string, msg: string, ...args: unknown[]) => {
-    console.info(formatMessage("info", module, msg), ...args);
+    console.info(formatMessage("info", module, msg), ...args); // eslint-disable-line no-console
   },
   warn: (module: string, msg: string, ...args: unknown[]) => {
     console.warn(formatMessage("warn", module, msg), ...args);

@@ -1,10 +1,8 @@
-import { loadConfig, closeQueueConnections } from "@ibn-al-azhar-docs/pipeline";
+import { closeQueueConnections } from "@ibn-al-azhar-docs/pipeline";
 import { startHealthServer } from "../../shared/health-server";
 import { logger } from "../../shared/logger";
 
 import { registerExportHandler } from "./export-handler";
-
-const config = loadConfig();
 
 async function main() {
   logger.info("[export-worker] Starting...");
