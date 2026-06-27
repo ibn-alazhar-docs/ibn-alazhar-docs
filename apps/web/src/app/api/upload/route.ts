@@ -6,6 +6,7 @@ import { useCases } from "@/core/composition-root";
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);
 const MAX_FILE_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export const POST = withAuth(async (request, { session }) => {
   try {
@@ -17,6 +18,20 @@ export const POST = withAuth(async (request, { session }) => {
     if (!file) {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "لم يتم رفع أي ملف" } },
+        { status: 400 },
+      );
+    }
+
+    if (folderId && !UUID_REGEX.test(folderId)) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "معرف المجلد غير صالح" } },
+        { status: 400 },
+      );
+    }
+
+    if (pageRange && !/^\d+(-\d+)?$/.test(pageRange)) {
+      return NextResponse.json(
+        { error: { code: "VALIDATION_ERROR", message: "نطاق الصفحات غير صالح" } },
         { status: 400 },
       );
     }
@@ -61,7 +76,7 @@ export const POST = withAuth(async (request, { session }) => {
       status: "pending",
       message: "تم رفع الملف بنجاح وبدء المعالجة",
     });
-  } catch (error) {
+  } catch (error: unknown) {
     return handleRouteError(error, "upload", "فشل رفع الملف");
   }
 });
