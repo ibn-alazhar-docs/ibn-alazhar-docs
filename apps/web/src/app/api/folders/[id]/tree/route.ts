@@ -8,7 +8,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const id = params.id!;
     const result = await useCases.folder.getFolderTree(id, session.user.id);
     return NextResponse.json(result, {
-      headers: { "Cache-Control": "public, max-age=30, s-maxage=30" },
+      headers: { "Cache-Control": "private, max-age=30" },
     });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/tree/GET", "فشل تحميل شجرة المجلدات");
