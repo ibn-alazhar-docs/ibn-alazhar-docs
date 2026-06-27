@@ -21,7 +21,7 @@ const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "export:bulk": { limit: 3, windowMs: 60_000 },
 };
 
-function getClientIp(request: Request): string {
+export function getClientIp(request: Request): string {
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const parts = forwarded.split(",");
