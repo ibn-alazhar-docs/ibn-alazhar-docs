@@ -5,9 +5,8 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { auditLog, AUDIT_ACTIONS } from "./audit";
-
-const MAX_FAILED_ATTEMPTS = 5;
-const LOCKOUT_DURATION_MS = 15 * 60 * 1000; // 15 minutes
+import { ROLE } from "@/domain/auth";
+import { LIMITS } from "@/lib/constants";
 
 declare module "next-auth" {
   interface Session {
@@ -41,10 +40,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       : "dev-only-secret-do-not-use-in-production"),
   session: {
     strategy: "jwt",
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: LIMITS.SESSION_MAX_AGE,
   },
   jwt: {
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: LIMITS.SESSION_MAX_AGE,
   },
   cookies: {
     sessionToken: {
@@ -101,7 +100,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         // Check lockout
         if (user.lockedAt) {
-          const lockoutEnd = user.lockedAt.getTime() + LOCKOUT_DURATION_MS;
+          const lockoutEnd = user.lockedAt.getTime() + LIMITS.LOCKOUT_DURATION_MS;
           if (Date.now() < lockoutEnd) {
             await auditLog({
               userId: user.id,
@@ -125,7 +124,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           const updateData: { failedLoginAttempts: number; lockedAt?: Date } = {
             failedLoginAttempts: newAttempts,
           };
-          if (newAttempts >= MAX_FAILED_ATTEMPTS) {
+          if (newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS) {
             updateData.lockedAt = new Date();
           }
           await prisma.user.update({
@@ -138,7 +137,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             action: AUDIT_ACTIONS.LOGIN_FAILED,
             entity: "user",
             entityId: user.id,
-            metadata: { email, attempts: newAttempts, locked: newAttempts >= MAX_FAILED_ATTEMPTS },
+            metadata: {
+              email,
+              attempts: newAttempts,
+              locked: newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS,
+            },
           });
           return null;
         }
@@ -173,7 +176,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role || "STUDENT";
+        token.role = user.role || ROLE.STUDENT;
       }
 
       if (trigger === "update") {

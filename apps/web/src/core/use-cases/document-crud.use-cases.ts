@@ -1,6 +1,8 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { ERROR_CODES } from "@/lib/constants";
+import { isAdminRole } from "@/domain/auth";
 import { logger } from "@/lib/logger";
 
 export class DocumentCrudUseCases {
@@ -20,9 +22,9 @@ export class DocumentCrudUseCases {
       take?: number;
     },
   ) {
-    const isAdmin = role === "ADMIN";
+    const admin = isAdminRole(role);
     const where: Record<string, unknown> = {
-      ...(isAdmin ? {} : { userId }),
+      ...(admin ? {} : { userId }),
       deletedAt: filters.deleted ? { not: null } : null,
     };
 
@@ -78,7 +80,7 @@ export class DocumentCrudUseCases {
         updateData.folderId = null;
       } else {
         const folder = await this.folderRepository.findById(data.folderId, userId);
-        if (!folder) throw new AppError("المجلد غير موجود", "FOLDER_NOT_FOUND", 404);
+        if (!folder) throw new AppError("المجلد غير موجود", ERROR_CODES.FOLDER_NOT_FOUND, 404);
         updateData.folderId = data.folderId;
       }
     }

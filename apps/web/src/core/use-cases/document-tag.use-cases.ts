@@ -1,12 +1,14 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
+import type { ITagDocumentRepository } from "../../domain/repositories/tag-document.repository.interface";
 import { AppError, NotFoundError } from "@/lib/errors";
-import { prisma } from "@/lib/prisma";
+import { ERROR_CODES } from "@/lib/constants";
 
 export class DocumentTagUseCases {
   constructor(
     private readonly documentRepository: IDocumentRepository,
     private readonly tagRepository: ITagRepository,
+    private readonly tagDocumentRepository: ITagDocumentRepository,
   ) {}
 
   async getDocumentTags(documentId: string, userId: string) {
@@ -24,10 +26,10 @@ export class DocumentTagUseCases {
     if (!document) throw new NotFoundError();
 
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
+    if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);
 
     const existing = await this.tagRepository.findManyTagDocuments(tagId, [documentId]);
-    if (existing.length > 0) throw new AppError("الوسم مرتبط بالفعل", "CONFLICT", 409);
+    if (existing.length > 0) throw new AppError("الوسم مرتبط بالفعل", ERROR_CODES.CONFLICT, 409);
 
     await this.tagRepository.createManyTagDocuments([{ tagId, documentId }]);
     return tag;
@@ -40,10 +42,10 @@ export class DocumentTagUseCases {
     if (tagIds.length > 0) {
       const validTags = await this.tagRepository.findManyTagsByIds(tagIds, userId, role);
       if (validTags.length !== tagIds.length)
-        throw new AppError("بعض العلامات غير موجودة", "SOME_TAGS_NOT_FOUND", 404);
+        throw new AppError("بعض العلامات غير موجودة", ERROR_CODES.SOME_TAGS_NOT_FOUND, 404);
     }
 
-    await prisma.$transaction(async (tx) => {
+    await this.tagDocumentRepository.transaction(async (tx) => {
       await tx.tagDocument.deleteMany({ where: { documentId } });
 
       if (tagIds.length > 0) {
@@ -60,16 +62,17 @@ export class DocumentTagUseCases {
     if (!document) throw new NotFoundError();
 
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
+    if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);
 
     const result = await this.tagRepository.deleteManyTagDocuments(tagId, [documentId]);
-    if (result.count === 0) throw new AppError("الوسم غير مرتبط", "TAG_NOT_ASSIGNED", 404);
+    if (result.count === 0)
+      throw new AppError("الوسم غير مرتبط", ERROR_CODES.TAG_NOT_ASSIGNED, 404);
     return true;
   }
 
   async bulkTagDocuments(documentIds: string[], tagId: string, userId: string, role: string) {
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
+    if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);
 
     const documents = await this.documentRepository.findMany({
       where: { id: { in: documentIds }, userId, deletedAt: null },
@@ -77,7 +80,7 @@ export class DocumentTagUseCases {
     });
 
     if (documents.length !== documentIds.length) {
-      throw new AppError("بعض العناصر غير موجودة", "SOME_NOT_FOUND", 404);
+      throw new AppError("بعض العناصر غير موجودة", ERROR_CODES.SOME_NOT_FOUND, 404);
     }
 
     const existingAssociations = await this.tagRepository.findManyTagDocuments(tagId, documentIds);
@@ -96,7 +99,7 @@ export class DocumentTagUseCases {
 
   async bulkUntagDocuments(documentIds: string[], tagId: string, userId: string, role: string) {
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
-    if (!tag) throw new AppError("الوسم غير موجود", "TAG_NOT_FOUND", 404);
+    if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);
 
     const documents = await this.documentRepository.findMany({
       where: { id: { in: documentIds }, userId, deletedAt: null },
@@ -104,7 +107,7 @@ export class DocumentTagUseCases {
     });
 
     if (documents.length !== documentIds.length) {
-      throw new AppError("بعض العناصر غير موجودة", "SOME_NOT_FOUND", 404);
+      throw new AppError("بعض العناصر غير موجودة", ERROR_CODES.SOME_NOT_FOUND, 404);
     }
 
     const result = await this.tagRepository.deleteManyTagDocuments(tagId, documentIds);

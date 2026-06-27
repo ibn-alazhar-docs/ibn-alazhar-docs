@@ -2,6 +2,7 @@ import type { TagDocument, Prisma } from "@prisma/client";
 import type { BatchCount } from "./tag.repository.interface";
 
 export interface ITagDocumentRepository {
+  transaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>): Promise<T>;
   findMany(args: {
     where: { documentId?: string; tagId?: string };
     include?: Prisma.TagDocumentInclude;

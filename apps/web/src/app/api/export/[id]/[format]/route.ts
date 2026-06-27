@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
+import { useCases } from "@/core/composition-root";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -35,7 +35,7 @@ export const GET = withAuth(async (request, { session, params }) => {
       );
     }
 
-    const { buffer, document } = await exportDocumentUseCase.execute({
+    const { buffer, document } = await useCases.exportDocument.execute({
       id,
       format,
       userId: session.user.id,

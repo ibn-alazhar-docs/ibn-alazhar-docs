@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { registerSchema } from "@/lib/validators/auth";
-import { registrationUseCases } from "@/core/use-cases/registration.use-cases";
+import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 import { checkRateLimit } from "@/lib/rate-limit";
 
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
 
     const { name, email, password } = validation.data;
 
-    const user = await registrationUseCases.register(name, email, password);
+    const user = await useCases.registration.register(name, email, password);
 
     return NextResponse.json(
       { message: "تم إنشاء الحساب بنجاح", userId: user.id },

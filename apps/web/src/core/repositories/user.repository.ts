@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import type {
   IUserRepository,
   UserListItem,
@@ -8,32 +8,34 @@ import type { Role } from "@/domain/auth";
 import type { Prisma } from "@prisma/client";
 
 export class UserRepository implements IUserRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
   async findById(id: string) {
-    return prisma.user.findFirst({ where: { id, deletedAt: null } });
+    return this.prisma.user.findFirst({ where: { id, deletedAt: null } });
   }
 
   async findByEmail(email: string) {
-    return prisma.user.findUnique({ where: { email } });
+    return this.prisma.user.findUnique({ where: { email } });
   }
 
   async findFirst(where: Prisma.UserFindFirstArgs) {
-    return prisma.user.findFirst(where);
+    return this.prisma.user.findFirst(where);
   }
 
   async findMany(options?: Prisma.UserFindManyArgs) {
-    return prisma.user.findMany(options ?? {}) as unknown as UserListItem[];
+    return this.prisma.user.findMany(options ?? {}) as unknown as UserListItem[];
   }
 
   async create(data: Prisma.UserUncheckedCreateInput) {
-    return prisma.user.create({ data });
+    return this.prisma.user.create({ data });
   }
 
   async update(id: string, data: Prisma.UserUncheckedUpdateInput) {
-    return prisma.user.update({ where: { id }, data });
+    return this.prisma.user.update({ where: { id }, data });
   }
 
   async updateRole(id: string, role: Role): Promise<UserRoleUpdate> {
-    return prisma.user.update({
+    return this.prisma.user.update({
       where: { id },
       data: { role },
       select: { id: true, name: true, email: true, role: true },
@@ -41,11 +43,9 @@ export class UserRepository implements IUserRepository {
   }
 
   async softDelete(id: string): Promise<void> {
-    await prisma.user.update({
+    await this.prisma.user.update({
       where: { id },
       data: { deletedAt: new Date() },
     });
   }
 }
-
-export const userRepository = new UserRepository();

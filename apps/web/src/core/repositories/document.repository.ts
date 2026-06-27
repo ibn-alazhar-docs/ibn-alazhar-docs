@@ -1,17 +1,19 @@
-import { prisma } from "@/lib/prisma";
+import { PrismaClient } from "@prisma/client";
 import type { Document, Prisma } from "@prisma/client";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 
 export class DocumentRepository implements IDocumentRepository {
+  constructor(private readonly prisma: PrismaClient) {}
+
   async createDocument(data: CreateDocumentInput): Promise<Document> {
-    return prisma.document.create({
+    return this.prisma.document.create({
       data: data as unknown as Prisma.DocumentUncheckedCreateInput,
     });
   }
 
   async findDocumentById(id: string, userId: string, include?: Prisma.DocumentInclude) {
-    return prisma.document.findFirst({
+    return this.prisma.document.findFirst({
       where: {
         id,
         userId,
@@ -22,26 +24,26 @@ export class DocumentRepository implements IDocumentRepository {
   }
 
   async findFirst(where: Prisma.DocumentWhereInput, select?: Prisma.DocumentSelect) {
-    return prisma.document.findFirst({ where, select });
+    return this.prisma.document.findFirst({ where, select });
   }
 
   async findMany(options: Prisma.DocumentFindManyArgs) {
-    return prisma.document.findMany(options);
+    return this.prisma.document.findMany(options);
   }
 
   async count(options: Prisma.DocumentCountArgs) {
-    return prisma.document.count(options);
+    return this.prisma.document.count(options);
   }
 
   async update(id: string, userId: string, data: UpdateDocumentInput) {
-    return prisma.document.update({
+    return this.prisma.document.update({
       where: { id, userId },
       data: data as unknown as Prisma.DocumentUncheckedUpdateInput,
     });
   }
 
   async updateSearchVector(id: string, title?: string, description?: string | null) {
-    return prisma.$executeRaw`
+    return this.prisma.$executeRaw`
       UPDATE documents
       SET searchvector =
         setweight(to_tsvector('simple', coalesce(${title || ""}, '')), 'A') ||
@@ -53,11 +55,9 @@ export class DocumentRepository implements IDocumentRepository {
   }
 
   async updateMany(where: Prisma.DocumentWhereInput, data: Prisma.DocumentUncheckedUpdateInput) {
-    return prisma.document.updateMany({
+    return this.prisma.document.updateMany({
       where,
       data,
     });
   }
 }
-
-export const documentRepository = new DocumentRepository();
