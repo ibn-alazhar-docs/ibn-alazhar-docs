@@ -1,7 +1,7 @@
 import { ValidationError } from "@/lib/errors";
 import { isAdminRole } from "@/domain/auth";
 import { LIMITS } from "@/lib/constants";
-import { SearchRepository } from "@/core/repositories/search.repository";
+import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
 
 export interface SearchFilters {
   query: string;
@@ -28,7 +28,7 @@ export interface SearchResult {
 }
 
 export class SearchUseCases {
-  constructor(private readonly searchRepository: SearchRepository) {}
+  constructor(private readonly searchRepository: ISearchRepository) {}
 
   private normalizeArabic(text: string): string {
     return text
