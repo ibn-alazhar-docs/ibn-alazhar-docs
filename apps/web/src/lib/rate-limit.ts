@@ -28,13 +28,13 @@ function getClientIp(request: Request): string {
     const first = parts[0];
     if (first) {
       const ip = first.trim();
-      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || ip.includes(":")) {
+      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || /^[0-9a-fA-F:]+$/.test(ip)) {
         return ip;
       }
     }
   }
   const realIp = request.headers.get("x-real-ip");
-  if (realIp && (/^\d{1,3}(\.\d{1,3}){3}$/.test(realIp) || realIp.includes(":"))) {
+  if (realIp && (/^\d{1,3}(\.\d{1,3}){3}$/.test(realIp) || /^[0-9a-fA-F:]+$/.test(realIp))) {
     return realIp;
   }
   return "unknown";
