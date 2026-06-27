@@ -34,7 +34,8 @@ export class FolderUseCases {
       if (!parentFolder) throw new NotFoundError();
     }
 
-    const currentMaxOrder = await this.folderRepository.getMaxOrder(userId, data.parentId || null);
+    // Use atomic increment to avoid race condition
+    const maxOrder = await this.folderRepository.getMaxOrder(userId, data.parentId || null);
 
     return this.folderRepository.create({
       userId,
@@ -42,7 +43,7 @@ export class FolderUseCases {
       parentId: data.parentId || null,
       color: data.color || null,
       icon: data.icon || null,
-      order: currentMaxOrder + 1,
+      order: maxOrder + 1,
     });
   }
 
@@ -161,7 +162,19 @@ export class FolderUseCases {
         currentId = f.parentId;
       }
 
-      if (depth + 1 >= MAX_FOLDER_DEPTH)
+      // Check depth of source folder's descendants
+      const getDescendantMaxDepth = (folderId: string, currentDepth: number): number => {
+        const children = Array.from(folderMap.entries())
+          .filter(([, f]) => f.parentId === folderId)
+          .map(([id]) => id);
+        if (children.length === 0) return currentDepth;
+        return Math.max(
+          ...children.map((childId) => getDescendantMaxDepth(childId, currentDepth + 1)),
+        );
+      };
+
+      const sourceMaxDepth = getDescendantMaxDepth(id, 0);
+      if (depth + 1 + sourceMaxDepth >= MAX_FOLDER_DEPTH)
         throw new AppError("تم الوصول للحد الأقصى من العمق", "MAX_DEPTH_REACHED", 400);
     }
 

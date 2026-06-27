@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
 import { getErrorMessage, getErrorStatusCode } from "@/lib/errors";
+import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 
 const ERROR_MESSAGES: Record<string, { code: string; message: string; status: number }> = {
   NOT_FOUND: { code: "NOT_FOUND", message: "غير موجود", status: 404 },
@@ -21,7 +22,7 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   },
   MAX_DEPTH_REACHED: {
     code: "VALIDATION_ERROR",
-    message: "الحد الأقصى لعمق المجلدات هو 10 مستويات",
+    message: `الحد الأقصى لعمق المجلدات هو ${MAX_FOLDER_DEPTH} مستويات`,
     status: 400,
   },
   NOT_READY: { code: "VALIDATION_ERROR", message: "الملف جاهز للتصدير بعد", status: 409 },
