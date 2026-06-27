@@ -1,15 +1,29 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkRateLimit } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);
 const MAX_FILE_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const CUID_REGEX = /^c[a-z0-9]{23,29}$/i;
 
 export const POST = withAuth(async (request, { session }) => {
   try {
+    const rateLimitResult = await checkRateLimit("/api/upload", request);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
     const folderId = (formData.get("folderId") as string) || null;
@@ -22,7 +36,7 @@ export const POST = withAuth(async (request, { session }) => {
       );
     }
 
-    if (folderId && !UUID_REGEX.test(folderId)) {
+    if (folderId && !CUID_REGEX.test(folderId)) {
       return NextResponse.json(
         { error: { code: "VALIDATION_ERROR", message: "معرف المجلد غير صالح" } },
         { status: 400 },
