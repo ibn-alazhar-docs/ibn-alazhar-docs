@@ -53,6 +53,36 @@ vi.mock("@/lib/auth-guards", () => {
       if (session?.user?.role === "ADMIN") return baseWhere;
       return { ...baseWhere, [userIdField]: session.user.id };
     }),
+    withAuth: vi.fn().mockImplementation((handler) => {
+      return async (request: any, context: any) => {
+        if (!mockSession.user) {
+          return new Response(
+            JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        const params = context?.params ? await context.params : {};
+        return handler(request, { session: mockSession, params });
+      };
+    }),
+    withAdminAuth: vi.fn().mockImplementation((handler) => {
+      return async (request: any, context: any) => {
+        if (!mockSession.user) {
+          return new Response(
+            JSON.stringify({ error: { code: "UNAUTHORIZED", message: "Unauthorized" } }),
+            { status: 401, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        if (mockSession.user.role !== "ADMIN") {
+          return new Response(
+            JSON.stringify({ error: { code: "FORBIDDEN", message: "Forbidden" } }),
+            { status: 403, headers: { "Content-Type": "application/json" } },
+          );
+        }
+        const params = context?.params ? await context.params : {};
+        return handler(request, { session: mockSession, params });
+      };
+    }),
   };
 });
 
