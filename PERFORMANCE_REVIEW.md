@@ -7,6 +7,7 @@
 ## 1. Async Flows & Event Loops
 
 **Observations:**
+
 - The Node.js event loop handles concurrency reasonably well due to BullMQ offloading heavy tasks.
 - **Flaws Detected:**
   - `getJobStatus` executes 5 sequential Redis calls instead of pipelining them (`redis.pipeline()`) or utilizing `Promise.all`. This amplifies Redis latency by 5x.
@@ -15,6 +16,7 @@
 ## 2. Memory Allocations
 
 **Observations:**
+
 - Node.js garbage collection handles normal Web API load smoothly.
 - **Flaws Detected:**
   - Generating large exports (Export Worker) loads massive string/markdown blobs into memory simultaneously instead of streaming them directly through the archiver.
@@ -23,6 +25,7 @@
 ## 3. Database Query Efficiency
 
 **Observations:**
+
 - **N+1 Problems:** The `resolveFolderForExport` function queries the database iteratively inside a loop.
 - **Connection Exhaustion:** Prisma connection pooling is present via PgBouncer, but long-running transactions (or forgotten `$disconnect` in workers) can starve the pool, causing API latency spikes for other users.
 

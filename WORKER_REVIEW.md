@@ -10,17 +10,20 @@
 The system uses Redis-backed BullMQ for `ocr-worker` and `export-worker`.
 
 **Issues Detected:**
-- **Queue Configuration Bleed:** `packages/pipeline/src/queue.ts` configures connections, workers, queues, and enqueuing mechanisms all in one God Module. 
+
+- **Queue Configuration Bleed:** `packages/pipeline/src/queue.ts` configures connections, workers, queues, and enqueuing mechanisms all in one God Module.
 - **Missing Resource Cleanup:** Workers do not explicitly call `prisma.$disconnect` upon graceful shutdown, leading to connection leaks and pool exhaustion during deployments.
 
 ## 2. Worker Logic & Idempotency
 
 **OCR Worker (The Core Bottleneck):**
+
 - **God File Violation:** `ocr-worker/index.ts` is ~600 lines executing 5 distinct processing stages, raw SQL queries, and Python sub-process orchestration.
 - **Idempotency Flaws:** The OCR worker updates document status mid-process. If the worker crashes, the job retries, but the intermediate state may cause duplicate text extraction or inconsistent markdown generation. Operations are not strictly idempotent.
 - **Sequential Bottlenecks:** `GoogleDriveOcrProvider.extractPages` sleeps for 1 second between pages and processes them sequentially. This destroys throughput.
 
 **Export Worker:**
+
 - **Memory Pressure:** Assembling large ZIP files in memory or via inefficient streaming can cause Node.js OOM (Out of Memory) crashes.
 - **Idempotency:** Generally better, but relies heavily on external storage state.
 
@@ -32,7 +35,7 @@ The system uses Redis-backed BullMQ for `ocr-worker` and `export-worker`.
 ## 4. Remediation Strategy
 
 1. **Decouple Queue Module:** Split `queue.ts` into `BullQueueProvider`, `WorkerFactory`, and `JobEnqueueService`.
-2. **Refactor OCR Worker:** 
+2. **Refactor OCR Worker:**
    - Extract the 5 stages into a Chain of Responsibility pattern.
    - Enforce Idempotency: Use database transaction checkpoints or verify existing outputs in MinIO before reprocessing a stage.
 3. **Optimize Throughput:** Parallelize page extraction in OCR providers where API rate limits allow.

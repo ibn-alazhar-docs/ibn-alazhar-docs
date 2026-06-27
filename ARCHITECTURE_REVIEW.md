@@ -9,6 +9,7 @@
 The application currently blurs the lines between Application Services (Use Cases) and Infrastructure (Prisma, Web framework).
 
 **Violations Detected:**
+
 - **Leaking Abstractions:** Prisma concepts (`Prisma.TransactionClient`, Prisma-generated types) leak directly into the Web layer (API routes).
 - **Fat Controllers:** Next.js API routes are performing domain logic (e.g., tag merge algorithms, conditional state updates).
 - **God Modules:** `packages/pipeline/src/queue.ts` acts as a nexus of coupling, handling queue connections, job creation, worker definition, and dead-letter queues simultaneously.
@@ -16,6 +17,7 @@ The application currently blurs the lines between Application Services (Use Case
 ## 2. Dependency Direction
 
 **The Dependency Inversion Principle (DIP) is actively violated.**
+
 - **Current State:** The high-level Use Cases and API handlers depend explicitly on the low-level `prisma` client.
 - **Impact:** Testing requires a live database or complex Prisma mocks. Switching database vendors or scaling to separate microservices becomes impossible without a rewrite.
 - **Required Fix:** Introduce explicit Repository Interfaces in the Domain layer. The infrastructure layer must implement these.
@@ -28,6 +30,7 @@ The application currently blurs the lines between Application Services (Use Case
 ## 4. Architectural Drift
 
 The original architectural intent (Clean Architecture/Hexagonal) has drifted:
+
 1. **The missing Use-Case layer:** Tags, Users, Search, and Conversions subsystems completely lack Use Cases. API routes directly mutate DB state.
 2. **Framework Entanglement:** Next.js specific objects (`NextRequest`) are sometimes passed deeply into utility functions, tying business logic to the edge runtime framework.
 

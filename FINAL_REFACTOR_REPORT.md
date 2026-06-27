@@ -5,14 +5,15 @@
 > **Date:** [To be filled upon completion]
 
 ## 1. Execution Summary
-*(Agent: Summarize the overarching results of the refactoring master plan here once complete.)*
+
+_(Agent: Summarize the overarching results of the refactoring master plan here once complete.)_
 
 ## 2. Metrics & Improvements
 
-- **Complexity Reduction:** *(e.g., Average cyclomatic complexity decreased by X%)*
-- **Coupling Reduction:** *(e.g., Eliminated 100% of direct Prisma calls from API routes)*
-- **Duplication Reduction:** *(e.g., Deleted 20 dead components, abstracted 5 duplicate algorithms)*
-- **Test Integrity:** *(e.g., 1,113 tests executed; 0 regressions observed)*
+- **Complexity Reduction:** _(e.g., Average cyclomatic complexity decreased by X%)_
+- **Coupling Reduction:** _(e.g., Eliminated 100% of direct Prisma calls from API routes)_
+- **Duplication Reduction:** _(e.g., Deleted 20 dead components, abstracted 5 duplicate algorithms)_
+- **Test Integrity:** _(e.g., 1,113 tests executed; 0 regressions observed)_
 
 ## 3. Phase Completion Checklist
 
@@ -24,7 +25,9 @@
 - [ ] **PHASE 6:** Security & Observability Polish
 
 ## 4. Notable Architectural Decisions
-*(Agent: Document any critical deviations or novel abstractions introduced during refactoring.)*
+
+_(Agent: Document any critical deviations or novel abstractions introduced during refactoring.)_
 
 ## 5. Residual Risk / Next Steps
-*(Agent: Identify anything that remains technical debt or requires further discussion with the product owner.)*
+
+_(Agent: Identify anything that remains technical debt or requires further discussion with the product owner.)_

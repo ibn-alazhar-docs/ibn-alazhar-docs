@@ -36,7 +36,10 @@ export class DocumentMoveUseCases {
       if (!folder) throw new AppError("المجلد غير موجود", "FOLDER_NOT_FOUND", 404);
     }
 
-    const result = await this.documentRepository.updateMany({ id: { in: ids }, userId }, { folderId });
+    const result = await this.documentRepository.updateMany(
+      { id: { in: ids }, userId },
+      { folderId },
+    );
 
     return result.count;
   }
