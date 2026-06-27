@@ -29,12 +29,12 @@ The system operates across three core domain verticals: **Identity**, **Asset Ma
 
 ### 2.1 Layered Architecture
 
-The system attempts Clean Architecture but suffers from Layer Bleed.
-**Target Architecture:**
+The system follows Clean Architecture with repository pattern and use-case layer.
+**Current Architecture:**
 
-1. **Domain Layer:** Pure TypeScript, zero dependencies. Entities, Enums, Interfaces.
-2. **Use Case (Application) Layer:** Orchestrates domain entities. Defines input/output boundaries.
-3. **Interface Adapters (Controllers/Resolvers):** Next.js App Router API handlers, TRPC, or simple controllers. Translates HTTP/Web requests into Use Case commands.
+1. **Domain Layer:** Pure TypeScript, zero dependencies. Entities, Enums, Interfaces (`domain/types.ts`, `domain/repositories/`).
+2. **Use Case (Application) Layer:** 14 use-case files orchestrating domain entities. Defines input/output boundaries (`core/use-cases/`).
+3. **Interface Adapters (Controllers/Resolvers):** Next.js App Router API handlers. Translates HTTP/Web requests into Use Case commands. Single try-catch with `handleRouteError`.
 4. **Infrastructure Layer:** Repositories (Prisma), Queue Adapters (BullMQ), File Storage (MinIO).
 
 ### 2.2 Subsystems & Relationships
@@ -47,17 +47,23 @@ The system attempts Clean Architecture but suffers from Layer Bleed.
 
 ## 3. Dependency Graph
 
-**Current (Flawed) Flow:**
-`API Routes` ---> `Use Cases` ---> `Repositories` ---> `Prisma`
-`API Routes` ---> `Prisma` (Violation: Layer Bypass)
-`Pipeline` ---> `Storage/External Services`
-`Workers` ---> `Pipeline` ---> `Prisma`
+**Current Flow (mostly clean):**
 
-**Target (Strict) Flow:**
-`API Routes` ---> `Use Case Interfaces`
-`Use Cases` ---> `Repository Interfaces`
-`Prisma Repositories` ---> implements `Repository Interfaces`
-`Workers` ---> `Use Cases` ---> `Repository Interfaces`
+```
+API Routes ---> Use Cases ---> Repositories ---> Prisma
+API Routes ---> Prisma (6 routes: health, health/ready, metrics, stream, register, share/[token])
+Pipeline ---> Storage/External Services
+Workers ---> Pipeline ---> Prisma
+```
+
+**Strict Target Flow:**
+
+```
+API Routes ---> Use Case Interfaces
+Use Cases ---> Repository Interfaces
+Prisma Repositories ---> implements Repository Interfaces
+Workers ---> Use Cases ---> Repository Interfaces
+```
 
 ## 4. Ownership & Data Flow
 

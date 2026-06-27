@@ -1,10 +1,10 @@
 # ARCHITECTURAL_REVIEW.md — Ibn Al-Azhar Docs
 
 > **Review date:** 2026-06-23
-> **Last updated:** 2026-06-24 (resolved issues section added)
+> **Last updated:** 2026-06-27 (security hardening + documentation cleanup)
 > **Reviewer:** Principal Software Architect
 > **Scope:** Full codebase — 197+ files, ~21,400+ lines
-> **Verdict:** CONDITIONAL GO → **IMPROVED** — significant architectural debt resolved
+> **Verdict:** CONDITIONAL GO → **IMPROVED** → **HARDENED** — security, performance, and correctness fixes applied
 
 ---
 
@@ -31,6 +31,34 @@ The following items from the original review have been addressed since 2026-06-2
 | ✅  | **profile route uses direct Prisma**                      | Now delegates to `ProfileUseCases`                                                                | 2026-06-24 |
 | ✅  | **export-metadata test broken** (not matching $queryRaw)  | Test fixture/mock updated                                                                         | 2026-06-24 |
 
+### Security Hardening (2026-06-27)
+
+The following security, performance, and correctness issues were identified and fixed:
+
+| #   | Severity | Issue                                         | Resolution                                    |
+| --- | -------- | --------------------------------------------- | --------------------------------------------- |
+| ✅  | CRITICAL | Google Drive query injection (`folderName`)   | Escape `folderName` in query string           |
+| ✅  | CRITICAL | Python code injection (surya OCR)             | Pass paths via JSON file + `sys.argv[1]`      |
+| ✅  | CRITICAL | Python code injection (tesseract OCR)         | Pass lang via `sys.argv` + allowlist          |
+| ✅  | CRITICAL | N+1 tag validation                            | `findManyTagsByIds` batch query               |
+| ✅  | CRITICAL | Bulk export memory bomb                       | Batched fetches BATCH_SIZE=10                 |
+| ✅  | CRITICAL | Unbounded `getUsers`                          | Paginated with `page`/`limit`, capped at 100  |
+| ✅  | HIGH     | Rate limit IP spoofing                        | IPv4/IPv6 format validation                   |
+| ✅  | HIGH     | SSRF via `S3_ENDPOINT`                        | URL protocol + hostname allowlist             |
+| ✅  | HIGH     | Duplicate document fetch in `getDocumentTags` | Removed redundant query                       |
+| ✅  | HIGH     | Unbounded tag fetches in `mergeTags`          | `take: 10000` limit                           |
+| ✅  | HIGH     | `deleteFolder` loading ALL folders            | One-level child query                         |
+| ✅  | HIGH     | Recursive export one-level depth              | Async recursive `collectChildFolderIds`       |
+| ✅  | HIGH     | Redis singleton race condition                | `connectionLock` flag                         |
+| ✅  | HIGH     | MinIO singleton race condition                | `clientLock` flag                             |
+| ✅  | MEDIUM   | Search input validation                       | Zod schema                                    |
+| ✅  | MEDIUM   | Export options typed schema                   | Replaced `z.record` with strict object schema |
+| ✅  | MEDIUM   | SSE connection exhaustion                     | Per-user limit of 3                           |
+| ✅  | MEDIUM   | Unbounded `downloadFile`                      | 100MB size limit                              |
+| ✅  | MEDIUM   | Export worker Prisma disconnect               | `prisma.$disconnect()` on shutdown            |
+
+**51 security tests added** across 6 new test files covering OWASP Top 10 categories.
+
 ### Remaining Gaps (after fixes)
 
 - **6 routes still import Prisma directly:** 3 infrastructure (`health`, `health/ready`, `metrics` — acceptable), 3 complex (`stream`, `auth/register`, `share/[token]`)
@@ -42,11 +70,11 @@ The following items from the original review have been addressed since 2026-06-2
 
 ## Executive Summary
 
-The Ibn Al-Azhar Docs codebase is a **well-tested, security-conscious production application** with 1,113 tests, solid auth, and Docker-first deployment. However, it exhibits the classic pattern of a rapidly-grown codebase: **feature velocity outpaced architectural discipline**, resulting in god objects, missing abstraction layers, and scattered cross-cutting concerns.
+The Ibn Al-Azhar Docs codebase is a **well-tested, security-conscious production application** with 673+ unit tests, solid auth, and Docker-first deployment. However, it exhibits the classic pattern of a rapidly-grown codebase: **feature velocity outpaced architectural discipline**, resulting in god objects, missing abstraction layers, and scattered cross-cutting concerns.
 
 The core architecture (Clean Architecture layers, repository pattern, use-case pattern, BullMQ workers) is sound. The problems are **concentrated in 6 files** that together account for ~40% of the technical debt.
 
-**Notable progress:** Since the initial review, significant architectural debt has been repaid — the use-case layer expanded from 4 files to 14, the DocumentUseCases god class was split into 4 focused classes, and direct Prisma access in routes dropped from 16 to 6. Role types are now properly typed, and domain types provide a shared contract layer.
+**Notable progress:** Since the initial review, significant architectural debt has been repaid — the use-case layer expanded from 4 files to 14, the DocumentUseCases god class was split into 4 focused classes, and direct Prisma access in routes dropped from 16 to 6. Role types are now properly typed, and domain types provide a shared contract layer. **Security hardening** addressed 20 issues including critical code injection, SSRF, N+1 queries, memory bombs, and unbounded queries.
 
 ---
 
@@ -195,7 +223,7 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 - ~~3~~ **At least 1 route still missing try/catch** (stream initial — SSE makes it complex)
 - `console.warn` in library code instead of logger
 
-### 7. Performance — 8/10 (unchanged)
+### 7. Performance — 8.5/10 (improved from 8/10)
 
 **Strengths:**
 
@@ -203,6 +231,11 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 - Redis-backed rate limiting with in-memory fallback
 - BullMQ with concurrency controls
 - Load tested: p95 < 140ms for 100 concurrent operations
+- **NEW:** N+1 tag validation eliminated (batch query)
+- **NEW:** Bulk export memory bomb prevented (batched fetches)
+- **NEW:** Unbounded queries capped (getUsers paginated, mergeTags limited)
+- **NEW:** Recursive export truly recursive (not just one level)
+- **NEW:** downloadFile size capped at 100MB
 
 **Weaknesses:**
 
@@ -212,7 +245,7 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 - `getPythonCommand` called twice (once per file)
 - No connection pool health check on IORedis
 
-### 8. Security — 9/10 (unchanged)
+### 8. Security — 9.5/10 (improved from 9/10)
 
 **Strengths:**
 
@@ -220,10 +253,17 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 - Parameterized queries via Prisma (zero SQL injection)
 - CSRF protection, rate limiting, CSP, HSTS
 - No hardcoded secrets in source
+- **NEW:** Google Drive query injection fixed (folderName escaped)
+- **NEW:** Python code injection prevented (paths via JSON file, lang via argv)
+- **NEW:** SSRF prevention on S3_ENDPOINT (protocol + hostname allowlist)
+- **NEW:** Rate limit IP validation (IPv4/IPv6 format checks)
+- **NEW:** Input validation with Zod on search, export, pagination
+- **NEW:** SSE connection exhaustion prevented (per-user limit)
+- **NEW:** downloadFile size capped at 100MB
+- **NEW:** 51 security tests covering OWASP Top 10
 
 **Weaknesses:**
 
-- Google Drive query injection in `ensureDriveFolder` (folderName not escaped)
 - Health endpoint leaks DB error messages to unauthenticated callers
 - AUTH_SECRET warning checks wrong fallback value
 - Ofelia has Docker socket access (container escape risk)
@@ -269,7 +309,7 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 
 ---
 
-## Remaining P2 Issues (from PRODUCTION_READINESS_FINAL.md)
+## Remaining P2 Issues
 
 | #      | Issue                                             | Architectural Impact     |
 | ------ | ------------------------------------------------- | ------------------------ |
@@ -308,9 +348,9 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 | P1       | Error Handling | Consolidate auth error classes                    | 30m    | ⬜ PENDING |
 | P1       | Error Handling | Add try/catch to 3 routes missing it              | 30m    | ✅ DONE 🟡 |
 | P2       | Quality        | Fix N+1 query in resolveFolderForExport           | 30m    | ⬜ PENDING |
-| P2       | Quality        | Fix Google Drive query injection                  | 15m    | ⬜ PENDING |
+| P2       | Quality        | Fix Google Drive query injection                  | 15m    | ✅ DONE    |
 | P2       | Quality        | Fix hardcoded Chinese character in zip-builder    | 5m     | ⬜ PENDING |
-| P2       | Quality        | Add prisma.$disconnect to export-worker shutdown  | 5m     | ⬜ PENDING |
+| P2       | Quality        | Add prisma.$disconnect to export-worker shutdown  | 5m     | ✅ DONE    |
 | P2       | Quality        | Replace console.warn with logger in pipeline      | 20m    | ⬜ PENDING |
 | P3       | Polish         | Add shared Role type                              | 10m    | ✅ DONE    |
 | P3       | Polish         | Connect hardcoded Arabic to i18n                  | 2h     | ⬜ PENDING |
@@ -330,4 +370,4 @@ The core architecture (Clean Architecture layers, repository pattern, use-case p
 
 ---
 
-_This review identified 23 actionable improvements across 6 priority tiers. As of 2026-06-24, **9 of 23 items are resolved**, including the most impactful architectural items (use-case layer expansion, DocumentUseCases split, role types, domain types). The codebase is production-ready and now significantly more maintainable._
+_This review identified 23 actionable improvements across 6 priority tiers. As of 2026-06-27, **12 of 23 items are resolved**, including the most impactful architectural items (use-case layer expansion, DocumentUseCases split, role types, domain types) and critical security fixes (code injection, SSRF, N+1 queries, memory bombs). The codebase is production-ready, now significantly more maintainable, and has been security-hardened with 51 new security tests._

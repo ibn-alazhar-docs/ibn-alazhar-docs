@@ -1,7 +1,7 @@
 # Active Phase
 
 Current Phase:
-Phase 2C-2 — Tags ✅ (Complete)
+Production Hygiene — Security Hardening ✅ (Complete)
 
 Next Phase:
 Phase 2C-3 — Enhanced Export 📋
@@ -17,6 +17,7 @@ Allowed:
 - app shell
 - RTL foundation
 - design system foundation
+- documentation cleanup
 
 Blocked:
 

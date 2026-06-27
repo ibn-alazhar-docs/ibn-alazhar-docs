@@ -78,27 +78,23 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 ## Testing
 
-**1,113 tests across 7 phases — all passing.**
+| Command                 | Suite            | Tests | Notes                                |
+| ----------------------- | ---------------- | ----- | ------------------------------------ |
+| `pnpm test`             | Unit             | 673   | `tests/backend/` + `tests/frontend/` |
+| `pnpm test:integration` | Integration      | —     | Requires running DB                  |
+| `pnpm test:security`    | Security         | 213+  | 6 new test files (OWASP coverage)    |
+| `pnpm test:pentest`     | Penetration      | —     | Requires running DB                  |
+| `pnpm test:load`        | Load             | —     | Requires running DB                  |
+| `pnpm test:recovery`    | Recovery         | —     | Requires running DB                  |
+| `pnpm test:backup`      | Backup & Restore | —     | Requires running DB                  |
 
-| Command                 | Suite            | Tests |
-| ----------------------- | ---------------- | ----- |
-| `pnpm test`             | Unit\*           | 677   |
-| `pnpm test:integration` | Integration      | 95    |
-| `pnpm test:security`    | Security         | 138   |
-| `pnpm test:pentest`     | Penetration      | 56    |
-| `pnpm test:load`        | Load             | 39    |
-| `pnpm test:recovery`    | Recovery         | 60    |
-| `pnpm test:backup`      | Backup & Restore | 48    |
-
-\*Unit tests split across `tests/backend/` and `tests/frontend/`.
-
-Test files: `tests/backend/`, `tests/frontend/`, `tests/integration/`, `tests/security/`, `tests/pentest/`, `tests/load/`, `tests/recovery/`, `tests/backup/`, `tests/e2e/`
+Test files: `tests/backend/`, `tests/frontend/`, `tests/security/`, `tests/integration/`, `tests/pentest/`, `tests/load/`, `tests/recovery/`, `tests/backup/`, `tests/e2e/`
 
 ## Operations
 
 - [Runbook](docs/production/RUNBOOK.md) — Incident response for all failure scenarios
 - [Alerting Rules](docs/production/ALERTING_RULES.md) — Prometheus alert definitions
-- [Staging Setup](docs/production/STAGING_SETUP.md) — Separate staging environment
+- [Secrets Policy](docs/production/SECRETS_POLICY.md) — Secrets management guidelines
 
 ## Brand
 

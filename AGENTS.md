@@ -49,7 +49,7 @@ packages/config/    Empty package
 workers/            ocr-worker, export-worker (BullMQ consumers, tsx entry), shared (health-server, logger)
 prisma/             Schema + migrations (PostgreSQL 16, relationMode = "prisma")
 infrastructure/     Docker configs (Caddy, monitoring), HF deployment (Dockerfile, entrypoint.sh)
-docs/               Test reports (docs/testing/), production docs (RUNBOOK, ALERTING_RULES), deployment guides
+docs/               Production docs (RUNBOOK, ALERTING_RULES, SECRETS_POLICY), deployment guides, ADRs
 tests/              Unit, integration, security, pentest, load, recovery, backup test suites
 ```
 
