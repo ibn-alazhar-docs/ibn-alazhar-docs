@@ -3,7 +3,6 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { createFolderSchema } from "@/lib/validators/folder";
 import { useCases } from "@/core/composition-root";
-import { getErrorMessage } from "@/lib/errors";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 
 export const GET = withAuth(async (request, { session }) => {
@@ -32,26 +31,16 @@ export const POST = withAuth(async (request, { session }) => {
       );
     }
 
-    try {
-      const folder = await useCases.folder.createFolder(session.user.id, validation.data);
-      await auditLog({
-        userId: session.user.id,
-        action: AUDIT_ACTIONS.FOLDER_CREATE,
-        entity: "folder",
-        entityId: folder.id,
-        ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
-        userAgent: request.headers.get("user-agent") ?? undefined,
-      });
-      return NextResponse.json({ folder }, { status: 201 });
-    } catch (error: unknown) {
-      if (getErrorMessage(error) === "NOT_FOUND") {
-        return NextResponse.json(
-          { error: { code: "NOT_FOUND", message: "المجلد الأصل غير موجود" } },
-          { status: 404 },
-        );
-      }
-      throw error;
-    }
+    const folder = await useCases.folder.createFolder(session.user.id, validation.data);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.FOLDER_CREATE,
+      entity: "folder",
+      entityId: folder.id,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
+    return NextResponse.json({ folder }, { status: 201 });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/POST", "فشل إنشاء المجلد");
   }
