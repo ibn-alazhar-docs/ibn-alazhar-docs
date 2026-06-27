@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { exportDocumentUseCase } from "@/core/use-cases/export-document.use-case";
-import { getErrorMessage } from "@/lib/errors";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 
 export const GET = withAuth(async (_request, { session, params }) => {
@@ -22,50 +21,32 @@ export const GET = withAuth(async (_request, { session, params }) => {
       );
     }
 
-    try {
-      const { buffer, document } = await exportDocumentUseCase.execute({
-        id,
-        format,
-        userId: session.user.id,
-      });
+    const { buffer, document } = await exportDocumentUseCase.execute({
+      id,
+      format,
+      userId: session.user.id,
+    });
 
-      return new Response(new Uint8Array(buffer), {
-        headers: {
-          "Content-Type":
-            format === "json"
-              ? "application/json"
-              : format === "md"
-                ? "text/markdown"
-                : format === "docx"
-                  ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                  : format === "epub"
-                    ? "application/epub+zip"
-                    : format === "pdf" || format === "searchable-pdf"
-                      ? "application/pdf"
-                      : "text/plain",
-          "Content-Disposition": contentDispositionHeader(
-            `${document.title}.${format === "searchable-pdf" ? "pdf" : format}`,
-          ),
-          "Cache-Control": "public, max-age=3600, s-maxage=3600",
-        },
-      });
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        if (getErrorMessage(error) === "NOT_FOUND") {
-          return NextResponse.json(
-            { error: { code: "NOT_FOUND", message: "Document not found" } },
-            { status: 404 },
-          );
-        }
-        if (getErrorMessage(error) === "NOT_READY") {
-          return NextResponse.json(
-            { error: { code: "NOT_FOUND", message: "Export not ready" } },
-            { status: 404 },
-          );
-        }
-      }
-      throw error;
-    }
+    return new Response(new Uint8Array(buffer), {
+      headers: {
+        "Content-Type":
+          format === "json"
+            ? "application/json"
+            : format === "md"
+              ? "text/markdown"
+              : format === "docx"
+                ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                : format === "epub"
+                  ? "application/epub+zip"
+                  : format === "pdf" || format === "searchable-pdf"
+                    ? "application/pdf"
+                    : "text/plain",
+        "Content-Disposition": contentDispositionHeader(
+          `${document.title}.${format === "searchable-pdf" ? "pdf" : format}`,
+        ),
+        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+      },
+    });
   } catch (error: unknown) {
     return handleRouteError(error, "export/[id]/[format]/GET", "فشل التصدير");
   }
