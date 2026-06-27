@@ -30,6 +30,14 @@ export const PATCH = withAuth(async (request, { session, params }) => {
     }
 
     const updated = await useCases.folder.renameFolder(id, session.user.id, validation.data.name);
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.FOLDER_RENAME,
+      entity: "folder",
+      entityId: id,
+      ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
     return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/PATCH", "فشل تحديث المجلد");
