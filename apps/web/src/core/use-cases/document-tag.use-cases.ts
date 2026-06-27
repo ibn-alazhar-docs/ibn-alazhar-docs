@@ -1,6 +1,7 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
 import { AppError, NotFoundError } from "@/lib/errors";
+import { prisma } from "@/lib/prisma";
 
 export class DocumentTagUseCases {
   constructor(
@@ -45,11 +46,15 @@ export class DocumentTagUseCases {
         throw new AppError("بعض العلامات غير موجودة", "SOME_TAGS_NOT_FOUND", 404);
     }
 
-    await this.tagRepository.deleteByDocumentId(documentId);
+    await prisma.$transaction(async (tx) => {
+      await tx.tagDocument.deleteMany({ where: { documentId } });
 
-    if (tagIds.length > 0) {
-      await this.tagRepository.createManyTagDocuments(tagIds.map((tagId) => ({ tagId, documentId })));
-    }
+      if (tagIds.length > 0) {
+        await tx.tagDocument.createMany({
+          data: tagIds.map((tagId) => ({ tagId, documentId })),
+        });
+      }
+    });
     return tagIds.length;
   }
 
