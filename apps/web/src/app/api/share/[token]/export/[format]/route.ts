@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/lib/validators/share";
-import { logger } from "@/lib/logger";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { contentDispositionHeader, sanitizeTitle, getContentType } from "@/lib/export/profiles";
 import { validateShareAccess } from "@/lib/share-helpers";
+import { handleRouteError } from "@/lib/route-helpers";
 
 export async function GET(
   request: Request,
@@ -78,10 +78,6 @@ export async function GET(
       },
     });
   } catch (error: unknown) {
-    logger.error(error, "[share] Export failed:");
-    return NextResponse.json(
-      { error: { code: "INTERNAL_ERROR", message: "Download failed" } },
-      { status: 500 },
-    );
+    return handleRouteError(error, "share/[token]/export/[format]", "Download failed");
   }
 }
