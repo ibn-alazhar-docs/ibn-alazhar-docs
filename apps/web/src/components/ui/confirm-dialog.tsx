@@ -71,6 +71,7 @@ export function ConfirmDialog({
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
+      data-testid="confirm-dialog"
     >
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative z-10 mx-4 w-full max-w-md rounded-xl border border-line bg-card p-6 shadow-xl">
@@ -83,6 +84,7 @@ export function ConfirmDialog({
             type="button"
             onClick={onCancel}
             className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-muted-color transition-colors hover:bg-badge"
+            data-testid="confirm-cancel"
           >
             {cancelLabel}
           </button>
@@ -94,6 +96,7 @@ export function ConfirmDialog({
                 ? "bg-[var(--danger)] hover:opacity-90"
                 : "bg-[var(--success)] hover:opacity-90"
             }`}
+            data-testid="confirm-ok"
           >
             {confirmLabel}
           </button>

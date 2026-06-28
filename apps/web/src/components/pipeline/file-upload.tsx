@@ -56,6 +56,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         processUpload();
       }}
       className="space-y-4"
+      data-testid="file-upload-form"
     >
       <motion.div
         whileHover={{
@@ -85,6 +86,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
             const selected = e.target.files?.[0];
             if (selected) handleFileSelect(selected);
           }}
+          data-testid="file-input"
         />
 
         {file ? (
@@ -141,6 +143,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         type="submit"
         disabled={!file || uploading}
         className="w-full bg-[var(--success)] text-[var(--btn-primary-text)] rounded-lg px-6 py-3 font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+        data-testid="upload-button"
       >
         {uploading ? t("uploading") : t("uploadButton")}
       </motion.button>
