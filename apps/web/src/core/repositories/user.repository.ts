@@ -26,6 +26,10 @@ export class UserRepository implements IUserRepository {
     return this.prisma.user.findMany(options ?? {}) as unknown as UserListItem[];
   }
 
+  async count(args?: Prisma.UserCountArgs) {
+    return this.prisma.user.count(args);
+  }
+
   async create(data: Prisma.UserUncheckedCreateInput) {
     return this.prisma.user.create({ data });
   }
