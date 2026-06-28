@@ -3,7 +3,7 @@
 import type { Doc } from "./document-table";
 import { TagChip } from "@/components/tags/tag-chip";
 import { motion } from "motion/react";
-import { useState } from "react";
+import { useState, memo } from "react";
 import { ShareModal } from "@/components/pipeline/share-modal";
 import { Share2 } from "lucide-react";
 
@@ -216,7 +216,7 @@ interface DocumentRowProps {
   getStatusColor: (status: string) => string;
 }
 
-export function DocumentRow({
+export const DocumentRow = memo(function DocumentRow({
   doc,
   isSelected,
   onToggleSelect,
@@ -327,4 +327,4 @@ export function DocumentRow({
       />
     </motion.tr>
   );
-}
+});
