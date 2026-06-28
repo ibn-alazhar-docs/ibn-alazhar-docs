@@ -4,6 +4,10 @@ import type { ITagDocumentRepository } from "../../domain/repositories/tag-docum
 import { AppError, NotFoundError } from "@/lib/errors";
 import { ERROR_CODES } from "@/lib/constants";
 
+interface DocumentWithTags {
+  tags: { tag: { id: string; name: string; color: string } }[];
+}
+
 export class DocumentTagUseCases {
   constructor(
     private readonly documentRepository: IDocumentRepository,
@@ -14,7 +18,7 @@ export class DocumentTagUseCases {
   async getDocumentTags(documentId: string, userId: string) {
     const docWithTags = (await this.documentRepository.findDocumentById(documentId, userId, {
       tags: { include: { tag: { select: { id: true, name: true, color: true } } } },
-    })) as unknown as { tags: { tag: { id: string; name: string; color: string } }[] } | null;
+    })) as DocumentWithTags | null;
 
     if (!docWithTags) throw new NotFoundError();
 

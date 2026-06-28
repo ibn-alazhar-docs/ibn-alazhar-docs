@@ -8,7 +8,7 @@ export class DocumentRepository implements IDocumentRepository {
 
   async createDocument(data: CreateDocumentInput): Promise<Document> {
     return this.prisma.document.create({
-      data: data as unknown as Prisma.DocumentUncheckedCreateInput,
+      data: data as Prisma.DocumentUncheckedCreateInput,
     });
   }
 
@@ -38,7 +38,7 @@ export class DocumentRepository implements IDocumentRepository {
   async update(id: string, userId: string, data: UpdateDocumentInput) {
     return this.prisma.document.update({
       where: { id, userId },
-      data: data as unknown as Prisma.DocumentUncheckedUpdateInput,
+      data: data as Prisma.DocumentUncheckedUpdateInput,
     });
   }
 

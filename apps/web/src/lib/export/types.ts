@@ -1,4 +1,4 @@
-export const EXPORT_FORMATS = ["md", "txt", "json", "zip"] as const;
+export const EXPORT_FORMATS = ["md", "txt", "json", "zip", "docx", "epub", "pdf"] as const;
 export type ExportFormat = (typeof EXPORT_FORMATS)[number];
 
 export const EXPORT_PROFILES = ["research", "archive", "plain", "developer"] as const;
@@ -130,6 +130,7 @@ export interface SingleExportRequest {
   format: ExportFormat;
   profile: ExportProfile;
   includeSource?: boolean;
+  pageRange?: string;
 }
 
 export interface BatchExportRequest {

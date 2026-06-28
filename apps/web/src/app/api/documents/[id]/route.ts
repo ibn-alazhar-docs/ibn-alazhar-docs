@@ -4,7 +4,7 @@ import { handleRouteError } from "@/lib/route-helpers";
 import { documentUpdateSchema } from "@/lib/validators/document";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
-import { checkUserRateLimit } from "@/lib/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
@@ -46,15 +46,7 @@ export const DELETE = withAuth(async (request, { session, params }) => {
   try {
     const rateLimit = await checkUserRateLimit("documents:delete", session.user.id);
     if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimit.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimit.retryAfterMs);
     }
     await useCases.documentCrud.deleteDocument(id, session.user.id);
     await auditLog({

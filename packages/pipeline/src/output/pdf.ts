@@ -38,7 +38,7 @@ function findCairoWoff(filename: string): string {
 
 export async function generatePdf(
   cleanedText: CleanedText,
-  options: { fontSize?: number; watermark?: string } = {},
+  options: { fontSize?: number; watermark?: string; pageRange?: string } = {},
 ): Promise<Buffer> {
   const fonts = {
     Cairo: {

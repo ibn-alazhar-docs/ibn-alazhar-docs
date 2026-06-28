@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { isAdminRole } from "@/domain/auth";
 import { handleRouteError } from "@/lib/route-helpers";
-import { checkUserRateLimit } from "@/lib/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { adminUserUpdateSchema, adminUserDeleteSchema } from "@/lib/validators/auth";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
@@ -19,15 +19,7 @@ export const GET = withAuth(async (request, { session }) => {
 
     const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const { searchParams } = new URL(request.url);
@@ -52,15 +44,7 @@ export const PATCH = withAuth(async (request, { session }) => {
 
     const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const body = await request.json();
@@ -104,15 +88,7 @@ export const DELETE = withAuth(async (request, { session }) => {
 
     const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const body = await request.json();

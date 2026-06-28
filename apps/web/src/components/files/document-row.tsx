@@ -7,6 +7,193 @@ import { useState } from "react";
 import { ShareModal } from "@/components/pipeline/share-modal";
 import { Share2 } from "lucide-react";
 
+interface DocumentRowActionsProps {
+  doc: Doc;
+  editingDocId: string | null;
+  onStartEdit: (doc: Doc) => void;
+  onSaveEdit: (docId: string) => void;
+  onCancelEdit: () => void;
+  onDelete: (docId: string) => void;
+  deletingDocId: string | null;
+  onConfirmDelete: (docId: string) => void;
+  onCancelDelete: () => void;
+  tCommon: { (key: string): string };
+}
+
+function DocumentRowActions({
+  doc,
+  editingDocId,
+  onStartEdit,
+  onSaveEdit,
+  onCancelEdit,
+  onDelete,
+  deletingDocId,
+  onConfirmDelete,
+  onCancelDelete,
+  tCommon,
+}: DocumentRowActionsProps) {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const isEditing = editingDocId === doc.id;
+  const isDeleting = deletingDocId === doc.id;
+
+  return (
+    <td className="whitespace-nowrap px-3 py-2">
+      <div className="flex items-center gap-1">
+        {!isEditing && (
+          <motion.button
+            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileTap={{ scale: 0.9 }}
+            type="button"
+            onClick={() => setIsShareModalOpen(true)}
+            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+            title="مشاركة"
+            aria-label="مشاركة"
+          >
+            <Share2 className="h-4 w-4" />
+          </motion.button>
+        )}
+        {!isEditing && (
+          <motion.button
+            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileTap={{ scale: 0.9 }}
+            type="button"
+            onClick={() => onStartEdit(doc)}
+            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+            title={tCommon("edit")}
+            aria-label={tCommon("edit")}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+              />
+            </svg>
+          </motion.button>
+        )}
+        {isEditing && (
+          <>
+            <motion.button
+              whileHover={{ scale: 1.1, color: "var(--btn-primary-text)" }}
+              whileTap={{ scale: 0.9 }}
+              type="button"
+              onClick={() => onSaveEdit(doc.id)}
+              className="rounded-lg bg-[var(--success-bg)] p-1.5 text-[var(--success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+              title={tCommon("save")}
+              aria-label={tCommon("save")}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+              whileTap={{ scale: 0.9 }}
+              type="button"
+              onClick={onCancelEdit}
+              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+              title={tCommon("cancel")}
+              aria-label={tCommon("cancel")}
+            >
+              <svg
+                className="h-4 w-4"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </motion.button>
+          </>
+        )}
+        {isDeleting ? (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="flex items-center gap-1 rounded bg-[var(--danger-bg)] p-1"
+          >
+            <span className="px-1 text-[10px] font-bold uppercase text-[var(--danger)]">?</span>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={() => onConfirmDelete(doc.id)}
+              className="rounded bg-[var(--danger)] px-2 py-0.5 text-xs font-medium text-[var(--btn-primary-text)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+              aria-label={tCommon("confirm")}
+            >
+              {tCommon("confirm")}
+            </motion.button>
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              type="button"
+              onClick={onCancelDelete}
+              className="px-2 py-0.5 text-xs font-medium text-[var(--danger)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+              aria-label={tCommon("cancel")}
+            >
+              {tCommon("cancel")}
+            </motion.button>
+          </motion.div>
+        ) : (
+          <motion.button
+            whileHover={{ scale: 1.1, color: "var(--danger)" }}
+            whileTap={{ scale: 0.9 }}
+            type="button"
+            onClick={() => onDelete(doc.id)}
+            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+            title={tCommon("delete")}
+            aria-label={tCommon("delete")}
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+              />
+            </svg>
+          </motion.button>
+        )}
+      </div>
+      <ShareModal
+        documentId={doc.id}
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
+    </td>
+  );
+}
+
 interface DocumentRowProps {
   doc: Doc;
   isSelected: boolean;
@@ -50,8 +237,6 @@ export function DocumentRow({
   getStatusLabel,
   getStatusColor,
 }: DocumentRowProps) {
-  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
-
   return (
     <motion.tr
       initial={{ opacity: 0, y: 10 }}
@@ -128,175 +313,18 @@ export function DocumentRow({
       <td className="whitespace-nowrap px-3 py-2 text-sm text-muted-color">
         {new Date(doc.createdAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
       </td>
-      <td className="whitespace-nowrap px-3 py-2">
-        <div className="flex items-center gap-1">
-          {editingDocId !== doc.id && (
-            <motion.button
-              whileHover={{
-                scale: 1.1,
-                color: "var(--primary-color)",
-              }}
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={() => setIsShareModalOpen(true)}
-              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-              title="Share"
-              aria-label="Share"
-            >
-              <Share2 className="h-4 w-4" />
-            </motion.button>
-          )}
-          {editingDocId !== doc.id && (
-            <motion.button
-              whileHover={{
-                scale: 1.1,
-                color: "var(--primary-color)",
-              }}
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={() => onStartEdit(doc)}
-              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-              title={tCommon("edit")}
-              aria-label={tCommon("edit")}
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-                />
-              </svg>
-            </motion.button>
-          )}
-          {editingDocId === doc.id && (
-            <>
-              <motion.button
-                whileHover={{
-                  scale: 1.1,
-                  color: "var(--btn-primary-text)",
-                }}
-                whileTap={{ scale: 0.9 }}
-                type="button"
-                onClick={() => onSaveEdit(doc.id)}
-                className="rounded-lg bg-[var(--success-bg)] p-1.5 text-[var(--success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-                title={tCommon("save")}
-                aria-label={tCommon("save")}
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
-                </svg>
-              </motion.button>
-              <motion.button
-                whileHover={{
-                  scale: 1.1,
-                  color: "var(--primary-color)",
-                }}
-                whileTap={{ scale: 0.9 }}
-                type="button"
-                onClick={onCancelEdit}
-                className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-                title={tCommon("cancel")}
-                aria-label={tCommon("cancel")}
-              >
-                <svg
-                  className="h-4 w-4"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </motion.button>
-            </>
-          )}
-          {deletingDocId === doc.id ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex items-center gap-1 rounded bg-[var(--danger-bg)] p-1"
-            >
-              <span className="text-[10px] font-bold text-[var(--danger)] uppercase px-1">?</span>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                onClick={() => onConfirmDelete(doc.id)}
-                className="rounded bg-[var(--danger)] px-2 py-0.5 text-xs font-medium text-[var(--btn-primary-text)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-                aria-label={tCommon("confirm")}
-              >
-                {tCommon("confirm")}
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                type="button"
-                onClick={onCancelDelete}
-                className="px-2 py-0.5 text-xs font-medium text-[var(--danger)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-                aria-label={tCommon("cancel")}
-              >
-                {tCommon("cancel")}
-              </motion.button>
-            </motion.div>
-          ) : (
-            <motion.button
-              whileHover={{
-                scale: 1.1,
-                color: "var(--danger)",
-              }}
-              whileTap={{ scale: 0.9 }}
-              type="button"
-              onClick={() => onDelete(doc.id)}
-              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-              title={tCommon("delete")}
-              aria-label={tCommon("delete")}
-            >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                />
-              </svg>
-            </motion.button>
-          )}
-        </div>
-        <ShareModal
-          documentId={doc.id}
-          isOpen={isShareModalOpen}
-          onClose={() => setIsShareModalOpen(false)}
-        />
-      </td>
+      <DocumentRowActions
+        doc={doc}
+        editingDocId={editingDocId}
+        onStartEdit={onStartEdit}
+        onSaveEdit={onSaveEdit}
+        onCancelEdit={onCancelEdit}
+        onDelete={onDelete}
+        deletingDocId={deletingDocId}
+        onConfirmDelete={onConfirmDelete}
+        onCancelDelete={onCancelDelete}
+        tCommon={tCommon}
+      />
     </motion.tr>
   );
 }

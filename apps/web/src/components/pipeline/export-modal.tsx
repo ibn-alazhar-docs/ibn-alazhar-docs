@@ -14,6 +14,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
   const [format, setFormat] = useState("searchable-pdf");
   const [fontSize, setFontSize] = useState("medium");
   const [watermark, setWatermark] = useState("");
+  const [pageRange, setPageRange] = useState("");
   const [destination, setDestination] = useState("download");
   const [loading, setLoading] = useState(false);
 
@@ -25,7 +26,10 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
       const res = await fetch(`/api/documents/${documentId}/export`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ format, options: { fontSize, watermark, destination } }),
+        body: JSON.stringify({
+          format,
+          options: { fontSize, watermark, destination, pageRange: pageRange || undefined },
+        }),
       });
 
       if (!res.ok) {
@@ -150,6 +154,19 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                 value={watermark}
                 onChange={(e) => setWatermark(e.target.value)}
                 placeholder={t("watermarkPlaceholder")}
+                className="w-full rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-[var(--success)] focus:ring-1 focus:ring-[var(--success)] transition-all placeholder:text-muted-color/50"
+              />
+            </div>
+          )}
+
+          {format !== "searchable-pdf" && (
+            <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
+              <label className="text-sm font-semibold text-primary-color">{t("pageRange")}</label>
+              <input
+                type="text"
+                value={pageRange}
+                onChange={(e) => setPageRange(e.target.value)}
+                placeholder={t("pageRangePlaceholder")}
                 className="w-full rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-[var(--success)] focus:ring-1 focus:ring-[var(--success)] transition-all placeholder:text-muted-color/50"
               />
             </div>

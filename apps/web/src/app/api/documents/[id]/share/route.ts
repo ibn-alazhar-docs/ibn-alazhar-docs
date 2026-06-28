@@ -28,7 +28,7 @@ export const POST = withAuth(async (request, { session, params }) => {
       session.user.id,
       parsed.data.expiration || null,
     );
-    const url = `${request.headers.get("origin") || "http://localhost:3000"}/share/${share.token}`;
+    const url = `${request.headers.get("origin") || process.env.APP_URL || "http://localhost:3000"}/share/${share.token}`;
 
     // We fetch the document title just for the response, since createShareLink doesn't return it
     const document = await useCases.documentCrud.getDocumentById(id, session.user.id);

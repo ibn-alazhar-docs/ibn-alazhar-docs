@@ -2,22 +2,14 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
-import { contentDispositionHeader } from "@/lib/export/profiles";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { contentDispositionHeader, getContentType } from "@/lib/export/profiles";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const GET = withAuth(async (request, { session, params }) => {
   try {
     const rateLimitResult = await checkRateLimit("/api/export", request);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const id = params.id!;
@@ -43,18 +35,7 @@ export const GET = withAuth(async (request, { session, params }) => {
 
     return new Response(new Uint8Array(buffer), {
       headers: {
-        "Content-Type":
-          format === "json"
-            ? "application/json"
-            : format === "md"
-              ? "text/markdown"
-              : format === "docx"
-                ? "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-                : format === "epub"
-                  ? "application/epub+zip"
-                  : format === "pdf" || format === "searchable-pdf"
-                    ? "application/pdf"
-                    : "text/plain",
+        "Content-Type": getContentType(format),
         "Content-Disposition": contentDispositionHeader(
           `${document.title}.${format === "searchable-pdf" ? "pdf" : format}`,
         ),

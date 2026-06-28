@@ -179,6 +179,8 @@
       "large": "كبير",
       "watermark": "علامة مائية (اختياري)",
       "watermarkPlaceholder": "أدخل نص العلامة المائية...",
+      "pageRange": "نطاق الصفحات (اختياري)",
+      "pageRangePlaceholder": "مثال: 1-5، 8، 11-13",
       "destination": "الوجهة",
       "download": "تنزيل مباشر",
       "drive": "جوجل درايف",

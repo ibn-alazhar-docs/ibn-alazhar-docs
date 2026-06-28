@@ -5,7 +5,7 @@ import { singleExportSchema } from "@/lib/export/validators";
 import { contentDispositionHeader } from "@/lib/export/profiles";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
-import { checkUserRateLimit } from "@/lib/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
@@ -25,15 +25,7 @@ export const POST = withAuth(async (request, { session }) => {
 
   const rateLimit = await checkUserRateLimit("export:single", session.user.id);
   if (!rateLimit.allowed) {
-    return NextResponse.json(
-      { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-      {
-        status: 429,
-        headers: {
-          "Retry-After": String(Math.ceil((rateLimit.retryAfterMs ?? 60_000) / 1000)),
-        },
-      },
-    );
+    return rateLimitResponse(rateLimit.retryAfterMs);
   }
 
   const { documentId, format, profile, includeSource } = parsed.data;

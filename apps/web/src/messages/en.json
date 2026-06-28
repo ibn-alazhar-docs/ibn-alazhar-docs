@@ -179,6 +179,8 @@
       "large": "Large",
       "watermark": "Watermark (Optional)",
       "watermarkPlaceholder": "Enter watermark text...",
+      "pageRange": "Page Range (Optional)",
+      "pageRangePlaceholder": "e.g. 1-5, 8, 11-13",
       "destination": "Destination",
       "download": "Download",
       "drive": "Google Drive",

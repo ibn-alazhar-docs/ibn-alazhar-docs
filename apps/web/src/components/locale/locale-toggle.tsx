@@ -34,7 +34,7 @@ export function LocaleToggle() {
       onClick={switchLocale}
       disabled={isPending}
       className="flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-muted-color transition-all hover:bg-hover hover:text-primary-color disabled:opacity-40"
-      aria-label={nextLocale === "ar" ? "Switch to Arabic" : "Switch to English"}
+      aria-label={nextLocale === "ar" ? "التبديل إلى العربية" : "التبديل إلى الإنجليزية"}
     >
       {locale === "ar" ? "EN" : "AR"}
     </button>

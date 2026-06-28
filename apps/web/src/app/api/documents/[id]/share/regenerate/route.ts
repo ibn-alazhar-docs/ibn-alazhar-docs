@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { checkUserRateLimit } from "@/lib/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (_request, { session, params }) => {
@@ -10,15 +10,7 @@ export const POST = withAuth(async (_request, { session, params }) => {
   try {
     const rateLimitResult = await checkUserRateLimit("share:regenerate", session.user.id);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const updated = await useCases.documentShare.regenerateShareLink(id, session.user.id);
