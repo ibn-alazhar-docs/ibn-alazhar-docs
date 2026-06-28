@@ -53,6 +53,8 @@ export function FolderItem({
         {/* Expand/Collapse */}
         <button
           type="button"
+          aria-expanded={hasChildren ? isExpanded : undefined}
+          aria-label={isExpanded ? t("collapse") : t("expand")}
           className={`min-h-11 min-w-11 flex items-center justify-center text-very-muted hover:text-muted-color transition-colors ${
             hasChildren ? "visible" : "invisible"
           }`}
@@ -86,6 +88,7 @@ export function FolderItem({
           <input
             type="text"
             value={editName}
+            aria-label={t("rename")}
             onChange={(e) => setEditName(e.target.value)}
             onBlur={handleRename}
             onKeyDown={(e) => {
