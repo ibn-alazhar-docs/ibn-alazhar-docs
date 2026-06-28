@@ -183,7 +183,8 @@
 | `fix: accessibility improvements`                          | Batch 11: aria-expanded, aria-label, focus trap      |
 | `refactor: extract magic numbers to named constants`       | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS       |
 | `security: add rate limiting to all unprotected endpoints` | Batch 13: 18 routes, 19 files                        |
+| `refactor: extract useFolders hook from folder-tree`       | Batch 14: folder-tree.tsx split (266→173 lines)      |
 
 ---
 
-**Status:** 13 batches complete. All API endpoints rate-limited. Codebase is production-hygiene clean.
+**Status:** 14 batches complete. All API endpoints rate-limited, components split, codebase clean.
