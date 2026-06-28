@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/auth-guards";
 import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
 import { repos } from "@/core/composition-root";
-import { ERROR_CODES, LIMITS } from "@/lib/constants";
+import { ERROR_CODES, LIMITS, UI_TIMING } from "@/lib/constants";
 
 const sseConnectionsByUser = new Map<string, number>();
 
@@ -126,7 +126,7 @@ export const GET = withAuth(async (request, { session }) => {
                     status: status.stage,
                   }),
                 );
-                setTimeout(closeStream, 500);
+                setTimeout(closeStream, UI_TIMING.SSE_CLOSE_DELAY_MS);
               }
             } else {
               const prismaStatus = await getDocumentStatus(jobId);
@@ -134,7 +134,7 @@ export const GET = withAuth(async (request, { session }) => {
               if (prismaStatus) {
                 if (prismaStatus.stage === "completed" || prismaStatus.stage === "failed") {
                   consecutiveCompleteChecks++;
-                  if (consecutiveCompleteChecks >= 2) {
+                  if (consecutiveCompleteChecks >= UI_TIMING.MAX_CONSECUTIVE_COMPLETE_CHECKS) {
                     clearInterval(interval);
                     sendEvent(
                       JSON.stringify({
@@ -151,7 +151,7 @@ export const GET = withAuth(async (request, { session }) => {
                         status: prismaStatus.stage,
                       }),
                     );
-                    setTimeout(closeStream, 500);
+                    setTimeout(closeStream, UI_TIMING.SSE_CLOSE_DELAY_MS);
                     return;
                   }
                 } else {

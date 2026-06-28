@@ -8,6 +8,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
+import { UI_TIMING } from "@/lib/constants";
 import { Text } from "@/components/ui/text";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";
@@ -63,7 +64,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
       setSaved(true);
       await update({ name: name.trim() });
       router.refresh();
-      setTimeout(() => setSaved(false), 2000);
+      setTimeout(() => setSaved(false), UI_TIMING.TOAST_RESET_MS);
     } catch {
       setError(t("error"));
     } finally {

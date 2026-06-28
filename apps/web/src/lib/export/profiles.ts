@@ -1,4 +1,5 @@
 import type { ExportProfileConfig, ExportProfile } from "./types";
+import { CONTENT_LIMITS } from "../constants";
 
 export function getContentType(format: string): string {
   switch (format) {
@@ -75,7 +76,7 @@ export function sanitizeTitle(title: string): string {
     .replace(/\s+/g, "_")
     .trim();
 
-  if (sanitized.length > 100) {
+  if (sanitized.length > CONTENT_LIMITS.MAX_TITLE_LENGTH) {
     sanitized = sanitized.substring(0, 100);
   }
 

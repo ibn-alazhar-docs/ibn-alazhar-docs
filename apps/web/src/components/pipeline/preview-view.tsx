@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
+import { UI_TIMING } from "@/lib/constants";
 
 interface PreviewViewProps {
   jobId: string;
@@ -78,7 +79,7 @@ export function PreviewView({ jobId }: PreviewViewProps) {
         }
 
         if (isMounted && !isCompleted) {
-          timeoutId = setTimeout(fetchPreview, 5000);
+          timeoutId = setTimeout(fetchPreview, UI_TIMING.POLL_INTERVAL_MS);
         }
       }
     }

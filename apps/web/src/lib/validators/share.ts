@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DURATIONS } from "../constants";
 
 export const EXPIRATION_OPTIONS = ["never", "7days", "30days"] as const;
 export type ExpirationOption = (typeof EXPIRATION_OPTIONS)[number];
@@ -8,15 +9,15 @@ export function expirationToMs(option: ExpirationOption): number | null {
     case "never":
       return null;
     case "7days":
-      return 7 * 24 * 60 * 60 * 1000;
+      return DURATIONS.SEVEN_DAYS_MS;
     case "30days":
-      return 30 * 24 * 60 * 60 * 1000;
+      return DURATIONS.THIRTY_DAYS_MS;
   }
 }
 
 export function msToExpirationOption(ms: number | null): ExpirationOption {
   if (ms === null) return "never";
-  if (ms <= 7 * 24 * 60 * 60 * 1000) return "7days";
+  if (ms <= DURATIONS.SEVEN_DAYS_MS) return "7days";
   return "30days";
 }
 
