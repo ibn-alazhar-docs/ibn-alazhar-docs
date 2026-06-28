@@ -161,9 +161,9 @@
 | P4 (Backlog)      | 1/10     | Cache headers on API routes                                                                           |
 | P5 (Nice-to-have) | 1/16     | parseApiError() utility                                                                               |
 
-**Resolved:** 43/157 findings (27%)
+**Resolved:** 49/157 findings (31%)
 **Partially resolved:** 3 findings
-**Remaining:** 111 findings — mostly P3-P5 backlog items
+**Remaining:** 105 findings — mostly P3-P5 backlog items
 
 ---
 
@@ -184,7 +184,11 @@
 | `refactor: extract magic numbers to named constants`       | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS       |
 | `security: add rate limiting to all unprotected endpoints` | Batch 13: 18 routes, 19 files                        |
 | `refactor: extract useFolders hook from folder-tree`       | Batch 14: folder-tree.tsx split (266→173 lines)      |
+| `feat: tag soft-delete, SuggestionList, useFileUpload`     | Batch 15: P4/P5 quick wins, 3 new hooks/components   |
+| `chore: batch 16 — quick wins`                             | CHANGELOG.md, Mermaid diagrams, test counts updated  |
+| `refactor: batch 17 — memoize DocumentRow, flatten SSE`    | React.memo, stream/route.ts nesting flattened        |
+| `chore: batch 18 — data-testid, CI integration job`        | E2E test hooks, integration tests in CI              |
 
 ---
 
-**Status:** 14 batches complete. All API endpoints rate-limited, components split, codebase clean.
+**Status:** 18 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced.
