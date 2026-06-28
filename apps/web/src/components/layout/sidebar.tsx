@@ -47,7 +47,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
         )}
         style={{ viewTransitionName: "dashboard-sidebar" }}
       >
-        <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6">
+        <nav aria-label={t("nav.main")} className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6">
           {navItems.map((item) => (
             <NavLink key={item.href} href={item.href} onNavigate={onClose}>
               <item.icon />
@@ -74,6 +74,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
 function HomeIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -92,6 +93,7 @@ function HomeIcon() {
 function FilesIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -110,6 +112,7 @@ function FilesIcon() {
 function FolderIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -128,6 +131,7 @@ function FolderIcon() {
 function ConversionsIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -146,6 +150,7 @@ function ConversionsIcon() {
 function UsersIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -164,6 +169,7 @@ function UsersIcon() {
 function SettingsIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -183,6 +189,7 @@ function SettingsIcon() {
 function SearchIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"
@@ -201,6 +208,7 @@ function SearchIcon() {
 function TagsIcon() {
   return (
     <svg
+      aria-hidden="true"
       className="h-5 w-5"
       fill="none"
       viewBox="0 0 24 24"

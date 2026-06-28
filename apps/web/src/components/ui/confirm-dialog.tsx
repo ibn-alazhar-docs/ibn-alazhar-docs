@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 interface ConfirmDialogProps {
   title: string;
@@ -21,23 +21,62 @@ export function ConfirmDialog({
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const previousFocusRef = useRef<HTMLElement | null>(null);
+
   useEffect(() => {
+    previousFocusRef.current = document.activeElement as HTMLElement;
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    if (focusable.length > 0) focusable[0]!.focus();
+
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") onCancel();
+      if (e.key === "Escape") {
+        onCancel();
+        return;
+      }
+      if (e.key !== "Tab" || focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else if (document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
     }
+
     document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      previousFocusRef.current?.focus();
+    };
   }, [onCancel]);
+
+  const titleId = `confirm-dialog-title-${Math.random().toString(36).slice(2, 9)}`;
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center"
       role="dialog"
       aria-modal="true"
+      aria-labelledby={titleId}
     >
       <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
       <div className="relative z-10 mx-4 w-full max-w-md rounded-xl border border-line bg-card p-6 shadow-xl">
-        <h3 className="text-lg font-semibold text-primary-color">{title}</h3>
+        <h3 id={titleId} className="text-lg font-semibold text-primary-color">
+          {title}
+        </h3>
         <p className="mt-2 text-sm text-muted-color">{message}</p>
         <div className="mt-6 flex items-center justify-end gap-3">
           <button
@@ -50,7 +89,6 @@ export function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
-            autoFocus
             className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
               variant === "danger"
                 ? "bg-[var(--danger)] hover:opacity-90"
