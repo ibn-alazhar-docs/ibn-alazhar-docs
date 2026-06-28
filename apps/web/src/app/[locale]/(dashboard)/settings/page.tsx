@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/auth-guards";
 import { SettingsContent } from "./settings-content";
 import { PageTransition } from "@/components/ui/page-transition";
+import { DURATIONS } from "@/lib/constants";
 
 interface SettingsPageProps {
   params: Promise<{ locale: string }>;
@@ -26,7 +27,7 @@ export default async function SettingsPage() {
       <SessionProvider
         session={{
           ...session,
-          expires: new Date(Date.now() + 86400 * 1000).toISOString(),
+          expires: new Date(Date.now() + DURATIONS.ONE_DAY_MS).toISOString(),
         }}
       >
         <SettingsContent

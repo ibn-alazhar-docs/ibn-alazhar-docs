@@ -8,6 +8,7 @@ import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { PAGINATION } from "@/lib/constants";
 import { ConversionStatus } from "@/components/pipeline/conversion-status";
 
 interface ConversionJob {
@@ -70,7 +71,9 @@ export default function ConversionsPage() {
   const fetchJobs = useCallback(async (p: number) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/conversion/list?page=${p}&limit=20`);
+      const res = await fetch(
+        `/api/conversion/list?page=${p}&limit=${PAGINATION.CONVERSION_PAGE_SIZE}`,
+      );
       if (res.ok) {
         const data = await res.json();
         setJobs(data.jobs);

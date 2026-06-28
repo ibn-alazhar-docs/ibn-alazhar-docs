@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import { CONTENT_LIMITS } from "@/lib/constants";
 
 interface CreateFolderDialogProps {
   onSubmit: (name: string) => Promise<void>;
@@ -23,7 +24,7 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
       return;
     }
 
-    if (name.trim().length > 100) {
+    if (name.trim().length > CONTENT_LIMITS.MAX_FOLDER_NAME_LENGTH) {
       setError(t("nameTooLong"));
       return;
     }

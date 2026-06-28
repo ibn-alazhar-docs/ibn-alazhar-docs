@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { SUGGESTION_LIMITS } from "@/lib/constants";
 import type {
   ISearchRepository,
   SearchQueryParams,
@@ -73,7 +74,7 @@ export class SearchRepository implements ISearchRepository {
        FROM documents
        WHERE "userId" = $1 AND "deletedAt" IS NULL
          AND normalize_arabic(title) ILIKE normalize_arabic($2)
-       GROUP BY title LIMIT 5`,
+       GROUP BY title LIMIT ${SUGGESTION_LIMITS.MAX_TITLE_SUGGESTIONS}`,
       userId,
       `%${query}%`,
     );
@@ -85,7 +86,7 @@ export class SearchRepository implements ISearchRepository {
        FROM folders
        WHERE "userId" = $1 AND "deletedAt" IS NULL
          AND normalize_arabic(name) ILIKE normalize_arabic($2)
-       GROUP BY name LIMIT 3`,
+       GROUP BY name LIMIT ${SUGGESTION_LIMITS.MAX_FOLDER_SUGGESTIONS}`,
       userId,
       `%${query}%`,
     );
@@ -99,7 +100,7 @@ export class SearchRepository implements ISearchRepository {
        WHERE t."userId" = $1
          AND normalize_arabic(t.name) ILIKE normalize_arabic($2)
        GROUP BY t.id, t.name
-       ORDER BY count DESC LIMIT 3`,
+       ORDER BY count DESC LIMIT ${SUGGESTION_LIMITS.MAX_TAG_SUGGESTIONS}`,
       userId,
       `%${query}%`,
     );

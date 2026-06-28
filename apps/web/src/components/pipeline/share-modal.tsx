@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { Link as LinkIcon, Trash2, Globe, Clock } from "lucide-react";
+import { UI_TIMING } from "@/lib/constants";
 
 interface ShareModalProps {
   documentId: string;
@@ -100,7 +101,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
     if (shareUrl) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      setTimeout(() => setCopied(false), UI_TIMING.TOAST_RESET_MS);
     }
   }
 
