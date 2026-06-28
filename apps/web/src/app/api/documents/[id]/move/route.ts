@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 const moveSchema = z
@@ -24,6 +25,11 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   }
 
   const { folderId } = validation.data;
+
+  const rateLimit = await checkUserRateLimit("documents:move", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
 
   try {
     const updated = await useCases.documentMove.moveDocument(id, session.user.id, folderId);

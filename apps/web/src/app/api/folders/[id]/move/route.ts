@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { moveFolderSchema } from "@/lib/validators/folder";
 import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
@@ -25,6 +26,12 @@ export const POST = withAuth(async (request, { session, params }) => {
     }
 
     const { parentId } = validation.data;
+
+    const rateLimit = await checkUserRateLimit("folders:move", session.user.id);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterMs);
+    }
+
     const updated = await useCases.folder.moveFolder(id, session.user.id, parentId);
     return NextResponse.json({ folder: updated });
   } catch (error: unknown) {

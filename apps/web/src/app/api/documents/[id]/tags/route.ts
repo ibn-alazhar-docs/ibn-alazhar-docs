@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { addTagToDocumentSchema, setDocumentTagsSchema } from "@/lib/validators/tag";
 import { useCases } from "@/core/composition-root";
 
@@ -30,6 +31,11 @@ export const POST = withAuth(async (request, { session, params }) => {
 
   const { tagId } = validation.data;
 
+  const rateLimit = await checkUserRateLimit("documents:tags", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
+
   try {
     const tag = await useCases.documentTag.addTagToDocument(
       id,
@@ -57,6 +63,11 @@ export const PUT = withAuth(async (request, { session, params }) => {
   }
 
   const { tagIds } = validation.data;
+
+  const rateLimit = await checkUserRateLimit("documents:tags", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
 
   try {
     const tagCount = await useCases.documentTag.setDocumentTags(

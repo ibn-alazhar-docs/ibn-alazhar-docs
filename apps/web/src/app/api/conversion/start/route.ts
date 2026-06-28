@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session }) => {
@@ -19,6 +20,11 @@ export const POST = withAuth(async (request, { session }) => {
     }
 
     const { documentId } = validation.data;
+
+    const rateLimitResult = await checkRateLimit("/api/conversion/start", request);
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
+    }
 
     const result = await useCases.conversion.startConversion(documentId, session);
     return NextResponse.json({

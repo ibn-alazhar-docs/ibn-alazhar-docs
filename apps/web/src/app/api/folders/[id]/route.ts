@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { renameFolderSchema } from "@/lib/validators/folder";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
@@ -47,6 +48,12 @@ export const PATCH = withAuth(async (request, { session, params }) => {
 export const DELETE = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
+
+    const rateLimit = await checkUserRateLimit("folders:delete", session.user.id);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterMs);
+    }
+
     await useCases.folder.deleteFolder(id, session.user.id);
     await auditLog({
       userId: session.user.id,

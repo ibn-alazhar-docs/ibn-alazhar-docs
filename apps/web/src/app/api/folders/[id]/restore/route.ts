@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 
@@ -10,6 +11,11 @@ export const POST = withAuth(async (_request, { session, params }) => {
       { error: { code: "VALIDATION_ERROR", message: "معرف المجلد مطلوب" } },
       { status: 400 },
     );
+
+  const rateLimit = await checkUserRateLimit("folders:restore", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
 
   try {
     const restored = await useCases.folder.restoreFolder(id, session.user.id);

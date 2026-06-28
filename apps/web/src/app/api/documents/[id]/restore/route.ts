@@ -1,10 +1,17 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 export const PATCH = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
+
+  const rateLimit = await checkUserRateLimit("documents:restore", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
+
   try {
     const restored = await useCases.documentCrud.restoreDocument(id, session.user.id);
     return NextResponse.json({

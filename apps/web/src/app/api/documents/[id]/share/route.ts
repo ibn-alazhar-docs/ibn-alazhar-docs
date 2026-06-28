@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { createShareSchema } from "@/lib/validators/share";
 import { useCases } from "@/core/composition-root";
 
@@ -21,6 +22,11 @@ export const POST = withAuth(async (request, { session, params }) => {
         },
         { status: 400 },
       );
+    }
+
+    const rateLimit = await checkUserRateLimit("documents:share", session.user.id);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterMs);
     }
 
     const share = await useCases.documentShare.createShareLink(
