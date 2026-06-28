@@ -27,7 +27,7 @@ export const GET = withAuth(async (request, { session }) => {
     const limit = parseInt(searchParams.get("limit") || "50", 10);
 
     const result = await useCases.user.getUsers(page, limit);
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
     return handleRouteError(error, "users/GET", "فشل الحصول على المستخدمين");
   }

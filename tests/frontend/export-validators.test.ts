@@ -33,7 +33,7 @@ describe("singleExportSchema", () => {
   it("invalid format fails", () => {
     const result = singleExportSchema.safeParse({
       documentId: "doc-1",
-      format: "epub",
+      format: "csv",
       profile: "research",
     });
     expect(result.success).toBe(false);
@@ -130,7 +130,7 @@ describe("batchExportSchema", () => {
   it("invalid format fails", () => {
     const result = batchExportSchema.safeParse({
       documentIds: ["doc-1"],
-      format: "epub",
+      format: "csv",
       profile: "research",
     });
     expect(result.success).toBe(false);

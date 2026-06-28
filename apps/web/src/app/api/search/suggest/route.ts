@@ -18,7 +18,10 @@ export const GET = withAuth(async (request, { session }) => {
     });
 
     const suggestions = await useCases.search.getSuggestions(session.user.id, validated.q);
-    return NextResponse.json({ suggestions });
+    return NextResponse.json(
+      { suggestions },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "search/suggest", "فشل تحميل الاقتراحات");
   }

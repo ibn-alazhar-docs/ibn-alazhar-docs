@@ -9,11 +9,9 @@ import {
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../../shared/prisma";
 import { updateDocStatus, uploadExportBuffer } from "../helpers";
 import { logger } from "../../../shared/logger";
-
-const prisma = new PrismaClient();
 
 export function registerGenerationStage(config: PipelineConfig): void {
   createGenerationWorker(config, async (job: ProcessingJob) => {

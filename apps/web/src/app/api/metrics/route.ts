@@ -86,7 +86,7 @@ export const GET = withAdminAuth(async () => {
       workers,
     };
 
-    return NextResponse.json(metrics);
+    return NextResponse.json(metrics, { headers: { "Cache-Control": "no-store" } });
   } catch {
     return NextResponse.json(
       { error: { code: "INTERNAL_ERROR", message: "Failed to collect metrics" } },

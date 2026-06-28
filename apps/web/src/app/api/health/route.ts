@@ -55,5 +55,6 @@ export async function GET(): Promise<NextResponse> {
 
   return NextResponse.json(response, {
     status: anyError ? 503 : 200,
+    headers: { "Cache-Control": "no-store" },
   });
 }

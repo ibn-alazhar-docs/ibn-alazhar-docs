@@ -39,7 +39,7 @@ export const GET = withAuth(async (request, { session, params }) => {
         "Content-Disposition": contentDispositionHeader(
           `${document.title}.${format === "searchable-pdf" ? "pdf" : format}`,
         ),
-        "Cache-Control": "public, max-age=3600, s-maxage=3600",
+        "Cache-Control": "private, max-age=3600",
       },
     });
   } catch (error: unknown) {

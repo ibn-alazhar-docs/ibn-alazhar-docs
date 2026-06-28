@@ -21,10 +21,9 @@ import {
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient, type DocStatus } from "@prisma/client";
+import type { DocStatus } from "@prisma/client";
+import { prisma } from "../../shared/prisma";
 import { logger } from "../../shared/logger";
-
-const prisma = new PrismaClient();
 
 export async function downloadDocumentBuffer(
   storageKey: string,

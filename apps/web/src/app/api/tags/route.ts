@@ -8,7 +8,7 @@ import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
 export const GET = withAuth(async (_request, { session }) => {
   try {
     const tags = await useCases.tag.getTags(session);
-    return NextResponse.json({ tags });
+    return NextResponse.json({ tags }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/GET", "فشل الحصول على الوسوم");
   }
