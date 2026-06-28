@@ -1,0 +1,88 @@
+# Monitoring stack — run with: docker compose -f docker-compose.monitoring.yml up -d
+# This stack is separate from the main app to allow independent updates and resource limits.
+
+name: ibn-monitoring
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: ibn-cadvisor
+    ports:
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    cap_add:
+      - SYS_ADMIN
+    cap_drop:
+      - ALL
+    networks:
+      - monitoring
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 128M
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: ibn-prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./infrastructure/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheusdata:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    networks:
+      - monitoring
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
+
+  grafana:
+    image: grafana/grafana:11.5.2
+    container_name: ibn-grafana
+    ports:
+      - "127.0.0.1:3001:3000"
+    volumes:
+      - grafanadata:/var/lib/grafana
+      - ./infrastructure/monitoring/grafana-datasource.yml:/etc/grafana/provisioning/datasources/datasource.yml:ro
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-grafana_admin}
+      GF_INSTALL_PLUGINS: ""
+    networks:
+      - monitoring
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.3"
+          memory: 256M
+
+volumes:
+  prometheusdata:
+  grafanadata:
+
+networks:
+  monitoring:
