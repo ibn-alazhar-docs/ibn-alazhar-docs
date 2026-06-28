@@ -43,7 +43,7 @@ export class FolderRepository implements IFolderRepository {
 
   async create(data: CreateFolderInput) {
     return this.prisma.folder.create({
-      data: data as unknown as Prisma.FolderUncheckedCreateInput,
+      data: data as Prisma.FolderUncheckedCreateInput,
     });
   }
 

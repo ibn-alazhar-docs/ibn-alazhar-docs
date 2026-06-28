@@ -342,6 +342,30 @@ export default function FilesPage() {
                     onCancelDelete={() => setDeletingDocId(null)}
                     onBulkTag={handleBulkTag}
                     onBulkMove={handleBulkMove}
+                    onBulkExport={async () => {
+                      const ids = Array.from(selectedDocs);
+                      try {
+                        const res = await fetch("/api/export/batch", {
+                          method: "POST",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                            documentIds: ids,
+                            format: "zip",
+                            profile: "archive",
+                          }),
+                        });
+                        if (!res.ok) throw new Error("Export failed");
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `export_${ids.length}_docs.zip`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        alert("فشل التصدير");
+                      }
+                    }}
                     onCancelSelection={() => setSelectedDocs(new Set())}
                     showBulkTagPicker={showBulkTagPicker}
                     onToggleBulkTagPicker={() => setShowBulkTagPicker(!showBulkTagPicker)}

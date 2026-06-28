@@ -139,6 +139,7 @@ model Document {
   @@index([status])
   @@index([userId, status])
   @@index([userId, createdAt])
+  @@index([userId, deletedAt])
   @@index([deletedAt])
   @@index([status, createdAt])
   @@map("documents")
@@ -165,6 +166,7 @@ model Folder {
   @@index([parentId])
   @@index([userId, parentId])
   @@index([userId, parentId, order])
+  @@index([userId, deletedAt])
   @@index([deletedAt])
   @@map("folders")
 }
@@ -248,6 +250,7 @@ model ShareLink {
 
   @@index([documentId])
   @@index([userId])
+  @@index([userId, expiresAt])
   @@index([expiresAt])
   @@unique([documentId, userId])
   @@map("share_links")
@@ -268,6 +271,7 @@ model UserSetting {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, key])
+  @@index([userId])
   @@map("user_settings")
 }
 

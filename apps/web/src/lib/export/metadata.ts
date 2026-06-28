@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import type {
   ExportDocumentData,
   ExportTagData,
@@ -57,26 +58,23 @@ export async function resolveFolderForExport(
 ): Promise<ExportFolderData | null> {
   if (!folderId) return null;
 
-  const result = await prisma.$queryRaw<
-    Array<{ id: string; name: string; parentId: string | null }>
-  >`
-    WITH RECURSIVE folder_tree AS (
-      SELECT id, name, "parentId", 1 as level
-      FROM folders
-      WHERE id = ${folderId}
+  const ancestors: string[] = [];
+  let currentId: string | null = folderId;
 
-      UNION ALL
+  while (currentId) {
+    const folder: { id: string; name: string; parentId: string | null } | null =
+      await prisma.folder.findUnique({
+        where: { id: currentId },
+        select: { id: true, name: true, parentId: true },
+      });
 
-      SELECT f.id, f.name, f."parentId", t.level + 1
-      FROM folders f
-      INNER JOIN folder_tree t ON f.id = t."parentId"
-    )
-    SELECT id, name, "parentId"
-    FROM folder_tree
-    ORDER BY level DESC;
-  `;
+    if (!folder) break;
 
-  if (result.length === 0) {
+    ancestors.push(folder.name);
+    currentId = folder.parentId;
+  }
+
+  if (ancestors.length === 0) {
     return {
       name: "Unknown",
       path: "",
@@ -84,26 +82,32 @@ export async function resolveFolderForExport(
     };
   }
 
-  const ancestors = result.map((f) => f.name);
-  const targetFolder = result[result.length - 1];
+  ancestors.reverse();
+  const targetFolder = ancestors[ancestors.length - 1]!;
 
   return {
-    name: targetFolder?.name ?? "Unknown",
+    name: targetFolder,
     path: ancestors.join(" / "),
     ancestors,
   };
 }
 
 export async function resolveOcrData(documentId: string): Promise<ExportOcrData> {
-  const job = await prisma.conversionJob.findFirst({
-    where: { documentId },
-    orderBy: { createdAt: "desc" },
-  });
+  const [job, doc] = await Promise.all([
+    prisma.conversionJob.findFirst({
+      where: { documentId },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.document.findUnique({
+      where: { id: documentId },
+      select: { pageCount: true },
+    }),
+  ]);
 
   return {
     confidence: job?.progress ? Math.min(job.progress / 100, 1) : 0,
     engine: job?.sourceFormat ?? "unknown",
-    pageCount: 0,
+    pageCount: doc?.pageCount ?? 0,
   };
 }
 
@@ -113,12 +117,38 @@ export async function resolvePipelineData(documentId: string): Promise<ExportPip
     select: { pageCount: true },
   });
 
+  try {
+    const config = loadConfig();
+    const cleanedKey = `${config.paths.ocrResults}/${documentId}/cleaned.json`;
+    if (await fileExists(config, cleanedKey)) {
+      const buffer = await downloadFile(config, cleanedKey);
+      const data = JSON.parse(buffer.toString("utf-8"));
+      const text: string = data.text || data.raw || "";
+      const words = text.split(/\s+/).filter(Boolean);
+      const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
+      const headings = (text.match(/^#{1,6}\s+/gm) || []).length;
+      const totalChars = text.length;
+      const garbageChars = (text.match(/[□■◆◇○●△▲▽▼]{3,}/g) || []).join("").length;
+      return {
+        wordCount: words.length,
+        charCount: totalChars,
+        headingCount: headings,
+        paragraphCount: paragraphs.length,
+        qualityScore: totalChars > 0 ? Math.max(0, 1 - garbageChars / totalChars) : 0,
+        garbageRatio: totalChars > 0 ? garbageChars / totalChars : 0,
+        pageCount: doc?.pageCount ?? 0,
+      };
+    }
+  } catch {
+    // Fall through to defaults
+  }
+
   return {
     wordCount: 0,
     charCount: 0,
     headingCount: 0,
     paragraphCount: 0,
-    qualityScore: 0.8,
+    qualityScore: 0,
     garbageRatio: 0,
     pageCount: doc?.pageCount ?? 0,
   };

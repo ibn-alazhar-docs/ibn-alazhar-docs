@@ -26,7 +26,7 @@ export const EXPORT_PROFILE_CONFIGS: Record<ExportProfile, ExportProfileConfig> 
   research: {
     name: "Research",
     description: "Full metadata for academic use",
-    formats: ["md", "json"],
+    formats: ["md", "json", "pdf", "docx"],
     includeMetadata: true,
     includeSource: false,
     includeTags: true,
@@ -36,7 +36,7 @@ export const EXPORT_PROFILE_CONFIGS: Record<ExportProfile, ExportProfileConfig> 
   archive: {
     name: "Archive",
     description: "Complete bundle with source file",
-    formats: ["md", "txt", "json"],
+    formats: ["md", "txt", "json", "pdf", "docx", "epub"],
     includeMetadata: true,
     includeSource: true,
     includeTags: true,

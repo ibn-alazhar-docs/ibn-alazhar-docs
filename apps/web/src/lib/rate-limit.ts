@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import { checkRedisRateLimit } from "./rate-limit/redis";
 import { addToMap, getFromMap, incrementMap, startCleanupIfNeeded } from "./rate-limit/store";
 
@@ -99,4 +100,16 @@ export async function checkUserRateLimit(
 
   const key = `user:${action}:${userId}`;
   return checkWithFallback(key, rule.limit, rule.windowMs);
+}
+
+export function rateLimitResponse(retryAfterMs?: number): NextResponse {
+  return NextResponse.json(
+    { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى للطلبات" } },
+    {
+      status: 429,
+      headers: {
+        "Retry-After": String(Math.ceil((retryAfterMs ?? 60_000) / 1000)),
+      },
+    },
+  );
 }

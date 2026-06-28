@@ -90,11 +90,10 @@ describe("Export Metadata Helpers", () => {
     });
 
     it("resolves folder path and ancestors", async () => {
-      vi.mocked(prisma.$queryRaw).mockResolvedValueOnce([
-        { id: "f1", name: "Root", parentId: null },
-        { id: "f2", name: "Parent", parentId: "f1" },
-        { id: "f3", name: "Child", parentId: "f2" },
-      ]);
+      vi.mocked(prisma.folder.findUnique)
+        .mockResolvedValueOnce({ id: "f3", name: "Child", parentId: "f2" } as any)
+        .mockResolvedValueOnce({ id: "f2", name: "Parent", parentId: "f1" } as any)
+        .mockResolvedValueOnce({ id: "f1", name: "Root", parentId: null } as any);
 
       const result = await resolveFolderForExport("f3");
       expect(result?.name).toBe("Child");
@@ -123,11 +122,12 @@ describe("Export Metadata Helpers", () => {
   });
 
   describe("resolvePipelineData", () => {
-    it("returns default pipeline data", async () => {
+    it("returns default pipeline data when no cleaned file exists", async () => {
       vi.mocked(prisma.document.findUnique).mockResolvedValueOnce({ pageCount: 10 } as any);
       const result = await resolvePipelineData("doc1");
       expect(result.pageCount).toBe(10);
-      expect(result.qualityScore).toBe(0.8);
+      expect(result.qualityScore).toBe(0);
+      expect(result.wordCount).toBe(0);
     });
   });
 

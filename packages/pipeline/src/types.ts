@@ -88,6 +88,7 @@ export interface ExportRequest {
     fontSize?: number;
     watermark?: string;
     destination?: string;
+    pageRange?: string;
   };
 }
 

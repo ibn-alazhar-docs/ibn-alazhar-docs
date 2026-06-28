@@ -35,6 +35,7 @@ interface DocumentTableProps {
   onCancelDelete: () => void;
   onBulkTag: (tagId: string) => void;
   onBulkMove: () => void;
+  onBulkExport: () => void;
   onCancelSelection: () => void;
   showBulkTagPicker: boolean;
   onToggleBulkTagPicker: () => void;
@@ -77,6 +78,7 @@ export function DocumentTable({
   onCancelDelete,
   onBulkTag,
   onBulkMove,
+  onBulkExport,
   onCancelSelection,
   showBulkTagPicker,
   onToggleBulkTagPicker,
@@ -97,6 +99,7 @@ export function DocumentTable({
             selectedCount={selectedDocs.size}
             onBulkTag={onBulkTag}
             onBulkMove={onBulkMove}
+            onBulkExport={onBulkExport}
             onCancelSelection={onCancelSelection}
             showBulkTagPicker={showBulkTagPicker}
             onToggleBulkTagPicker={onToggleBulkTagPicker}

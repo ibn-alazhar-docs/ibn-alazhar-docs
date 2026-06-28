@@ -1,10 +1,10 @@
 # Active Phase
 
 Current Phase:
-Production Hygiene — Security Hardening ✅ (Complete)
+Phase 2C-3 — Enhanced Export 🚀
 
 Next Phase:
-Phase 2C-3 — Enhanced Export 📋
+Phase 3 — Production Deployment
 
 Allowed:
 
@@ -18,11 +18,12 @@ Allowed:
 - RTL foundation
 - design system foundation
 - documentation cleanup
+- enhanced export features (upload-to-OCR, DOCX/PDF export, batch export)
+- export metadata (already complete in batch 5)
 
 Blocked:
 
-- full OCR pipeline changes
-- enhanced export features (waiting for phase gate)
-- sharing and collaboration
-- production deployment
-- enterprise features
+- full OCR pipeline changes (Phase 3)
+- sharing and collaboration (Phase 3)
+- production deployment (Phase 3)
+- enterprise features (Phase 4)

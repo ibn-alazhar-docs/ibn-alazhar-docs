@@ -1,5 +1,5 @@
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
-import type { FolderNode } from "@/lib/build-folder-tree";
+import { type FolderNode, type FlatFolder } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { ERROR_CODES } from "@/lib/constants";
 import { isAdminRole } from "@/domain/auth";
@@ -182,10 +182,7 @@ export class FolderUseCases {
       include: { _count: { select: { documents: true, children: true } } },
     });
 
-    const buildTree = (
-      folders: Omit<FolderNode, "children">[],
-      parentId: string | null,
-    ): FolderNode[] => {
+    const buildTree = (folders: FlatFolder[], parentId: string | null): FolderNode[] => {
       return folders
         .filter((f) => f.parentId === parentId)
         .sort((a, b) => a.order - b.order)
@@ -202,7 +199,7 @@ export class FolderUseCases {
     };
 
     return {
-      tree: buildTree(allFolders as unknown as Omit<FolderNode, "children">[], null),
+      tree: buildTree(allFolders as unknown as FlatFolder[], null),
       targetFolder,
     };
   }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { validateShareAccess } from "@/lib/share-helpers";
 import { repos } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
@@ -9,15 +9,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
   try {
     const rateLimitResult = await checkRateLimit("/api/share", request);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const { token } = await params;

@@ -23,7 +23,10 @@ export class UserRepository implements IUserRepository {
   }
 
   async findMany(options?: Prisma.UserFindManyArgs) {
-    return this.prisma.user.findMany(options ?? {}) as unknown as UserListItem[];
+    return this.prisma.user.findMany({
+      ...options,
+      include: { _count: { select: { documents: true } } },
+    }) as unknown as UserListItem[];
   }
 
   async count(args?: Prisma.UserCountArgs) {

@@ -6,6 +6,7 @@ interface BulkActionsProps {
   selectedCount: number;
   onBulkTag: (tagId: string) => void;
   onBulkMove: () => void;
+  onBulkExport: () => void;
   onCancelSelection: () => void;
   showBulkTagPicker: boolean;
   onToggleBulkTagPicker: () => void;
@@ -17,6 +18,7 @@ export function BulkActions({
   selectedCount,
   onBulkTag,
   onBulkMove,
+  onBulkExport,
   onCancelSelection,
   showBulkTagPicker,
   onToggleBulkTagPicker,
@@ -57,6 +59,13 @@ export function BulkActions({
         onClick={onBulkMove}
       >
         {tDocs("moveToFolder")}
+      </button>
+      <button
+        type="button"
+        className="rounded-lg bg-[var(--warning)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
+        onClick={onBulkExport}
+      >
+        {tDocs("exportSelected", { fallback: "تصدير المحدد" })}
       </button>
       <button
         type="button"

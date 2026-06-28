@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
-import { checkRateLimit } from "@/lib/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 const searchParamsSchema = z
@@ -21,15 +21,7 @@ export const GET = withAuth(async (request, { session }) => {
   try {
     const rateLimitResult = await checkRateLimit("/api/search", request);
     if (!rateLimitResult.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
     const { searchParams } = new URL(request.url);

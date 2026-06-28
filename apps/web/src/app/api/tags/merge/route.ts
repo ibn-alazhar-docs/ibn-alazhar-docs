@@ -4,7 +4,7 @@ import { handleRouteError } from "@/lib/route-helpers";
 import { mergeTagsSchema } from "@/lib/validators/tag";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
-import { checkUserRateLimit } from "@/lib/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 
 export const POST = withAuth(async (request, { session }) => {
   try {
@@ -20,15 +20,7 @@ export const POST = withAuth(async (request, { session }) => {
 
     const rateLimit = await checkUserRateLimit("tags:merge", session.user.id);
     if (!rateLimit.allowed) {
-      return NextResponse.json(
-        { error: { code: "RATE_LIMITED", message: "Too many requests" } },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((rateLimit.retryAfterMs ?? 60_000) / 1000)),
-          },
-        },
-      );
+      return rateLimitResponse(rateLimit.retryAfterMs);
     }
 
     const result = await useCases.tag.mergeTags(
