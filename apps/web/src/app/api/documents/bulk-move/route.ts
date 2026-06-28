@@ -11,8 +11,6 @@ const bulkMoveSchema = z
   })
   .strip();
 
-const MAX_BULK_SIZE = 50;
-
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();
   const parsed = bulkMoveSchema.safeParse(body);
@@ -26,13 +24,6 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   const { documentIds, folderId } = parsed.data;
-
-  if (documentIds.length > MAX_BULK_SIZE) {
-    return NextResponse.json(
-      { error: { code: "BAD_REQUEST", message: `الحد الأقصى ${MAX_BULK_SIZE} مستند في المرة` } },
-      { status: 400 },
-    );
-  }
 
   try {
     const moved = await useCases.documentMove.bulkMoveDocuments(
