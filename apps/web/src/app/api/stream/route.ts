@@ -22,6 +22,54 @@ async function getDocumentStatus(
   }
 }
 
+function sendSSE(
+  controller: ReadableStreamDefaultController,
+  encoder: TextEncoder,
+  data: string,
+  closed: boolean,
+) {
+  if (!closed) {
+    controller.enqueue(encoder.encode(`data: ${data}\n\n`));
+  }
+}
+
+function closeSSE(controller: ReadableStreamDefaultController, closed: boolean) {
+  if (!closed) {
+    controller.close();
+  }
+}
+
+function handlePollResult(
+  status: { stage: string; progress: number } | null,
+  jobId: string,
+  send: (data: string) => void,
+  close: () => void,
+  consecutiveCompleteChecks: number,
+): number {
+  if (!status) {
+    send(JSON.stringify({ type: "progress", jobId, stage: "pending", progress: 0 }));
+    return consecutiveCompleteChecks;
+  }
+
+  send(JSON.stringify({ type: "progress", jobId, stage: status.stage, progress: status.progress }));
+
+  if (status.stage === "completed" || status.stage === "failed") {
+    return consecutiveCompleteChecks + 1;
+  }
+
+  return 0;
+}
+
+function handleCompletion(
+  jobId: string,
+  status: string,
+  send: (data: string) => void,
+  close: () => void,
+) {
+  send(JSON.stringify({ type: "complete", jobId, status }));
+  setTimeout(close, UI_TIMING.SSE_CLOSE_DELAY_MS);
+}
+
 export const GET = withAuth(async (request, { session }) => {
   const rateLimitResult = await checkRateLimit("/api/stream", request);
   if (!rateLimitResult.allowed) {
@@ -64,46 +112,34 @@ export const GET = withAuth(async (request, { session }) => {
     const stream = new ReadableStream({
       start(controller) {
         let closed = false;
-
-        const sendEvent = (data: string) => {
-          if (!closed) {
-            controller.enqueue(encoder.encode(`data: ${data}\n\n`));
-          }
-        };
-
-        const closeStream = () => {
-          if (!closed) {
-            closed = true;
-            controller.close();
-          }
-        };
-
-        sendEvent(JSON.stringify({ type: "connected", jobId }));
-
         let consecutiveCompleteChecks = 0;
         let pollCount = 0;
 
+        const send = (data: string) => sendSSE(controller, encoder, data, closed);
+        const close = () => {
+          closed = true;
+          closeSSE(controller, closed);
+        };
+
+        send(JSON.stringify({ type: "connected", jobId }));
+
         const timeoutId = setTimeout(() => {
           if (!closed) {
-            sendEvent(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
-            closeStream();
+            send(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
+            close();
           }
         }, LIMITS.SSE_TIMEOUT_MS);
 
         const interval = setInterval(async () => {
           pollCount++;
 
-          if (pollCount >= LIMITS.MAX_SSE_POLL_COUNT) {
+          if (pollCount >= LIMITS.MAX_SSE_POLL_COUNT || closed) {
             clearInterval(interval);
             clearTimeout(timeoutId);
             if (!closed) {
-              sendEvent(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
-              closeStream();
+              send(JSON.stringify({ type: "timeout", message: "انتهت مهلة الاتصال" }));
+              close();
             }
-            return;
-          }
-          if (closed) {
-            clearInterval(interval);
             return;
           }
 
@@ -114,7 +150,7 @@ export const GET = withAuth(async (request, { session }) => {
 
             if (status) {
               consecutiveCompleteChecks = 0;
-              sendEvent(
+              send(
                 JSON.stringify({
                   type: "progress",
                   jobId,
@@ -125,66 +161,28 @@ export const GET = withAuth(async (request, { session }) => {
 
               if (status.stage === "completed" || status.stage === "failed") {
                 clearInterval(interval);
-                sendEvent(
-                  JSON.stringify({
-                    type: "complete",
-                    jobId,
-                    status: status.stage,
-                  }),
-                );
-                setTimeout(closeStream, UI_TIMING.SSE_CLOSE_DELAY_MS);
+                handleCompletion(jobId, status.stage, send, close);
               }
             } else {
               const prismaStatus = await getDocumentStatus(jobId);
+              consecutiveCompleteChecks = handlePollResult(
+                prismaStatus,
+                jobId,
+                send,
+                close,
+                consecutiveCompleteChecks,
+              );
 
-              if (prismaStatus) {
-                if (prismaStatus.stage === "completed" || prismaStatus.stage === "failed") {
-                  consecutiveCompleteChecks++;
-                  if (consecutiveCompleteChecks >= UI_TIMING.MAX_CONSECUTIVE_COMPLETE_CHECKS) {
-                    clearInterval(interval);
-                    sendEvent(
-                      JSON.stringify({
-                        type: "progress",
-                        jobId,
-                        stage: prismaStatus.stage,
-                        progress: prismaStatus.progress,
-                      }),
-                    );
-                    sendEvent(
-                      JSON.stringify({
-                        type: "complete",
-                        jobId,
-                        status: prismaStatus.stage,
-                      }),
-                    );
-                    setTimeout(closeStream, UI_TIMING.SSE_CLOSE_DELAY_MS);
-                    return;
-                  }
-                } else {
-                  consecutiveCompleteChecks = 0;
-                }
-
-                sendEvent(
-                  JSON.stringify({
-                    type: "progress",
-                    jobId,
-                    stage: prismaStatus.stage,
-                    progress: prismaStatus.progress,
-                  }),
-                );
-              } else {
-                sendEvent(
-                  JSON.stringify({
-                    type: "progress",
-                    jobId,
-                    stage: "pending",
-                    progress: 0,
-                  }),
-                );
+              if (
+                prismaStatus &&
+                consecutiveCompleteChecks >= UI_TIMING.MAX_CONSECUTIVE_COMPLETE_CHECKS
+              ) {
+                clearInterval(interval);
+                handleCompletion(jobId, prismaStatus.stage, send, close);
               }
             }
           } catch {
-            sendEvent(
+            send(
               JSON.stringify({
                 type: "warning",
                 message: "طابور المعالجة غير متاح — يتم المحاكاة محلياً",
