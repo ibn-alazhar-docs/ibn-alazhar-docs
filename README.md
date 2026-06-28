@@ -80,9 +80,9 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 | Command                 | Suite            | Tests | Notes                                |
 | ----------------------- | ---------------- | ----- | ------------------------------------ |
-| `pnpm test`             | Unit             | 673   | `tests/backend/` + `tests/frontend/` |
+| `pnpm test`             | Unit             | 783   | `tests/backend/` + `tests/frontend/` |
 | `pnpm test:integration` | Integration      | —     | Requires running DB                  |
-| `pnpm test:security`    | Security         | 213+  | 6 new test files (OWASP coverage)    |
+| `pnpm test:security`    | Security         | 213+  | OWASP coverage                       |
 | `pnpm test:pentest`     | Penetration      | —     | Requires running DB                  |
 | `pnpm test:load`        | Load             | —     | Requires running DB                  |
 | `pnpm test:recovery`    | Recovery         | —     | Requires running DB                  |

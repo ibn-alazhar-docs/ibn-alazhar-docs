@@ -97,7 +97,7 @@ Ibn Al-Azhar Docs is an Arabic-first, RTL-first, Docker-first document processin
 
 | Suite       | Command                 | Tests            |
 | ----------- | ----------------------- | ---------------- |
-| Unit        | `pnpm test`             | 673              |
+| Unit        | `pnpm test`             | 783              |
 | Security    | `pnpm test:security`    | 213+             |
 | Integration | `pnpm test:integration` | requires DB      |
 | E2E         | `npx playwright test`   | requires browser |
