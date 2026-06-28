@@ -161,28 +161,29 @@
 | P4 (Backlog)      | 1/10     | Cache headers on API routes                                                                           |
 | P5 (Nice-to-have) | 1/16     | parseApiError() utility                                                                               |
 
-**Resolved:** 25/157 findings (16%)
+**Resolved:** 43/157 findings (27%)
 **Partially resolved:** 3 findings
-**Remaining:** 129 findings — mostly P3-P5 backlog items
+**Remaining:** 111 findings — mostly P3-P5 backlog items
 
 ---
 
 ## Git Commits (this session)
 
-| Commit                                               | Description                                          |
-| ---------------------------------------------------- | ---------------------------------------------------- |
-| `fix: batch 1 — safety + quick wins`                 | Docker security, accessibility, Prisma indexes       |
-| `refactor: batch 2 — type safety`                    | Domain interfaces, Prisma casts, test setup          |
-| `refactor: batch 3 — code quality`                   | DocumentRow split, rate-limit helper, dedup          |
-| `test: batch 4 — testing`                            | 11 new test files, 110 new tests                     |
-| `refactor: batch 5 — database`                       | Iterative CTE, composite indexes                     |
-| `refactor: PrismaClient singleton, cache headers`    | Batch 6+7: PrismaClient, cache, useFilesManager hook |
-| `refactor: extract storage into IStorageRepository`  | Batch 8: IStorageRepository, zero pipeline imports   |
-| `refactor: enhance error boundaries + API errors`    | Batch 9: error boundaries, requestId, parseApiError  |
-| `refactor: final polish + report update`             | Batch 10: FINAL_REPORT.md, all batches documented    |
-| `fix: accessibility improvements`                    | Batch 11: aria-expanded, aria-label, focus trap      |
-| `refactor: extract magic numbers to named constants` | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS       |
+| Commit                                                     | Description                                          |
+| ---------------------------------------------------------- | ---------------------------------------------------- |
+| `fix: batch 1 — safety + quick wins`                       | Docker security, accessibility, Prisma indexes       |
+| `refactor: batch 2 — type safety`                          | Domain interfaces, Prisma casts, test setup          |
+| `refactor: batch 3 — code quality`                         | DocumentRow split, rate-limit helper, dedup          |
+| `test: batch 4 — testing`                                  | 11 new test files, 110 new tests                     |
+| `refactor: batch 5 — database`                             | Iterative CTE, composite indexes                     |
+| `refactor: PrismaClient singleton, cache headers`          | Batch 6+7: PrismaClient, cache, useFilesManager hook |
+| `refactor: extract storage into IStorageRepository`        | Batch 8: IStorageRepository, zero pipeline imports   |
+| `refactor: enhance error boundaries + API errors`          | Batch 9: error boundaries, requestId, parseApiError  |
+| `refactor: final polish + report update`                   | Batch 10: FINAL_REPORT.md, all batches documented    |
+| `fix: accessibility improvements`                          | Batch 11: aria-expanded, aria-label, focus trap      |
+| `refactor: extract magic numbers to named constants`       | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS       |
+| `security: add rate limiting to all unprotected endpoints` | Batch 13: 18 routes, 19 files                        |
 
 ---
 
-**Status:** 12 batches complete (11–12 new). Accessibility + code quality improved. Codebase is production-hygiene clean.
+**Status:** 13 batches complete. All API endpoints rate-limited. Codebase is production-hygiene clean.
