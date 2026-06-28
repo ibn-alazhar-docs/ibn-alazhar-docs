@@ -126,7 +126,9 @@ services:
     image: redis:7-alpine
     ports:
       - "127.0.0.1:${STAGING_REDIS_PORT:-6380}:6379"
-    command: redis-server --requirepass ${STAGING_REDIS_PASSWORD} --maxmemory 128mb --maxmemory-policy allkeys-lru
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${STAGING_REDIS_PASSWORD}
+    volumes:
+      - ./docker/redis/redis-staging.conf:/usr/local/etc/redis/redis.conf:ro
     networks:
       - backend
     healthcheck:

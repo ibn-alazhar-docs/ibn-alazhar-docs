@@ -2,6 +2,8 @@ import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import type { PipelineConfig } from "../types";
 
+// WHY: Singleton connection — BullMQ creates a new connection per Queue instance.
+// Multiple connections would exhaust Redis maxclients on small VPS instances.
 let connection: IORedis | null = null;
 let lastRedisHost = "";
 let lastRedisPort = 0;
@@ -10,6 +12,8 @@ let connectionLock = false;
 
 const queues: Record<string, Queue> = {};
 
+// WHY: connectionLock prevents race condition when multiple workers call getConnection
+// simultaneously during the reconnection window (e.g. after config reload).
 export function getConnection(config: PipelineConfig): IORedis {
   if (connectionLock) {
     if (connection) return connection;
@@ -30,6 +34,8 @@ export function getConnection(config: PipelineConfig): IORedis {
         host: config.redis.host,
         port: config.redis.port,
         password: config.redis.password,
+        // WHY: BullMQ requires null here — it handles retries internally via
+        // job-level retry strategies, not per-command retries.
         maxRetriesPerRequest: null,
         retryStrategy: (times: number) => {
           if (times > 5) return null;

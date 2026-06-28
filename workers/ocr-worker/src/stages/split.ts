@@ -50,11 +50,17 @@ export function registerSplittingStage(config: PipelineConfig): void {
           storedPagesCount = selectedPaths.length;
           await updateDocStatus(job.documentId, "SPLITTING", { pageCount: storedPagesCount });
 
-          for (let i = 0; i < selectedPaths.length; i++) {
-            const pageNum = i + 1;
-            const pageKey = `${config.paths.pages}/${job.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-            const imgBuf = await readFile(selectedPaths[i]!);
-            await uploadBuffer(config, pageKey, imgBuf, "image/png");
+          const CONCURRENCY = 5;
+          for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
+            const batch = selectedPaths.slice(i, i + CONCURRENCY);
+            await Promise.all(
+              batch.map(async (pagePath, batchIdx) => {
+                const pageNum = i + batchIdx + 1;
+                const pageKey = `${config.paths.pages}/${job.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+                const imgBuf = await readFile(pagePath);
+                await uploadBuffer(config, pageKey, imgBuf, "image/png");
+              }),
+            );
           }
 
           logger.info(`[split] Stored ${storedPagesCount} page images for ${job.id}`);
