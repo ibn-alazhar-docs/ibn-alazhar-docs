@@ -1,14 +1,15 @@
 "use client";
 
-import { useState, useRef, useEffect, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
 import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
+import { useFileUpload } from "@/hooks/use-file-upload";
 
 const VisualRangeSelector = dynamic(
   () => import("./visual-range-selector").then((mod) => mod.VisualRangeSelector),
   { ssr: false },
 );
+
 interface FileUploadProps {
   onUploadStart: (jobId: string, fileName: string) => void;
   folderId?: string | null;
@@ -16,110 +17,19 @@ interface FileUploadProps {
 
 export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
   const t = useTranslations("pipeline.upload");
-  const [file, setFile] = useState<File | null>(null);
-  const [pageRange, setPageRange] = useState("");
-  const [uploading, setUploading] = useState(false);
-  const [progress, setProgress] = useState(0);
-  const [error, setError] = useState<string | null>(null);
-  const [showVisualSelector, setShowVisualSelector] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  // Prevent data loss if user navigates away or switches language while a file is selected
-  useEffect(() => {
-    const hasUnsaved = file !== null;
-    if (typeof window !== "undefined") {
-      (window as unknown as Record<string, unknown>).hasUnsavedChanges = hasUnsaved;
-
-      if (hasUnsaved) {
-        window.onbeforeunload = (e) => {
-          e.preventDefault();
-          e.returnValue = "";
-          return "";
-        };
-      } else {
-        window.onbeforeunload = null;
-      }
-    }
-    return () => {
-      if (typeof window !== "undefined") {
-        (window as unknown as Record<string, unknown>).hasUnsavedChanges = false;
-        window.onbeforeunload = null;
-      }
-    };
-  }, [file]);
-
-  const MAX_SIZE = 5 * 1024 * 1024 * 1024; // 5GB (Raised from 100MB)
-
-  function validateFile(f: File): string | null {
-    const isPdf = f.type === "application/pdf" || f.name.toLowerCase().endsWith(".pdf");
-    const isImage =
-      f.type === "image/jpeg" ||
-      f.type === "image/png" ||
-      f.name.toLowerCase().endsWith(".jpg") ||
-      f.name.toLowerCase().endsWith(".jpeg") ||
-      f.name.toLowerCase().endsWith(".png");
-
-    if (!isPdf && !isImage) {
-      return t("errorInvalidType");
-    }
-    if (f.size > MAX_SIZE) {
-      return t("errorTooLarge");
-    }
-    return null;
-  }
-
-  async function processUpload(finalRangeString?: string) {
-    if (!file) return;
-
-    const validationError = validateFile(file);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setUploading(true);
-    setProgress(0);
-    setError(null);
-
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      if (folderId) {
-        formData.append("folderId", folderId);
-      }
-
-      const rangeToUse = finalRangeString !== undefined ? finalRangeString : pageRange;
-      if (rangeToUse) {
-        formData.append("pageRange", rangeToUse);
-      }
-
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const err = await response.json();
-        const msg = typeof err.error === "object" ? err.error?.message : err.error;
-        throw new Error(msg || t("errorUploadFailed"));
-      }
-
-      const result = await response.json();
-      onUploadStart(result.jobId, file.name);
-      setFile(null);
-      setPageRange("");
-      setProgress(100);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : t("errorUploadFailed"));
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    await processUpload();
-  }
+  const {
+    file,
+    setPageRange,
+    uploading,
+    progress,
+    error,
+    showVisualSelector,
+    setShowVisualSelector,
+    inputRef,
+    processUpload,
+    handleFileSelect,
+    reset,
+  } = useFileUpload({ folderId, onUploadStart });
 
   if (
     file &&
@@ -134,17 +44,19 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
           setShowVisualSelector(false);
           processUpload(rangeStr);
         }}
-        onCancel={() => {
-          setFile(null);
-          setShowVisualSelector(false);
-          setPageRange("");
-        }}
+        onCancel={() => reset()}
       />
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        processUpload();
+      }}
+      className="space-y-4"
+    >
       <motion.div
         whileHover={{
           scale: 1.01,
@@ -161,20 +73,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         onDrop={(e) => {
           e.preventDefault();
           const dropped = e.dataTransfer.files[0];
-          if (dropped) {
-            const err = validateFile(dropped);
-            if (err) {
-              setError(err);
-            } else {
-              setFile(dropped);
-              if (
-                dropped.type === "application/pdf" ||
-                dropped.name.toLowerCase().endsWith(".pdf")
-              ) {
-                setShowVisualSelector(true);
-              }
-            }
-          }
+          if (dropped) handleFileSelect(dropped);
         }}
       >
         <input
@@ -184,20 +83,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
           className="hidden"
           onChange={(e) => {
             const selected = e.target.files?.[0];
-            if (selected) {
-              const err = validateFile(selected);
-              if (err) {
-                setError(err);
-              } else {
-                setFile(selected);
-                if (
-                  selected.type === "application/pdf" ||
-                  selected.name.toLowerCase().endsWith(".pdf")
-                ) {
-                  setShowVisualSelector(true);
-                }
-              }
-            }
+            if (selected) handleFileSelect(selected);
           }}
         />
 
@@ -233,7 +119,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
 
       {error && (
         <div className="bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] px-4 py-3 rounded-lg text-sm">
-          {error}
+          {t(error)}
         </div>
       )}
 

@@ -241,7 +241,9 @@ describe("GET /api/tags — قائمة الوسوم", () => {
 
     await listTags();
 
-    expect(prisma.tag.findMany).toHaveBeenCalledWith(expect.objectContaining({ where: {} }));
+    expect(prisma.tag.findMany).toHaveBeenCalledWith(
+      expect.objectContaining({ where: { deletedAt: null } }),
+    );
   });
 
   it("المستخدم العادي يرى وسومه فقط", async () => {
@@ -252,7 +254,7 @@ describe("GET /api/tags — قائمة الوسوم", () => {
 
     expect(prisma.tag.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
-        where: { userId: TEST_USER_ID },
+        where: { deletedAt: null, userId: TEST_USER_ID },
       }),
     );
   });
@@ -378,7 +380,7 @@ describe("DELETE /api/tags/[id] — حذف وسم", () => {
     mockSession();
     vi.mocked(prisma.tag.findFirst).mockResolvedValue(makeTag({ select: { id: true } }));
     vi.mocked(prisma.tagDocument.deleteMany).mockResolvedValue({ count: 2 });
-    vi.mocked(prisma.tag.delete).mockResolvedValue(makeTag());
+    vi.mocked(prisma.tag.update).mockResolvedValue(makeTag());
 
     const response = await deleteTag(req(), params("tag-1"));
     const body = await response.json();
@@ -389,7 +391,10 @@ describe("DELETE /api/tags/[id] — حذف وسم", () => {
     expect(prisma.tagDocument.deleteMany).toHaveBeenCalledWith({
       where: { tagId: "tag-1" },
     });
-    expect(prisma.tag.delete).toHaveBeenCalledWith({ where: { id: "tag-1" } });
+    expect(prisma.tag.update).toHaveBeenCalledWith({
+      where: { id: "tag-1" },
+      data: { deletedAt: expect.any(Date) },
+    });
   });
 
   it("يرجع 404 إذا لم يُوجد الوسم", async () => {
@@ -425,7 +430,6 @@ describe("POST /api/tags/merge — دمج الوسوم", () => {
       .mockResolvedValueOnce([]);
     vi.mocked(prisma.tagDocument.createMany).mockResolvedValue({ count: 2 });
     vi.mocked(prisma.tagDocument.deleteMany).mockResolvedValue({ count: 2 });
-    vi.mocked(prisma.tag.delete).mockResolvedValue(makeTag());
 
     const response = await mergeTags(req({ sourceTagId: "source-id", targetTagId: "target-id" }));
     const body = await response.json();

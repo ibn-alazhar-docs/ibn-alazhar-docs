@@ -57,7 +57,14 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
   }
 
   if (tags.length === 0) {
-    return null;
+    return (
+      <div className="space-y-2">
+        <h3 className="text-xs font-semibold text-muted-color uppercase tracking-wide px-1">
+          {t("title")}
+        </h3>
+        <p className="text-sm text-very-muted px-1">{tCommon("noResults")}</p>
+      </div>
+    );
   }
 
   return (

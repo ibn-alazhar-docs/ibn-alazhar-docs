@@ -172,16 +172,19 @@ model Folder {
 }
 
 model Tag {
-  id        String   @id @default(cuid())
+  id        String    @id @default(cuid())
   userId    String
   name      String
-  color     String   @default("#16A34A")
-  createdAt DateTime @default(now())
+  color     String    @default("#16A34A")
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
 
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   documents TagDocument[]
 
   @@unique([userId, name])
+  @@index([userId, deletedAt])
+  @@index([deletedAt])
   @@map("tags")
 }
 

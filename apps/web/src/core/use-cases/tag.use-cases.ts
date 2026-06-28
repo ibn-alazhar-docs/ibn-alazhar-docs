@@ -14,7 +14,10 @@ export class TagUseCases {
 
   async getTags(session: AuthSession) {
     const admin = isAdminRole(session.user.role);
-    return this.tagRepository.findMany(admin ? {} : { userId: session.user.id });
+    return this.tagRepository.findMany({
+      deletedAt: null,
+      ...(admin ? {} : { userId: session.user.id }),
+    });
   }
 
   async getTagById(id: string, session: AuthSession) {
