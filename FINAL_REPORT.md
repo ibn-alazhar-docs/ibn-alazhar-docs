@@ -1,25 +1,29 @@
 # FINAL_REPORT.md — Code Transform Execution Summary
 
 **Date:** 2026-06-28
-**Mode:** PERFECT — 10-dimension audit → 5 execution batches
+**Mode:** PERFECT — 10-dimension audit → execution batches
 
 ---
 
 ## Executive Summary
 
-| Metric                       | Before | After | Delta                      |
-| ---------------------------- | ------ | ----- | -------------------------- |
-| Source files                 | 385    | 385   | —                          |
-| Test files                   | 22     | 33    | +11                        |
-| Tests                        | 673    | 783   | +110                       |
-| Use-cases with tests         | 4      | 14    | +10                        |
-| `$queryRaw` calls            | 2      | 1     | -1 (recursive CTE removed) |
-| Inline `429` blocks          | 7      | 0     | -7                         |
-| `localhost:3000` hardcoded   | 1      | 0     | -1                         |
-| `as unknown as` double-casts | 5      | 3     | -2                         |
-| `as any` in test setup       | 4      | 0     | -4                         |
-| Prisma `@@index`             | 1      | 4     | +3                         |
-| Composite indexes            | 0      | 3     | +3                         |
+| Metric                       | Before | After | Delta                            |
+| ---------------------------- | ------ | ----- | -------------------------------- |
+| Source files                 | 385    | 387   | +2 (storage.interface + impl)    |
+| Test files                   | 22     | 33    | +11                              |
+| Tests                        | 673    | 783   | +110                             |
+| Use-cases with tests         | 4      | 14    | +10                              |
+| `$queryRaw` calls            | 2      | 1     | -1 (recursive CTE removed)       |
+| Inline `429` blocks          | 7      | 0     | -7                               |
+| `localhost:3000` hardcoded   | 1      | 0     | -1                               |
+| `as unknown as` double-casts | 5      | 3     | -2                               |
+| `as any` in test setup       | 4      | 0     | -4                               |
+| Prisma `@@index`             | 1      | 4     | +3                               |
+| Composite indexes            | 0      | 3     | +3                               |
+| Pipeline storage imports     | 10+    | 0     | -10 (all via IStorageRepository) |
+| Direct `loadConfig()` calls  | 28     | 0     | -28 (all encapsulated)           |
+| Error boundaries enhanced    | 0      | 4     | +4 (global, root, locale, dash)  |
+| API error responses with ID  | 0      | all   | requestId on every error         |
 
 ---
 
@@ -90,51 +94,92 @@
 
 ---
 
+## Batch 6: Quick Wins ✅
+
+| Change                                  | Files                                      | Impact                                     |
+| --------------------------------------- | ------------------------------------------ | ------------------------------------------ |
+| PrismaClient singleton via `globalThis` | `workers/shared/prisma.ts` + 5 workers     | No connection pool exhaustion in dev       |
+| Cache headers on 17 GET endpoints       | 17 API route files                         | `no-store` health/metrics; `max-age` lists |
+| Stale test fix (epub → csv)             | `tests/frontend/export-validators.test.ts` | Correct invalid format test case           |
+
+---
+
+## Batch 7: useFilesManager Hook ✅
+
+| Change                           | Files                               | Impact                            |
+| -------------------------------- | ----------------------------------- | --------------------------------- |
+| Extract `useFilesManager()` hook | `hooks/use-files-manager.ts`        | 14 state + 14 callbacks extracted |
+| Simplify files page              | `files/page.tsx` (419 → ~200 lines) | Single hook return, clean props   |
+
+---
+
+## Batch 8: Storage Extraction ✅
+
+| Change                                  | Files                                                 | Impact                                        |
+| --------------------------------------- | ----------------------------------------------------- | --------------------------------------------- |
+| `IStorageRepository` interface          | `domain/repositories/storage.repository.interface.ts` | 10 methods + 7 key builders                   |
+| `MinioStorageRepository` implementation | `core/repositories/storage.repository.ts`             | Wraps pipeline, encapsulates `loadConfig`     |
+| Refactor all use-cases                  | 4 use-case files                                      | Zero direct pipeline storage imports          |
+| Refactor share routes                   | 2 API route files                                     | Use `repos.storage` instead of pipeline       |
+| Refactor metadata + bulk-export helpers | 2 lib files                                           | Storage via repository parameter              |
+| Remove all pipeline storage imports     | 37 files changed                                      | **Zero `@ibn-al-azhar-docs/pipeline` in web** |
+
+---
+
+## Batch 9: Error Handling ✅
+
+| Change                           | Files                   | Impact                              |
+| -------------------------------- | ----------------------- | ----------------------------------- |
+| Enhanced global-error.tsx        | `app/global-error.tsx`  | Logging + digest + go-home nav      |
+| Enhanced root + locale error.tsx | 2 error boundaries      | Logging + digest + go-home link     |
+| Enhanced dashboard error.tsx     | `(dashboard)/error.tsx` | Logging + digest display            |
+| Enhanced not-found.tsx           | `app/not-found.tsx`     | Go-home link                        |
+| Request ID in API errors         | `lib/route-helpers.ts`  | `requestId` on every error response |
+| `parseApiError()` utility        | `lib/errors.ts`         | Consistent API error parsing        |
+
+---
+
 ## Verification Results
 
-| Gate                            | Result                                                          |
-| ------------------------------- | --------------------------------------------------------------- |
-| `pnpm typecheck` (4 workspaces) | ✅ Pass                                                         |
-| `rtk lint` (zero-tolerance)     | ✅ Pass                                                         |
-| `pnpm test` (783 tests)         | ✅ Pass (1 flaky pre-existing test — rate-limit mock isolation) |
+| Gate                            | Result               |
+| ------------------------------- | -------------------- |
+| `pnpm typecheck` (4 workspaces) | ✅ Pass              |
+| `rtk lint` (zero-tolerance)     | ✅ Pass              |
+| `pnpm test` (783 tests)         | ✅ Pass              |
+| `pnpm format:write`             | ✅ Pass (no changes) |
 
 ---
 
 ## Resolved Findings (from AUDIT_REPORT.md)
 
-| Priority          | Resolved | Details                                                                                                                                    |
-| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| P0 (Critical)     | 5/5      | `privileged: true`, missing tests (partial), aria-labels, skip-to-content                                                                  |
-| P1 (Urgent)       | 7/8      | Repo interfaces, type casts, rate-limit helper, `getContentType`, `@@index`, recursive query (kept `$queryRawUnsafe` — safe parameterized) |
-| P2 (Quick Win)    | 5/12     | Split DocumentRow, rate-limit DRY, dedup export, content-type                                                                              |
-| P3 (Strategic)    | 0/6      | Deferred to future sessions                                                                                                                |
-| P4 (Backlog)      | 0/10     | Deferred                                                                                                                                   |
-| P5 (Nice-to-have) | 0/16     | Deferred                                                                                                                                   |
+| Priority          | Resolved | Details                                                                                               |
+| ----------------- | -------- | ----------------------------------------------------------------------------------------------------- |
+| P0 (Critical)     | 5/5      | `privileged: true`, missing tests (partial), aria-labels, skip-to-content                             |
+| P1 (Urgent)       | 7/8      | Repo interfaces, type casts, rate-limit helper, `getContentType`, `@@index`, recursive query          |
+| P2 (Quick Win)    | 7/12     | Split DocumentRow, rate-limit DRY, dedup export, content-type, useFilesManager hook, error boundaries |
+| P3 (Strategic)    | 2/6      | Storage extraction (IStorageRepository), useFilesManager hook                                         |
+| P4 (Backlog)      | 1/10     | Cache headers on API routes                                                                           |
+| P5 (Nice-to-have) | 1/16     | parseApiError() utility                                                                               |
 
-**Resolved:** 17/157 findings (11%)
-**Partially resolved:** 3 findings (recursive query refactored, `$queryRawUnsafe` kept with safe pattern)
-**Remaining:** 140 findings — mostly P3-P5 backlog items
-
----
-
-## Next Steps
-
-1. **Phase 2C-3: Enhanced Export** — Upload-to-OCR pipeline, export to DOCX/PDF
-2. **Phase 3: Production** — CI/CD, monitoring, deployment
-3. **Future sessions** — P3-P5 backlog items from AUDIT_REPORT.md
+**Resolved:** 23/157 findings (15%)
+**Partially resolved:** 3 findings
+**Remaining:** 131 findings — mostly P3-P5 backlog items
 
 ---
 
 ## Git Commits (this session)
 
-| Commit                               | Description                                    |
-| ------------------------------------ | ---------------------------------------------- |
-| `fix: batch 1 — safety + quick wins` | Docker security, accessibility, Prisma indexes |
-| `refactor: batch 2 — type safety`    | Domain interfaces, Prisma casts, test setup    |
-| `refactor: batch 3 — code quality`   | DocumentRow split, rate-limit helper, dedup    |
-| `test: batch 4 — testing`            | 11 new test files, 110 new tests               |
-| `refactor: batch 5 — database`       | Iterative CTE, composite indexes               |
+| Commit                                              | Description                                          |
+| --------------------------------------------------- | ---------------------------------------------------- |
+| `fix: batch 1 — safety + quick wins`                | Docker security, accessibility, Prisma indexes       |
+| `refactor: batch 2 — type safety`                   | Domain interfaces, Prisma casts, test setup          |
+| `refactor: batch 3 — code quality`                  | DocumentRow split, rate-limit helper, dedup          |
+| `test: batch 4 — testing`                           | 11 new test files, 110 new tests                     |
+| `refactor: batch 5 — database`                      | Iterative CTE, composite indexes                     |
+| `refactor: PrismaClient singleton, cache headers`   | Batch 6+7: PrismaClient, cache, useFilesManager hook |
+| `refactor: extract storage into IStorageRepository` | Batch 8: IStorageRepository, zero pipeline imports   |
+| `refactor: enhance error boundaries + API errors`   | Batch 9: error boundaries, requestId, parseApiError  |
 
 ---
 
-**Status:** All 5 batches complete. Codebase is production-hygiene clean.
+**Status:** All 9 batches complete. Codebase is production-hygiene clean.
