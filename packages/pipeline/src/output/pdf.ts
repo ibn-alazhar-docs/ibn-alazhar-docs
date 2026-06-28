@@ -1,8 +1,40 @@
 import { createRequire } from "module";
-const require = createRequire(import.meta.url);
-const PdfPrinter = require("pdfmake/js/Printer").default;
+import * as path from "path";
+import * as fs from "fs";
+import { fileURLToPath } from "url";
+
+const localRequire = createRequire(import.meta.url);
+const PdfPrinter = localRequire("pdfmake/js/Printer").default;
 import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
 import type { CleanedText } from "../types";
+
+function findCairoWoff(filename: string): string {
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
+  let dir = currentDir;
+  while (dir !== path.parse(dir).root) {
+    const candidate = path.join(dir, "node_modules", "@fontsource", "cairo", "files", filename);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+    // Handle pnpm layout virtual store candidate
+    const pnpmCandidate = path.join(
+      dir,
+      "node_modules",
+      ".pnpm",
+      "@fontsource+cairo@5.2.7",
+      "node_modules",
+      "@fontsource",
+      "cairo",
+      "files",
+      filename,
+    );
+    if (fs.existsSync(pnpmCandidate)) {
+      return pnpmCandidate;
+    }
+    dir = path.dirname(dir);
+  }
+  return path.join(currentDir, "../../../../node_modules/@fontsource/cairo/files", filename);
+}
 
 export async function generatePdf(
   cleanedText: CleanedText,
@@ -10,10 +42,10 @@ export async function generatePdf(
 ): Promise<Buffer> {
   const fonts = {
     Cairo: {
-      normal: require.resolve("@fontsource/cairo/files/cairo-arabic-400-normal.woff"),
-      bold: require.resolve("@fontsource/cairo/files/cairo-arabic-700-normal.woff"),
-      italics: require.resolve("@fontsource/cairo/files/cairo-arabic-400-normal.woff"),
-      bolditalics: require.resolve("@fontsource/cairo/files/cairo-arabic-700-normal.woff"),
+      normal: findCairoWoff("cairo-arabic-400-normal.woff"),
+      bold: findCairoWoff("cairo-arabic-700-normal.woff"),
+      italics: findCairoWoff("cairo-arabic-400-normal.woff"),
+      bolditalics: findCairoWoff("cairo-arabic-700-normal.woff"),
     },
   };
 
