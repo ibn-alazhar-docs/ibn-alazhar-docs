@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { FolderItem } from "./folder-item";
 import { CreateFolderDialog } from "./create-folder-dialog";
 import { MoveDialog } from "./move-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { buildFolderTree, type FolderNode } from "@/lib/build-folder-tree";
+import { useFolders } from "./use-folders";
 
 interface FolderTreeProps {
   selectedFolderId: string | null;
@@ -16,112 +16,35 @@ interface FolderTreeProps {
 export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps) {
   const t = useTranslations("folders");
   const tCommon = useTranslations("common");
-  const [folders, setFolders] = useState<FolderNode[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { folders, loading, createFolder, renameFolder, deleteFolder, moveFolder } = useFolders();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [createParentId, setCreateParentId] = useState<string | null>(null);
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [movingFolderId, setMovingFolderId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
-  const loadFolders = useCallback(async () => {
-    try {
-      const response = await fetch("/api/folders");
-      if (!response.ok) throw new Error(t("loadError"));
-      const data = await response.json();
-      const rootFolders = buildFolderTree(data.folders);
-      setFolders(rootFolders);
-    } catch {
-      // Silently ignore — folders will remain empty
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadFolders();
-  }, [loadFolders]);
-
   async function handleCreate(name: string): Promise<void> {
-    const response = await fetch("/api/folders", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, parentId: createParentId }),
-    });
-
-    if (!response.ok) {
-      const data = await response.json();
-      throw new Error(data.error || t("createError"));
-    }
-
-    await loadFolders();
+    await createFolder(name, createParentId);
     setShowCreateDialog(false);
     setCreateParentId(null);
   }
 
-  async function handleRename(folderId: string, newName: string) {
-    try {
-      const response = await fetch(`/api/folders/${folderId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName }),
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || t("renameError"));
-      }
-
-      await loadFolders();
-    } catch {
-      // Silently ignore
-    }
-  }
-
   async function handleDelete(folderId: string) {
     try {
-      const response = await fetch(`/api/folders/${folderId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || t("deleteError"));
-      }
-
+      await deleteFolder(folderId);
       if (selectedFolderId === folderId) {
         onSelectFolder(null);
       }
-
-      await loadFolders();
-    } catch {
-      // Silently ignore
     } finally {
       setDeleteConfirmId(null);
     }
   }
 
-  function handleMove(folderId: string, _parentId: string | null) {
-    setMovingFolderId(folderId);
-    setShowMoveDialog(true);
-  }
-
   async function handleMoveSubmit(newParentId: string | null) {
     if (!movingFolderId) return;
-    try {
-      const response = await fetch(`/api/folders/${movingFolderId}/move`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ parentId: newParentId }),
-      });
-      if (response.ok) {
-        setShowMoveDialog(false);
-        setMovingFolderId(null);
-        await loadFolders();
-      }
-    } catch {
-      // Silently ignore
-    }
+    await moveFolder(movingFolderId, newParentId);
+    setShowMoveDialog(false);
+    setMovingFolderId(null);
   }
 
   if (loading) {
@@ -136,7 +59,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
 
   return (
     <div className="space-y-2">
-      {/* Root level actions */}
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-color">{t("title")}</h3>
         <button
@@ -151,7 +73,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         </button>
       </div>
 
-      {/* All Files option */}
       <button
         type="button"
         className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start transition-colors ${
@@ -163,6 +84,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       >
         <span className="text-lg">
           <svg
+            aria-hidden="true"
             className="h-5 w-5 text-muted-color"
             fill="none"
             viewBox="0 0 24 24"
@@ -179,7 +101,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         <span className="text-sm font-medium">{t("allFiles")}</span>
       </button>
 
-      {/* Folder tree */}
       {folders.length > 0 ? (
         <div className="space-y-1">
           {folders.map((folder) => (
@@ -189,9 +110,12 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
               level={0}
               selectedFolderId={selectedFolderId}
               onSelect={onSelectFolder}
-              onRename={handleRename}
+              onRename={renameFolder}
               onDelete={(folderId) => setDeleteConfirmId(folderId)}
-              onMove={handleMove}
+              onMove={(folderId) => {
+                setMovingFolderId(folderId);
+                setShowMoveDialog(true);
+              }}
             />
           ))}
         </div>
@@ -199,6 +123,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         <div className="py-8 text-center">
           <div className="mb-2 text-muted-color">
             <svg
+              aria-hidden="true"
               className="mx-auto h-10 w-10"
               fill="none"
               viewBox="0 0 24 24"
@@ -226,7 +151,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         </div>
       )}
 
-      {/* Create folder dialog */}
       {showCreateDialog && (
         <CreateFolderDialog
           onSubmit={handleCreate}
@@ -237,7 +161,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         />
       )}
 
-      {/* Move folder dialog */}
       {showMoveDialog && (
         <MoveDialog
           selectedCount={1}
@@ -249,7 +172,6 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         />
       )}
 
-      {/* Delete confirmation dialog */}
       {deleteConfirmId && (
         <ConfirmDialog
           title={t("deleteTitle", { fallback: "حذف المجلد" })}
