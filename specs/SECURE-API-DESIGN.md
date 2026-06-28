@@ -112,14 +112,14 @@ All API errors use `ERROR_CODES` enum — machine-readable `code`, human `messag
 
 ### LOW — Nice to fix
 
-| #   | Finding                                                                                             | Remediation                      |
-| --- | --------------------------------------------------------------------------------------------------- | -------------------------------- |
-| L1  | No schema validation on query params in `documents`, `conversion/list`                              | Add Zod schemas for query params |
-| L2  | No validation on `q` param in `search/suggest`                                                      | Add `.max(200)` length limit     |
-| L3  | Duplicate endpoint: `/api/documents/[id]/share` DELETE vs `/api/documents/[id]/share/delete` DELETE | Remove duplicate                 |
-| L4  | Redundant bulk size check (zod + manual)                                                            | Remove manual check              |
-| L5  | In-memory SSE connection map not distributed-safe                                                   | Documented limitation            |
-| L6  | Health/ready reads env vars (not exposed)                                                           | No action needed                 |
+| #   | Finding                                                                                             | Remediation                      | Status |
+| --- | --------------------------------------------------------------------------------------------------- | -------------------------------- | ------ |
+| L1  | No schema validation on query params in `documents`, `conversion/list`                              | Add Zod schemas for query params | ✅     |
+| L2  | No validation on `q` param in `search/suggest`                                                      | Add `.max(200)` length limit     | ✅     |
+| L3  | Duplicate endpoint: `/api/documents/[id]/share` DELETE vs `/api/documents/[id]/share/delete` DELETE | Remove duplicate                 | ✅     |
+| L4  | Redundant bulk size check (zod + manual)                                                            | Remove manual check              | ✅     |
+| L5  | In-memory SSE connection map not distributed-safe                                                   | Documented limitation            |        |
+| L6  | Health/ready reads env vars (not exposed)                                                           | No action needed                 |        |
 
 ## 9. Implementation Checklist
 
