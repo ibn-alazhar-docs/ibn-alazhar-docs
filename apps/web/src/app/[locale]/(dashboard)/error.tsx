@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/components/ui/container";
 import { Stack } from "@/components/ui/stack";
@@ -11,13 +12,22 @@ interface DashboardErrorProps {
   reset: () => void;
 }
 
-export default function DashboardError({ reset }: DashboardErrorProps) {
+export default function DashboardError({ error, reset }: DashboardErrorProps) {
+  useEffect(() => {
+    console.error("[DashboardError]", error);
+  }, [error]);
+
   return (
     <Container>
       <div role="alert" aria-live="assertive">
         <Stack gap={4} className="items-center justify-center py-20 text-center">
           <Heading level={2}>خطأ / Error</Heading>
           <Text color="muted">تعذر تحميل لوحة التحكم — Dashboard failed to load.</Text>
+          {error.digest && (
+            <Text color="muted" className="text-xs font-mono">
+              digest: {error.digest}
+            </Text>
+          )}
           <div className="flex gap-3">
             <button
               type="button"

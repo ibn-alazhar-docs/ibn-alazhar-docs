@@ -51,6 +51,7 @@ vi.mock("@/lib/prisma", () => {
 
 vi.mock("@/lib/logger", () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
+  generateRequestId: () => "test-request-id",
 }));
 
 // ─── Imports (run after hoisted mocks) ─────────────────────────────────────────

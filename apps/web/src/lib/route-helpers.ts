@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { logger } from "@/lib/logger";
+import { logger, generateRequestId } from "@/lib/logger";
 import { getErrorMessage, getErrorStatusCode } from "@/lib/errors";
 import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import { ERROR_CODES } from "@/lib/constants";
@@ -80,19 +80,23 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
 };
 
 export function handleRouteError(error: unknown, route: string, fallbackMessage: string) {
+  const requestId = generateRequestId();
   const code = getErrorMessage(error);
   const mapped = ERROR_MESSAGES[code];
 
-  logger.error(error, `[${route}] Failed:`);
+  logger.error({ requestId, route, error, errorCode: code }, `[${route}] Failed:`);
 
   if (mapped) {
     const message = error instanceof Error && error.message ? error.message : mapped.message;
-    return NextResponse.json({ error: { code: mapped.code, message } }, { status: mapped.status });
+    return NextResponse.json(
+      { error: { code: mapped.code, message, requestId } },
+      { status: mapped.status },
+    );
   }
 
   const statusCode = getErrorStatusCode(error);
   return NextResponse.json(
-    { error: { code: ERROR_CODES.INTERNAL_ERROR, message: fallbackMessage } },
+    { error: { code: ERROR_CODES.INTERNAL_ERROR, message: fallbackMessage, requestId } },
     { status: statusCode },
   );
 }
