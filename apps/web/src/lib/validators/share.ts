@@ -20,12 +20,14 @@ export function msToExpirationOption(ms: number | null): ExpirationOption {
   return "30days";
 }
 
-export const createShareSchema = z.object({
-  expiration: z
-    .enum(EXPIRATION_OPTIONS, { error: "Invalid expiration" })
-    .optional()
-    .default("never"),
-});
+export const createShareSchema = z
+  .object({
+    expiration: z
+      .enum(EXPIRATION_OPTIONS, { error: "Invalid expiration" })
+      .optional()
+      .default("never"),
+  })
+  .strip();
 
 export type CreateShareInput = z.infer<typeof createShareSchema>;
 

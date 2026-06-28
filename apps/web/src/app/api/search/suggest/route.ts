@@ -1,14 +1,23 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
 
+const suggestQuerySchema = z
+  .object({
+    q: z.string().max(200).optional().default(""),
+  })
+  .strip();
+
 export const GET = withAuth(async (request, { session }) => {
   try {
     const { searchParams } = new URL(request.url);
-    const query = searchParams.get("q") || "";
+    const validated = suggestQuerySchema.parse({
+      q: searchParams.get("q") || undefined,
+    });
 
-    const suggestions = await useCases.search.getSuggestions(session.user.id, query);
+    const suggestions = await useCases.search.getSuggestions(session.user.id, validated.q);
     return NextResponse.json({ suggestions });
   } catch (error: unknown) {
     return handleRouteError(error, "search/suggest", "فشل تحميل الاقتراحات");

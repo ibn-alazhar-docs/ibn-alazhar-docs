@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { isAdminRole } from "@/domain/auth";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit } from "@/lib/rate-limit";
 import { adminUserUpdateSchema, adminUserDeleteSchema } from "@/lib/validators/auth";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
@@ -13,6 +14,19 @@ export const GET = withAuth(async (request, { session }) => {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
+      );
+    }
+
+    const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
       );
     }
 
@@ -33,6 +47,19 @@ export const PATCH = withAuth(async (request, { session }) => {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
+      );
+    }
+
+    const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
       );
     }
 
@@ -72,6 +99,19 @@ export const DELETE = withAuth(async (request, { session }) => {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
+      );
+    }
+
+    const rateLimitResult = await checkUserRateLimit("admin:users", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
       );
     }
 

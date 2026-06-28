@@ -7,7 +7,7 @@ import { useCases } from "@/core/composition-root";
 export const POST = withAuth(async (request, { session }) => {
   try {
     const body = await request.json();
-    const schema = z.object({ documentId: z.string().min(1, "documentId مطلوب") });
+    const schema = z.object({ documentId: z.string().min(1, "documentId مطلوب") }).strip();
     const validation = schema.safeParse(body);
 
     if (!validation.success) {

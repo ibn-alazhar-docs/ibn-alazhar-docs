@@ -4,10 +4,12 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
 
-const bulkMoveSchema = z.object({
-  documentIds: z.array(z.string().min(1)).min(1).max(50),
-  folderId: z.string().nullable(),
-});
+const bulkMoveSchema = z
+  .object({
+    documentIds: z.array(z.string().min(1)).min(1).max(50),
+    folderId: z.string().nullable(),
+  })
+  .strip();
 
 const MAX_BULK_SIZE = 50;
 

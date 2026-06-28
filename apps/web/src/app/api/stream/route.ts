@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireAuth, unauthorizedResponse } from "@/lib/auth-guards";
+import { withAuth } from "@/lib/auth-guards";
 import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
 import { repos } from "@/core/composition-root";
@@ -21,12 +21,7 @@ async function getDocumentStatus(
   }
 }
 
-export async function GET(request: Request) {
-  const session = await requireAuth().catch(() => null);
-  if (!session) {
-    return unauthorizedResponse();
-  }
-
+export const GET = withAuth(async (request, { session }) => {
   const currentConnections = sseConnectionsByUser.get(session.user.id) ?? 0;
   if (currentConnections >= LIMITS.MAX_SSE_CONNECTIONS_PER_USER) {
     return NextResponse.json(
@@ -213,4 +208,4 @@ export async function GET(request: Request) {
   } catch (error: unknown) {
     return handleRouteError(error, "stream", "فشل الاتصال بالتدفق");
   }
-}
+});
