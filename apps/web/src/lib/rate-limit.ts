@@ -15,10 +15,14 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
 const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "documents:create": { limit: 30, windowMs: 60_000 },
   "documents:delete": { limit: 10, windowMs: 60_000 },
+  "documents:export": { limit: 10, windowMs: 60_000 },
   "tags:create": { limit: 20, windowMs: 60_000 },
   "tags:merge": { limit: 5, windowMs: 60_000 },
+  "share:regenerate": { limit: 5, windowMs: 60_000 },
+  "account:delete": { limit: 3, windowMs: 60_000 },
   "export:single": { limit: 10, windowMs: 60_000 },
   "export:bulk": { limit: 3, windowMs: 60_000 },
+  "admin:users": { limit: 30, windowMs: 60_000 },
 };
 
 export function getClientIp(request: Request): string {

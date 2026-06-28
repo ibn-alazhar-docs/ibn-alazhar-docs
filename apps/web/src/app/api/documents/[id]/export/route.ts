@@ -2,11 +2,25 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
+
+  const rateLimitResult = await checkUserRateLimit("documents:export", session.user.id);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+      {
+        status: 429,
+        headers: {
+          "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+        },
+      },
+    );
+  }
 
   let body: unknown;
   try {
@@ -18,17 +32,19 @@ export const POST = withAuth(async (request, { session, params }) => {
     );
   }
 
-  const exportSchema = z.object({
-    format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
-      message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
-    }),
-    options: z
-      .object({
-        destination: z.enum(["local", "drive"]).optional(),
-        profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
-      })
-      .optional(),
-  });
+  const exportSchema = z
+    .object({
+      format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
+        message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
+      }),
+      options: z
+        .object({
+          destination: z.enum(["local", "drive"]).optional(),
+          profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
+        })
+        .optional(),
+    })
+    .strip();
 
   const validation = exportSchema.safeParse(body);
   if (!validation.success) {

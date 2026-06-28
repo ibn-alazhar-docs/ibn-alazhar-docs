@@ -15,43 +15,55 @@ export const TAG_COLORS = [
   "#059669",
 ] as const;
 
-export const createTagSchema = z.object({
-  name: z.string().min(1, "اسم الوسم مطلوب").max(50, "اسم الوسم طويل جداً").trim(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, "اللون غير صالح")
-    .optional()
-    .default("#16A34A"),
-});
+export const createTagSchema = z
+  .object({
+    name: z.string().min(1, "اسم الوسم مطلوب").max(50, "اسم الوسم طويل جداً").trim(),
+    color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/, "اللون غير صالح")
+      .optional()
+      .default("#16A34A"),
+  })
+  .strip();
 
-export const updateTagSchema = z.object({
-  name: z.string().min(1, "اسم الوسم مطلوب").max(50, "اسم الوسم طويل جداً").trim().optional(),
-  color: z
-    .string()
-    .regex(/^#[0-9A-Fa-f]{6}$/, "اللون غير صالح")
-    .optional(),
-});
+export const updateTagSchema = z
+  .object({
+    name: z.string().min(1, "اسم الوسم مطلوب").max(50, "اسم الوسم طويل جداً").trim().optional(),
+    color: z
+      .string()
+      .regex(/^#[0-9A-Fa-f]{6}$/, "اللون غير صالح")
+      .optional(),
+  })
+  .strip();
 
-export const mergeTagsSchema = z.object({
-  sourceTagId: z.string().min(1, "الوسم المصدر مطلوب"),
-  targetTagId: z.string().min(1, "الوسم الهدف مطلوب"),
-});
+export const mergeTagsSchema = z
+  .object({
+    sourceTagId: z.string().min(1, "الوسم المصدر مطلوب"),
+    targetTagId: z.string().min(1, "الوسم الهدف مطلوب"),
+  })
+  .strip();
 
-export const addTagToDocumentSchema = z.object({
-  tagId: z.string().min(1, "معرف الوسم مطلوب"),
-});
+export const addTagToDocumentSchema = z
+  .object({
+    tagId: z.string().min(1, "معرف الوسم مطلوب"),
+  })
+  .strip();
 
-export const setDocumentTagsSchema = z.object({
-  tagIds: z.array(z.string()).max(MAX_TAGS_PER_USER, "عدد كبير جداً من الأوسمة"),
-});
+export const setDocumentTagsSchema = z
+  .object({
+    tagIds: z.array(z.string()).max(MAX_TAGS_PER_USER, "عدد كبير جداً من الأوسمة"),
+  })
+  .strip();
 
-export const bulkTagSchema = z.object({
-  documentIds: z
-    .array(z.string())
-    .min(1, "اختر مستنداً واحداً على الأقل")
-    .max(50, "الحد الأقصى 50 مستنداً في الدفعة الواحدة"),
-  tagId: z.string().min(1, "معرف الوسم مطلوب"),
-});
+export const bulkTagSchema = z
+  .object({
+    documentIds: z
+      .array(z.string())
+      .min(1, "اختر مستنداً واحداً على الأقل")
+      .max(50, "الحد الأقصى 50 مستنداً في الدفعة الواحدة"),
+    tagId: z.string().min(1, "معرف الوسم مطلوب"),
+  })
+  .strip();
 
 export const bulkUntagSchema = bulkTagSchema;
 

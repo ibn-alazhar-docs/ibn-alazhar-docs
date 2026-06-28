@@ -2,13 +2,16 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit } from "@/lib/rate-limit";
 import { AppError } from "@/lib/errors";
 import { profileUpdateSchema } from "@/lib/validators/auth";
 import { useCases } from "@/core/composition-root";
 
-const deleteAccountSchema = z.object({
-  password: z.string().min(1),
-});
+const deleteAccountSchema = z
+  .object({
+    password: z.string().min(1),
+  })
+  .strip();
 
 export const PATCH = withAuth(async (request, { session }) => {
   try {
@@ -33,6 +36,19 @@ export const PATCH = withAuth(async (request, { session }) => {
 
 export const DELETE = withAuth(async (request, { session }) => {
   try {
+    const rateLimitResult = await checkUserRateLimit("account:delete", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى" } },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((rateLimitResult.retryAfterMs ?? 60_000) / 1000)),
+          },
+        },
+      );
+    }
+
     const body = await request.json();
     const parsed = deleteAccountSchema.safeParse(body);
 

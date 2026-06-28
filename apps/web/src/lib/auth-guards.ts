@@ -73,3 +73,17 @@ export function withAuth(handler: AuthenticatedHandler) {
     return handler(request, { session, params });
   };
 }
+
+export function withAdminAuth(handler: AuthenticatedHandler) {
+  return async (
+    request: NextRequest,
+    context?: { params: Promise<Record<string, string | undefined>> },
+  ): Promise<Response> => {
+    const session = await requireAuth().catch(() => null);
+    if (!session) return unauthorizedResponse();
+    if (!isAdminRole(session.user.role)) return forbiddenResponse();
+
+    const params = context?.params ? await context.params : {};
+    return handler(request, { session, params });
+  };
+}

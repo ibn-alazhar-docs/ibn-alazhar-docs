@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireRole, forbiddenResponse } from "@/lib/auth-guards";
+import { withAdminAuth } from "@/lib/auth-guards";
 
 interface Metrics {
   timestamp: string;
@@ -69,10 +69,7 @@ async function getWorkerMetrics(): Promise<Metrics["workers"]> {
   }
 }
 
-export async function GET(): Promise<NextResponse> {
-  const session = await requireRole("ADMIN").catch(() => null);
-  if (!session) return forbiddenResponse();
-
+export const GET = withAdminAuth(async () => {
   try {
     const mem = process.memoryUsage();
     const [database, workers] = await Promise.all([getDatabaseMetrics(), getWorkerMetrics()]);
@@ -96,4 +93,4 @@ export async function GET(): Promise<NextResponse> {
       { status: 500 },
     );
   }
-}
+});

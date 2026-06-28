@@ -4,9 +4,11 @@ import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
 
-const moveSchema = z.object({
-  folderId: z.string().nullable(),
-});
+const moveSchema = z
+  .object({
+    folderId: z.string().nullable(),
+  })
+  .strip();
 
 export const PATCH = withAuth(async (request, { session, params }) => {
   const id = params.id!;

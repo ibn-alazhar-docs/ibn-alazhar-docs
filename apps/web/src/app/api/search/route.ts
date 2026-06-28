@@ -5,15 +5,17 @@ import { handleRouteError } from "@/lib/route-helpers";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
-const searchParamsSchema = z.object({
-  q: z.string().max(500).optional().default(""),
-  type: z.enum(["title", "folder", "all"]).optional().default("all"),
-  folderId: z.string().cuid().optional(),
-  status: z.enum(["UPLOADED", "PROCESSING", "COMPLETED", "FAILED"]).optional(),
-  tagId: z.string().cuid().optional(),
-  page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
-});
+const searchParamsSchema = z
+  .object({
+    q: z.string().max(200).optional().default(""),
+    type: z.enum(["title", "folder", "all"]).optional().default("all"),
+    folderId: z.string().cuid().optional(),
+    status: z.enum(["UPLOADED", "PROCESSING", "COMPLETED", "FAILED"]).optional(),
+    tagId: z.string().cuid().optional(),
+    page: z.coerce.number().int().min(1).optional().default(1),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  })
+  .strip();
 
 export const GET = withAuth(async (request, { session }) => {
   try {
