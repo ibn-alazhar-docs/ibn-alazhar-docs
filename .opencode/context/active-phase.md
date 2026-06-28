@@ -1,29 +1,22 @@
 # Active Phase
 
 Current Phase:
-Phase 2C-3 — Enhanced Export 🚀
+Phase 3 — Production Deployment 🚀
 
 Next Phase:
-Phase 3 — Production Deployment
+Phase 4 — Enterprise Features
 
 Allowed:
 
-- repo stabilization
-- governance
-- docker foundation
-- CI baseline
-- runtime setup
-- auth skeleton
-- app shell
-- RTL foundation
-- design system foundation
-- documentation cleanup
-- enhanced export features (upload-to-OCR, DOCX/PDF export, batch export)
-- export metadata (already complete in batch 5)
+- production deployment
+- CI/CD pipeline
+- Docker optimization
+- monitoring setup
+- security hardening
+- performance optimization
+- API documentation
 
 Blocked:
 
-- full OCR pipeline changes (Phase 3)
 - sharing and collaboration (Phase 3)
-- production deployment (Phase 3)
 - enterprise features (Phase 4)
