@@ -10,7 +10,8 @@
       "Bash(mkdir:*)",
       "Bash(echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/CONTRIBUTING.md\"}}' | jq -r '.tool_response.filePath // .tool_input.file_path' | { read -r f; npx prettier --write \"$f\"; } 2>/dev/null || true)",
       "Bash(find /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/{packages,apps,workers} -name \"*.ts\" -not -path \"*/node_modules/*\" -not -path \"*/.next/*\" -not -name \"*.test.ts\" -not -name \"*.d.ts\" | sort)",
-      "Bash(cd /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs && wc -l docs/tools/CODERABBIT_REVIEW_GUIDE.md docs/tools/SECRETS_POLICY.md 2>/dev/null)"
+      "Bash(cd /home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs && wc -l docs/tools/CODERABBIT_REVIEW_GUIDE.md docs/tools/SECRETS_POLICY.md 2>/dev/null)",
+      "Bash(bash scripts/codebase_census.sh .)"
     ]
   }
 }
