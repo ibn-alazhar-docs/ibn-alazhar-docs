@@ -1,11 +1,17 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 export const DELETE = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   const tagId = params.tagId!;
+
+  const rateLimit = await checkUserRateLimit("documents:tags", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
 
   try {
     await useCases.documentTag.removeTagFromDocument(id, tagId, session.user.id, session.user.role);

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { repos } from "@/core/composition-root";
 import { ERROR_CODES, LIMITS, UI_TIMING } from "@/lib/constants";
 
@@ -22,6 +23,11 @@ async function getDocumentStatus(
 }
 
 export const GET = withAuth(async (request, { session }) => {
+  const rateLimitResult = await checkRateLimit("/api/stream", request);
+  if (!rateLimitResult.allowed) {
+    return rateLimitResponse(rateLimitResult.retryAfterMs);
+  }
+
   const currentConnections = sseConnectionsByUser.get(session.user.id) ?? 0;
   if (currentConnections >= LIMITS.MAX_SSE_CONNECTIONS_PER_USER) {
     return NextResponse.json(

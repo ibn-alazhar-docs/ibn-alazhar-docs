@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { createTagSchema } from "@/lib/validators/tag";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
@@ -24,6 +25,11 @@ export const POST = withAuth(async (request, { session }) => {
         { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
         { status: 400 },
       );
+    }
+
+    const rateLimit = await checkUserRateLimit("tags:create", session.user.id);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterMs);
     }
 
     const tag = await useCases.tag.createTag(validation.data.name, validation.data.color, session);

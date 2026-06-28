@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { bulkTagSchema } from "@/lib/validators/tag";
 import { useCases } from "@/core/composition-root";
 
@@ -17,6 +18,11 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   const { documentIds, tagId } = validation.data;
+
+  const rateLimit = await checkUserRateLimit("documents:bulk-tag", session.user.id);
+  if (!rateLimit.allowed) {
+    return rateLimitResponse(rateLimit.retryAfterMs);
+  }
 
   try {
     const { taggedCount, skippedCount } = await useCases.documentTag.bulkTagDocuments(

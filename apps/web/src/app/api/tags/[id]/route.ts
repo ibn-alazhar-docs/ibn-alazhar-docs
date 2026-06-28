@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { updateTagSchema } from "@/lib/validators/tag";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/audit";
@@ -53,6 +54,12 @@ export const DELETE = withAuth(async (request, { session, params }) => {
         { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
         { status: 400 },
       );
+
+    const rateLimit = await checkUserRateLimit("tags:delete", session.user.id);
+    if (!rateLimit.allowed) {
+      return rateLimitResponse(rateLimit.retryAfterMs);
+    }
+
     await useCases.tag.deleteTag(id, session);
     await auditLog({
       userId: session.user.id,
