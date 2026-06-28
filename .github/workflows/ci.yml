@@ -98,9 +98,48 @@ jobs:
       - run: pnpm test:security
         name: Run security tests
 
+  integration:
+    runs-on: ubuntu-24.04
+    needs: [format, lint, typecheck]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: ibn_docs_password
+          POSTGRES_DB: ibn_docs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
+      REDIS_URL: redis://localhost:6379
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - run: pnpm install --frozen-lockfile
+      - run: npx prisma generate
+        name: Prisma generate
+      - run: npx prisma migrate deploy
+        name: Prisma migrate
+      - run: pnpm test:integration
+        name: Run integration tests
+
   build:
     runs-on: ubuntu-24.04
-    needs: [format, lint, typecheck, test]
+    needs: [format, lint, typecheck, test, integration]
     services:
       postgres:
         image: postgres:16

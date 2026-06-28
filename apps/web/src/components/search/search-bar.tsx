@@ -130,6 +130,7 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"
           aria-activedescendant={selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined}
+          data-testid="search-input"
         />
         <span className="absolute start-3 top-1/2 -translate-y-1/2 text-very-muted">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

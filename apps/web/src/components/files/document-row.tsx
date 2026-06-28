@@ -243,6 +243,7 @@ export const DocumentRow = memo(function DocumentRow({
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="border-b border-line hover:bg-badge transition-colors"
+      data-testid={`document-row-${doc.id}`}
     >
       <td className="px-3 py-2">
         <input
@@ -251,6 +252,7 @@ export const DocumentRow = memo(function DocumentRow({
           onChange={() => onToggleSelect(doc.id)}
           aria-label={`تحديد المستند ${doc.title}`}
           className="h-4 w-4 rounded border-[var(--input-border)] accent-[var(--success)]"
+          data-testid="document-select"
         />
       </td>
       <td className="max-w-[200px] px-3 py-2">
@@ -268,7 +270,12 @@ export const DocumentRow = memo(function DocumentRow({
             className="w-full rounded border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-[var(--success)]"
           />
         ) : (
-          <div className="truncate text-sm font-medium text-primary-color">{doc.title}</div>
+          <div
+            className="truncate text-sm font-medium text-primary-color"
+            data-testid="document-title"
+          >
+            {doc.title}
+          </div>
         )}
         <div className="mt-0.5 flex flex-col gap-1">
           <div className="flex items-center gap-2">
@@ -300,6 +307,7 @@ export const DocumentRow = memo(function DocumentRow({
       <td className="whitespace-nowrap px-3 py-2">
         <span
           className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(doc.status)}`}
+          data-testid="document-status"
         >
           {getStatusLabel(doc.status, tDocs)}
         </span>

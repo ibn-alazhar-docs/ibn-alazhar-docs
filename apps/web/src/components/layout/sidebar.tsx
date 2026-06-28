@@ -46,8 +46,13 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
           isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full lg:translate-x-0",
         )}
         style={{ viewTransitionName: "dashboard-sidebar" }}
+        data-testid="sidebar"
       >
-        <nav aria-label={t("nav.main")} className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6">
+        <nav
+          aria-label={t("nav.main")}
+          className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6"
+          data-testid="sidebar-nav"
+        >
           {navItems.map((item) => (
             <NavLink key={item.href} href={item.href} onNavigate={onClose}>
               <item.icon />

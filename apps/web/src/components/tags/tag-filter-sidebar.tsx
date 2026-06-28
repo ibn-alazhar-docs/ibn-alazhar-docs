@@ -68,7 +68,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="tag-filter-sidebar">
       <div className="flex items-center justify-between px-1">
         <h3 className="text-xs font-semibold text-muted-color uppercase tracking-wide">
           {t("title")}
@@ -78,6 +78,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
             type="button"
             className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80"
             onClick={clearAll}
+            data-testid="tag-clear-all"
           >
             {tCommon("close")}
           </button>
@@ -97,6 +98,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
                   : "text-primary-color hover:bg-hover"
               }`}
               onClick={() => toggleTag(tag.id)}
+              data-testid={`tag-filter-${tag.id}`}
             >
               <span
                 className="w-3 h-3 rounded-full shrink-0"
