@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   format:
     runs-on: ubuntu-24.04
@@ -135,3 +139,40 @@ jobs:
           docker build -t ibn-web -f Dockerfile .
           docker build -t ibn-ocr-worker -f Dockerfile.worker --target ocr-runner .
           docker build -t ibn-export-worker -f Dockerfile.worker --target export-runner .
+
+  security:
+    runs-on: ubuntu-24.04
+    needs: [build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Trivy vulnerability scanner (filesystem)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "fs"
+          scan-ref: "."
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
+
+      - name: Build Docker image for scanning
+        run: docker build -t ibn-web-scan -f Dockerfile .
+
+      - name: Run Trivy vulnerability scanner (image)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: "ibn-web-scan"
+          format: "table"
+          exit-code: "1"
+          severity: "CRITICAL,HIGH"
+          ignore-unfixed: true
+
+      - name: Run Trivy config scanner
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          scan-type: "config"
+          scan-ref: "."
+          format: "table"
+          exit-code: "0"
+          severity: "MEDIUM,HIGH,CRITICAL"
