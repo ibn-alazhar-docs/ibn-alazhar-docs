@@ -1,16 +1,28 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { withAuth } from "@/lib/auth-guards";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
 
+const documentsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).optional().default(1),
+    limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+    folderId: z.string().cuid().optional(),
+    search: z.string().max(200).optional(),
+  })
+  .strip();
+
 export const GET = withAuth(async (request, { session }) => {
   const { searchParams } = new URL(request.url);
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "20", 10)));
-  const skip = (page - 1) * limit;
+  const validated = documentsQuerySchema.parse({
+    page: searchParams.get("page") || undefined,
+    limit: searchParams.get("limit") || undefined,
+    folderId: searchParams.get("folderId") || undefined,
+    search: searchParams.get("search") || undefined,
+  });
 
-  const folderId = searchParams.get("folderId");
-  const search = searchParams.get("search");
+  const skip = (validated.page - 1) * validated.limit;
 
   try {
     const { documents, total } = await useCases.documentCrud.getDocuments(
@@ -18,9 +30,9 @@ export const GET = withAuth(async (request, { session }) => {
       session.user.role,
       {
         skip,
-        take: limit,
-        folderId: folderId ?? undefined,
-        search: search ?? undefined,
+        take: validated.limit,
+        folderId: validated.folderId,
+        search: validated.search,
         deleted: false,
       },
     );
@@ -33,10 +45,10 @@ export const GET = withAuth(async (request, { session }) => {
     return NextResponse.json({
       documents: serializedDocuments,
       pagination: {
-        page,
-        limit,
+        page: validated.page,
+        limit: validated.limit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / validated.limit),
       },
     });
   } catch (error: unknown) {
