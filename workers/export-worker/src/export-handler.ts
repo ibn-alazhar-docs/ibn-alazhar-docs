@@ -14,10 +14,9 @@ import {
   type ExportRequest,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/prisma";
 import { logger } from "../../shared/logger";
 
-const prisma = new PrismaClient();
 const config = loadConfig();
 
 export function registerExportHandler(): void {

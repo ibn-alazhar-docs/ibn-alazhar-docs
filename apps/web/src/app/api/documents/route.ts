@@ -42,15 +42,18 @@ export const GET = withAuth(async (request, { session }) => {
       fileSize: Number(doc.fileSize),
     }));
 
-    return NextResponse.json({
-      documents: serializedDocuments,
-      pagination: {
-        page: validated.page,
-        limit: validated.limit,
-        total,
-        totalPages: Math.ceil(total / validated.limit),
+    return NextResponse.json(
+      {
+        documents: serializedDocuments,
+        pagination: {
+          page: validated.page,
+          limit: validated.limit,
+          total,
+          totalPages: Math.ceil(total / validated.limit),
+        },
       },
-    });
+      { headers: { "Cache-Control": "private, max-age=10" } },
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
   }

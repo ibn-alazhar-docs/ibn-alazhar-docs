@@ -14,7 +14,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
         { status: 400 },
       );
     const tag = await useCases.tag.getTagById(id, session);
-    return NextResponse.json({ tag });
+    return NextResponse.json({ tag }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
     return handleRouteError(error, "tags/[id]/GET", "فشل الحصول على الوسم");
   }

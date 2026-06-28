@@ -10,7 +10,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   try {
     const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
-    return NextResponse.json({ document });
+    return NextResponse.json({ document }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
   }

@@ -36,19 +36,16 @@ export const GET = withAuth(async (request, { session, params }) => {
     const outputKey = outputKeys[format];
 
     if (!outputKey) {
-      return NextResponse.json({
-        status: "processing",
-        format,
-        ready: false,
-      });
+      return NextResponse.json(
+        { status: "processing", format, ready: false },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
     }
 
-    return NextResponse.json({
-      status: "ready",
-      format,
-      ready: true,
-      downloadUrl: `/api/export/${id}/${format}`,
-    });
+    return NextResponse.json(
+      { status: "ready", format, ready: true, downloadUrl: `/api/export/${id}/${format}` },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "documents/export/status/GET", "حدث خطأ داخلي");
   }

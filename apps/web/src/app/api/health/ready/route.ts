@@ -84,6 +84,6 @@ export async function GET() {
       timestamp: new Date().toISOString(),
       checks,
     },
-    { status: allHealthy ? 200 : 503 },
+    { status: allHealthy ? 200 : 503, headers: { "Cache-Control": "no-store" } },
   );
 }

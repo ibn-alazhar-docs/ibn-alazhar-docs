@@ -4,6 +4,8 @@ import { normalizeStage } from "@/lib/conversion-status-utils";
 import { handleRouteError } from "@/lib/route-helpers";
 import { useCases } from "@/core/composition-root";
 
+const NO_STORE = { headers: { "Cache-Control": "private, no-store" } } as const;
+
 export const GET = withAuth(async (_request, { session, params }) => {
   try {
     const id = params.id;
@@ -17,23 +19,29 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const normalized = normalizeStage(document.status);
 
     if (normalized === "completed") {
-      return NextResponse.json({
-        jobId: id,
-        status: "completed",
-        progress: 100,
-        outputs: { md: true, txt: true, json: true },
-        readyForExport: true,
-      });
+      return NextResponse.json(
+        {
+          jobId: id,
+          status: "completed",
+          progress: 100,
+          outputs: { md: true, txt: true, json: true },
+          readyForExport: true,
+        },
+        NO_STORE,
+      );
     }
 
     if (normalized === "failed") {
-      return NextResponse.json({
-        jobId: id,
-        status: "failed",
-        progress: 0,
-        outputs: null,
-        readyForExport: false,
-      });
+      return NextResponse.json(
+        {
+          jobId: id,
+          status: "failed",
+          progress: 0,
+          outputs: null,
+          readyForExport: false,
+        },
+        NO_STORE,
+      );
     }
 
     const { loadConfig, getJobStatus } = await import("@ibn-al-azhar-docs/pipeline");
@@ -41,22 +49,28 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const queueStatus = await getJobStatus(config, id);
 
     if (queueStatus) {
-      return NextResponse.json({
-        jobId: id,
-        status: queueStatus.stage,
-        progress: queueStatus.progress,
-        outputs: null,
-        readyForExport: false,
-      });
+      return NextResponse.json(
+        {
+          jobId: id,
+          status: queueStatus.stage,
+          progress: queueStatus.progress,
+          outputs: null,
+          readyForExport: false,
+        },
+        NO_STORE,
+      );
     }
 
-    return NextResponse.json({
-      jobId: id,
-      status: normalized,
-      progress: 0,
-      outputs: null,
-      readyForExport: false,
-    });
+    return NextResponse.json(
+      {
+        jobId: id,
+        status: normalized,
+        progress: 0,
+        outputs: null,
+        readyForExport: false,
+      },
+      NO_STORE,
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "conversion/status", "فشل التحقق من حالة التحويل");
   }

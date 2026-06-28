@@ -4,6 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
+    "@prisma/client": "^6.9.0",
     "pino": "^9.0.0"
   }
 }

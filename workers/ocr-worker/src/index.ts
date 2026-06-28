@@ -4,7 +4,7 @@ import {
   closeQueueConnections,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/prisma";
 import { startHealthServer } from "../../shared/health-server";
 import { logger } from "../../shared/logger";
 
@@ -15,7 +15,6 @@ import { registerCleaningStage } from "./stages/clean";
 import { registerGenerationStage } from "./stages/generate";
 
 const config = loadConfig();
-const prisma = new PrismaClient();
 
 async function main() {
   logger.info("[ocr-worker] Starting...");

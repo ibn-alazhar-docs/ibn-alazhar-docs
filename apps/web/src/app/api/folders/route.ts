@@ -12,7 +12,7 @@ export const GET = withAuth(async (request, { session }) => {
 
     const folders = await useCases.folder.getFolders(session.user.id, session.user.role, parentId);
 
-    return NextResponse.json({ folders });
+    return NextResponse.json({ folders }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/GET", "فشل الحصول على المجلدات");
   }

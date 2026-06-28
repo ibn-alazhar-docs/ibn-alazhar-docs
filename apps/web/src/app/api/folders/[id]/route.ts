@@ -9,7 +9,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
   try {
     const id = params.id!;
     const folder = await useCases.folder.getFolderById(id, session.user.id);
-    return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, no-store" } });
+    return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/GET", "فشل الحصول على المجلد");
   }

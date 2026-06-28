@@ -1,11 +1,9 @@
 import { closeQueueConnections } from "@ibn-al-azhar-docs/pipeline";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "../../shared/prisma";
 import { startHealthServer } from "../../shared/health-server";
 import { logger } from "../../shared/logger";
 
 import { registerExportHandler } from "./export-handler";
-
-const prisma = new PrismaClient();
 
 async function main() {
   logger.info("[export-worker] Starting...");

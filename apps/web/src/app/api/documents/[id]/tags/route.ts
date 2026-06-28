@@ -9,7 +9,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
 
   try {
     const tags = await useCases.documentTag.getDocumentTags(id, session.user.id);
-    return NextResponse.json({ tags });
+    return NextResponse.json({ tags }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/[id]/tags/GET", "حدث خطأ أثناء تحميل الأوسمة");
   }
