@@ -20,6 +20,7 @@
 ## Test Pyramid Health
 
 ### The Ideal Pyramid
+
 ```
         E2E (5-10%)        ← slow, fragile, few
        /          \
@@ -29,6 +30,7 @@ Unit Tests (70-80%)        ← fast, isolated, many
 ```
 
 ### The Ice Cream Cone (Anti-Pattern)
+
 ```
 Unit Tests (few)           ← should be many
   \                    /
@@ -42,28 +44,32 @@ Unit Tests (few)           ← should be many
 ## Coverage Analysis
 
 ### What to Measure
+
 - **Line coverage**: % of code lines executed by tests
 - **Branch coverage**: % of branches (if/else) taken by tests
 - **Function coverage**: % of functions called by tests
 - **Mutation score**: % of mutations caught by tests (the gold standard)
 
 ### What Coverage Doesn't Tell You
+
 - Whether the tests assert the RIGHT things
 - Whether edge cases are tested
 - Whether the tests are brittle (test implementation, not behavior)
 
 ### Tools
-| Language | Coverage Tool | Mutation Tool |
-|----------|--------------|---------------|
-| Python | pytest-cov, coverage.py | mutmut |
-| JS/TS | jest --coverage, nyc | Stryker |
-| Go | go test -cover | go-mutesting |
-| Rust | cargo-tarpaulin, cargo-llvm-cov | cargo-mutants |
-| Java | JaCoCo | PIT |
+
+| Language | Coverage Tool                   | Mutation Tool |
+| -------- | ------------------------------- | ------------- |
+| Python   | pytest-cov, coverage.py         | mutmut        |
+| JS/TS    | jest --coverage, nyc            | Stryker       |
+| Go       | go test -cover                  | go-mutesting  |
+| Rust     | cargo-tarpaulin, cargo-llvm-cov | cargo-mutants |
+| Java     | JaCoCo                          | PIT           |
 
 ## Test Quality Assessment
 
 ### Brittle Tests (test implementation, not behavior)
+
 ```python
 # BRITTLE: tests mock internals
 def test_create_user():
@@ -79,11 +85,14 @@ def test_create_user_persists():
 ```
 
 ### Flaky Tests
+
 - Tests that depend on: time, random, network, filesystem, test order
 - **Fix**: mock the clock, seed the random, mock network, use tmp_path, isolate state
 
 ### Missing Edge Cases
+
 For each function, check if these are tested:
+
 - Empty input (`[]`, `""`, `None`)
 - Single element (`[1]`)
 - Boundary values (`0`, `-1`, `MAX_INT`)
@@ -94,6 +103,7 @@ For each function, check if these are tested:
 ## Test Improvement Recipes
 
 ### TIR1. Add Missing Test for Error Path
+
 ```python
 # Before: only happy path tested
 def test_create_user_success(): ...
@@ -105,6 +115,7 @@ def test_create_user_with_invalid_email_raises(): ...
 ```
 
 ### TIR2. Replace Interaction Mocks with Fakes
+
 ```python
 # Before: brittle interaction mock
 mock_repo = Mock()
@@ -123,6 +134,7 @@ assert repo.get(user.id) == user  # verify state, not interactions
 ```
 
 ### TIR3. Add Property-Based Test for Pure Functions
+
 ```python
 from hypothesis import given, strategies as st
 
@@ -136,6 +148,7 @@ def test_sort_preserves_length(items):
 ```
 
 ### TIR4. Fix Flaky Test
+
 ```python
 # Before: flaky (depends on current time)
 def test_order_created_today():

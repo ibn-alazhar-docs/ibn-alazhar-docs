@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
-import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import type {
   ExportDocumentData,
   ExportTagData,
@@ -111,34 +111,34 @@ export async function resolveOcrData(documentId: string): Promise<ExportOcrData>
   };
 }
 
-export async function resolvePipelineData(documentId: string): Promise<ExportPipelineData> {
+export async function resolvePipelineData(
+  documentId: string,
+  storage: IStorageRepository,
+): Promise<ExportPipelineData> {
   const doc = await prisma.document.findUnique({
     where: { id: documentId },
     select: { pageCount: true },
   });
 
   try {
-    const config = loadConfig();
-    const cleanedKey = `${config.paths.ocrResults}/${documentId}/cleaned.json`;
-    if (await fileExists(config, cleanedKey)) {
-      const buffer = await downloadFile(config, cleanedKey);
-      const data = JSON.parse(buffer.toString("utf-8"));
-      const text: string = data.text || data.raw || "";
-      const words = text.split(/\s+/).filter(Boolean);
-      const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
-      const headings = (text.match(/^#{1,6}\s+/gm) || []).length;
-      const totalChars = text.length;
-      const garbageChars = (text.match(/[□■◆◇○●△▲▽▼]{3,}/g) || []).join("").length;
-      return {
-        wordCount: words.length,
-        charCount: totalChars,
-        headingCount: headings,
-        paragraphCount: paragraphs.length,
-        qualityScore: totalChars > 0 ? Math.max(0, 1 - garbageChars / totalChars) : 0,
-        garbageRatio: totalChars > 0 ? garbageChars / totalChars : 0,
-        pageCount: doc?.pageCount ?? 0,
-      };
-    }
+    const cleanedKey = storage.ocrCleanedKey(documentId);
+    const buffer = await storage.downloadFile(cleanedKey);
+    const data = JSON.parse(buffer.toString("utf-8"));
+    const text: string = data.text || data.raw || "";
+    const words = text.split(/\s+/).filter(Boolean);
+    const paragraphs = text.split(/\n\s*\n/).filter(Boolean);
+    const headings = (text.match(/^#{1,6}\s+/gm) || []).length;
+    const totalChars = text.length;
+    const garbageChars = (text.match(/[□■◆◇○●△▲▽▼]{3,}/g) || []).join("").length;
+    return {
+      wordCount: words.length,
+      charCount: totalChars,
+      headingCount: headings,
+      paragraphCount: paragraphs.length,
+      qualityScore: totalChars > 0 ? Math.max(0, 1 - garbageChars / totalChars) : 0,
+      garbageRatio: totalChars > 0 ? garbageChars / totalChars : 0,
+      pageCount: doc?.pageCount ?? 0,
+    };
   } catch {
     // Fall through to defaults
   }

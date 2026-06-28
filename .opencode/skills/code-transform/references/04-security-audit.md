@@ -20,6 +20,7 @@
 ## Auth & Authz Patterns
 
 ### Authentication (who are you?)
+
 ```
 [ ] Passwords hashed with bcrypt (cost ≥10) or argon2?
 [ ] Password reset tokens are single-use and expire?
@@ -30,6 +31,7 @@
 ```
 
 ### Authorization (what can you do?)
+
 ```
 [ ] Every sensitive endpoint checks authz, not just auth?
 [ ] Authz checks use the resource owner (user_id), not just role?
@@ -39,6 +41,7 @@
 ```
 
 ### BAD (authz on only some endpoints)
+
 ```python
 @app.route("/api/orders")
 def list_orders():
@@ -53,6 +56,7 @@ def get_order(id):
 ```
 
 ### GOOD (centralized authz)
+
 ```python
 @app.route("/api/orders")
 @auth_required  # decorator on EVERY route
@@ -63,10 +67,12 @@ def list_orders():
 ## Input Validation
 
 ### At Boundaries Only
+
 - Validate at the system boundary (HTTP handler, API client, CLI input)
 - Internal code trusts validated data (no re-validation)
 
 ### BAD (validation scattered)
+
 ```python
 def create_user(email):
     if "@" not in email: raise  # validated here
@@ -82,6 +88,7 @@ def send_email(email):
 ```
 
 ### GOOD (parse, don't validate — see type-driven refactoring)
+
 ```python
 class Email:
     def __init__(self, value):
@@ -99,6 +106,7 @@ def create_user(raw_email):
 ## SQL Injection
 
 ### BAD (string concatenation)
+
 ```python
 query = f"SELECT * FROM users WHERE name = '{name}'"
 db.execute(query)
@@ -106,6 +114,7 @@ db.execute(query)
 ```
 
 ### GOOD (parameterized)
+
 ```python
 db.execute("SELECT * FROM users WHERE name = ?", (name,))
 ```
@@ -113,11 +122,13 @@ db.execute("SELECT * FROM users WHERE name = ?", (name,))
 ## XSS (Cross-Site Scripting)
 
 ### BAD (unescaped output)
+
 ```python
 return f"<div>{user_input}</div>"  # user_input could be <script>...
 ```
 
 ### GOOD (escape by default, use template engine)
+
 ```python
 # Jinja2 auto-escapes by default
 return render_template("user.html", name=user_input)
@@ -130,6 +141,7 @@ return f"<div>{escape(user_input)}</div>"
 ## Secrets Detection
 
 ### Check for hardcoded secrets
+
 ```bash
 git grep -n "password\s*=\s*['\"]" -- "*.py" "*.js" "*.ts"
 git grep -n "api_key\s*=\s*['\"]" -- "*.py" "*.js" "*.ts"
@@ -138,12 +150,14 @@ git grep -n "BEGIN.*PRIVATE KEY" -- "*.py" "*.js" "*.ts"
 ```
 
 ### Also check env files
+
 ```bash
 git grep -n "password" -- ".env*"
 git grep -n "api_key" -- ".env*"
 ```
 
 ### Tools
+
 - **git-secrets**: prevents committing secrets
 - **truffleHog**: scans git history for secrets
 - **gitleaks**: fast secret scanner
@@ -152,6 +166,7 @@ git grep -n "api_key" -- ".env*"
 ## Security Improvement Recipes
 
 ### SR1. Parameterize SQL
+
 ```python
 # Before
 db.execute(f"SELECT * FROM users WHERE id = {user_id}")
@@ -161,6 +176,7 @@ db.execute("SELECT * FROM users WHERE id = ?", (user_id,))
 ```
 
 ### SR2. Hash Passwords with bcrypt
+
 ```python
 # Before (plaintext or MD5)
 import hashlib
@@ -172,6 +188,7 @@ password_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt(rounds=12))
 ```
 
 ### SR3. Add Authz Middleware
+
 ```python
 # Before: authz scattered
 @app.route("/api/orders/<id>")
@@ -195,6 +212,7 @@ def get_order(id): ...
 ```
 
 ### SR4. Move Secrets to Environment
+
 ```python
 # Before
 API_KEY = "sk_live_abc123"
@@ -204,6 +222,7 @@ API_KEY = os.environ["API_KEY"]  # fail fast if not set
 ```
 
 ### SR5. Add Rate Limiting
+
 ```python
 from flask_limiter import Limiter
 limiter = Limiter(app, key_func=lambda: request.remote_addr)

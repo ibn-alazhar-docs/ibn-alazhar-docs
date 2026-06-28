@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { validateShareAccess } from "@/lib/share-helpers";
 import { repos } from "@/core/composition-root";
@@ -53,13 +52,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
     let markdown = "";
     let rawText = "";
 
-    const config = loadConfig();
-
     // Try to fetch raw OCR text first
-    const ocrKey = `${config.paths.ocrResults}/${share.documentId}/text.json`;
-    const ocrExists = await fileExists(config, ocrKey);
+    const ocrKey = repos.storage.ocrTextKey(share.documentId);
+    const ocrExists = await repos.storage.fileExists(ocrKey);
     if (ocrExists) {
-      const ocrBuffer = await downloadFile(config, ocrKey);
+      const ocrBuffer = await repos.storage.downloadFile(ocrKey);
       try {
         const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
         rawText = ocrData.text || "";
@@ -68,10 +65,10 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       }
     }
 
-    const mdKey = `${config.paths.exports}/${share.documentId}/output.md`;
-    const mdExists = await fileExists(config, mdKey);
+    const mdKey = repos.storage.exportOutputKey(share.documentId, "md");
+    const mdExists = await repos.storage.fileExists(mdKey);
     if (mdExists) {
-      const buffer = await downloadFile(config, mdKey);
+      const buffer = await repos.storage.downloadFile(mdKey);
       markdown = buffer.toString("utf-8");
       if (!rawText) rawText = markdown;
     }

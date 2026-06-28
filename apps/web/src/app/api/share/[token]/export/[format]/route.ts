@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/lib/validators/share";
 import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
 import { contentDispositionHeader, sanitizeTitle, getContentType } from "@/lib/export/profiles";
 import { validateShareAccess } from "@/lib/share-helpers";
+import { repos } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/route-helpers";
 
 export async function GET(
@@ -37,21 +37,19 @@ export async function GET(
     const doc = share.document as { title: string };
     const exportFormat = format as ShareExportFormat;
 
-    const config = loadConfig();
-
-    const outputKey = `${config.paths.exports}/${share.documentId}/${exportFormat === "searchable-pdf" ? "searchable.pdf" : `output.${exportFormat}`}`;
-    const exists = await fileExists(config, outputKey);
+    const outputKey = repos.storage.exportOutputKey(share.documentId, exportFormat);
+    const exists = await repos.storage.fileExists(outputKey);
 
     if (!exists) {
-      const altKey = `${config.paths.exports}/${share.documentId}/${exportFormat === "searchable-pdf" ? "searchable.pdf" : `export.${exportFormat}`}`;
-      const altExists = await fileExists(config, altKey);
+      const altKey = repos.storage.exportCacheKey(share.documentId, exportFormat);
+      const altExists = await repos.storage.fileExists(altKey);
       if (!altExists) {
         return NextResponse.json(
           { error: { code: "NOT_FOUND", message: "Export not ready" } },
           { status: 404 },
         );
       }
-      const buffer = await downloadFile(config, altKey);
+      const buffer = await repos.storage.downloadFile(altKey);
       const filename = `${sanitizeTitle(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
       return new Response(new Uint8Array(buffer), {
         headers: {
@@ -61,7 +59,7 @@ export async function GET(
       });
     }
 
-    const buffer = await downloadFile(config, outputKey);
+    const buffer = await repos.storage.downloadFile(outputKey);
     const filename = `${sanitizeTitle(doc.title)}.${exportFormat === "searchable-pdf" ? "pdf" : exportFormat}`;
     return new Response(new Uint8Array(buffer), {
       headers: {

@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import { buildExportMetadata } from "./metadata";
 import { buildZipPackage } from "./zip-builder";
 import type { ExportTagData, ExportFolderData, ExportOcrData, ExportPipelineData } from "./types";
@@ -28,8 +28,6 @@ interface ExportContext {
 }
 
 export async function fetchRelatedData(docIds: string[], userId: string) {
-  const config = loadConfig();
-
   const [allTagDocs, allConversionJobs, allFolders] = await Promise.all([
     prisma.tagDocument.findMany({
       where: { documentId: { in: docIds } },
@@ -81,24 +79,24 @@ export async function fetchRelatedData(docIds: string[], userId: string) {
     };
   };
 
-  return { tagsByDocId, jobsByDocId, folderMap, resolveFolderAncestors, config };
+  return { tagsByDocId, jobsByDocId, folderMap, resolveFolderAncestors };
 }
 
 export async function fetchDocumentFiles(
   documents: DocumentRecord[],
   includeSource: boolean,
-  config: ReturnType<typeof loadConfig>,
+  storage: IStorageRepository,
 ) {
   const allStorageKeys = documents.flatMap((doc) => {
     const keys: { docId: string; type: string; key: string }[] = [
-      { docId: doc.id, type: "ocr", key: `${config.paths.ocrResults}/${doc.id}/text.json` },
-      { docId: doc.id, type: "md", key: `${config.paths.exports}/${doc.id}/output.md` },
+      { docId: doc.id, type: "ocr", key: storage.ocrTextKey(doc.id) },
+      { docId: doc.id, type: "md", key: storage.exportOutputKey(doc.id, "md") },
     ];
     if (includeSource) {
       keys.push({
         docId: doc.id,
         type: "source",
-        key: `${config.paths.uploads}/${doc.id}/${doc.fileName}`,
+        key: storage.sourceKey(doc.id, doc.fileName),
       });
     }
     return keys;
@@ -110,7 +108,7 @@ export async function fetchDocumentFiles(
   for (let i = 0; i < allStorageKeys.length; i += BATCH_SIZE) {
     const batch = allStorageKeys.slice(i, i + BATCH_SIZE);
     const results = await Promise.all(
-      batch.map((k) => fileExists(config, k.key).then((exists) => ({ ...k, exists }))),
+      batch.map((k) => storage.fileExists(k.key).then((exists) => ({ ...k, exists }))),
     );
     existenceResults.push(...results);
   }
@@ -123,7 +121,7 @@ export async function fetchDocumentFiles(
     const batch = existingKeys.slice(i, i + BATCH_SIZE);
     const fetchResults = await Promise.all(
       batch.map((r) =>
-        downloadFile(config, r.key).then((buffer) => ({
+        storage.downloadFile(r.key).then((buffer) => ({
           docId: r.docId,
           type: r.type,
           buffer,
@@ -230,12 +228,13 @@ export async function buildZipDocuments(
 export async function executeBulkExport(
   documents: DocumentRecord[],
   ctx: ExportContext,
+  storage: IStorageRepository,
   exportPrefix: string,
   zipName: string,
 ) {
   const docIds = documents.map((d) => d.id);
   const related = await fetchRelatedData(docIds, ctx.userId);
-  const filesByDocAndType = await fetchDocumentFiles(documents, ctx.includeSource, related.config);
+  const filesByDocAndType = await fetchDocumentFiles(documents, ctx.includeSource, storage);
   const zipDocs = await buildZipDocuments(documents, ctx, related, filesByDocAndType);
 
   const exportId = `${exportPrefix}_${Date.now()}`;
