@@ -22,17 +22,19 @@
 ## CI/CD Pipeline Quality
 
 ### Good Pipeline Stages
+
 ```yaml
 # .github/workflows/ci.yml
 jobs:
-  lint:        # fast, runs first
-  test:        # parallel with lint
-  build:       # needs lint + test
-  security:    # scan for vulnerabilities
-  e2e:         # only on staging deploy
+  lint: # fast, runs first
+  test: # parallel with lint
+  build: # needs lint + test
+  security: # scan for vulnerabilities
+  e2e: # only on staging deploy
 ```
 
 ### Check for Missing Steps
+
 ```
 [ ] Lint (eslint, ruff, golangci-lint)
 [ ] Type check (tsc --noEmit, mypy)
@@ -47,6 +49,7 @@ jobs:
 ## IaC Quality
 
 ### Terraform Checks
+
 ```
 [ ] Are resources in modules (not monolithic main.tf)?
 [ ] Are variables used (not hardcoded AMIs, instance types)?
@@ -58,12 +61,14 @@ jobs:
 ## Deployment Safety
 
 ### Zero-Downtime Strategies
+
 - **Blue-Green**: two environments, switch traffic
 - **Canary**: deploy to 1% → 10% → 50% → 100%, monitor
 - **Rolling**: replace instances one at a time
 - **Feature flags**: deploy code dark, enable gradually
 
 ### Rollback Plan
+
 ```
 [ ] Can you rollback in <5 minutes?
 [ ] Is rollback tested (not just documented)?
@@ -74,11 +79,13 @@ jobs:
 ## Observability
 
 ### The Three Pillars
+
 1. **Logging**: structured JSON, with trace_id, search-able
 2. **Metrics**: counters, histograms, gauges (Prometheus format)
 3. **Tracing**: distributed tracing across services (OpenTelemetry)
 
 ### Structured Logging
+
 ```python
 # BAD: unstructured
 logger.info(f"User {user_id} placed order {order_id}")

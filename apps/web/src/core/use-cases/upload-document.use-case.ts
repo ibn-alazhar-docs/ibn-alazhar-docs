@@ -1,9 +1,4 @@
-import {
-  loadConfig,
-  ensureBucket,
-  enqueueValidation,
-  uploadFile,
-} from "@ibn-al-azhar-docs/pipeline";
+import { loadConfig, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
 import { unlink } from "node:fs/promises";
 import { createWriteStream } from "node:fs";
 import { join } from "node:path";
@@ -13,12 +8,14 @@ import { pipeline } from "node:stream/promises";
 import { Readable } from "node:stream";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
+import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import { NotFoundError } from "@/lib/errors";
 
 export class UploadDocumentUseCase {
   constructor(
     private readonly documentRepository: IDocumentRepository,
     private readonly folderRepository: IFolderRepository,
+    private readonly storage: IStorageRepository,
   ) {}
 
   async execute(params: {
@@ -29,7 +26,6 @@ export class UploadDocumentUseCase {
   }) {
     const { file, folderId, userId, pageRange } = params;
 
-    // Validate Folder
     if (folderId) {
       const folder = await this.folderRepository.findFolderById(folderId, userId);
       if (!folder) {
@@ -37,8 +33,7 @@ export class UploadDocumentUseCase {
       }
     }
 
-    const config = loadConfig();
-    await ensureBucket(config);
+    await this.storage.ensureBucket();
 
     const jobId = randomUUID();
     const fileName = file.name;
@@ -52,15 +47,11 @@ export class UploadDocumentUseCase {
       createWriteStream(tempPath),
     );
 
-    const storageKey = `uploads/${userId}/${jobId}_${safeName}`;
+    const storageKey = this.storage.uploadKey(userId, jobId, safeName);
+    await this.storage.uploadFile(storageKey, tempPath, file.type);
 
-    // Upload to MinIO
-    await uploadFile(config, storageKey, tempPath, file.type);
-
-    // Clean up temp
     await unlink(tempPath).catch(() => {});
 
-    // Create Document record
     const document = await this.documentRepository.createDocument({
       id: jobId,
       userId: userId,
@@ -75,7 +66,7 @@ export class UploadDocumentUseCase {
       pageRange: pageRange || null,
     });
 
-    // Enqueue
+    const config = loadConfig();
     const job = {
       id: document.id,
       documentId: document.id,

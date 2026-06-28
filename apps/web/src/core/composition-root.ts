@@ -8,6 +8,7 @@ import { TagDocumentRepository } from "./repositories/tag-document.repository";
 import { ConversionJobRepository } from "./repositories/conversion-job.repository";
 import { ShareRepository } from "./repositories/share.repository";
 import { SearchRepository } from "./repositories/search.repository";
+import { MinioStorageRepository } from "./repositories/storage.repository";
 
 import { RegistrationUseCases } from "./use-cases/registration.use-cases";
 import { ProfileUseCases } from "./use-cases/profile.use-cases";
@@ -33,6 +34,7 @@ const tagDocumentRepository = new TagDocumentRepository(prisma);
 const conversionJobRepository = new ConversionJobRepository(prisma);
 const shareRepository = new ShareRepository(prisma);
 const searchRepository = new SearchRepository(prisma);
+const storageRepository = new MinioStorageRepository();
 
 export const repos = {
   user: userRepository,
@@ -43,6 +45,7 @@ export const repos = {
   conversionJob: conversionJobRepository,
   share: shareRepository,
   search: searchRepository,
+  storage: storageRepository,
 } as const;
 
 // Use-cases
@@ -57,13 +60,18 @@ export const useCases = {
     tagRepository,
     folderRepository,
     tagDocumentRepository,
+    storageRepository,
   ),
-  exportDocument: new ExportDocumentUseCase(documentRepository),
+  exportDocument: new ExportDocumentUseCase(documentRepository, storageRepository),
   folder: new FolderUseCases(folderRepository, tagRepository),
   search: new SearchUseCases(searchRepository),
   documentCrud: new DocumentCrudUseCases(documentRepository, folderRepository),
   documentMove: new DocumentMoveUseCases(documentRepository, folderRepository),
   documentTag: new DocumentTagUseCases(documentRepository, tagRepository, tagDocumentRepository),
   documentShare: new DocumentShareUseCases(documentRepository, shareRepository),
-  uploadDocument: new UploadDocumentUseCase(documentRepository, folderRepository),
+  uploadDocument: new UploadDocumentUseCase(
+    documentRepository,
+    folderRepository,
+    storageRepository,
+  ),
 } as const;

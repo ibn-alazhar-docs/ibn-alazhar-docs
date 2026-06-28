@@ -11,12 +11,12 @@ import {
   buildExportMetadata,
 } from "@/lib/export/metadata";
 import { buildZipPackage } from "@/lib/export/zip-builder";
-import { loadConfig, downloadFile, fileExists, uploadBuffer } from "@ibn-al-azhar-docs/pipeline";
 import type { ExportMetadata } from "@/lib/export/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
+import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 
 interface ExportOptions {
   format: string;
@@ -38,6 +38,7 @@ export class ExportUseCases {
     private readonly tagRepository: ITagRepository,
     private readonly folderRepository: IFolderRepository,
     private readonly tagDocumentRepository: ITagDocumentRepository,
+    private readonly storage: IStorageRepository,
   ) {}
 
   async exportSingle(
@@ -50,7 +51,7 @@ export class ExportUseCases {
       resolveTagsForExport(documentId),
       resolveFolderForExport(document.folderId),
       resolveOcrData(documentId),
-      resolvePipelineData(documentId),
+      resolvePipelineData(documentId, this.storage),
     ]);
     const metadata = await buildExportMetadata(
       document,
@@ -81,14 +82,11 @@ export class ExportUseCases {
     metadata: ExportMetadata,
     options: ExportOptions,
   ): Promise<SingleExportResult> {
-    const config = loadConfig();
     let rawText = "";
     let markdown = "";
 
-    const ocrKey = `${config.paths.ocrResults}/${document.id}/text.json`;
-    const ocrExists = await fileExists(config, ocrKey);
-    if (ocrExists) {
-      const ocrBuffer = await downloadFile(config, ocrKey);
+    const ocrBuffer = await this.storage.downloadIfExists(this.storage.ocrTextKey(document.id));
+    if (ocrBuffer) {
       try {
         const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
         rawText = ocrData.text || "";
@@ -97,21 +95,20 @@ export class ExportUseCases {
       }
     }
 
-    const outputKey = `${config.paths.exports}/${document.id}/output.md`;
-    const mdExists = await fileExists(config, outputKey);
-    if (mdExists) {
-      const mdBuffer = await downloadFile(config, outputKey);
+    const mdBuffer = await this.storage.downloadIfExists(
+      this.storage.exportOutputKey(document.id, "md"),
+    );
+    if (mdBuffer) {
       markdown = mdBuffer.toString("utf-8");
       if (!rawText) rawText = markdown;
     }
 
     let sourceBuffer: Buffer | undefined;
     if (options.includeSource) {
-      const sourceKey = `${config.paths.uploads}/${document.id}/${document.fileName}`;
-      const srcExists = await fileExists(config, sourceKey);
-      if (srcExists) {
-        sourceBuffer = await downloadFile(config, sourceKey);
-      }
+      sourceBuffer =
+        (await this.storage.downloadIfExists(
+          this.storage.sourceKey(document.id, document.fileName),
+        )) ?? undefined;
     }
 
     const exportId = `exp_${document.id}_${Date.now()}`;
@@ -152,13 +149,11 @@ export class ExportUseCases {
     pipeline: { wordCount: number; pageCount?: number },
     options: ExportOptions,
   ): Promise<SingleExportResult> {
-    // For text-based formats, generate on-demand from OCR text
     const textFormats = ["md", "txt", "json"];
     if (textFormats.includes(format)) {
       return this.generateTextFormat(document, format, pipeline);
     }
 
-    // For binary formats (pdf, docx, epub), generate on-demand
     const binaryFormats = ["pdf", "docx", "epub"];
     if (binaryFormats.includes(format)) {
       return this.generateBinaryFormat(document, format, pipeline, options);
@@ -167,46 +162,47 @@ export class ExportUseCases {
     throw new AppError(`Unsupported format: ${format}`, "VALIDATION_ERROR", 400);
   }
 
+  private async findCachedExport(documentId: string, format: string): Promise<Buffer | null> {
+    const outputKey = this.storage.exportOutputKey(documentId, format);
+    const exportKey = this.storage.exportCacheKey(documentId, format);
+
+    if (await this.storage.fileExists(outputKey)) {
+      return this.storage.downloadFile(outputKey);
+    }
+    if (await this.storage.fileExists(exportKey)) {
+      return this.storage.downloadFile(exportKey);
+    }
+    return null;
+  }
+
   private async generateTextFormat(
     document: { id: string; title: string; pageCount: number | null },
     format: string,
     pipeline: { wordCount: number; pageCount?: number },
   ): Promise<SingleExportResult> {
-    const config = loadConfig();
     const { sanitizeTitle, getContentType } = await import("@/lib/export/profiles");
 
-    // Try to read pre-generated output first
-    const outputKey = `${config.paths.exports}/${document.id}/output.${format}`;
-    const exportKey = `${config.paths.exports}/${document.id}/export.${format}`;
-    const key = (await fileExists(config, outputKey))
-      ? outputKey
-      : (await fileExists(config, exportKey))
-        ? exportKey
-        : null;
-
-    if (key) {
-      const buffer = await downloadFile(config, key);
+    const cached = await this.findCachedExport(document.id, format);
+    if (cached) {
       return {
         type: "file",
-        buffer: new Uint8Array(buffer),
+        buffer: new Uint8Array(cached),
         contentType: getContentType(format),
         fileName: `${sanitizeTitle(document.title)}.${format}`,
       };
     }
 
-    // Generate on-demand from OCR text
-    const ocrKey = `${config.paths.ocrResults}/${document.id}/text.json`;
-    const ocrExists = await fileExists(config, ocrKey);
-    if (!ocrExists) {
+    const ocrKey = this.storage.ocrTextKey(document.id);
+    if (!(await this.storage.fileExists(ocrKey))) {
       throw new NotFoundError("OCR text not available for this document");
     }
 
-    const ocrBuffer = await downloadFile(config, ocrKey);
-    const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
+    const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
-    const { generateMarkdown, generateTxt, generateJson } =
-      await import("@ibn-al-azhar-docs/pipeline");
+    const { generateMarkdown, generateTxt, generateJson } = await import(
+      "@ibn-al-azhar-docs/pipeline"
+    );
     const cleaned = generateMarkdown(rawText, { pageCount: pipeline.pageCount });
 
     let outputBuffer: Buffer;
@@ -224,9 +220,11 @@ export class ExportUseCases {
         throw new AppError(`Unsupported text format: ${format}`, "VALIDATION_ERROR", 400);
     }
 
-    // Cache the generated file
-    const outputFilePath = `${config.paths.exports}/${document.id}/export.${format}`;
-    await uploadBuffer(config, outputFilePath, outputBuffer, getContentType(format));
+    await this.storage.uploadBuffer(
+      this.storage.exportCacheKey(document.id, format),
+      outputBuffer,
+      getContentType(format),
+    );
 
     return {
       type: "file",
@@ -242,37 +240,24 @@ export class ExportUseCases {
     pipeline: { wordCount: number; pageCount?: number },
     options: ExportOptions,
   ): Promise<SingleExportResult> {
-    const config = loadConfig();
     const { sanitizeTitle, getContentType } = await import("@/lib/export/profiles");
 
-    // Try to read pre-generated output first
-    const outputKey = `${config.paths.exports}/${document.id}/output.${format}`;
-    const exportKey = `${config.paths.exports}/${document.id}/export.${format}`;
-    const key = (await fileExists(config, outputKey))
-      ? outputKey
-      : (await fileExists(config, exportKey))
-        ? exportKey
-        : null;
-
-    if (key) {
-      const buffer = await downloadFile(config, key);
+    const cached = await this.findCachedExport(document.id, format);
+    if (cached) {
       return {
         type: "file",
-        buffer: new Uint8Array(buffer),
+        buffer: new Uint8Array(cached),
         contentType: getContentType(format),
         fileName: `${sanitizeTitle(document.title)}.${format}`,
       };
     }
 
-    // Generate on-demand from OCR text
-    const ocrKey = `${config.paths.ocrResults}/${document.id}/text.json`;
-    const ocrExists = await fileExists(config, ocrKey);
-    if (!ocrExists) {
+    const ocrKey = this.storage.ocrTextKey(document.id);
+    if (!(await this.storage.fileExists(ocrKey))) {
       throw new NotFoundError("OCR text not available for this document");
     }
 
-    const ocrBuffer = await downloadFile(config, ocrKey);
-    const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
+    const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
     const { generateMarkdown } = await import("@ibn-al-azhar-docs/pipeline");
@@ -305,9 +290,11 @@ export class ExportUseCases {
         throw new AppError(`Unsupported binary format: ${format}`, "VALIDATION_ERROR", 400);
     }
 
-    // Cache the generated file
-    const outputFilePath = `${config.paths.exports}/${document.id}/export.${format}`;
-    await uploadBuffer(config, outputFilePath, outputBuffer, getContentType(format));
+    await this.storage.uploadBuffer(
+      this.storage.exportCacheKey(document.id, format),
+      outputBuffer,
+      getContentType(format),
+    );
 
     return {
       type: "file",
@@ -347,6 +334,7 @@ export class ExportUseCases {
     return executeBulkExport(
       documents,
       { ...options, userId: session.user.id },
+      this.storage,
       "exp_tag",
       zipName,
     );
@@ -391,6 +379,7 @@ export class ExportUseCases {
     return executeBulkExport(
       documents,
       { ...options, userId: session.user.id },
+      this.storage,
       "exp_folder",
       zipName,
     );
@@ -418,6 +407,7 @@ export class ExportUseCases {
     return executeBulkExport(
       validDocs,
       { ...options, userId: session.user.id },
+      this.storage,
       "exp_batch",
       zipName,
     );

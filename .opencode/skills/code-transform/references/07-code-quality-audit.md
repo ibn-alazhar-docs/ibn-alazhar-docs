@@ -20,6 +20,7 @@
 ## Quick Assessment
 
 Run the bundled scripts:
+
 ```bash
 # Detect smells mechanically
 python3 scripts/detect_smells.py . --json > smells.json
@@ -33,23 +34,23 @@ python3 scripts/layer_violation_detector.py .
 
 ## Smell Priority
 
-| Severity | Smells | Action |
-|----------|--------|--------|
-| **Critical** | C1 Mixed Concerns, C2 Hidden Side Effects, C3 Commented Code, C4 Dynamic Dispatch | Fix immediately |
-| **High** | H1 Long Method, H2 God Class, H3 Deep Nesting, H4 Magic Numbers, H5 Duplication, H6 Primitive Obsession | Fix this session |
-| **Medium** | M1 Unclear Names, M2 Speculative Generality, M5 Mutable State, M6 Boolean Flags | Fix if quick |
-| **Low** | L1-L6 (comments, formatting, TODOs) | Log for later |
+| Severity     | Smells                                                                                                  | Action           |
+| ------------ | ------------------------------------------------------------------------------------------------------- | ---------------- |
+| **Critical** | C1 Mixed Concerns, C2 Hidden Side Effects, C3 Commented Code, C4 Dynamic Dispatch                       | Fix immediately  |
+| **High**     | H1 Long Method, H2 God Class, H3 Deep Nesting, H4 Magic Numbers, H5 Duplication, H6 Primitive Obsession | Fix this session |
+| **Medium**   | M1 Unclear Names, M2 Speculative Generality, M5 Mutable State, M6 Boolean Flags                         | Fix if quick     |
+| **Low**      | L1-L6 (comments, formatting, TODOs)                                                                     | Log for later    |
 
 ## Cognitive Complexity Thresholds
 
-| Score | Status | Action |
-|-------|--------|--------|
-| 1-5 | ✓ Simple | No action |
-| 6-10 | ✓ Manageable | No action |
+| Score | Status                  | Action              |
+| ----- | ----------------------- | ------------------- |
+| 1-5   | ✓ Simple                | No action           |
+| 6-10  | ✓ Manageable            | No action           |
 | 11-15 | ⚠ Starting to get hard | Consider extracting |
-| 16-20 | ⚠ Hard | Extract soon |
-| 21-25 | ✗ Dangerous | Extract now |
-| 25+ | ✗ Very dangerous | Extract immediately |
+| 16-20 | ⚠ Hard                 | Extract soon        |
+| 21-25 | ✗ Dangerous             | Extract now         |
+| 25+   | ✗ Very dangerous        | Extract immediately |
 
 ## Improvement Recipes
 
