@@ -4,6 +4,9 @@ import { addToMap, getFromMap, incrementMap, startCleanupIfNeeded } from "./rate
 
 export { cleanupExpiredEntries } from "./rate-limit/store";
 
+// IP-based rate limits for public API endpoints.
+// WHY: Separate from user-based limits — unauthenticated requests have no user ID,
+// and IP is the only reliable identifier.
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/auth/register": { limit: 50, windowMs: 60_000 },
   "/api/auth/callback/credentials": { limit: 50, windowMs: 60_000 },
@@ -17,6 +20,9 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/stream": { limit: 10, windowMs: 60_000 },
 };
 
+// User-based rate limits for authenticated operations.
+// WHY: Stricter than IP-based — a single user could have multiple IPs (mobile + desktop),
+// and destructive actions (delete, bulk) need lower limits to prevent abuse.
 const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "documents:create": { limit: 30, windowMs: 60_000 },
   "documents:delete": { limit: 10, windowMs: 60_000 },
@@ -84,6 +90,9 @@ function memoryCheck(
   return { allowed: true };
 }
 
+// WHY: Redis-first with in-memory fallback — Redis is the source of truth for
+// distributed rate limiting (multiple server instances), but if Redis is
+// unavailable, we fall back to per-instance memory to avoid blocking all requests.
 async function checkWithFallback(
   key: string,
   limit: number,
