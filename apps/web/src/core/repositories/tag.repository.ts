@@ -38,7 +38,10 @@ export class TagRepository implements ITagRepository {
   }
 
   async delete(id: string) {
-    await this.prisma.tag.delete({ where: { id } });
+    await this.prisma.tag.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
   }
 
   async findFolderTags(userId: string, role: string, folderId: string | null) {

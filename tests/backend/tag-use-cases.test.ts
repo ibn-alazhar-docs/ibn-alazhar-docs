@@ -68,7 +68,7 @@ describe("TagUseCases", () => {
 
       const result = await useCases.getTags(makeSession());
 
-      expect(tagRepo.findMany).toHaveBeenCalledWith({ userId: "user-1" });
+      expect(tagRepo.findMany).toHaveBeenCalledWith({ deletedAt: null, userId: "user-1" });
       expect(result).toHaveLength(1);
     });
 
@@ -77,7 +77,7 @@ describe("TagUseCases", () => {
 
       await useCases.getTags(makeSession({ user: { id: "admin-1", role: "ADMIN" } }));
 
-      expect(tagRepo.findMany).toHaveBeenCalledWith({});
+      expect(tagRepo.findMany).toHaveBeenCalledWith({ deletedAt: null });
     });
   });
 
