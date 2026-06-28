@@ -27,6 +27,50 @@ The platform is self-hosted and privacy-focused. All processing happens on your 
 
 ## Architecture
 
+```mermaid
+graph TB
+    subgraph "Client"
+        A[Browser / PWA]
+    end
+
+    subgraph "Web Layer"
+        B[Next.js 16 App Router]
+        C[API Routes]
+        D[Server Actions]
+    end
+
+    subgraph "Domain Layer"
+        E[Use Cases]
+        F[Repository Interfaces]
+        G[Domain Types]
+    end
+
+    subgraph "Infrastructure"
+        H[Prisma ORM]
+        I[BullMQ Workers]
+        J[Python OCR Scripts]
+    end
+
+    subgraph "Data Stores"
+        K[(PostgreSQL 16)]
+        L[(Redis 7)]
+        M[(MinIO S3)]
+    end
+
+    A -->|HTTP/SSE| B
+    B --> C
+    B --> D
+    C --> E
+    D --> E
+    E --> F
+    F --> H
+    E --> I
+    I --> J
+    H --> K
+    I --> L
+    I --> M
+```
+
 ```
 apps/web/           Next.js 16 (App Router, standalone output, Turbopack dev)
 packages/pipeline/  Shared OCR, queue, storage, text logic (raw TypeScript — no build step)
