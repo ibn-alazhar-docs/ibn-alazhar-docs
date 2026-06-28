@@ -7,6 +7,12 @@
       "skillPath": "skills/clean-code-guard/SKILL.md",
       "computedHash": "0418cdf1d9b88eb04ae8e90a49989e3023212c60690e216e1f773ac46e9a8850"
     },
+    "code-transform": {
+      "source": "abedmohamed258/code-transform",
+      "sourceType": "github",
+      "skillPath": "skills/code-transform/SKILL.md",
+      "computedHash": "06769849924695e2308a29b892586fea221011bba05a52d19b3820a37c23ec03"
+    },
     "impeccable": {
       "source": "pbakaus/impeccable",
       "sourceType": "github",

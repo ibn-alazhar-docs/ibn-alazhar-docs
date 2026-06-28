@@ -5,7 +5,6 @@
 > This is the **lightweight, single-agent** version of the same reasoning principles: think in multiple passes before acting, inspect before touching, gate before committing, and verify in a loop.
 
 ## Table of Contents
-
 1. [The 5-Pass Thinking Protocol](#the-5-pass-thinking-protocol)
 2. [Pre-Action Inspection Checklist](#pre-action-inspection-checklist)
 3. [Decision Gates](#decision-gates)
@@ -32,7 +31,6 @@ Before ANY decision (choosing a recipe, applying a transformation, committing co
 **Question**: "Do I fully understand the code, its callers, its callees, its side effects, and its context?"
 
 **Think about**:
-
 - What does this code DO? (not what it's supposed to do — what does it ACTUALLY do?)
 - Who calls this? (grep for all callers)
 - What does this call? (grep for all callees)
@@ -49,7 +47,6 @@ Before ANY decision (choosing a recipe, applying a transformation, committing co
 **Question**: "What are ALL the problems with this code, and what are ALL the ways to fix them?"
 
 **Think about**:
-
 - List EVERY smell from the catalog that applies (not just the first one you notice)
 - List EVERY possible recipe that could address each smell
 - For each recipe: what's the risk? What's the effort? What's the verification strategy?
@@ -65,7 +62,6 @@ Before ANY decision (choosing a recipe, applying a transformation, committing co
 **Question**: "What's the safest, smallest, most reversible sequence of steps?"
 
 **Think about**:
-
 - Decompose compound changes into atomic steps (one Fowler refactoring per commit)
 - What order? (Low-risk first, dependencies before dependents)
 - What's the verification after each step? (compiler, tests, smoke, mutation)
@@ -82,7 +78,6 @@ Before ANY decision (choosing a recipe, applying a transformation, committing co
 **Question**: "If a hostile senior reviewer examined my plan, what would they object to?"
 
 **Think about** (generate ≥3 objections):
-
 - "Did you check callers outside the diff scope?" (hidden coupling)
 - "Are there dynamic dispatch / reflection / string-based references you missed?"
 - "Did you accidentally change error messages, log formats, or response shapes?"
@@ -103,7 +98,6 @@ Before ANY decision (choosing a recipe, applying a transformation, committing co
 **Question**: "Am I confident this is correct, safe, and the best option?"
 
 **Think about**:
-
 - Does the diff change ONLY structure (refactor) or also behavior (fix/feat)? If behavior changed, is that intentional?
 - Have I verified with the CHEAPEST sufficient net? (compiler for mechanical, tests for structural, characterization for legacy, mutation for critical)
 - Is the commit message accurate? (does it say what ACTUALLY changed?)
@@ -142,32 +136,24 @@ If ANY box is unchecked, DO NOT proceed. Go back and check it.
 At certain points, you MUST stop and pass through a decision gate. These are hard stops — you may not proceed without explicitly passing the gate.
 
 ### Gate 1: Before Choosing a Recipe
-
 **Stop and ask**: "Have I considered at least 3 alternative recipes? Why is this one the best?"
-
 - If you only considered 1 recipe → go back, find 2 more alternatives
 - If you can't articulate why this recipe is better than the alternatives → you don't understand the trade-offs
 
 ### Gate 2: Before Writing Code
-
 **Stop and ask**: "Have I planned the exact diff? Can I describe it in one sentence?"
-
 - If you can't describe the diff in one sentence → you don't know what you're about to do
 - If the diff touches more than one named code element → split into multiple commits
 
 ### Gate 3: Before Committing
-
 **Stop and ask**: "Have I verified? Have I critiqued? Am I confident?"
-
 - Run verification (compiler/tests/smoke)
 - Run the 5-pass protocol (especially Pass 4: CRITIQUE)
 - Run the AI-FM sweep (14 LLM failure modes)
 - If ANY check fails → fix or revert. Do not commit.
 
 ### Gate 4: Before Declaring Done
-
 **Stop and ask**: "Have I walked the behavior surface? Have I compared before/after metrics?"
-
 - Re-read the behavior surface from RECON. Verify each item.
 - Compare cognitive complexity before/after.
 - Check for dangling references (git grep for old names).
@@ -221,7 +207,6 @@ Adjustment for next attempt: [what I'll do differently]
 ## When to Think More (or Less)
 
 ### Think MORE (5 passes + extra inspection) when:
-
 - Critical path code (payments, auth, data migration)
 - No tests exist (no safety net)
 - Concurrency is involved (race conditions)
@@ -231,14 +216,12 @@ Adjustment for next attempt: [what I'll do differently]
 - The model is weak (Haiku, mini, small open-source)
 
 ### Think LESS (3 passes, skip Pass 5) when:
-
 - Mechanical refactor in a typed language (rename, extract with signature preservation)
 - Compiler is the primary verification (empty error list = done)
 - Single file, single function, no side effects
 - The change is trivially reversible (git reset)
 
 ### NEVER skip:
-
 - Pass 1 (UNDERSTAND) — always understand before acting
 - Pass 4 (CRITIQUE) — always generate ≥3 hostile objections
 - Gate 3 (before committing) — always verify before committing

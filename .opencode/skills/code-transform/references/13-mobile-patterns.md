@@ -3,7 +3,6 @@
 > Read this when auditing or transforming mobile applications.
 
 ## Table of Contents
-
 1. [Platform Detection](#platform-detection)
 2. [iOS (SwiftUI)](#ios-swiftui)
 3. [Android (Jetpack Compose)](#android-jetpack-compose)
@@ -15,12 +14,12 @@
 
 ## Platform Detection
 
-| Indicator                                           | Platform         |
-| --------------------------------------------------- | ---------------- |
-| `*.swift`, `*.xcodeproj`, `Package.swift`           | iOS (Swift)      |
+| Indicator | Platform |
+|-----------|----------|
+| `*.swift`, `*.xcodeproj`, `Package.swift` | iOS (Swift) |
 | `*.kt`, `*.xml` (Android), `build.gradle` (Android) | Android (Kotlin) |
-| `react-native`, `*.tsx` + `metro.config.js`         | React Native     |
-| `*.dart`, `pubspec.yaml`                            | Flutter          |
+| `react-native`, `*.tsx` + `metro.config.js` | React Native |
+| `*.dart`, `pubspec.yaml` | Flutter |
 
 ---
 
@@ -78,7 +77,6 @@ struct OrderListView: View {
 ```
 
 ### iOS Checklist
-
 ```
 [ ] ViewModels don't import UIKit/SwiftUI (testable)
 [ ] @Observable used (not ObservableObject for new code)
@@ -91,9 +89,7 @@ struct OrderListView: View {
 ```
 
 ### For Complex Apps: TCA (The Composable Architecture)
-
 When MVVM becomes unwieldy (complex state, many side effects):
-
 - Unidirectional data flow: State → Action → Reducer → Effect
 - Fully testable
 - Composable (features can be combined)
@@ -147,7 +143,6 @@ fun OrderScreen(viewModel: OrderViewModel = hiltViewModel()) {
 ```
 
 ### Android Checklist
-
 ```
 [ ] ViewModel has no Android framework imports (testable)
 [ ] StateFlow used (not LiveData for new code)
@@ -203,7 +198,6 @@ function OrderScreen() {
 ```
 
 ### React Native Checklist
-
 ```
 [ ] Functional components with hooks (not class components)
 [ ] Custom hooks for business logic
@@ -263,7 +257,6 @@ class OrderScreen extends ConsumerWidget {
 ```
 
 ### Flutter Checklist
-
 ```
 [ ] Business logic NOT in widgets (use controllers/providers)
 [ ] Riverpod or Bloc for state (not setState for complex state)
@@ -279,19 +272,17 @@ class OrderScreen extends ConsumerWidget {
 
 ## Cross-Platform Decision
 
-| Factor                                        | Choose                                       |
-| --------------------------------------------- | -------------------------------------------- |
-| Performance-critical (games, video, AR)       | Native (SwiftUI / Compose)                   |
-| Deep platform integration (widgets, APIs)     | Native                                       |
-| Rapid development, shared codebase            | RN or Flutter                                |
-| Team has web expertise (React)                | React Native                                 |
-| Team wants maximum code sharing               | Flutter                                      |
+| Factor | Choose |
+|--------|--------|
+| Performance-critical (games, video, AR) | Native (SwiftUI / Compose) |
+| Deep platform integration (widgets, APIs) | Native |
+| Rapid development, shared codebase | RN or Flutter |
+| Team has web expertise (React) | React Native |
+| Team wants maximum code sharing | Flutter |
 | Need to integrate with native code frequently | Flutter (better platform channels) or Native |
 
 ### Offline-First (All Platforms)
-
 Mobile apps MUST work offline:
-
 - Local database (CoreData / Room / SQLite / Realm / WatermelonDB)
 - Sync when online (not blocking the UI)
 - Conflict resolution strategy (last-write-wins, merge, CRDT)
