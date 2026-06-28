@@ -161,9 +161,9 @@
 | P4 (Backlog)      | 1/10     | Cache headers on API routes                                                                           |
 | P5 (Nice-to-have) | 1/16     | parseApiError() utility                                                                               |
 
-**Resolved:** 51/157 findings (32%)
+**Resolved:** 54/157 findings (34%)
 **Partially resolved:** 3 findings
-**Remaining:** 103 findings — mostly P3-P5 backlog items
+**Remaining:** 100 findings — mostly P3-P5 backlog items
 
 ---
 
@@ -189,7 +189,8 @@
 | `refactor: batch 17 — memoize DocumentRow, flatten SSE`    | React.memo, stream/route.ts nesting flattened        |
 | `chore: batch 18 — data-testid, CI integration job`        | E2E test hooks, integration tests in CI              |
 | `docs: batch 19 — soft-delete policy, architecture`        | Soft-delete policy doc, Mermaid diagram in README    |
+| `perf: batch 20 — parallelize uploads, Redis, WHY`         | Page upload parallelization, Redis config, comments  |
 
 ---
 
-**Status:** 19 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced, documentation improved.
+**Status:** 20 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced, documentation improved, performance optimized.
