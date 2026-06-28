@@ -12,6 +12,7 @@ export interface IUserRepository {
   findByEmail(email: string): Promise<User | null>;
   findFirst(where: Prisma.UserFindFirstArgs): Promise<Pick<User, "id"> | null>;
   findMany(options?: Prisma.UserFindManyArgs): Promise<UserListItem[]>;
+  count(args?: Prisma.UserCountArgs): Promise<number>;
   create(data: Prisma.UserUncheckedCreateInput): Promise<User>;
   update(id: string, data: Prisma.UserUncheckedUpdateInput): Promise<User>;
   updateRole(id: string, role: Role): Promise<UserRoleUpdate>;
