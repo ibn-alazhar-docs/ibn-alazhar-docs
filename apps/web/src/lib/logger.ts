@@ -13,10 +13,6 @@ export const logger = pino({
   timestamp: pino.stdTimeFunctions.isoTime,
 });
 
-export function createChildLogger(context: Record<string, unknown>) {
-  return logger.child(context);
-}
-
 export function generateRequestId(): string {
   return crypto.randomUUID();
 }

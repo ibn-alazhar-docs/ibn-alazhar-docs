@@ -7,5 +7,3 @@ export const documentUpdateSchema = z
     folderId: z.string().nullable().optional(),
   })
   .strip();
-
-export type DocumentUpdateInput = z.infer<typeof documentUpdateSchema>;

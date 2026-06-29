@@ -3,8 +3,6 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import type { PipelineConfig, OcrEngineResult } from "./types";
-import { GoogleDriveOcrProvider } from "./ocr-provider";
 import { getPythonCommand } from "./ocr-providers/types";
 
 export {
@@ -15,25 +13,6 @@ export {
   OcrManager,
 } from "./ocr-provider";
 export type { OcrProvider } from "./ocr-provider";
-
-export async function extractTextViaGoogleDrive(
-  config: PipelineConfig,
-  fileBuffer: Buffer,
-  fileName: string,
-  mimeType: string,
-): Promise<OcrEngineResult> {
-  const provider = new GoogleDriveOcrProvider();
-  return provider.extractText(config, fileBuffer, fileName, mimeType);
-}
-
-export async function ocrImageViaGoogleDrive(
-  config: PipelineConfig,
-  pageGetters: (() => Promise<Buffer>)[],
-  fileName: string,
-): Promise<OcrEngineResult> {
-  const provider = new GoogleDriveOcrProvider();
-  return provider.extractPages(config, pageGetters, fileName);
-}
 
 export interface SplitResult {
   pagePaths: string[];

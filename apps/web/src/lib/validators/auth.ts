@@ -60,9 +60,3 @@ export const adminUserDeleteSchema = z
     userId: z.string().min(1, "معرف المستخدم مطلوب"),
   })
   .strip();
-
-export type LoginInput = z.infer<typeof loginSchema>;
-export type RegisterInput = z.infer<typeof registerSchema>;
-export type ProfileUpdateInput = z.infer<typeof profileUpdateSchema>;
-export type AdminUserUpdateInput = z.infer<typeof adminUserUpdateSchema>;
-export type AdminUserDeleteInput = z.infer<typeof adminUserDeleteSchema>;
