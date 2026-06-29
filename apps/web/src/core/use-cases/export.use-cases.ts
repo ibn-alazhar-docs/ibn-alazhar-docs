@@ -16,6 +16,7 @@ import type { IDocumentRepository } from "@/domain/repositories/document.reposit
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
+import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 
 interface ExportOptions {
@@ -38,6 +39,7 @@ export class ExportUseCases {
     private readonly tagRepository: ITagRepository,
     private readonly folderRepository: IFolderRepository,
     private readonly tagDocumentRepository: ITagDocumentRepository,
+    private readonly conversionJobRepository: IConversionJobRepository,
     private readonly storage: IStorageRepository,
   ) {}
 
@@ -335,6 +337,11 @@ export class ExportUseCases {
       documents,
       { ...options, userId: session.user.id },
       this.storage,
+      {
+        tagDocument: this.tagDocumentRepository,
+        conversionJob: this.conversionJobRepository,
+        folder: this.folderRepository,
+      },
       "exp_tag",
       zipName,
     );
@@ -380,6 +387,11 @@ export class ExportUseCases {
       documents,
       { ...options, userId: session.user.id },
       this.storage,
+      {
+        tagDocument: this.tagDocumentRepository,
+        conversionJob: this.conversionJobRepository,
+        folder: this.folderRepository,
+      },
       "exp_folder",
       zipName,
     );
@@ -408,6 +420,11 @@ export class ExportUseCases {
       validDocs,
       { ...options, userId: session.user.id },
       this.storage,
+      {
+        tagDocument: this.tagDocumentRepository,
+        conversionJob: this.conversionJobRepository,
+        folder: this.folderRepository,
+      },
       "exp_batch",
       zipName,
     );
