@@ -5,7 +5,7 @@ import { TagChip } from "@/components/tags/tag-chip";
 import { motion } from "motion/react";
 import { useState, memo } from "react";
 import { ShareModal } from "@/components/pipeline/share-modal";
-import { Share2 } from "lucide-react";
+import { ShareIcon, EditIcon, SaveIcon, CancelIcon, DeleteIcon } from "./document-row-icons";
 
 interface DocumentRowActionsProps {
   doc: Doc;
@@ -49,7 +49,7 @@ function DocumentRowActions({
             title="مشاركة"
             aria-label="مشاركة"
           >
-            <Share2 className="h-4 w-4" />
+            <ShareIcon />
           </motion.button>
         )}
         {!isEditing && (
@@ -62,20 +62,7 @@ function DocumentRowActions({
             title={tCommon("edit")}
             aria-label={tCommon("edit")}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
-              />
-            </svg>
+            <EditIcon />
           </motion.button>
         )}
         {isEditing && (
@@ -89,20 +76,7 @@ function DocumentRowActions({
               title={tCommon("save")}
               aria-label={tCommon("save")}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M5 13l4 4L19 7"
-                />
-              </svg>
+              <SaveIcon />
             </motion.button>
             <motion.button
               whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
@@ -113,20 +87,7 @@ function DocumentRowActions({
               title={tCommon("cancel")}
               aria-label={tCommon("cancel")}
             >
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M6 18L18 6M6 6l12 12"
-                />
-              </svg>
+              <CancelIcon />
             </motion.button>
           </>
         )}
@@ -168,20 +129,7 @@ function DocumentRowActions({
             title={tCommon("delete")}
             aria-label={tCommon("delete")}
           >
-            <svg
-              className="h-4 w-4"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-              />
-            </svg>
+            <DeleteIcon />
           </motion.button>
         )}
       </div>
