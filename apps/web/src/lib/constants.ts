@@ -1,32 +1,15 @@
 // ── Site ──────────────────────────────────────────────────────────────────────
 export const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://ibnalazhar-docs.vercel.app";
 
-// ── Error codes ───────────────────────────────────────────────────────────────
-export const ERROR_CODES = {
-  NOT_FOUND: "NOT_FOUND",
-  VALIDATION_ERROR: "VALIDATION_ERROR",
-  CONFLICT: "CONFLICT",
-  FORBIDDEN: "FORBIDDEN",
-  UNAUTHORIZED: "UNAUTHORIZED",
-  RATE_LIMITED: "RATE_LIMITED",
-  BAD_REQUEST: "BAD_REQUEST",
-  INTERNAL_ERROR: "INTERNAL_ERROR",
-  // Domain-specific
-  FOLDER_NOT_FOUND: "FOLDER_NOT_FOUND",
-  TAG_NOT_FOUND: "TAG_NOT_FOUND",
-  TARGET_NOT_FOUND: "TARGET_NOT_FOUND",
-  NO_SHARE_LINK: "NO_SHARE_LINK",
-  SOME_NOT_FOUND: "SOME_NOT_FOUND",
-  SOME_TAGS_NOT_FOUND: "SOME_TAGS_NOT_FOUND",
-  TAG_NOT_ASSIGNED: "TAG_NOT_ASSIGNED",
-  PARENT_DELETED: "PARENT_DELETED",
-  CIRCULAR_REFERENCE: "CIRCULAR_REFERENCE",
-  MAX_DEPTH_REACHED: "MAX_DEPTH_REACHED",
-  NOT_READY: "NOT_READY",
-  AUTH_ERROR: "AUTH_ERROR",
-} as const;
-
-export type ErrorCode = (typeof ERROR_CODES)[keyof typeof ERROR_CODES];
+// ── Re-export from shared ─────────────────────────────────────────────────────
+export { ERROR_CODES, FAILURE_CATEGORIES } from "@ibn-al-azhar-docs/shared";
+export type {
+  ErrorCode,
+  FailureCategory,
+  DocStatus,
+  ExportFormat,
+} from "@ibn-al-azhar-docs/shared";
+export { STATUS_LABELS, DOC_STATUS_MAP } from "@ibn-al-azhar-docs/shared";
 
 // ── Limits ────────────────────────────────────────────────────────────────────
 export const LIMITS = {
