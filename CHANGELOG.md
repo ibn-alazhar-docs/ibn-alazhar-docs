@@ -23,6 +23,9 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - `IConversionJobRepository` interface for conversion job queries
 - `FolderTreeService` domain service for tree traversal logic
 - `login()` helper in E2E tests to reduce duplication
+- Preview deployment workflow for PRs (Docker images tagged with PR number)
+- Use-case-level integration tests for DocumentCrudUseCases and TagUseCases
+- Domain behavior functions: Document (isOwner, canDelete, statusTransitions), Folder (isRoot, getPath, getDepth), Tag (isOwnedBy, hasSameName)
 
 ### Changed
 

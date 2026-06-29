@@ -158,13 +158,13 @@
 | P1 (Urgent)       | 7/8      | Repo interfaces, type casts, rate-limit helper, `getContentType`, `@@index`, recursive query                                   |
 | P2 (Quick Win)    | 9/12     | Split DocumentRow, rate-limit DRY, dedup export, content-type, useFilesManager hook, error boundaries, E2E tests, export tests |
 | P3 (Strategic)    | 3/6      | Storage extraction (IStorageRepository), useFilesManager hook, FolderTreeService                                               |
-| P4 (Backlog)      | 2/10     | Cache headers on API routes, bundle size CI check                                                                              |
-| P5 (Nice-to-have) | 2/16     | parseApiError() utility, bulk-export repository fix                                                                            |
+| P4 (Backlog)      | 3/10     | Cache headers on API routes, bundle size CI check, preview deployments                                                         |
+| P5 (Nice-to-have) | 4/16     | parseApiError() utility, bulk-export repository fix, integration tests, domain model behavior                                  |
 
-**Resolved:** 58/157 findings (37%)
+**Resolved:** 61/157 findings (39%)
 **Partially resolved:** 3 findings
 **Skipped:** 3 findings (too invasive or unused)
-**Remaining:** 93 findings — mostly P3-P5 backlog items
+**Remaining:** 90 findings — mostly P4-P5 backlog items
 
 ---
 
@@ -198,7 +198,11 @@
 | `refactor: batch 25 — UserSetting EAV → JSONB`             | SKIPPED (not used in app code)                       |
 | `refactor: batch 26 — extract FolderTreeService`           | Tree traversal domain service, moveFolder simplified |
 | `chore: batch 27 — final cleanup`                          | BLUEPRINT.md + FINAL_REPORT.md updated               |
+| `ci: batch 28 — preview deployments`                       | Docker images tagged with PR number on PRs           |
+| `test: batch 29 — use-case integration tests`              | DocumentCrudUseCases + TagUseCases integration tests |
+| `feat: batch 30 — enrich domain model`                     | Document, Folder, Tag behavior functions + tests     |
+| `chore: batch 31 — final sweep`                            | Documentation updated, all checks pass               |
 
 ---
 
-**Status:** 27 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced, documentation improved, performance optimized, tree traversal extracted.
+**Status:** 31 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced (bundle size + preview deployments), documentation improved, performance optimized, tree traversal extracted, domain model enriched with behavior.

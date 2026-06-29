@@ -3,7 +3,7 @@
 **Date:** 2026-06-28
 **Based on:** AUDIT_REPORT.md (157 findings across 10 dimensions)
 
-**Status:** 27 batches complete. 58/157 findings resolved (37%). 3 skipped (too invasive). 93 remaining (mostly P4-P5 backlog).
+**Status:** 31 batches complete. 61/157 findings resolved (39%). 3 skipped (too invasive). 90 remaining (mostly P4-P5 backlog).
 
 ---
 
@@ -229,13 +229,26 @@
 
 - BLUEPRINT.md + FINAL_REPORT.md updated
 
+**Batch 28 — Preview Deployments (P5 item 53):**
+
+- Docker images tagged with PR number on PRs
+
+**Batch 29 — Use-case Integration Tests (P5 item 45):**
+
+- DocumentCrudUseCases + TagUseCases integration tests
+
+**Batch 30 — Domain Model Behavior (P4 item 32):**
+
+- Document, Folder, Tag behavior functions + tests
+
+**Batch 31 — Final Sweep:**
+
+- Documentation updated, all checks pass
+
 ---
 
 ## Remaining Items
 
-| #   | Dimension    | Finding                                          |
-| --- | ------------ | ------------------------------------------------ |
-| 32  | Architecture | Enrich domain model with behavior (anemic model) |
-| 45  | Testing      | Refactor integration tests to exercise use-cases |
-| 53  | DevOps       | Add preview deployments for PRs                  |
-| 56  | Full-Stack   | Establish type sharing (tRPC or shared package)  |
+| #   | Dimension  | Finding                                         |
+| --- | ---------- | ----------------------------------------------- |
+| 56  | Full-Stack | Establish type sharing (tRPC or shared package) |
