@@ -37,10 +37,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.0",
-    "@types/bcryptjs": "3.0.0",
-    "@types/jszip": "3.4.1",
     "@types/node": "^22.0.0",
-    "@types/pdfjs-dist": "2.10.378",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "postcss": "^8.5.0",

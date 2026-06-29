@@ -6,7 +6,10 @@
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "paths": {
+      "@prisma/client": ["../../node_modules/@prisma/client"]
+    }
   },
   "include": ["src", "../shared"]
 }

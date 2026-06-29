@@ -8,9 +8,6 @@
   },
   "dependencies": {
     "@ibn-al-azhar-docs/pipeline": "workspace:*",
-    "@prisma/client": "6.5.0",
-    "bullmq": "^5.0.0",
-    "ioredis": "^5.0.0",
     "tsx": "^4.0.0"
   },
   "devDependencies": {
