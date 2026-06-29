@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  expirationToMs,
-  msToExpirationOption,
-  createShareSchema,
-  EXPIRATION_OPTIONS,
-} from "@/lib/validators/share";
+import { expirationToMs, createShareSchema, EXPIRATION_OPTIONS } from "@/lib/validators/share";
 
 describe("expirationToMs", () => {
   it('"never" returns null', () => {
@@ -17,38 +12,6 @@ describe("expirationToMs", () => {
 
   it('"30days" returns 2592000000', () => {
     expect(expirationToMs("30days")).toBe(30 * 24 * 60 * 60 * 1000);
-  });
-});
-
-describe("msToExpirationOption", () => {
-  it("null returns never", () => {
-    expect(msToExpirationOption(null)).toBe("never");
-  });
-
-  it("value within 7 days returns 7days", () => {
-    expect(msToExpirationOption(7 * 24 * 60 * 60 * 1000)).toBe("7days");
-  });
-
-  it("value less than 7 days returns 7days", () => {
-    expect(msToExpirationOption(1000)).toBe("7days");
-  });
-
-  it("value greater than 7 days returns 30days", () => {
-    expect(msToExpirationOption(30 * 24 * 60 * 60 * 1000)).toBe("30days");
-  });
-
-  it("zero returns 7days", () => {
-    expect(msToExpirationOption(0)).toBe("7days");
-  });
-
-  it("boundary: exactly 7 days returns 7days", () => {
-    const sevenDays = 7 * 24 * 60 * 60 * 1000;
-    expect(msToExpirationOption(sevenDays)).toBe("7days");
-  });
-
-  it("boundary: 7 days + 1 ms returns 30days", () => {
-    const sevenDaysPlusOne = 7 * 24 * 60 * 60 * 1000 + 1;
-    expect(msToExpirationOption(sevenDaysPlusOne)).toBe("30days");
   });
 });
 

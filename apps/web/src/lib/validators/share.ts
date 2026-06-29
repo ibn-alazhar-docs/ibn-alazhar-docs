@@ -15,12 +15,6 @@ export function expirationToMs(option: ExpirationOption): number | null {
   }
 }
 
-export function msToExpirationOption(ms: number | null): ExpirationOption {
-  if (ms === null) return "never";
-  if (ms <= DURATIONS.SEVEN_DAYS_MS) return "7days";
-  return "30days";
-}
-
 export const createShareSchema = z
   .object({
     expiration: z
@@ -29,8 +23,6 @@ export const createShareSchema = z
       .default("never"),
   })
   .strip();
-
-export type CreateShareInput = z.infer<typeof createShareSchema>;
 
 export const SHARE_EXPORT_FORMATS = [
   "md",

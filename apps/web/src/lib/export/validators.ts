@@ -41,8 +41,3 @@ export const tagExportSchema = z
     includeSource: z.boolean().optional().default(false),
   })
   .strip();
-
-export type SingleExportInput = z.infer<typeof singleExportSchema>;
-export type BatchExportInput = z.infer<typeof batchExportSchema>;
-export type FolderExportInput = z.infer<typeof folderExportSchema>;
-export type TagExportInput = z.infer<typeof tagExportSchema>;

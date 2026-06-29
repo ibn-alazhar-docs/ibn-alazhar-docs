@@ -50,28 +50,3 @@ export function getErrorStatusCode(error: unknown): number {
   if (error instanceof AppError) return error.statusCode;
   return 500;
 }
-
-interface ApiErrorResponse {
-  error: {
-    code: string;
-    message: string;
-    requestId?: string;
-  };
-}
-
-export async function parseApiError(response: Response): Promise<ApiErrorResponse["error"]> {
-  try {
-    const data: ApiErrorResponse = await response.json();
-    return (
-      data.error ?? {
-        code: ERROR_CODES.INTERNAL_ERROR,
-        message: `Request failed (${response.status})`,
-      }
-    );
-  } catch {
-    return {
-      code: ERROR_CODES.INTERNAL_ERROR,
-      message: `Request failed (${response.status})`,
-    };
-  }
-}
