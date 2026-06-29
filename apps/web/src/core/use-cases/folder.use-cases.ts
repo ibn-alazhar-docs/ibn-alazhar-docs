@@ -1,12 +1,14 @@
-import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
-import { type FolderNode, type FlatFolder } from "@/lib/build-folder-tree";
+import { type FlatFolder } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { ERROR_CODES } from "@/lib/constants";
 import { isAdminRole } from "@/domain/auth";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
+import { FolderTreeService } from "@/core/services/folder-tree.service";
 
 export class FolderUseCases {
+  private readonly treeService = new FolderTreeService();
+
   constructor(
     private readonly folderRepository: IFolderRepository,
     private readonly tagRepository: ITagRepository,
@@ -128,36 +130,11 @@ export class FolderUseCases {
     }
 
     if (parentId) {
-      let currentId: string | null = parentId;
-      while (currentId) {
-        if (currentId === id) throw new AppError("مرجع دائري", ERROR_CODES.CIRCULAR_REFERENCE, 400);
-        const f = folderMap.get(currentId);
-        currentId = f?.parentId ?? null;
+      if (this.treeService.detectCircularReference(id, parentId, folderMap)) {
+        throw new AppError("مرجع دائري", ERROR_CODES.CIRCULAR_REFERENCE, 400);
       }
 
-      let depth = 0;
-      currentId = parentId;
-      while (currentId) {
-        const f = folderMap.get(currentId);
-        if (!f?.parentId) break;
-        depth++;
-        currentId = f.parentId;
-      }
-
-      // Check depth of source folder's descendants
-      const getDescendantMaxDepth = (folderId: string, currentDepth: number): number => {
-        const children = Array.from(folderMap.entries())
-          .filter(([, f]) => f.parentId === folderId)
-          .map(([id]) => id);
-        if (children.length === 0) return currentDepth;
-        return Math.max(
-          ...children.map((childId) => getDescendantMaxDepth(childId, currentDepth + 1)),
-        );
-      };
-
-      const sourceMaxDepth = getDescendantMaxDepth(id, 0);
-      if (depth + 1 + sourceMaxDepth >= MAX_FOLDER_DEPTH)
-        throw new AppError("تم الوصول للحد الأقصى من العمق", ERROR_CODES.MAX_DEPTH_REACHED, 400);
+      this.treeService.validateMoveDepth(id, parentId, folderMap);
     }
 
     return this.folderRepository.update(id, userId, { parentId: parentId || null });
@@ -182,24 +159,8 @@ export class FolderUseCases {
       include: { _count: { select: { documents: true, children: true } } },
     });
 
-    const buildTree = (folders: FlatFolder[], parentId: string | null): FolderNode[] => {
-      return folders
-        .filter((f) => f.parentId === parentId)
-        .sort((a, b) => a.order - b.order)
-        .map((f) => ({
-          id: f.id,
-          name: f.name,
-          parentId: f.parentId,
-          color: f.color,
-          icon: f.icon,
-          order: f.order,
-          children: buildTree(folders, f.id),
-          _count: f._count,
-        }));
-    };
-
     return {
-      tree: buildTree(allFolders as unknown as FlatFolder[], null),
+      tree: this.treeService.buildTree(allFolders as unknown as FlatFolder[], null),
       targetFolder,
     };
   }
