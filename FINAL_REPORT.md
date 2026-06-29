@@ -152,18 +152,19 @@
 
 ## Resolved Findings (from AUDIT_REPORT.md)
 
-| Priority          | Resolved | Details                                                                                               |
-| ----------------- | -------- | ----------------------------------------------------------------------------------------------------- |
-| P0 (Critical)     | 5/5      | `privileged: true`, missing tests (partial), aria-labels, skip-to-content                             |
-| P1 (Urgent)       | 7/8      | Repo interfaces, type casts, rate-limit helper, `getContentType`, `@@index`, recursive query          |
-| P2 (Quick Win)    | 7/12     | Split DocumentRow, rate-limit DRY, dedup export, content-type, useFilesManager hook, error boundaries |
-| P3 (Strategic)    | 2/6      | Storage extraction (IStorageRepository), useFilesManager hook                                         |
-| P4 (Backlog)      | 1/10     | Cache headers on API routes                                                                           |
-| P5 (Nice-to-have) | 1/16     | parseApiError() utility                                                                               |
+| Priority          | Resolved | Details                                                                                                                        |
+| ----------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| P0 (Critical)     | 5/5      | `privileged: true`, missing tests (partial), aria-labels, skip-to-content                                                      |
+| P1 (Urgent)       | 7/8      | Repo interfaces, type casts, rate-limit helper, `getContentType`, `@@index`, recursive query                                   |
+| P2 (Quick Win)    | 9/12     | Split DocumentRow, rate-limit DRY, dedup export, content-type, useFilesManager hook, error boundaries, E2E tests, export tests |
+| P3 (Strategic)    | 3/6      | Storage extraction (IStorageRepository), useFilesManager hook, FolderTreeService                                               |
+| P4 (Backlog)      | 2/10     | Cache headers on API routes, bundle size CI check                                                                              |
+| P5 (Nice-to-have) | 2/16     | parseApiError() utility, bulk-export repository fix                                                                            |
 
-**Resolved:** 54/157 findings (34%)
+**Resolved:** 58/157 findings (37%)
 **Partially resolved:** 3 findings
-**Remaining:** 100 findings — mostly P3-P5 backlog items
+**Skipped:** 3 findings (too invasive or unused)
+**Remaining:** 93 findings — mostly P3-P5 backlog items
 
 ---
 
@@ -190,7 +191,14 @@
 | `chore: batch 18 — data-testid, CI integration job`        | E2E test hooks, integration tests in CI              |
 | `docs: batch 19 — soft-delete policy, architecture`        | Soft-delete policy doc, Mermaid diagram in README    |
 | `perf: batch 20 — parallelize uploads, Redis, WHY`         | Page upload parallelization, Redis config, comments  |
+| `fix: batch 21 — E2E test improvements`                    | Remove force:true, login() helper, proper waits      |
+| `fix: batch 22 — bulk-export repository fix`               | IConversionJobRepository, TagDocumentRepository fix  |
+| `fix: batch 23 — export tests less aggressive mocking`     | Remove pipeline mock, keep zip-builder mock          |
+| `ci: batch 24 — bundle size check`                         | 50MB threshold, bundle report in CI                  |
+| `refactor: batch 25 — UserSetting EAV → JSONB`             | SKIPPED (not used in app code)                       |
+| `refactor: batch 26 — extract FolderTreeService`           | Tree traversal domain service, moveFolder simplified |
+| `chore: batch 27 — final cleanup`                          | BLUEPRINT.md + FINAL_REPORT.md updated               |
 
 ---
 
-**Status:** 20 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced, documentation improved, performance optimized.
+**Status:** 27 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced, documentation improved, performance optimized, tree traversal extracted.

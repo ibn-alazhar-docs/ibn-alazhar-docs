@@ -19,13 +19,28 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Named constants for magic numbers (UI_TIMING, DURATIONS, CONTENT_LIMITS, SUGGESTION_LIMITS, PAGINATION)
 - Accessibility improvements (aria-expanded, aria-label, focus trap, aria-hidden)
 - Dependabot configuration for automated dependency scanning
+- Bundle size check in CI (50MB threshold)
+- `IConversionJobRepository` interface for conversion job queries
+- `FolderTreeService` domain service for tree traversal logic
+- `login()` helper in E2E tests to reduce duplication
 
 ### Changed
 
 - `folder-tree.tsx` reduced from 266 to 173 lines
 - `search-bar.tsx` reduced from 206 to 142 lines
 - `file-upload.tsx` reduced from 263 to 151 lines
-- Test counts updated to 783
+- `stream/route.ts` flattened from 217 to 165 lines
+- E2E tests: removed 25+ `force: true` clicks, replaced with proper waits
+- `bulk-export-helpers.ts` now uses `ExportRepositories` instead of direct prisma
+- `ExportUseCases` constructor expanded (6 params, added conversionJobRepository)
+- Export tests: removed pipeline mock (kept zip-builder mock)
+- `folder.use-cases.ts` simplified by extracting tree logic to FolderTreeService
+
+### Fixed
+
+- E2E tests: proper `waitForSelector`/`waitForLoadState` instead of `force: true`
+- Bulk export: uses repository interface instead of direct Prisma imports
+- Export tests: less aggressive mocking (pipeline mock removed)
 
 ---
 
