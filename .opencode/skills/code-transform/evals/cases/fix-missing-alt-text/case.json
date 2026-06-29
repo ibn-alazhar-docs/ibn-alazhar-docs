@@ -1,0 +1,34 @@
+{
+  "name": "fix-missing-alt-text",
+  "description": "Detect and fix accessibility issue: images without alt text",
+  "difficulty": "easy",
+  "category": "accessibility",
+  "prompt": "Audit this page for accessibility issues using browser_agent.py a11y, then fix all missing alt text on images. Run a11y audit again to verify 0 violations.",
+  "assertions": [
+    {
+      "type": "file_contains",
+      "file": "src/index.html",
+      "pattern": "alt="
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/index.html",
+      "pattern": "<img src=\"logo.png\">"
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/index.html",
+      "pattern": "<img src=\"hero.jpg\">"
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/index.html",
+      "pattern": "<img src=\"avatar.png\">"
+    },
+    {
+      "type": "a11y_violations_zero",
+      "engine": "axe-core",
+      "rule": "image-alt"
+    }
+  ]
+}

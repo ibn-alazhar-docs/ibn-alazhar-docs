@@ -1,0 +1,34 @@
+{
+  "name": "fix-keyboard-trap",
+  "description": "Detect and fix keyboard trap in a modal dialog. Focus must escape the modal when closed.",
+  "difficulty": "hard",
+  "category": "accessibility",
+  "prompt": "Audit this page for accessibility using browser_agent.py a11y --keyboard-test. The modal traps keyboard focus — Tab cycles only within the modal even after it's closed. Fix the keyboard trap so focus returns to the trigger button when the modal closes. Re-run keyboard test to verify no trap.",
+  "assertions": [
+    {
+      "type": "file_contains",
+      "file": "src/modal.js",
+      "pattern": "focus()"
+    },
+    {
+      "type": "file_contains",
+      "file": "src/modal.js",
+      "pattern": "previousActiveElement"
+    },
+    {
+      "type": "file_contains",
+      "file": "src/modal.js",
+      "pattern": "addEventListener"
+    },
+    {
+      "type": "file_contains",
+      "file": "src/modal.js",
+      "pattern": "Escape"
+    },
+    {
+      "type": "a11y_violations_zero",
+      "engine": "axe-core",
+      "rule": "no-keyboard-trap"
+    }
+  ]
+}

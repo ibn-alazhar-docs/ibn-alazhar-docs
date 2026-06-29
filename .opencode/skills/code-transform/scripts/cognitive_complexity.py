@@ -31,7 +31,7 @@ class CognitiveComplexityVisitor(ast.NodeVisitor):
 
 def calculate(filepath):
     try:
-        tree = ast.parse(filepath.read_text(encoding="utf-8"), filename=str(filepath))
+        tree = ast.parse(filepath.read_text(encoding="utf-8", errors="ignore"), filename=str(filepath))
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr); return []
     v = CognitiveComplexityVisitor(); v.visit(tree); return v.functions

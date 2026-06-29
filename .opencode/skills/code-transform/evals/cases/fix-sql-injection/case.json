@@ -1,0 +1,22 @@
+{
+  "name": "fix-sql-injection",
+  "description": "Detect and fix SQL injection",
+  "difficulty": "easy",
+  "category": "security",
+  "prompt": "Audit for security issues and fix SQL injection.",
+  "assertions": [
+    {
+      "type": "file_not_contains",
+      "file": "src/auth.py",
+      "pattern": "f\"SELECT"
+    },
+    {
+      "type": "file_contains",
+      "file": "src/auth.py",
+      "pattern": "?"
+    },
+    {
+      "type": "no_secrets"
+    }
+  ]
+}

@@ -2,6 +2,13 @@
 # audit_orchestrate.sh — Run all audit scripts and produce a unified report.
 # Usage: bash scripts/audit_orchestrate.sh <project-root>
 set -euo pipefail
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    echo "Usage: bash scripts/audit_orchestrate.sh <project-root>"
+    echo "  Runs: codebase_census + detect_smells + cognitive_complexity + security scan + git status."
+    exit 0
+fi
+
 PROJECT_ROOT="${1:-.}"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$PROJECT_ROOT"

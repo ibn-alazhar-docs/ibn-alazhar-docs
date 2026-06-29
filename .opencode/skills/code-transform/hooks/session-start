@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+# SessionStart hook for code-transform plugin
+# Re-injects the bootstrap after every compaction event
+set -euo pipefail
+
+# Determine plugin root directory
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PLUGIN_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Read using-code-transform content
+BOOTSTRAP_FILE="${PLUGIN_ROOT}/skills/using-code-transform/SKILL.md"
+if [ ! -f "$BOOTSTRAP_FILE" ]; then
+  # Fallback: try relative to skill root
+  BOOTSTRAP_FILE="${PLUGIN_ROOT}/skills/code-transform/skills/using-code-transform/SKILL.md"
+fi
+
+BOOTSTRAP_CONTENT=$(cat "$BOOTSTRAP_FILE" 2>&1 || echo "Error reading using-code-transform skill")
+
+# Escape string for JSON embedding
+escape_for_json() {
+    local s="$1"
+    s="${s//\\/\\\\}"
+    s="${s//\"/\\\"}"
+    s="${s//$'\n'/\\n}"
+    s="${s//$'\r'/\\r}"
+    s="${s//$'\t'/\\t}"
+    printf '%s' "$s"
+}
+
+BOOTSTRAP_ESCAPED=$(escape_for_json "$BOOTSTRAP_CONTENT")
+SESSION_CONTEXT="<EXTREMELY_IMPORTANT>\nYou have code-transform.\n\n**Below is the full content of your 'code-transform:using-code-transform' bootstrap skill — your introduction to the 9-phase workflow. For all phases and references, use the 'Skill' tool:**\n\n${BOOTSTRAP_ESCAPED}\n</EXTREMELY_IMPORTANT>"
+
+# Output context injection as platform-specific JSON
+if [ -n "${CURSOR_PLUGIN_ROOT:-}" ]; then
+  printf '{\n  "additional_context": "%s"\n}\n' "$SESSION_CONTEXT" | cat
+elif [ -n "${CLAUDE_PLUGIN_ROOT:-}" ] && [ -z "${COPILOT_CLI:-}" ]; then
+  printf '{\n  "hookSpecificOutput": {\n    "hookEventName": "SessionStart",\n    "additionalContext": "%s"\n  }\n}\n' "$SESSION_CONTEXT" | cat
+else
+  printf '{\n  "additionalContext": "%s"\n}\n' "$SESSION_CONTEXT" | cat
+fi
+
+exit 0

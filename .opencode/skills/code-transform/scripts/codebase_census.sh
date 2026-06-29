@@ -2,6 +2,13 @@
 # codebase_census.sh — Profile a codebase for Phase 0 (CENSUS).
 # Usage: bash scripts/codebase_census.sh <project-root>
 set -euo pipefail
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    echo "Usage: bash scripts/codebase_census.sh <project-root>"
+    echo "  Profiles the codebase: files by language, total lines, test files, framework detection, git history."
+    exit 0
+fi
+
 PROJECT_ROOT="${1:-.}"
 cd "$PROJECT_ROOT"
 
