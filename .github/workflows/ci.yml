@@ -173,6 +173,22 @@ jobs:
       - run: npx next build
         working-directory: apps/web
         name: Next.js build
+      - name: Check bundle size
+        working-directory: apps/web
+        run: |
+          echo "=== Bundle Size Report ==="
+          du -sh .next/ 2>/dev/null || true
+          du -sh .next/static/ 2>/dev/null || true
+          echo "--- Page bundles ---"
+          find .next/static/chunks -name "*.js" -exec du -h {} + 2>/dev/null | sort -rh | head -20 || true
+          TOTAL_KB=$(du -sk .next/ 2>/dev/null | cut -f1)
+          echo "Total .next size: ${TOTAL_KB}KB"
+          MAX_KB=51200
+          if [ "$TOTAL_KB" -gt "$MAX_KB" ]; then
+            echo "::error::Bundle size ${TOTAL_KB}KB exceeds ${MAX_KB}KB limit"
+            exit 1
+          fi
+          echo "Bundle size OK: ${TOTAL_KB}KB <= ${MAX_KB}KB"
       - name: Build Docker images
         run: |
           docker build -t ibn-web -f Dockerfile .
