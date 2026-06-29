@@ -1,0 +1,109 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-preview:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push OCR worker (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.worker
+          target: ocr-runner
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push export worker (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.worker
+          target: export-runner
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Comment PR with preview image tags
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = [
+              '## Preview Docker Images',
+              '',
+              'Built and pushed to GHCR:',
+              '',
+              '| Service | Tag |',
+              '|---------|-----|',
+              `| Web | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}\` |`,
+              `| OCR Worker | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}\` |`,
+              `| Export Worker | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}\` |`,
+              '',
+              '### Deploy preview',
+              '```bash',
+              `docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}`,
+              '```',
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Preview Docker Images')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }
