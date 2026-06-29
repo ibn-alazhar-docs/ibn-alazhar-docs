@@ -3,6 +3,8 @@
 **Date:** 2026-06-28
 **Based on:** AUDIT_REPORT.md (157 findings across 10 dimensions)
 
+**Status:** 27 batches complete. 58/157 findings resolved (37%). 3 skipped (too invasive). 93 remaining (mostly P4-P5 backlog).
+
 ---
 
 ## Priority Matrix
@@ -141,3 +143,99 @@
 **Batch 5 — Database (P1 item 12):**
 
 - Refactor recursive folder query
+
+**Batch 6+7 — PrismaClient + Cache Headers (P4 items 37,39):**
+
+- PrismaClient singleton via globalThis
+- Cache headers on API routes
+
+**Batch 8 — Storage Extraction (P3 item 26):**
+
+- IStorageRepository, zero pipeline imports
+
+**Batch 9 — Error Handling (P5 item 57):**
+
+- Error boundaries, requestId, parseApiError
+
+**Batch 10 — Documentation:**
+
+- FINAL_REPORT.md, all batches documented
+
+**Batch 11 — Accessibility (P2 items 16-20):**
+
+- aria-expanded, aria-label, focus trap, nav landmark
+
+**Batch 12 — Magic Numbers (P2 item 21):**
+
+- UI_TIMING, DURATIONS, CONTENT_LIMITS constants
+
+**Batch 13 — Rate Limiting (P3 item 35):**
+
+- 45 routes, IP vs user strategy
+
+**Batch 14 — Folder Tree Split (P2 item 15):**
+
+- useFolders hook, folder-tree.tsx split
+
+**Batch 15 — Quick Wins (P4/P5 items 33,47,48):**
+
+- Tag soft-delete, SuggestionList, useFileUpload
+
+**Batch 16 — Changelog + Diagrams (P5 items 50,51):**
+
+- CHANGELOG.md, Mermaid diagrams
+
+**Batch 17 — Memoization + Flatten (P2 items 14,46):**
+
+- React.memo on DocumentRow, stream/route.ts flattened
+
+**Batch 18 — E2E Hooks + CI (P3 items 41,45):**
+
+- data-testid attributes, integration tests in CI
+
+**Batch 19 — Docs (P5 items 34,52):**
+
+- Soft-delete policy, architecture diagram in README
+
+**Batch 20 — Performance (P3 items 38,55):**
+
+- Parallelize uploads, Redis config, WHY comments
+
+**Batch 21 — E2E Test Improvements (P2 items 23,24):**
+
+- Remove force:true, login() helper, proper waits
+
+**Batch 22 — Bulk Export Repository Fix:**
+
+- IConversionJobRepository, TagDocumentRepository widened
+
+**Batch 23 — Export Tests (P5 item 44):**
+
+- Remove pipeline mock, keep zip-builder mock
+
+**Batch 24 — Bundle Size CI (P5 item 54):**
+
+- 50MB threshold, bundle report in CI
+
+**Batch 25 — UserSetting JSONB (P5 item 43):**
+
+- SKIPPED (not used in app code)
+
+**Batch 26 — FolderTreeService (P5 item 42):**
+
+- Tree traversal domain service, moveFolder simplified
+
+**Batch 27 — Final Cleanup:**
+
+- BLUEPRINT.md + FINAL_REPORT.md updated
+
+---
+
+## Remaining Items
+
+| #   | Dimension    | Finding                                          |
+| --- | ------------ | ------------------------------------------------ |
+| 32  | Architecture | Enrich domain model with behavior (anemic model) |
+| 45  | Testing      | Refactor integration tests to exercise use-cases |
+| 53  | DevOps       | Add preview deployments for PRs                  |
+| 56  | Full-Stack   | Establish type sharing (tRPC or shared package)  |
