@@ -63,18 +63,27 @@ export class FolderTreeService {
   }
 
   buildTree(folders: FlatFolder[], parentId: string | null): FolderNode[] {
-    return folders
-      .filter((f) => f.parentId === parentId)
-      .sort((a, b) => a.order - b.order)
-      .map((f) => ({
-        id: f.id,
-        name: f.name,
-        parentId: f.parentId,
-        color: f.color,
-        icon: f.icon,
-        order: f.order,
-        children: this.buildTree(folders, f.id),
-        _count: f._count,
-      }));
+    const nodes: (FlatFolder & { children: FolderNode[] })[] = folders.map((f) => ({
+      ...f,
+      children: [] as FolderNode[],
+    }));
+    const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+    const roots: FolderNode[] = [];
+
+    for (const node of nodes) {
+      if (node.parentId && nodeMap.has(node.parentId)) {
+        nodeMap.get(node.parentId)!.children.push(node);
+      } else if (node.parentId === parentId) {
+        roots.push(node);
+      }
+    }
+
+    const sortChildren = (nodes: FolderNode[]): FolderNode[] => {
+      nodes.sort((a, b) => a.order - b.order);
+      for (const n of nodes) sortChildren(n.children);
+      return nodes;
+    };
+
+    return sortChildren(roots);
   }
 }

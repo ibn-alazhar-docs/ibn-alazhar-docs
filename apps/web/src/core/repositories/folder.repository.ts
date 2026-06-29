@@ -89,6 +89,30 @@ export class FolderRepository implements IFolderRepository {
     });
   }
 
+  async getDescendantIds(folderId: string, userId: string): Promise<string[]> {
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ id: string }>>(
+      `WITH RECURSIVE descendants AS (
+         SELECT id FROM folders WHERE id = ${folderId} AND "userId" = ${userId} AND "deletedAt" IS NULL
+         UNION ALL
+         SELECT f.id FROM folders f INNER JOIN descendants d ON f."parentId" = d.id
+         WHERE f."userId" = ${userId} AND f."deletedAt" IS NULL
+       ) SELECT id FROM descendants`,
+    );
+    return rows.map((r) => r.id);
+  }
+
+  async getAncestorDepth(folderId: string, userId: string): Promise<number> {
+    const rows = await this.prisma.$queryRawUnsafe<Array<{ depth: bigint }>>(
+      `WITH RECURSIVE ancestors AS (
+         SELECT id, "parentId", 0 AS depth FROM folders WHERE id = ${folderId} AND "userId" = ${userId} AND "deletedAt" IS NULL
+         UNION ALL
+         SELECT f.id, f."parentId", a.depth + 1 FROM folders f INNER JOIN ancestors a ON f.id = a."parentId"
+         WHERE f."userId" = ${userId} AND f."deletedAt" IS NULL
+       ) SELECT MAX(depth) AS depth FROM ancestors`,
+    );
+    return Number(rows[0]?.depth ?? 0);
+  }
+
   async transaction<T>(fn: (tx: import("@prisma/client").Prisma.TransactionClient) => Promise<T>) {
     return this.prisma.$transaction(fn);
   }

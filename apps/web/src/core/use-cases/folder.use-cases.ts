@@ -1,6 +1,7 @@
 import { type FlatFolder } from "@/lib/build-folder-tree";
 import { AppError, NotFoundError } from "@/lib/errors";
 import { ERROR_CODES } from "@/lib/constants";
+import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
 import { isAdminRole } from "@/domain/auth";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
@@ -13,6 +14,17 @@ export class FolderUseCases {
     private readonly folderRepository: IFolderRepository,
     private readonly tagRepository: ITagRepository,
   ) {}
+
+  private async buildFolderMap(userId: string): Promise<Map<string, { parentId: string | null }>> {
+    const allFolders = await this.folderRepository.findMany(userId, {
+      select: { id: true, parentId: true },
+    });
+    const map = new Map<string, { parentId: string | null }>();
+    for (const f of allFolders) {
+      map.set(f.id, { parentId: f.parentId });
+    }
+    return map;
+  }
 
   async getFolders(userId: string, role: string, parentId: string | null) {
     const admin = isAdminRole(role);
@@ -70,12 +82,7 @@ export class FolderUseCases {
     const folder = await this.folderRepository.findById(id, userId);
     if (!folder) throw new NotFoundError();
 
-    const childFolders = await this.folderRepository.findMany(userId, {
-      where: { parentId: id },
-      select: { id: true },
-    });
-
-    const allFolderIds = [id, ...childFolders.map((f) => f.id)];
+    const allFolderIds = await this.folderRepository.getDescendantIds(id, userId);
 
     await this.folderRepository.transaction(async (tx) => {
       await tx.folder.updateMany({
@@ -118,23 +125,21 @@ export class FolderUseCases {
       const targetFolder = await this.folderRepository.findById(parentId, userId);
       if (!targetFolder)
         throw new AppError("المجلد الهدف غير موجود", ERROR_CODES.TARGET_NOT_FOUND, 404);
-    }
 
-    const allUserFolders = await this.folderRepository.findMany(userId, {
-      select: { id: true, parentId: true },
-    });
-
-    const folderMap = new Map<string, { parentId: string | null }>();
-    for (const f of allUserFolders) {
-      folderMap.set(f.id, { parentId: f.parentId });
-    }
-
-    if (parentId) {
-      if (this.treeService.detectCircularReference(id, parentId, folderMap)) {
+      const descendants = await this.folderRepository.getDescendantIds(id, userId);
+      if (descendants.includes(parentId)) {
         throw new AppError("مرجع دائري", ERROR_CODES.CIRCULAR_REFERENCE, 400);
       }
 
-      this.treeService.validateMoveDepth(id, parentId, folderMap);
+      const targetDepth = await this.folderRepository.getAncestorDepth(parentId, userId);
+      const sourceMaxDepth = this.treeService.getDescendantMaxDepth(
+        id,
+        0,
+        await this.buildFolderMap(userId),
+      );
+      if (targetDepth + 1 + sourceMaxDepth >= MAX_FOLDER_DEPTH) {
+        throw new AppError("تم الوصول للحد الأقصى من العمق", ERROR_CODES.MAX_DEPTH_REACHED, 400);
+      }
     }
 
     return this.folderRepository.update(id, userId, { parentId: parentId || null });

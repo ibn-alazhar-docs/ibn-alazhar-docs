@@ -25,5 +25,7 @@ export interface IFolderRepository {
   restore(id: string, userId: string): Promise<Folder>;
   getMaxOrder(userId: string, parentId: string | null): Promise<number>;
   findFolderById(id: string, userId: string): Promise<Folder | null>;
+  getDescendantIds(folderId: string, userId: string): Promise<string[]>;
+  getAncestorDepth(folderId: string, userId: string): Promise<number>;
   transaction<T>(fn: (tx: TransactionClient) => Promise<T>): Promise<T>;
 }

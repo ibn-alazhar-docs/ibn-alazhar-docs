@@ -30,6 +30,8 @@ describe("FolderUseCases", () => {
     getMaxOrder: ReturnType<typeof vi.fn>;
     transaction: ReturnType<typeof vi.fn>;
     restore: ReturnType<typeof vi.fn>;
+    getDescendantIds: ReturnType<typeof vi.fn>;
+    getAncestorDepth: ReturnType<typeof vi.fn>;
   };
   let tagRepo: {
     findFolderTags: ReturnType<typeof vi.fn>;
@@ -46,6 +48,8 @@ describe("FolderUseCases", () => {
       getMaxOrder: vi.fn(),
       transaction: vi.fn(),
       restore: vi.fn(),
+      getDescendantIds: vi.fn(),
+      getAncestorDepth: vi.fn(),
     };
     tagRepo = { findFolderTags: vi.fn() };
     useCases = new FolderUseCases(
@@ -123,9 +127,9 @@ describe("FolderUseCases", () => {
   });
 
   describe("deleteFolder", () => {
-    it("soft-deletes folder and its children, unlinks documents", async () => {
+    it("soft-deletes folder and its descendants, unlinks documents", async () => {
       folderRepo.findById.mockResolvedValue(makeFolder());
-      folderRepo.findMany.mockResolvedValue([{ id: "child-1" }]);
+      folderRepo.getDescendantIds.mockResolvedValue(["folder-1", "child-1"]);
       const tx = {
         folder: { updateMany: vi.fn() },
         document: { updateMany: vi.fn() },
@@ -150,14 +154,12 @@ describe("FolderUseCases", () => {
   describe("moveFolder", () => {
     it("throws when trying to move folder into itself", async () => {
       folderRepo.findById.mockResolvedValue(makeFolder());
-      folderRepo.findMany.mockResolvedValue([makeFolder()]);
 
       await expect(useCases.moveFolder("folder-1", "user-1", "folder-1")).rejects.toThrow(AppError);
     });
 
     it("throws when target folder not found", async () => {
       folderRepo.findById.mockResolvedValueOnce(makeFolder()).mockResolvedValueOnce(null);
-      folderRepo.findMany.mockResolvedValue([makeFolder()]);
 
       await expect(useCases.moveFolder("folder-1", "user-1", "missing")).rejects.toThrow(AppError);
     });
@@ -166,7 +168,7 @@ describe("FolderUseCases", () => {
       const folderA = makeFolder({ id: "a", parentId: null });
       const folderB = makeFolder({ id: "b", parentId: "a" });
       folderRepo.findById.mockResolvedValueOnce(folderA).mockResolvedValueOnce(folderB);
-      folderRepo.findMany.mockResolvedValue([folderA, folderB]);
+      folderRepo.getDescendantIds.mockResolvedValue(["a", "b"]);
 
       await expect(useCases.moveFolder("a", "user-1", "b")).rejects.toThrow(AppError);
     });
@@ -175,6 +177,8 @@ describe("FolderUseCases", () => {
       const folder = makeFolder({ id: "a" });
       const parent = makeFolder({ id: "b" });
       folderRepo.findById.mockResolvedValueOnce(folder).mockResolvedValueOnce(parent);
+      folderRepo.getDescendantIds.mockResolvedValue(["a"]);
+      folderRepo.getAncestorDepth.mockResolvedValue(0);
       folderRepo.findMany.mockResolvedValue([folder, parent]);
       folderRepo.update.mockResolvedValue({ ...folder, parentId: "b" });
 
