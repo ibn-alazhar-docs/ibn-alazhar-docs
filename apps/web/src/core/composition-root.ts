@@ -60,6 +60,7 @@ export const useCases = {
     tagRepository,
     folderRepository,
     tagDocumentRepository,
+    conversionJobRepository,
     storageRepository,
   ),
   exportDocument: new ExportDocumentUseCase(documentRepository, storageRepository),

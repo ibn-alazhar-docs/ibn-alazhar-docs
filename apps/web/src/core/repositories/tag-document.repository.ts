@@ -10,13 +10,15 @@ export class TagDocumentRepository implements ITagDocumentRepository {
   }
 
   async findMany(args: {
-    where: { documentId?: string; tagId?: string };
+    where: Prisma.TagDocumentWhereInput;
     include?: Prisma.TagDocumentInclude;
+    orderBy?: Prisma.TagDocumentOrderByWithRelationInput;
     take?: number;
   }) {
     return this.prisma.tagDocument.findMany({
       where: args.where,
       include: args.include,
+      orderBy: args.orderBy,
       take: args.take,
     }) as Promise<(import("@prisma/client").TagDocument & Record<string, unknown>)[]>;
   }

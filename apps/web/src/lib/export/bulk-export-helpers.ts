@@ -1,5 +1,7 @@
-import { prisma } from "@/lib/prisma";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
+import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
+import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
+import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import { buildExportMetadata } from "./metadata";
 import { buildZipPackage } from "./zip-builder";
 import type { ExportTagData, ExportFolderData, ExportOcrData, ExportPipelineData } from "./types";
@@ -27,28 +29,39 @@ interface ExportContext {
   profile: "research" | "archive" | "plain" | "developer";
 }
 
-export async function fetchRelatedData(docIds: string[], userId: string) {
+interface ExportRepositories {
+  tagDocument: ITagDocumentRepository;
+  conversionJob: IConversionJobRepository;
+  folder: IFolderRepository;
+}
+
+export async function fetchRelatedData(
+  docIds: string[],
+  userId: string,
+  repos: ExportRepositories,
+) {
   const [allTagDocs, allConversionJobs, allFolders] = await Promise.all([
-    prisma.tagDocument.findMany({
+    repos.tagDocument.findMany({
       where: { documentId: { in: docIds } },
       include: { tag: { select: { name: true, color: true } } },
     }),
-    prisma.conversionJob.findMany({
+    repos.conversionJob.findMany({
       where: { documentId: { in: docIds } },
       orderBy: { createdAt: "desc" },
       distinct: ["documentId"],
       select: { documentId: true, progress: true, sourceFormat: true },
     }),
-    prisma.folder.findMany({
-      where: { userId },
+    repos.folder.findMany(userId, {
       select: { id: true, name: true, parentId: true },
     }),
   ]);
 
   const tagsByDocId = new Map<string, ExportTagData[]>();
   for (const td of allTagDocs) {
+    const tag = (td as Record<string, unknown>).tag as { name: string; color: string } | undefined;
+    if (!tag) continue;
     const existing = tagsByDocId.get(td.documentId) ?? [];
-    existing.push({ name: td.tag.name, color: td.tag.color });
+    existing.push({ name: tag.name, color: tag.color });
     tagsByDocId.set(td.documentId, existing);
   }
 
@@ -229,11 +242,12 @@ export async function executeBulkExport(
   documents: DocumentRecord[],
   ctx: ExportContext,
   storage: IStorageRepository,
+  repos: ExportRepositories,
   exportPrefix: string,
   zipName: string,
 ) {
   const docIds = documents.map((d) => d.id);
-  const related = await fetchRelatedData(docIds, ctx.userId);
+  const related = await fetchRelatedData(docIds, ctx.userId, repos);
   const filesByDocAndType = await fetchDocumentFiles(documents, ctx.includeSource, storage);
   const zipDocs = await buildZipDocuments(documents, ctx, related, filesByDocAndType);
 
