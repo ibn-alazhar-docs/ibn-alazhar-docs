@@ -14,19 +14,6 @@ import {
   prisma,
 } from "../integration/helpers/db";
 
-// Mock the pipeline functions to avoid MinIO calls
-vi.mock("@ibn-al-azhar-docs/pipeline", async (importOriginal) => {
-  const actual = await importOriginal<any>();
-  return {
-    ...actual,
-    fileExists: vi.fn().mockResolvedValue(true),
-    downloadFile: vi
-      .fn()
-      .mockResolvedValue(Buffer.from(JSON.stringify({ text: "dummy ocr text" }))),
-  };
-});
-
-// Mock zip-builder to avoid complex zip generation in tests
 vi.mock("@/lib/export/zip-builder", () => ({
   buildZipPackage: vi.fn().mockResolvedValue(Buffer.from("dummy zip content")),
 }));
