@@ -23,7 +23,7 @@ export const GET = withAuth(async (request, { session }) => {
 
     const result = await useCases.conversion.listJobs(session, validated);
 
-    return NextResponse.json(result);
+    return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
     return handleRouteError(error, "conversion/list", "فشل تحميل قائمة التحويلات");
   }

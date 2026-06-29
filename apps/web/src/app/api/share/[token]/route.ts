@@ -79,29 +79,32 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
         })
       : null;
 
-    return NextResponse.json({
-      document: {
-        id: doc.id,
-        title: doc.title,
-        description: doc.description,
-        language: doc.language,
-        isRtl: doc.isRtl,
-        pageCount: doc.pageCount,
-        createdAt: doc.createdAt.toISOString(),
+    return NextResponse.json(
+      {
+        document: {
+          id: doc.id,
+          title: doc.title,
+          description: doc.description,
+          language: doc.language,
+          isRtl: doc.isRtl,
+          pageCount: doc.pageCount,
+          createdAt: doc.createdAt.toISOString(),
+        },
+        content: {
+          markdown,
+          rawText,
+        },
+        metadata: {
+          tags: tags.map((td) => {
+            const tag = td.tag as { name: string; color: string };
+            return { name: tag.name, color: tag.color };
+          }),
+          folder: folder?.name ?? null,
+          exportFormats: doc.outputFormats,
+        },
       },
-      content: {
-        markdown,
-        rawText,
-      },
-      metadata: {
-        tags: tags.map((td) => {
-          const tag = td.tag as { name: string; color: string };
-          return { name: tag.name, color: tag.color };
-        }),
-        folder: folder?.name ?? null,
-        exportFormats: doc.outputFormats,
-      },
-    });
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "share/[token]", "Failed to load document");
   }
