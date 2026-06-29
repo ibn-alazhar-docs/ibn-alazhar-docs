@@ -13,7 +13,10 @@ export const GET = withAuth(async (_request, { session, params }) => {
       session.user.role,
     );
 
-    return NextResponse.json({ tags: formattedTags });
+    return NextResponse.json(
+      { tags: formattedTags },
+      { headers: { "Cache-Control": "private, max-age=10" } },
+    );
   } catch (error: unknown) {
     return handleRouteError(error, "folders/[id]/tags/GET", "فشل تحميل أوسمة المجلد");
   }

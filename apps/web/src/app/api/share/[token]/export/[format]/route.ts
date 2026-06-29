@@ -55,6 +55,7 @@ export async function GET(
         headers: {
           "Content-Type": getContentType(exportFormat),
           "Content-Disposition": contentDispositionHeader(filename),
+          "Cache-Control": "private, no-store",
         },
       });
     }
@@ -65,6 +66,7 @@ export async function GET(
       headers: {
         "Content-Type": getContentType(exportFormat),
         "Content-Disposition": contentDispositionHeader(filename),
+        "Cache-Control": "private, no-store",
       },
     });
   } catch (error: unknown) {
