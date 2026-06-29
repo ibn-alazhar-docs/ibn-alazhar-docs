@@ -26,6 +26,7 @@ Format based on [Keep a Changelog](https://keepachangelog.com/).
 - Preview deployment workflow for PRs (Docker images tagged with PR number)
 - Use-case-level integration tests for DocumentCrudUseCases and TagUseCases
 - Domain behavior functions: Document (isOwner, canDelete, statusTransitions), Folder (isRoot, getPath, getDepth), Tag (isOwnedBy, hasSameName)
+- `@ibn-al-azhar-docs/shared` package: DocStatus, ERROR_CODES, FailureCategory, DOC_STATUS_MAP, STATUS_LABELS shared across web app + pipeline
 
 ### Changed
 

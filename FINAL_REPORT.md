@@ -170,39 +170,40 @@
 
 ## Git Commits (this session)
 
-| Commit                                                     | Description                                          |
-| ---------------------------------------------------------- | ---------------------------------------------------- |
-| `fix: batch 1 — safety + quick wins`                       | Docker security, accessibility, Prisma indexes       |
-| `refactor: batch 2 — type safety`                          | Domain interfaces, Prisma casts, test setup          |
-| `refactor: batch 3 — code quality`                         | DocumentRow split, rate-limit helper, dedup          |
-| `test: batch 4 — testing`                                  | 11 new test files, 110 new tests                     |
-| `refactor: batch 5 — database`                             | Iterative CTE, composite indexes                     |
-| `refactor: PrismaClient singleton, cache headers`          | Batch 6+7: PrismaClient, cache, useFilesManager hook |
-| `refactor: extract storage into IStorageRepository`        | Batch 8: IStorageRepository, zero pipeline imports   |
-| `refactor: enhance error boundaries + API errors`          | Batch 9: error boundaries, requestId, parseApiError  |
-| `refactor: final polish + report update`                   | Batch 10: FINAL_REPORT.md, all batches documented    |
-| `fix: accessibility improvements`                          | Batch 11: aria-expanded, aria-label, focus trap      |
-| `refactor: extract magic numbers to named constants`       | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS       |
-| `security: add rate limiting to all unprotected endpoints` | Batch 13: 18 routes, 19 files                        |
-| `refactor: extract useFolders hook from folder-tree`       | Batch 14: folder-tree.tsx split (266→173 lines)      |
-| `feat: tag soft-delete, SuggestionList, useFileUpload`     | Batch 15: P4/P5 quick wins, 3 new hooks/components   |
-| `chore: batch 16 — quick wins`                             | CHANGELOG.md, Mermaid diagrams, test counts updated  |
-| `refactor: batch 17 — memoize DocumentRow, flatten SSE`    | React.memo, stream/route.ts nesting flattened        |
-| `chore: batch 18 — data-testid, CI integration job`        | E2E test hooks, integration tests in CI              |
-| `docs: batch 19 — soft-delete policy, architecture`        | Soft-delete policy doc, Mermaid diagram in README    |
-| `perf: batch 20 — parallelize uploads, Redis, WHY`         | Page upload parallelization, Redis config, comments  |
-| `fix: batch 21 — E2E test improvements`                    | Remove force:true, login() helper, proper waits      |
-| `fix: batch 22 — bulk-export repository fix`               | IConversionJobRepository, TagDocumentRepository fix  |
-| `fix: batch 23 — export tests less aggressive mocking`     | Remove pipeline mock, keep zip-builder mock          |
-| `ci: batch 24 — bundle size check`                         | 50MB threshold, bundle report in CI                  |
-| `refactor: batch 25 — UserSetting EAV → JSONB`             | SKIPPED (not used in app code)                       |
-| `refactor: batch 26 — extract FolderTreeService`           | Tree traversal domain service, moveFolder simplified |
-| `chore: batch 27 — final cleanup`                          | BLUEPRINT.md + FINAL_REPORT.md updated               |
-| `ci: batch 28 — preview deployments`                       | Docker images tagged with PR number on PRs           |
-| `test: batch 29 — use-case integration tests`              | DocumentCrudUseCases + TagUseCases integration tests |
-| `feat: batch 30 — enrich domain model`                     | Document, Folder, Tag behavior functions + tests     |
-| `chore: batch 31 — final sweep`                            | Documentation updated, all checks pass               |
+| Commit                                                     | Description                                              |
+| ---------------------------------------------------------- | -------------------------------------------------------- |
+| `fix: batch 1 — safety + quick wins`                       | Docker security, accessibility, Prisma indexes           |
+| `refactor: batch 2 — type safety`                          | Domain interfaces, Prisma casts, test setup              |
+| `refactor: batch 3 — code quality`                         | DocumentRow split, rate-limit helper, dedup              |
+| `test: batch 4 — testing`                                  | 11 new test files, 110 new tests                         |
+| `refactor: batch 5 — database`                             | Iterative CTE, composite indexes                         |
+| `refactor: PrismaClient singleton, cache headers`          | Batch 6+7: PrismaClient, cache, useFilesManager hook     |
+| `refactor: extract storage into IStorageRepository`        | Batch 8: IStorageRepository, zero pipeline imports       |
+| `refactor: enhance error boundaries + API errors`          | Batch 9: error boundaries, requestId, parseApiError      |
+| `refactor: final polish + report update`                   | Batch 10: FINAL_REPORT.md, all batches documented        |
+| `fix: accessibility improvements`                          | Batch 11: aria-expanded, aria-label, focus trap          |
+| `refactor: extract magic numbers to named constants`       | Batch 12: UI_TIMING, DURATIONS, CONTENT_LIMITS           |
+| `security: add rate limiting to all unprotected endpoints` | Batch 13: 18 routes, 19 files                            |
+| `refactor: extract useFolders hook from folder-tree`       | Batch 14: folder-tree.tsx split (266→173 lines)          |
+| `feat: tag soft-delete, SuggestionList, useFileUpload`     | Batch 15: P4/P5 quick wins, 3 new hooks/components       |
+| `chore: batch 16 — quick wins`                             | CHANGELOG.md, Mermaid diagrams, test counts updated      |
+| `refactor: batch 17 — memoize DocumentRow, flatten SSE`    | React.memo, stream/route.ts nesting flattened            |
+| `chore: batch 18 — data-testid, CI integration job`        | E2E test hooks, integration tests in CI                  |
+| `docs: batch 19 — soft-delete policy, architecture`        | Soft-delete policy doc, Mermaid diagram in README        |
+| `perf: batch 20 — parallelize uploads, Redis, WHY`         | Page upload parallelization, Redis config, comments      |
+| `fix: batch 21 — E2E test improvements`                    | Remove force:true, login() helper, proper waits          |
+| `fix: batch 22 — bulk-export repository fix`               | IConversionJobRepository, TagDocumentRepository fix      |
+| `fix: batch 23 — export tests less aggressive mocking`     | Remove pipeline mock, keep zip-builder mock              |
+| `ci: batch 24 — bundle size check`                         | 50MB threshold, bundle report in CI                      |
+| `refactor: batch 25 — UserSetting EAV → JSONB`             | SKIPPED (not used in app code)                           |
+| `refactor: batch 26 — extract FolderTreeService`           | Tree traversal domain service, moveFolder simplified     |
+| `chore: batch 27 — final cleanup`                          | BLUEPRINT.md + FINAL_REPORT.md updated                   |
+| `ci: batch 28 — preview deployments`                       | Docker images tagged with PR number on PRs               |
+| `test: batch 29 — use-case integration tests`              | DocumentCrudUseCases + TagUseCases integration tests     |
+| `feat: batch 30 — enrich domain model`                     | Document, Folder, Tag behavior functions + tests         |
+| `chore: batch 31 — final sweep`                            | Documentation updated, all checks pass                   |
+| `refactor: batch 32 — shared types package`                | packages/shared: DocStatus, ERROR_CODES, FailureCategory |
 
 ---
 
-**Status:** 31 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced (bundle size + preview deployments), documentation improved, performance optimized, tree traversal extracted, domain model enriched with behavior.
+**Status:** 32 batches complete. All API endpoints rate-limited, components split, E2E test hooks added, CI pipeline enhanced (bundle size + preview deployments), documentation improved, performance optimized, tree traversal extracted, domain model enriched with behavior, shared types package created.

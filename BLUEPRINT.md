@@ -3,7 +3,7 @@
 **Date:** 2026-06-28
 **Based on:** AUDIT_REPORT.md (157 findings across 10 dimensions)
 
-**Status:** 31 batches complete. 61/157 findings resolved (39%). 3 skipped (too invasive). 90 remaining (mostly P4-P5 backlog).
+**Status:** 32 batches complete. 62/157 findings resolved (39%). 3 skipped (too invasive). 89 remaining (mostly P4-P5 backlog).
 
 ---
 

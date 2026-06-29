@@ -65,10 +65,13 @@ importers:
     dependencies:
       '@auth/prisma-adapter':
         specifier: ^2.4.2
-        version: 2.11.2(@prisma/client@6.5.0(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3))
+        version: 2.11.2(@prisma/client@6.19.3(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3))
       '@ibn-al-azhar-docs/pipeline':
         specifier: workspace:*
         version: link:../../packages/pipeline
+      '@ibn-al-azhar-docs/shared':
+        specifier: workspace:*
+        version: link:../../packages/shared
       bcryptjs:
         specifier: 3.0.3
         version: 3.0.3
@@ -164,8 +167,6 @@ importers:
         specifier: ^5.9.3
         version: 5.9.3
 
-  packages/config: {}
-
   packages/pipeline:
     dependencies:
       '@fontsource/cairo':
@@ -177,6 +178,9 @@ importers:
       '@googleapis/drive':
         specifier: 20.2.0
         version: 20.2.0
+      '@ibn-al-azhar-docs/shared':
+        specifier: workspace:*
+        version: link:../shared
       bullmq:
         specifier: ^5.0.0
         version: 5.78.1
@@ -208,6 +212,8 @@ importers:
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
+
+  packages/shared: {}
 
   workers/export-worker:
     dependencies:
@@ -267,6 +273,9 @@ importers:
 
   workers/shared:
     dependencies:
+      '@prisma/client':
+        specifier: ^6.9.0
+        version: 6.19.3(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3)
       pino:
         specifier: ^9.0.0
         version: 9.14.0
@@ -1182,6 +1191,18 @@ packages:
     resolution: {integrity: sha512-cKA5B6lpFEMyMGjxF54QihfYpB4FkEGH+qZhtArDEG+wezQAJY8Pq6C7T1SjWz+FFzt3TbyoXBQYk/0292TdJA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@prisma/client@6.19.3':
+    resolution: {integrity: sha512-mKq3jQFhjvko5LTJFHGilsuQs+W+T3Gm451NzuTDGQxwCzwXHYnIu2zGkRoW+Exq3Rob7yp2MfzSrdIiZVhrBg==}
+    engines: {node: '>=18.18'}
+    peerDependencies:
+      prisma: '*'
+      typescript: '>=5.1.0'
+    peerDependenciesMeta:
+      prisma:
+        optional: true
+      typescript:
+        optional: true
 
   '@prisma/client@6.5.0':
     resolution: {integrity: sha512-M6w1Ql/BeiGoZmhMdAZUXHu5sz5HubyVcKukbLs3l0ELcQb8hTUJxtGEChhv4SVJ0QJlwtLnwOLgIRQhpsm9dw==}
@@ -3709,10 +3730,10 @@ snapshots:
       preact: 10.24.3
       preact-render-to-string: 6.5.11(preact@10.24.3)
 
-  '@auth/prisma-adapter@2.11.2(@prisma/client@6.5.0(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3))':
+  '@auth/prisma-adapter@2.11.2(@prisma/client@6.19.3(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3))':
     dependencies:
       '@auth/core': 0.41.2
-      '@prisma/client': 6.5.0(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3)
+      '@prisma/client': 6.19.3(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3)
     transitivePeerDependencies:
       - '@simplewebauthn/browser'
       - '@simplewebauthn/server'
@@ -4317,6 +4338,11 @@ snapshots:
   '@playwright/test@1.61.0':
     dependencies:
       playwright: 1.61.0
+
+  '@prisma/client@6.19.3(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3)':
+    optionalDependencies:
+      prisma: 6.5.0(typescript@5.9.3)
+      typescript: 5.9.3
 
   '@prisma/client@6.5.0(prisma@6.5.0(typescript@5.9.3))(typescript@5.9.3)':
     optionalDependencies:

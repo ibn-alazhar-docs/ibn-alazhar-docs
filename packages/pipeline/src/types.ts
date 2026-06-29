@@ -1,3 +1,8 @@
+import type { ErrorCode, FailureCategory } from "@ibn-al-azhar-docs/shared";
+
+export type { ErrorCode, FailureCategory } from "@ibn-al-azhar-docs/shared";
+export { ERROR_CODES, FAILURE_CATEGORIES } from "@ibn-al-azhar-docs/shared";
+
 export type OcrEngineType = "google" | "surya" | "tesseract" | "gemini";
 
 export interface OcrPageResult {
@@ -76,6 +81,17 @@ export type JobStage =
   | "completed"
   | "failed";
 
+export const DOCUMENT_STATUS_MAP: Record<string, string> = {
+  pending: "UPLOADED",
+  validating: "VALIDATING",
+  splitting: "SPLITTING",
+  ocr: "OCR_PROCESSING",
+  cleaning: "CLEANING",
+  generating: "GENERATING",
+  completed: "COMPLETED",
+  failed: "FAILED",
+};
+
 export interface ExportRequest {
   jobId: string;
   documentId: string;
@@ -114,7 +130,7 @@ export interface FailedJob {
   queue: string;
   originalData: unknown;
   error: string;
-  errorCode: string;
+  errorCode: ErrorCode;
   failureCategory: FailureCategory;
   attempts: number;
   lastAttemptAt: string;
@@ -140,8 +156,8 @@ export const JOB_QUEUES = {
 
 export const JOB_TIMEOUTS: Record<string, number> = {
   [JOB_QUEUES.VALIDATION]: 60_000,
-  [JOB_QUEUES.SPLITTING]: 600_000, // 10 minutes
-  [JOB_QUEUES.OCR]: 7_200_000, // 2 hours
+  [JOB_QUEUES.SPLITTING]: 600_000,
+  [JOB_QUEUES.OCR]: 7_200_000,
   [JOB_QUEUES.CLEANING]: 180_000,
   [JOB_QUEUES.GENERATION]: 600_000,
   [JOB_QUEUES.EXPORT]: 300_000,
@@ -154,49 +170,4 @@ export const JOB_CONCURRENCY: Record<string, number> = {
   [JOB_QUEUES.CLEANING]: 5,
   [JOB_QUEUES.GENERATION]: 3,
   [JOB_QUEUES.EXPORT]: 3,
-};
-
-export const ERROR_CODES = {
-  FILE_TOO_LARGE: "FILE_TOO_LARGE",
-  INVALID_TYPE: "INVALID_TYPE",
-  UPLOAD_FAILED: "UPLOAD_FAILED",
-  PDF_SPLIT_FAILED: "PDF_SPLIT_FAILED",
-  OCR_FAILED: "OCR_FAILED",
-  OCR_QUOTA_EXCEEDED: "OCR_QUOTA_EXCEEDED",
-  OCR_NO_TEXT: "OCR_NO_TEXT",
-  CLEANUP_FAILED: "CLEANUP_FAILED",
-  GENERATION_FAILED: "GENERATION_FAILED",
-  EXPORT_FAILED: "EXPORT_FAILED",
-  STORAGE_ERROR: "STORAGE_ERROR",
-  NOT_FOUND: "NOT_FOUND",
-  PDF_ENCRYPTED: "PDF_ENCRYPTED",
-  PDF_CORRUPT: "PDF_CORRUPT",
-  PDF_TRUNCATED: "PDF_TRUNCATED",
-  PDF_MALFORMED: "PDF_MALFORMED",
-  JOB_TIMEOUT: "JOB_TIMEOUT",
-  JOB_ABORTED: "JOB_ABORTED",
-  RETRY_EXHAUSTED: "RETRY_EXHAUSTED",
-  DLQ_REJECTED: "DLQ_REJECTED",
-  ORPHAN_CLEANUP: "ORPHAN_CLEANUP",
-  REDIS_CONNECTION: "REDIS_CONNECTION",
-  MINIO_CONNECTION: "MINIO_CONNECTION",
-} as const;
-
-export const FAILURE_CATEGORIES = {
-  TRANSIENT: "transient",
-  PERMANENT: "permanent",
-  FATAL: "fatal",
-} as const;
-
-export type FailureCategory = (typeof FAILURE_CATEGORIES)[keyof typeof FAILURE_CATEGORIES];
-
-export const DOCUMENT_STATUS_MAP: Record<string, string> = {
-  pending: "UPLOADED",
-  validating: "VALIDATING",
-  splitting: "SPLITTING",
-  ocr: "OCR_PROCESSING",
-  cleaning: "CLEANING",
-  generating: "GENERATING",
-  completed: "COMPLETED",
-  failed: "FAILED",
 };

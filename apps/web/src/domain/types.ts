@@ -1,15 +1,7 @@
 import type { Role } from "./auth";
+import type { DocStatus } from "@ibn-al-azhar-docs/shared";
 
-export type DocStatus =
-  | "UPLOADED"
-  | "VALIDATING"
-  | "SPLITTING"
-  | "OCR_PROCESSING"
-  | "CLEANING"
-  | "GENERATING"
-  | "COMPLETED"
-  | "FAILED"
-  | "ARCHIVED";
+export type { DocStatus } from "@ibn-al-azhar-docs/shared";
 
 export interface DomainDocument {
   id: string;
