@@ -1,0 +1,1 @@
+{"name":"syntax-error","description":"Handle file with syntax errors gracefully","difficulty":"easy","category":"code-quality","prompt":"Fix syntax errors in this file","assertions":[{"type":"file_contains","file":"src/fixed.py","pattern":"def "},{"type":"file_not_contains","file":"src/fixed.py","pattern":"def broken("}]}

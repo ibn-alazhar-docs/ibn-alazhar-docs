@@ -2,6 +2,13 @@
 # verify_behavior.sh — Behavior-preservation verification gate.
 # Usage: bash scripts/verify_behavior.sh <project-root> [test-command]
 set -euo pipefail
+
+if [ "${1:-}" = "--help" ] || [ "${1:-}" = "-h" ]; then
+    echo "Usage: bash scripts/verify_behavior.sh <project-root> [test-command]"
+    echo "  Verifies: git clean + type-check + lint + tests. Returns SUCCESS/FAILURE/INDETERMINATE."
+    exit 0
+fi
+
 PROJECT_ROOT="${1:-.}"; TEST_CMD="${2:-}"
 cd "$PROJECT_ROOT"
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; NC='\033[0m'

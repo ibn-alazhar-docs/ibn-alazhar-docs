@@ -37,7 +37,9 @@ def detect_smells_in_file(filepath, min_lines, max_nesting):
         for i, line in enumerate(lines):
             m = method_pattern.match(line)
             if m:
-                base_indent = len(m.group(1))
+                # Find the indent group (first non-None group of leading whitespace)
+                indent_group = next((g for g in m.groups() if g is not None and (g == "" or g.isspace())), "")
+                base_indent = len(indent_group) if indent_group else 0
                 groups = m.groups()
                 method_name = next((g for g in groups[1:] if g and g not in ("function", "async", "export", "const", "let", "var")), "anonymous")
                 end_line = len(lines)

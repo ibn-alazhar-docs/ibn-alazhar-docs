@@ -1,0 +1,34 @@
+{
+  "name": "fix-color-contrast",
+  "description": "Detect and fix WCAG 2.2 AA color contrast violations on a login page",
+  "difficulty": "medium",
+  "category": "accessibility",
+  "prompt": "Audit /login for accessibility issues using browser_agent.py a11y --standard wcag22aa. Fix all color-contrast violations (text must be ≥4.5:1 contrast). Re-run a11y audit to verify 0 contrast violations.",
+  "assertions": [
+    {
+      "type": "file_not_contains",
+      "file": "src/styles.css",
+      "pattern": "color: #999"
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/styles.css",
+      "pattern": "color: #aaa"
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/styles.css",
+      "pattern": "color: #bbb"
+    },
+    {
+      "type": "file_not_contains",
+      "file": "src/styles.css",
+      "pattern": "background: #eee"
+    },
+    {
+      "type": "a11y_violations_zero",
+      "engine": "axe-core",
+      "rule": "color-contrast"
+    }
+  ]
+}

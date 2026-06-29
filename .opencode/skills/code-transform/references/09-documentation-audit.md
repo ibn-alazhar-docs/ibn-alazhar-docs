@@ -18,39 +18,31 @@
 ## ADR (Architecture Decision Record)
 
 ### Template
-
 ```markdown
 # ADR-[N]: [Title]
 
 ## Status
-
 [Proposed | Accepted | Deprecated | Superseded by ADR-[N]]
 
 ## Context
-
 [Why is this decision needed? What's the problem?]
 
 ## Decision
-
 [What did we decide?]
 
 ## Consequences
-
 [Positive: what benefits?]
 [Negative: what costs/risks?]
 [Neutral: what's neutral but notable?]
 
 ## Alternatives Considered
-
 [What else was considered? Why was it rejected?]
 
 ## References
-
 [Links to relevant resources, discussions, issues]
 ```
 
 ### When to Write an ADR
-
 - Choosing a framework (React vs Vue, Django vs Flask)
 - Choosing an architecture (monolith vs microservices)
 - Choosing a data store (Postgres vs MongoDB)
@@ -60,7 +52,6 @@
 ## API Documentation
 
 ### OpenAPI (Swagger)
-
 ```yaml
 # openapi.yaml
 openapi: 3.0.0
@@ -74,17 +65,16 @@ paths:
           required: true
           schema: { type: string }
       responses:
-        "200":
+        '200':
           description: User found
           content:
             application/json:
-              schema: { $ref: "#/components/schemas/User" }
-        "404":
+              schema: { $ref: '#/components/schemas/User' }
+        '404':
           description: User not found
 ```
 
 ### Check
-
 - API docs are auto-generated from schema (not manually written)
 - Interactive docs available (Swagger UI, Redoc)
 - Examples for every endpoint
@@ -93,7 +83,6 @@ paths:
 ## README Quality
 
 A good README answers:
-
 1. **What is this?** (1 paragraph)
 2. **Why does it exist?** (1 paragraph)
 3. **How do I run it?** (exact commands)
@@ -105,7 +94,6 @@ A good README answers:
 ## Inline Comments
 
 ### Good Comments (explain WHY)
-
 ```python
 # NOTE: We skip empty items because the downstream API rejects them (see issue #1234)
 items = [i for i in raw_items if i.valid]
@@ -116,7 +104,6 @@ if response.status_code == 200 and "error" in response.json():
 ```
 
 ### Bad Comments (explain WHAT — code should be self-explanatory)
-
 ```python
 # Increment i by 1
 i += 1

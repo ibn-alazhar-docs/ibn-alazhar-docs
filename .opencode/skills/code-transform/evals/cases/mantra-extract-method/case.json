@@ -1,0 +1,1 @@
+{"name":"mantra-extract-method","description":"Complex refactor using MANTRA multi-agent","difficulty":"hard","category":"refactoring","prompt":"Refactor this God class into separate concerns using extract class","assertions":[{"type":"file_contains","file":"src/god_class.py","pattern":"class "},{"type":"file_not_contains","file":"src/god_class.py","pattern":"class GodClass"}]}

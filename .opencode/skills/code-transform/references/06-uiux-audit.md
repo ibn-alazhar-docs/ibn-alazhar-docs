@@ -20,7 +20,6 @@
 ## Component Structure Assessment
 
 ### File Structure (Feature-Based)
-
 ```
 BAD (type-based):
 components/
@@ -53,16 +52,13 @@ shared/
 ```
 
 ### Component Size
-
 - **≤50 lines**: ideal
 - **50-200 lines**: acceptable
 - **>200 lines**: extract sub-components
 - **>500 lines**: god component — must split
 
 ### Component Responsibilities
-
 A component should do ONE of:
-
 - **Render** (presentational): display data from props
 - **Manage state** (container): fetch data, manage local state
 - **Both** (with hooks): use custom hooks for logic, component for rendering
@@ -73,32 +69,30 @@ A component should do ONE of:
 ## Design System Compliance
 
 ### Design Tokens
-
 ```typescript
 // tokens.ts — single source of truth
 export const colors = {
-  primary: "#007bff",
-  danger: "#dc3545",
-  success: "#28a745",
+  primary: '#007bff',
+  danger: '#dc3545',
+  success: '#28a745',
 };
 
 export const spacing = {
-  xs: "4px",
-  sm: "8px",
-  md: "16px",
-  lg: "24px",
-  xl: "32px",
+  xs: '4px',
+  sm: '8px',
+  md: '16px',
+  lg: '24px',
+  xl: '32px',
 };
 
 export const typography = {
-  body: "16px",
-  heading: "24px",
-  small: "12px",
+  body: '16px',
+  heading: '24px',
+  small: '12px',
 };
 ```
 
 ### Check for Hardcoded Values
-
 ```bash
 # Find hardcoded colors
 git grep -n "#[0-9a-fA-F]\{6\}" -- "*.tsx" "*.jsx" "*.css"
@@ -110,7 +104,6 @@ git grep -n "padding.*[0-9]px\|margin.*[0-9]px" -- "*.tsx" "*.jsx" "*.css"
 ## Accessibility (WCAG)
 
 ### Checklist
-
 ```
 [ ] All images have alt text (or alt="" for decorative)
 [ ] All form inputs have labels
@@ -123,7 +116,6 @@ git grep -n "padding.*[0-9]px\|margin.*[0-9]px" -- "*.tsx" "*.jsx" "*.css"
 ```
 
 ### Automated Tools
-
 - **axe-core**: browser extension + CI integration
 - **Lighthouse**: Chrome DevTools → Lighthouse tab
 - **jest-axe**: accessibility testing in Jest
@@ -140,60 +132,51 @@ expect(await axe(container)).toHaveNoViolations();
 ## State Management
 
 ### Server State vs Client State
-
 - **Server state**: use React Query / SWR (caching, invalidation, retry)
 - **Client state (UI)**: use Context / Zustand / Redux
 - **Form state**: use React Hook Form / Formik
 
 **BAD**: putting server data in Redux
-
 ```typescript
 // Don't do this
 const [users, setUsers] = useState([]);
 useEffect(() => {
-  fetchUsers().then(setUsers);
+    fetchUsers().then(setUsers);
 }, []);
 ```
 
 **GOOD**: React Query for server state
-
 ```typescript
-const {
-  data: users,
-  isLoading,
-  error,
-} = useQuery({
-  queryKey: ["users"],
-  queryFn: fetchUsers,
+const { data: users, isLoading, error } = useQuery({
+    queryKey: ['users'],
+    queryFn: fetchUsers,
 });
 ```
 
 ## UI/UX Improvement Recipes
 
 ### UIR1. Extract Sub-Component
-
 ```tsx
 // Before: 300-line god component
 function UserDashboard({ users, orders, stats }) {
-  // 100 lines of user table
-  // 100 lines of order list
-  // 100 lines of stats chart
+    // 100 lines of user table
+    // 100 lines of order list
+    // 100 lines of stats chart
 }
 
 // After: extracted sub-components
 function UserDashboard({ users, orders, stats }) {
-  return (
-    <>
-      <UserTable users={users} />
-      <OrderList orders={orders} />
-      <StatsChart stats={stats} />
-    </>
-  );
+    return (
+        <>
+            <UserTable users={users} />
+            <OrderList orders={orders} />
+            <StatsChart stats={stats} />
+        </>
+    );
 }
 ```
 
 ### UIR2. Replace Prop Drilling with Context
-
 ```tsx
 // Before: prop drilling through 3 levels
 <App theme="dark">
@@ -202,93 +185,71 @@ function UserDashboard({ users, orders, stats }) {
       <Button theme="dark" />
     </Sidebar>
   </Layout>
-</App>;
+</App>
 
 // After: Context
-const ThemeContext = createContext("light");
+const ThemeContext = createContext('light');
 
-<App>
-  <ThemeContext.Provider value="dark">
-    <Layout>
-      <Sidebar>
-        <Button />
-      </Sidebar>
-    </Layout>
-  </ThemeContext.Provider>
-</App>;
+<App><ThemeContext.Provider value="dark">
+  <Layout><Sidebar><Button /></Sidebar></Layout>
+</ThemeContext.Provider></App>
 
 // In Button:
 const theme = useContext(ThemeContext);
 ```
 
 ### UIR3. Add Loading/Error States
-
 ```tsx
 // Before: no loading state (blank screen while fetching)
 function UserList() {
-  const [users, setUsers] = useState([]);
-  useEffect(() => {
-    fetchUsers().then(setUsers);
-  }, []);
-  return users.map((u) => <UserCard key={u.id} user={u} />);
+    const [users, setUsers] = useState([]);
+    useEffect(() => { fetchUsers().then(setUsers); }, []);
+    return users.map(u => <UserCard key={u.id} user={u} />);
 }
 
 // After: handle all 3 states
 function UserList() {
-  const { data: users, isLoading, error } = useQuery(["users"], fetchUsers);
+    const { data: users, isLoading, error } = useQuery(['users'], fetchUsers);
 
-  if (isLoading) return <UserListSkeleton />;
-  if (error) return <ErrorMessage error={error} />;
-  if (!users?.length) return <EmptyState />;
+    if (isLoading) return <UserListSkeleton />;
+    if (error) return <ErrorMessage error={error} />;
+    if (!users?.length) return <EmptyState />;
 
-  return users.map((u) => <UserCard key={u.id} user={u} />);
+    return users.map(u => <UserCard key={u.id} user={u} />);
 }
 ```
 
 ### UIR4. Extract Custom Hook
-
 ```tsx
 // Before: logic mixed with rendering
 function UserList() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    fetchUsers()
-      .then((data) => {
-        setUsers(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setLoading(false);
-      });
-  }, []);
-  // ... 50 more lines of rendering
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        fetchUsers()
+            .then(data => { setUsers(data); setLoading(false); })
+            .catch(err => { setError(err); setLoading(false); });
+    }, []);
+    // ... 50 more lines of rendering
 }
 
 // After: logic in hook, rendering in component
 function useUsers() {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  useEffect(() => {
-    fetchUsers()
-      .then((data) => {
-        setUsers(data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setLoading(false);
-      });
-  }, []);
-  return { users, loading, error };
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        fetchUsers()
+            .then(data => { setUsers(data); setLoading(false); })
+            .catch(err => { setError(err); setLoading(false); });
+    }, []);
+    return { users, loading, error };
 }
 
 function UserList() {
-  const { users, loading, error } = useUsers();
-  // ... only rendering
+    const { users, loading, error } = useUsers();
+    // ... only rendering
 }
 ```
 

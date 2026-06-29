@@ -1,0 +1,35 @@
+{
+  "name": "visual-regression-baseline",
+  "description": "Capture visual baseline screenshots for all routes × viewports, then verify a UI change doesn't break layout via visual-diff.",
+  "difficulty": "medium",
+  "category": "visual-regression",
+  "prompt": "Use browser_agent.py to: (1) serve the app, (2) capture baseline screenshots at /home and /about for mobile (375x812) and desktop (1280x720), (3) apply the proposed CSS change (button color), (4) re-capture, (5) run visual-diff. If diff < 0.1%, mark as PASS. If diff > 0.1% and only the button color changed, mark as acceptable visual change.",
+  "assertions": [
+    {
+      "type": "file_exists",
+      "file": "screenshots/baselines/home-375x812.png"
+    },
+    {
+      "type": "file_exists",
+      "file": "screenshots/baselines/home-1280x720.png"
+    },
+    {
+      "type": "file_exists",
+      "file": "screenshots/baselines/about-375x812.png"
+    },
+    {
+      "type": "file_exists",
+      "file": "screenshots/baselines/about-1280x720.png"
+    },
+    {
+      "type": "file_exists",
+      "file": "screenshots/diffs/home-desktop-diff.png"
+    },
+    {
+      "type": "visual_diff_below_tolerance",
+      "route": "/",
+      "viewport": "1280x720",
+      "tolerance": 0.05
+    }
+  ]
+}

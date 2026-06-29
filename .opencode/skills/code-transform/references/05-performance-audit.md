@@ -20,25 +20,22 @@
 ## Hotspot Identification
 
 ### CodeScene Method (churn × complexity)
-
 - High-churn (frequently changed) × high-complexity = hotspot
 - These files predict bugs. Refactor them first.
 - See `references/15-metrics-and-hotspots.md` in the refactor skill.
 
 ### Profiling Tools
-
-| Language | Profiler                        |
-| -------- | ------------------------------- |
-| Python   | cProfile, py-spy, line_profiler |
-| JS/TS    | Chrome DevTools, clinic.js      |
-| Go       | pprof                           |
-| Rust     | cargo flamegraph, perf          |
-| Java     | async-profiler, YourKit         |
+| Language | Profiler |
+|----------|----------|
+| Python | cProfile, py-spy, line_profiler |
+| JS/TS | Chrome DevTools, clinic.js |
+| Go | pprof |
+| Rust | cargo flamegraph, perf |
+| Java | async-profiler, YourKit |
 
 ## Query Performance
 
 ### EXPLAIN ANALYZE
-
 ```sql
 EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 123;
 -- Look for:
@@ -49,17 +46,15 @@ EXPLAIN ANALYZE SELECT * FROM orders WHERE user_id = 123;
 ```
 
 ### Common Query Issues
-
 1. **Missing index**: `WHERE` column has no index → full table scan
 2. **N+1 queries**: query in a loop → batch or JOIN
-3. **SELECT \***: retrieves unnecessary columns → name columns
+3. **SELECT ***: retrieves unnecessary columns → name columns
 4. **No LIMIT**: returns millions of rows → paginate
 5. **Cartesian product**: missing JOIN condition → add WHERE
 
 ## Frontend Performance
 
 ### Bundle Size
-
 ```bash
 # Analyze bundle
 npx webpack-bundle-analyzer dist/bundle.js
@@ -70,7 +65,6 @@ gzip -c dist/bundle.js | wc -c
 ```
 
 ### Common Frontend Issues
-
 1. **Large dependencies**: moment.js (use date-fns), lodash (use individual functions)
 2. **No code splitting**: everything in one bundle → lazy-load routes
 3. **Unoptimized images**: PNG where WebP works → convert + lazy-load
@@ -78,35 +72,32 @@ gzip -c dist/bundle.js | wc -c
 5. **Blocking scripts**: synchronous scripts → defer/async
 
 ### React Performance
-
 ```tsx
 // BAD: re-renders on every parent render
 function UserList({ users }) {
-  return users.map((u) => <UserCard user={u} />); // no memo
+    return users.map(u => <UserCard user={u} />);  // no memo
 }
 
 // GOOD: memoized
 const UserCard = React.memo(({ user }) => <div>{user.name}</div>);
 
 // BAD: new object reference every render
-<UserCard style={{ color: "red" }} />; // new object → re-render
+<UserCard style={{ color: 'red' }} />  // new object → re-render
 
 // GOOD: stable reference
-const style = useMemo(() => ({ color: "red" }), []);
-<UserCard style={style} />;
+const style = useMemo(() => ({ color: 'red' }), []);
+<UserCard style={style} />
 ```
 
 ## Memory Leaks
 
 ### Detection
-
 - Monitor memory over time: growing = leak
 - Chrome DevTools → Memory tab → Heap snapshot comparison
 - Python: `tracemalloc`, `memory_profiler`
 - Node.js: `--inspect`, Chrome DevTools
 
 ### Common Causes
-
 1. **Event listeners not removed**: `addEventListener` without `removeEventListener`
 2. **Timers not cleared**: `setInterval` without `clearInterval`
 3. **Closures holding references**: callback holds reference to large object
@@ -116,13 +107,11 @@ const style = useMemo(() => ({ color: "red" }), []);
 ## Performance Improvement Recipes
 
 ### PR1. Add Missing Index
-
 ```sql
 CREATE INDEX CONCURRENTLY idx_orders_user_id ON orders(user_id);
 ```
 
 ### PR2. Fix N+1 with Eager Loading
-
 ```python
 # Before: N+1
 users = User.query.all()
@@ -136,7 +125,6 @@ for u in users:
 ```
 
 ### PR3. Add Caching
-
 ```python
 from functools import lru_cache
 
@@ -147,7 +135,6 @@ def expensive_computation(input):
 ```
 
 ### PR4. Debounce Rapid Events
-
 ```typescript
 // Before: called on every keystroke
 <input onChange={e => search(e.target.value)} />
@@ -158,17 +145,16 @@ const debouncedSearch = useMemo(() => debounce(search, 300), []);
 ```
 
 ### PR5. Lazy-Load Routes
-
 ```typescript
 // Before: all routes in one bundle
-import Home from "./Home";
-import About from "./About";
-import Dashboard from "./Dashboard";
+import Home from './Home';
+import About from './About';
+import Dashboard from './Dashboard';
 
 // After: lazy-loaded
-const Home = lazy(() => import("./Home"));
-const About = lazy(() => import("./About"));
-const Dashboard = lazy(() => import("./Dashboard"));
+const Home = lazy(() => import('./Home'));
+const About = lazy(() => import('./About'));
+const Dashboard = lazy(() => import('./Dashboard'));
 ```
 
 ## Summary

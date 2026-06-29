@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sign In</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="login-container">
+    <h1>Sign in to your account</h1>
+    <div class="error" id="error-msg" hidden></div>
+    <form id="login-form">
+      <label for="email">Email</label>
+      <input type="email" id="email" name="email" required autocomplete="email">
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required autocomplete="current-password">
+
+      <p class="hint">Forgot your password? <a href="/reset">Reset it here</a>.</p>
+
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+
+  <script>
+    document.getElementById('login-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      // simulate auth
+      const errorEl = document.getElementById('error-msg');
+      errorEl.textContent = 'Invalid email or password';
+      errorEl.hidden = false;
+    });
+  </script>
+</body>
+</html>

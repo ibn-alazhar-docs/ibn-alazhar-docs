@@ -3,7 +3,6 @@
 > Read this when fixing bugs (TRANSFORM mode for bug fixes). Never debug without a hypothesis.
 
 ## Table of Contents
-
 1. [Scientific Debugging Method](#scientific-debugging-method)
 2. [Root Cause Analysis (5 Whys)](#root-cause-analysis-5-whys)
 3. [Bisection Debugging](#bisection-debugging)
@@ -14,7 +13,6 @@
 ## Scientific Debugging Method
 
 ### The 5 Steps
-
 1. **Observe the symptom**: what exactly happens? Reproduce reliably.
 2. **Form a hypothesis**: what could cause this? Rank by likelihood.
 3. **Predict**: if the hypothesis is true, what else would be true?
@@ -22,11 +20,9 @@
 5. **Conclude**: fix the root cause, not the symptom.
 
 ### NEVER Skip the Hypothesis
-
 "Let me try changing this" is NOT debugging — it's guessing. Always have a hypothesis first.
 
 ### Example
-
 ```
 Symptom: User report "order total is wrong sometimes"
 Hypothesis 1: Rounding error in tax calculation
@@ -120,11 +116,9 @@ Add boundary tests for all discount tiers (50, 51, 100, 101)
 ## Debugging Anti-Patterns
 
 ### AP-D1. Shotgun Debugging
-
 Changing random things hoping something works. **Never do this.** Always have a hypothesis.
 
 ### AP-D2. Fixing Symptoms
-
 ```python
 # BAD: catching the exception and returning a default
 try:
@@ -137,11 +131,9 @@ total = calculate_total(order)  # fix the function so it doesn't throw
 ```
 
 ### AP-D3. Debugging in Production
-
 Adding `print()` statements to production code. **Use structured logging** with adjustable log levels.
 
 ### AP-D4. Ignoring Intermittent Failures
-
 "It works on my machine" — the bug is real, you just can't reproduce it yet. Keep investigating.
 
 ---

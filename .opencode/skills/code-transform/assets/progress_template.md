@@ -15,7 +15,6 @@
 **Items addressed**: P0 items, P2 quick wins
 
 **Completed**:
-
 - [x] **[D4-C1]** `file:line` — Parameterized SQL query → `security: parameterize SQL in user search`
 - [x] **[D2-H1]** Added index on `orders.user_id` → `perf: add index on orders.user_id`
 - [x] **[D7-H1]** Extracted `calculate_shipping` from `process_order` → `refactor: extract shipping calculation`
@@ -26,7 +25,6 @@
 **Commits this session**: 4
 
 **Issues found during session** (not in original audit):
-
 - **[NEW-1]** `file:line` — discovered N+1 in invoice loading too (logged as P2)
 
 **Remaining P0**: 0 ✓
@@ -39,7 +37,6 @@
 **Items addressed**: P1 items (start), remaining P2
 
 **Completed**:
-
 - [x] **[D1-C1]** Extracted OrderRepository from OrderService → `refactor: extract OrderRepository`
 - [x] **[D5-H1]** Fixed N+1 with JOIN → `perf: fix N+1 query with JOIN`
 
@@ -53,14 +50,14 @@
 
 ## Summary
 
-| Metric                | Value      |
-| --------------------- | ---------- |
-| Sessions completed    | <!-- N --> |
-| Total commits         | <!-- N --> |
-| P0 items remaining    | <!-- N --> |
-| P1 items remaining    | <!-- N --> |
-| P2 items remaining    | <!-- N --> |
-| P3 items remaining    | <!-- N --> |
+| Metric | Value |
+|--------|-------|
+| Sessions completed | <!-- N --> |
+| Total commits | <!-- N --> |
+| P0 items remaining | <!-- N --> |
+| P1 items remaining | <!-- N --> |
+| P2 items remaining | <!-- N --> |
+| P3 items remaining | <!-- N --> |
 | New issues discovered | <!-- N --> |
 
 ## Next Session Plan
