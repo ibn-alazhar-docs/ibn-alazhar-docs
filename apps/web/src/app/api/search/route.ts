@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/lib/backend/auth-guards";
 import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 const searchParamsSchema = z
@@ -19,7 +19,7 @@ const searchParamsSchema = z
 
 export const GET = withAuth(async (request, { session }) => {
   try {
-    const rateLimitResult = await checkRateLimit("/api/search", request);
+    const rateLimitResult = await checkUserRateLimit("search:query", session.user.id);
     if (!rateLimitResult.allowed) {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }

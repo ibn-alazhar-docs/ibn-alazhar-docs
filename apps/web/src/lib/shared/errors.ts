@@ -41,8 +41,9 @@ export class ForbiddenError extends AppError {
 
 export function getErrorMessage(error: unknown): string {
   if (error instanceof AppError) return error.code;
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
+  // Never leak internal error messages to callers — they may reach the client
+  if (error instanceof Error) return ERROR_CODES.INTERNAL_ERROR;
+  if (typeof error === "string") return ERROR_CODES.INTERNAL_ERROR;
   return ERROR_CODES.INTERNAL_ERROR;
 }
 

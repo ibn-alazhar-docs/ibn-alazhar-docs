@@ -4,12 +4,15 @@ import { addToMap, getFromMap, incrementMap, startCleanupIfNeeded } from "./rate
 
 export { cleanupExpiredEntries } from "./rate-limit/store";
 
+// Default rate limit for unlisted API routes — prevents bypass for any new endpoint.
+const DEFAULT_API_RATE_LIMIT = { limit: 100, windowMs: 60_000 };
+
 // IP-based rate limits for public API endpoints.
 // WHY: Separate from user-based limits — unauthenticated requests have no user ID,
 // and IP is the only reliable identifier.
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
-  "/api/auth/register": { limit: 50, windowMs: 60_000 },
-  "/api/auth/callback/credentials": { limit: 50, windowMs: 60_000 },
+  "/api/auth/register": { limit: 10, windowMs: 60_000 },
+  "/api/auth/callback/credentials": { limit: 10, windowMs: 60_000 },
   "/api/search": { limit: 30, windowMs: 60_000 },
   "/api/search/suggest": { limit: 30, windowMs: 60_000 },
   "/api/export": { limit: 10, windowMs: 60_000 },
@@ -46,6 +49,7 @@ const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "account:delete": { limit: 3, windowMs: 60_000 },
   "export:single": { limit: 10, windowMs: 60_000 },
   "export:bulk": { limit: 3, windowMs: 60_000 },
+  "search:query": { limit: 30, windowMs: 60_000 },
   "admin:users": { limit: 30, windowMs: 60_000 },
 };
 
@@ -108,8 +112,7 @@ export async function checkRateLimit(
   request: Request,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
   startCleanupIfNeeded();
-  const rule = RATE_LIMITS[pathname];
-  if (!rule) return { allowed: true };
+  const rule = RATE_LIMITS[pathname] ?? DEFAULT_API_RATE_LIMIT;
 
   const ip = getClientIp(request);
   const key = `${pathname}:${ip}`;

@@ -4,14 +4,23 @@ const BASE = "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
 const PASSWORD = "admin123";
 
+async function login(page: Page) {
+  await page.goto(`${BASE}/ar/login`);
+  await page.waitForLoadState("networkidle");
+  await page.fill('input[name="email"]', EMAIL);
+  await page.fill('input[name="password"]', PASSWORD);
+  await page.locator('button[type="submit"]').first().click();
+  await page.waitForURL(/dashboard/, { timeout: 30000 });
+}
+
 test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test.describe.configure({ timeout: 120_000 });
 
-  test("1. Landing page loads and is RTL", async ({ page }) => {
+  test("Landing page loads and is RTL", async ({ page }) => {
     await page.goto(`${BASE}/ar`);
     await page.waitForLoadState("networkidle");
 
-    await page.screenshot({ path: "/tmp/ibn-test-01-landing.png", fullPage: true });
+    await page.screenshot({ path: "/tmp/ibn-test-landing.png", fullPage: true });
 
     const html = page.locator("html");
     await expect(html).toHaveAttribute("dir", "rtl");
@@ -22,11 +31,11 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
     console.log("PASS: Landing page loads with RTL + Arabic");
   });
 
-  test("2. Login page renders correctly", async ({ page }) => {
+  test("Login page renders correctly", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
     await page.waitForLoadState("networkidle");
 
-    await page.screenshot({ path: "/tmp/ibn-test-02-login.png", fullPage: true });
+    await page.screenshot({ path: "/tmp/ibn-test-login.png", fullPage: true });
 
     const emailInput = page.locator('input[name="email"]');
     const passwordInput = page.locator('input[name="password"]');
@@ -41,47 +50,60 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
     console.log("PASS: Login page renders with RTL + form fields");
   });
 
-  test("3. Login with valid credentials redirects to dashboard", async ({ page }) => {
-    await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
-
-    await page.fill('input[name="email"]', EMAIL);
-    await page.fill('input[name="password"]', PASSWORD);
-    await page.locator('button[type="submit"]').first().click();
-
-    await page.waitForURL(/dashboard/, { timeout: 30000 });
-
-    await page.screenshot({ path: "/tmp/ibn-test-03-dashboard.png", fullPage: true });
+  test("Login with valid credentials redirects to dashboard", async ({ page }) => {
+    await login(page);
+    await page.screenshot({ path: "/tmp/ibn-test-dashboard.png", fullPage: true });
     console.log("PASS: Login redirects to dashboard");
   });
 
-  test("4. Dashboard pages are accessible after login", async ({ page }) => {
-    await page.goto(`${BASE}/ar/login`);
+  test("Files page accessible after login", async ({ page }) => {
+    await login(page);
+    const response = await page.goto(`${BASE}/ar/files`);
     await page.waitForLoadState("networkidle");
-    await page.fill('input[name="email"]', EMAIL);
-    await page.fill('input[name="password"]', PASSWORD);
-    await page.locator('button[type="submit"]').first().click();
-    await page.waitForURL(/dashboard/, { timeout: 30000 });
+    const status = response?.status();
+    expect(status).toBeLessThan(400);
+    await page.screenshot({ path: "/tmp/ibn-test-files.png", fullPage: true });
+    console.log(`PASS: Files page — status ${status}`);
+  });
 
-    const pages = [
-      { name: "Files", path: "/ar/files", screenshot: "04-files" },
-      { name: "Folders", path: "/ar/folders", screenshot: "05-folders" },
-      { name: "Tags", path: "/ar/tags", screenshot: "06-tags" },
-      { name: "Search", path: "/ar/search", screenshot: "07-search" },
-      { name: "Settings", path: "/ar/settings", screenshot: "08-settings" },
-    ];
+  test("Folders page accessible after login", async ({ page }) => {
+    await login(page);
+    const response = await page.goto(`${BASE}/ar/folders`);
+    await page.waitForLoadState("networkidle");
+    const status = response?.status();
+    expect(status).toBeLessThan(400);
+    await page.screenshot({ path: "/tmp/ibn-test-folders.png", fullPage: true });
+    console.log(`PASS: Folders page — status ${status}`);
+  });
 
-    for (const p of pages) {
-      const response = await page.goto(`${BASE}${p.path}`);
-      await page.waitForLoadState("networkidle");
-      const status = response?.status();
-      expect(status).toBeLessThan(400);
-      await page.screenshot({
-        path: `/tmp/ibn-test-${p.screenshot}-${p.name.toLowerCase()}.png`,
-        fullPage: true,
-      });
-      console.log(`PASS: ${p.name} (${p.path}) — status ${status}`);
-    }
+  test("Tags page accessible after login", async ({ page }) => {
+    await login(page);
+    const response = await page.goto(`${BASE}/ar/tags`);
+    await page.waitForLoadState("networkidle");
+    const status = response?.status();
+    expect(status).toBeLessThan(400);
+    await page.screenshot({ path: "/tmp/ibn-test-tags.png", fullPage: true });
+    console.log(`PASS: Tags page — status ${status}`);
+  });
+
+  test("Search page accessible after login", async ({ page }) => {
+    await login(page);
+    const response = await page.goto(`${BASE}/ar/search`);
+    await page.waitForLoadState("networkidle");
+    const status = response?.status();
+    expect(status).toBeLessThan(400);
+    await page.screenshot({ path: "/tmp/ibn-test-search.png", fullPage: true });
+    console.log(`PASS: Search page — status ${status}`);
+  });
+
+  test("Settings page accessible after login", async ({ page }) => {
+    await login(page);
+    const response = await page.goto(`${BASE}/ar/settings`);
+    await page.waitForLoadState("networkidle");
+    const status = response?.status();
+    expect(status).toBeLessThan(400);
+    await page.screenshot({ path: "/tmp/ibn-test-settings.png", fullPage: true });
+    console.log(`PASS: Settings page — status ${status}`);
   });
 
   test("5. RTL audit — no physical CSS properties", async ({ page }) => {
