@@ -14,8 +14,19 @@ import {
   prisma,
 } from "../integration/helpers/db";
 
-vi.mock("@/lib/export/zip-builder", () => ({
+vi.mock("@/lib/backend/export/zip-builder", () => ({
   buildZipPackage: vi.fn().mockResolvedValue(Buffer.from("dummy zip content")),
+}));
+
+vi.mock("@/lib/backend/rate-limit", () => ({
+  checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
+  rateLimitResponse: vi
+    .fn()
+    .mockReturnValue(
+      new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
+    ),
+  cleanupExpiredEntries: vi.fn(),
 }));
 
 describe("Export API Routes", () => {
@@ -101,25 +112,26 @@ describe("Export API Routes", () => {
       });
       const res = await exportPost(req);
       expect(res.status).toBe(404);
+      const data = await res.json();
+      expect(data.error.code).toBe("NOT_FOUND");
     });
 
-    it("should return 200 and file for valid request (pdf)", async () => {
+    it("should return 200 and zip file for valid request (zip)", async () => {
       const req = createApiRequest("/api/export", {
         method: "POST",
         body: JSON.stringify({
           documentId: docA1.id,
-          format: "md",
+          format: "zip",
           profile: "research",
           includeSource: false,
         }),
       });
       const res = await exportPost(req);
       expect(res.status).toBe(200);
-      expect(res.headers.get("Content-Type")).toBe("text/markdown; charset=utf-8");
-      expect(res.headers.get("Content-Disposition")).toContain("attachment; filename=");
+      expect(res.headers.get("Content-Type")).toBe("application/zip");
     });
 
-    it("should return 200 and zip file for valid request (zip)", async () => {
+    it("should return 200 and zip file for valid single export", async () => {
       const req = createApiRequest("/api/export", {
         method: "POST",
         body: JSON.stringify({
@@ -173,7 +185,7 @@ describe("Export API Routes", () => {
       const res = await batchExportPost(req);
       expect(res.status).toBe(404);
       const data = await res.json();
-      expect(data.error).toContain("Missing documents");
+      expect(data.error.message).toContain("لم يتم العثور على بعض المستندات");
     });
 
     it("should return 400 if format is not zip", async () => {

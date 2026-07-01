@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 5 (Performance) finds `LIKE '%term%'` queries | Leading wildcard defeats index — full table scan every search |
-| Phase 2 — AUDIT | Dimension 5 finds search endpoints with N+1 on related entities | Search should return denormalized docs, not join on every hit |
-| Phase 6 — EXECUTE | User says "add search", "add full-text search", "add Algolia", "add Elasticsearch" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating search backends (Elasticsearch → Meilisearch, Algolia → Typesense) | Full reindex + dual-write window |
+| Phase                | Trigger                                                                                           | Why                                                                   |
+| -------------------- | ------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 5 (Performance) finds `LIKE '%term%'` queries                                           | Leading wildcard defeats index — full table scan every search         |
+| Phase 2 — AUDIT      | Dimension 5 finds search endpoints with N+1 on related entities                                   | Search should return denormalized docs, not join on every hit         |
+| Phase 6 — EXECUTE    | User says "add search", "add full-text search", "add Algolia", "add Elasticsearch"                | This is the executing sub-skill                                       |
+| Phase 6 — EXECUTE    | Migrating search backends (Elasticsearch → Meilisearch, Algolia → Typesense)                      | Full reindex + dual-write window                                      |
 | Phase 9 — ACCEPTANCE | Run a search query, verify relevance ordering, verify facets accurate, verify autocomplete < 50ms | Search quality is observable — must walk the query→results→facet loop |
-| Phase 11 — ROLLOUT | Verify index has correct document count, reindex job scheduled, backup index exists | Drift between DB and search = wrong results to users |
+| Phase 11 — ROLLOUT   | Verify index has correct document count, reindex job scheduled, backup index exists               | Drift between DB and search = wrong results to users                  |
 
 **Do NOT use this sub-skill for:** log search (use Loki / OpenSearch with logstash pipeline — different indexing pattern), vector similarity search (use a vector DB: pgvector, Pinecone, Weaviate, Qdrant — different algorithm), or recommendation (use a recommendation engine — collaborative filtering, not text search).
 
@@ -213,18 +213,18 @@ Q5: Relevance tuning needed?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Search returns stale results | Incremental update lagging or queue backed up | Check consumer lag; if > 5 min, scale consumers; consider full reindex if drift is large |
-| `mapper_parsing_exception` (Elasticsearch) | Dynamic mapping conflict — field inferred as one type, then another | Use explicit mapping (never dynamic); reindex with new mapping via alias swap |
-| Index size explodes | Edge n-gram fields, too many facets, or `_source` not stripped | Reduce n-gram max length; use `doc_values: false` on text fields not used for sorting; remove unused fields from `_source` |
-| Autocomplete latency > 100ms | Edge n-gram field too large, or prefix search on full index | Move to completion suggester (in-memory); or pre-compute top-N per prefix |
-| Relevance wrong — old docs above new | No freshness signal in scoring | Add `published_at` decay function; test with `explain: true` |
-| Synonyms not applied | Synonyms configured at query time but analyzer doesn't see them | Configure synonyms in the analyzer (index-time) OR use `search_synonym` filter (query-time); verify with `_analyze` API |
-| Facet counts don't match search | Facet run on different field, or filter applied to one but not other | Verify facet runs on same query+filters as the main search; Algolia does this automatically |
-| Bulk index 429 errors | Backfill too fast | Reduce concurrency, add exponential backoff, use `_bulk` endpoint with batches of 1,000 (not 10,000) |
-| Postgres FTS slow on 1M+ rows | Missing GIN index, or query uses `LIKE` not `@@` | Add `CREATE INDEX ... USING GIN(to_tsvector(...))`; rewrite query to use `@@` operator |
-| Index corruption after crash | Elasticsearch translog not flushed | Force merge + reindex from source; enable periodic translog flush |
+| Symptom                                    | Cause                                                                | Recovery                                                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| Search returns stale results               | Incremental update lagging or queue backed up                        | Check consumer lag; if > 5 min, scale consumers; consider full reindex if drift is large                                   |
+| `mapper_parsing_exception` (Elasticsearch) | Dynamic mapping conflict — field inferred as one type, then another  | Use explicit mapping (never dynamic); reindex with new mapping via alias swap                                              |
+| Index size explodes                        | Edge n-gram fields, too many facets, or `_source` not stripped       | Reduce n-gram max length; use `doc_values: false` on text fields not used for sorting; remove unused fields from `_source` |
+| Autocomplete latency > 100ms               | Edge n-gram field too large, or prefix search on full index          | Move to completion suggester (in-memory); or pre-compute top-N per prefix                                                  |
+| Relevance wrong — old docs above new       | No freshness signal in scoring                                       | Add `published_at` decay function; test with `explain: true`                                                               |
+| Synonyms not applied                       | Synonyms configured at query time but analyzer doesn't see them      | Configure synonyms in the analyzer (index-time) OR use `search_synonym` filter (query-time); verify with `_analyze` API    |
+| Facet counts don't match search            | Facet run on different field, or filter applied to one but not other | Verify facet runs on same query+filters as the main search; Algolia does this automatically                                |
+| Bulk index 429 errors                      | Backfill too fast                                                    | Reduce concurrency, add exponential backoff, use `_bulk` endpoint with batches of 1,000 (not 10,000)                       |
+| Postgres FTS slow on 1M+ rows              | Missing GIN index, or query uses `LIKE` not `@@`                     | Add `CREATE INDEX ... USING GIN(to_tsvector(...))`; rewrite query to use `@@` operator                                     |
+| Index corruption after crash               | Elasticsearch translog not flushed                                   | Force merge + reindex from source; enable periodic translog flush                                                          |
 
 ## Self-Healing Loop
 

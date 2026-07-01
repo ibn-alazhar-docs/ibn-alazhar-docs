@@ -9,7 +9,7 @@ import {
 import { DocumentCrudUseCases } from "../../apps/web/src/core/use-cases/document-crud.use-cases";
 import { DocumentRepository } from "../../apps/web/src/core/repositories/document.repository";
 import { FolderRepository } from "../../apps/web/src/core/repositories/folder.repository";
-import { NotFoundError } from "../../apps/web/src/lib/errors";
+import { NotFoundError } from "../../apps/web/src/lib/shared/errors";
 
 describe("DocumentCrudUseCases (use-case level)", () => {
   let userA: { id: string; role: string };

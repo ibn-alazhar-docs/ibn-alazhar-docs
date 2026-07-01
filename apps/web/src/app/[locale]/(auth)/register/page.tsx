@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
 import { RegisterForm } from "@/components/auth/register-form";
 
 interface RegisterPageProps {

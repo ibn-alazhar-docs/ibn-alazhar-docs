@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/backend/prisma";
+import { logger } from "@/lib/shared/logger";
 import net from "net";
 
 async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {
@@ -7,7 +8,8 @@ async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {
   try {
     await prisma.$queryRaw`SELECT 1`;
     return { status: "healthy", latencyMs: Date.now() - start };
-  } catch {
+  } catch (err) {
+    logger.warn({ err }, "Health check: Postgres unhealthy");
     return { status: "unhealthy", latencyMs: Date.now() - start };
   }
 }
@@ -39,12 +41,13 @@ async function checkRedis(): Promise<{ status: string; latencyMs: number }> {
     });
 
     return { status: "healthy", latencyMs: Date.now() - start };
-  } catch {
+  } catch (err) {
+    logger.warn({ err }, "Health check: Redis unhealthy");
     return { status: "unhealthy", latencyMs: Date.now() - start };
   }
 }
 
-async function checkMinio(): Promise<{ status: string; latencyMs: number }> {
+async function checkStorage(): Promise<{ status: string; latencyMs: number }> {
   const start = Date.now();
   try {
     const endpoint = process.env.S3_ENDPOINT || "http://localhost:9000";
@@ -52,26 +55,29 @@ async function checkMinio(): Promise<{ status: string; latencyMs: number }> {
     if (!["http:", "https:"].includes(parsedUrl.protocol)) {
       return { status: "unhealthy", latencyMs: Date.now() - start };
     }
-    const allowedHosts = new Set(["localhost", "127.0.0.1", "minio"]);
-    if (!allowedHosts.has(parsedUrl.hostname)) {
-      return { status: "unhealthy", latencyMs: Date.now() - start };
-    }
-    const response = await fetch(`${endpoint}/minio/health/live`, {
-      signal: AbortSignal.timeout(3000),
-    });
+
+    const isMinio = parsedUrl.hostname.includes("minio");
+    const url = isMinio ? `${endpoint}/minio/health/live` : endpoint;
+
+    const response = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(3000) });
     return {
       status: response.ok ? "healthy" : "unhealthy",
       latencyMs: Date.now() - start,
     };
-  } catch {
+  } catch (err) {
+    logger.warn({ err }, "Health check: Storage unhealthy");
     return { status: "unhealthy", latencyMs: Date.now() - start };
   }
 }
 
 export async function GET() {
-  const [postgres, redis, minio] = await Promise.all([checkPostgres(), checkRedis(), checkMinio()]);
+  const [postgres, redis, storage] = await Promise.all([
+    checkPostgres(),
+    checkRedis(),
+    checkStorage(),
+  ]);
 
-  const checks = { postgres, redis, minio };
+  const checks = { postgres, redis, storage };
   const allHealthy = Object.values(checks).every((c) => c.status === "healthy");
   const anyUnhealthy = Object.values(checks).some((c) => c.status === "unhealthy");
 

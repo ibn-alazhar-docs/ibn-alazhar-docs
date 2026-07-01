@@ -1,5 +1,7 @@
-import { prisma } from "@/lib/prisma";
-import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { prisma } from "@/lib/backend/prisma";
+import { ownedWhere } from "@/core/authorization";
+import type { AuthSession } from "@/domain/types";
+import { NotFoundError } from "@/lib/shared/errors";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import type {
   ExportDocumentData,
@@ -20,7 +22,7 @@ export async function resolveDocumentForExport(
   });
 
   if (!doc) {
-    throw new Error(`Document not found: ${documentId}`);
+    throw new NotFoundError(`المستند غير موجود: ${documentId}`);
   }
 
   return {
@@ -186,7 +188,7 @@ export async function buildExportMetadata(
       format: "zip",
       profile,
       version: "1.0",
-      generator: "ibn-al-azhar-docs/v1",
+      generator: "ibnalazhardocs/v1",
     },
   };
 }

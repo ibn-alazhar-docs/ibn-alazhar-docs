@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 9 (Observability) finds no error monitoring configured | "We don't know when errors happen in production" = flying blind |
-| Phase 2 — AUDIT | Dimension 4 (Security) finds PII (email, phone, address) in error payloads | Error trackers are SaaS — PII leaking there is a compliance violation |
-| Phase 2 — AUDIT | Dimension 9 finds minified stack traces (no source maps uploaded) | `at a.b.c (main.abc123.js:1:2345)` is unreadable; debugging is impossible |
-| Phase 7 — OBSERVABILITY | Always — this sub-skill is the standard install for production error tracking | This is the executing sub-skill for Phase 7 |
-| Phase 6 — EXECUTE | Migrating platforms (Bugsnag → Sentry, Sentry self-hosted → SaaS) | Full replace of SDK + config + source map upload pipeline |
-| Phase 9 — ACCEPTANCE | Trigger a test error, verify it appears with correct release tag and readable stack | Error pipeline must be walked end-to-end before relying on it |
-| Phase 11 — ROLLOUT | Verify DSN in env, source maps uploaded for current release, alerts routed | Misconfigured monitoring = silent prod failures |
+| Phase                   | Trigger                                                                             | Why                                                                       |
+| ----------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Phase 2 — AUDIT         | Dimension 9 (Observability) finds no error monitoring configured                    | "We don't know when errors happen in production" = flying blind           |
+| Phase 2 — AUDIT         | Dimension 4 (Security) finds PII (email, phone, address) in error payloads          | Error trackers are SaaS — PII leaking there is a compliance violation     |
+| Phase 2 — AUDIT         | Dimension 9 finds minified stack traces (no source maps uploaded)                   | `at a.b.c (main.abc123.js:1:2345)` is unreadable; debugging is impossible |
+| Phase 7 — OBSERVABILITY | Always — this sub-skill is the standard install for production error tracking       | This is the executing sub-skill for Phase 7                               |
+| Phase 6 — EXECUTE       | Migrating platforms (Bugsnag → Sentry, Sentry self-hosted → SaaS)                   | Full replace of SDK + config + source map upload pipeline                 |
+| Phase 9 — ACCEPTANCE    | Trigger a test error, verify it appears with correct release tag and readable stack | Error pipeline must be walked end-to-end before relying on it             |
+| Phase 11 — ROLLOUT      | Verify DSN in env, source maps uploaded for current release, alerts routed          | Misconfigured monitoring = silent prod failures                           |
 
 **Do NOT use this sub-skill for:** log aggregation (use `log-aggregation` — Loki/ELK/Datadog Logs — for structured logs), uptime monitoring (use Pingdom/UptimeRobot — different concern), or APM/tracing (use OpenTelemetry / Datadog APM / Jaeger — though Datadog APM overlaps and we cover it here).
 
@@ -216,18 +216,18 @@ Q6: PII scrubbing?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Stack trace shows `at a.b.c (main.abc123.js:1:2345)` | Source maps not uploaded, or uploaded with wrong `--url-prefix` | Re-upload maps with correct URL prefix matching the served path; verify in Sentry "Source Maps" tab |
-| Sentry events show no release tag | `release` not set in `Sentry.init`, or CI didn't run `sentry-cli releases new` | Set `release: process.env.GIT_SHA` in init; ensure CI sets `SENTRY_AUTH_TOKEN` env var |
-| PII visible in Sentry dashboard | `before_send` not scrubbing, or scrub rules missing field | Add field to scrub rules; test with `verify-scrubbing` command; treat as compliance incident |
-| 10k events/min flooding Sentry | New issue with high blast radius, or noisy error not filtered | Add filter in `before_send` for known noise; set rate limits in Sentry; investigate root cause immediately |
-| Alert not firing | Threshold set too high, or routing rule missing | Check Sentry "Alerts" settings; verify PagerDuty integration test passes; verify Slack webhook URL |
-| PagerDuty alert at 3am for a 404 | Noise filter missing for static-asset 404s | Add `before_send` filter: return null for 404s on `*.js`, `*.css`, `*.png` |
-| Performance traces slowing the app | `traces_sample_rate` too high (e.g. 1.0 in prod) | Reduce to 0.1 (10%); verify overhead < 5% CPU |
-| Sentry SDK initialization blocks startup | `Sentry.init` doing heavy work synchronously | Use `Sentry.init` async / lazy; defer non-critical config |
-| Events from dev environment polluting prod dashboard | `environment` not tagged, or dev using prod DSN | Set `environment: process.env.NODE_ENV`; use separate DSN per env |
-| Source maps exposed publicly | `sourceMappingURL` comment left in prod `.js` | Strip comment in build step; use "hidden" source maps (uploaded, not referenced) |
+| Symptom                                              | Cause                                                                          | Recovery                                                                                                   |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
+| Stack trace shows `at a.b.c (main.abc123.js:1:2345)` | Source maps not uploaded, or uploaded with wrong `--url-prefix`                | Re-upload maps with correct URL prefix matching the served path; verify in Sentry "Source Maps" tab        |
+| Sentry events show no release tag                    | `release` not set in `Sentry.init`, or CI didn't run `sentry-cli releases new` | Set `release: process.env.GIT_SHA` in init; ensure CI sets `SENTRY_AUTH_TOKEN` env var                     |
+| PII visible in Sentry dashboard                      | `before_send` not scrubbing, or scrub rules missing field                      | Add field to scrub rules; test with `verify-scrubbing` command; treat as compliance incident               |
+| 10k events/min flooding Sentry                       | New issue with high blast radius, or noisy error not filtered                  | Add filter in `before_send` for known noise; set rate limits in Sentry; investigate root cause immediately |
+| Alert not firing                                     | Threshold set too high, or routing rule missing                                | Check Sentry "Alerts" settings; verify PagerDuty integration test passes; verify Slack webhook URL         |
+| PagerDuty alert at 3am for a 404                     | Noise filter missing for static-asset 404s                                     | Add `before_send` filter: return null for 404s on `*.js`, `*.css`, `*.png`                                 |
+| Performance traces slowing the app                   | `traces_sample_rate` too high (e.g. 1.0 in prod)                               | Reduce to 0.1 (10%); verify overhead < 5% CPU                                                              |
+| Sentry SDK initialization blocks startup             | `Sentry.init` doing heavy work synchronously                                   | Use `Sentry.init` async / lazy; defer non-critical config                                                  |
+| Events from dev environment polluting prod dashboard | `environment` not tagged, or dev using prod DSN                                | Set `environment: process.env.NODE_ENV`; use separate DSN per env                                          |
+| Source maps exposed publicly                         | `sourceMappingURL` comment left in prod `.js`                                  | Strip comment in build step; use "hidden" source maps (uploaded, not referenced)                           |
 
 ## Self-Healing Loop
 

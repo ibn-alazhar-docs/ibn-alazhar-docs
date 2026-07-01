@@ -1,7 +1,9 @@
 import { Client as MinioClient } from "minio";
 import type { PipelineConfig, StorageObject } from "./types";
 import { stat } from "node:fs/promises";
-import { logger } from "./logger";
+import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+
+const logger = baseLogger.child({ module: "storage" });
 
 const PDF_HEADER_PATTERN = /^%PDF-\d+\.\d+/;
 const PDF_TRAILER_PATTERN = /%%EOF\s*$/;
@@ -170,8 +172,7 @@ export async function ensureBucket(config: PipelineConfig): Promise<void> {
       if (attempt === maxRetries) throw err;
       const delay = Math.min(1000 * attempt, 5000);
       logger.warn(
-        "storage",
-        `MinIO not ready (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
+        `Storage not ready (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
       );
       await new Promise((resolve) => setTimeout(resolve, delay));
     }
@@ -193,7 +194,7 @@ export async function uploadFile(
     const stats = await stat(filePath);
     fileSize = stats.size;
   } catch (err) {
-    logger.error("storage", `Failed to stat uploaded file: ${err}`);
+    logger.error(`Failed to stat uploaded file: ${err}`);
   }
   return {
     bucket: config.minio.bucket,

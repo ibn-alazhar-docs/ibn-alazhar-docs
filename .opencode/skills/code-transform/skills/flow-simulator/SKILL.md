@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 6 — UI change to auth/checkout/onboarding | "I refactored the LoginForm component" |
-| Phase 9 — Acceptance testing | Every SP-N item that touches a user-facing flow |
-| Phase 11 — Pre-rollout smoke test | "Did the deploy break checkout?" |
-| Bug report reproduction | "User says checkout fails on mobile" — reproduce, then fix |
+| Trigger                                         | Example                                                    |
+| ----------------------------------------------- | ---------------------------------------------------------- |
+| Phase 6 — UI change to auth/checkout/onboarding | "I refactored the LoginForm component"                     |
+| Phase 9 — Acceptance testing                    | Every SP-N item that touches a user-facing flow            |
+| Phase 11 — Pre-rollout smoke test               | "Did the deploy break checkout?"                           |
+| Bug report reproduction                         | "User says checkout fails on mobile" — reproduce, then fix |
 
 **Do NOT use this for:** single-page visual diffing (use `visual-diff`), single screenshots (use `screenshot-capture`), accessibility scans (use `accessibility-auditor`). This sub-skill is for **multi-step journeys**, not single-state captures.
 
@@ -111,7 +111,7 @@ steps:
 
   - action: fill
     selector: "[name=card]"
-    value: "4242424242424242"  # Stripe test card
+    value: "4242424242424242" # Stripe test card
 
   - action: click
     selector: "button:has-text('Pay')"
@@ -140,33 +140,34 @@ Hard rule: **Every flow step must use a selector from tier 1-4.** Tier 5 require
 
 ## Predefined Flows (built-in)
 
-| Flow | Steps | Assertions |
-|------|-------|------------|
-| `login` | goto /login → fill email → fill password → click Sign in | url contains /dashboard, avatar visible |
-| `logout` | click avatar menu → click Sign out | url contains /login, signed-out state |
-| `signup` | goto /signup → fill name/email/password → click Create account | url contains /welcome, welcome message visible |
-| `checkout` | goto /products → add to cart → checkout → fill payment → pay | url contains /orders/confirmation, order number visible |
-| `onboarding` | signup → complete 3-step wizard → submit | url contains /dashboard, onboarding-completed flag set |
-| `search` | fill search box → press Enter → click first result | url contains /search, results list visible |
-| `profile-update` | goto /settings → update name → save → reload | updated name visible after reload |
+| Flow             | Steps                                                          | Assertions                                              |
+| ---------------- | -------------------------------------------------------------- | ------------------------------------------------------- |
+| `login`          | goto /login → fill email → fill password → click Sign in       | url contains /dashboard, avatar visible                 |
+| `logout`         | click avatar menu → click Sign out                             | url contains /login, signed-out state                   |
+| `signup`         | goto /signup → fill name/email/password → click Create account | url contains /welcome, welcome message visible          |
+| `checkout`       | goto /products → add to cart → checkout → fill payment → pay   | url contains /orders/confirmation, order number visible |
+| `onboarding`     | signup → complete 3-step wizard → submit                       | url contains /dashboard, onboarding-completed flag set  |
+| `search`         | fill search box → press Enter → click first result             | url contains /search, results list visible              |
+| `profile-update` | goto /settings → update name → save → reload                   | updated name visible after reload                       |
 
 Each predefined flow has fixture data (test users, test cards) baked in. Override via `--fixtures fixtures/my-flows.yaml`.
 
 ## Smart Waits (built-in)
 
-| Wait type | When applied |
-|-----------|--------------|
-| `waitForSelector` | After every `click` and `fill` — wait for the next expected element |
-| `waitForURL` | After clicks that trigger navigation |
-| `waitForResponse` | After form submits that fire XHR — wait for the API call to complete |
-| `waitForLoadState("networkidle")` | After every navigation |
-| `waitForFunction` | For custom predicates (e.g. "wait until window.appReady === true") |
+| Wait type                         | When applied                                                         |
+| --------------------------------- | -------------------------------------------------------------------- |
+| `waitForSelector`                 | After every `click` and `fill` — wait for the next expected element  |
+| `waitForURL`                      | After clicks that trigger navigation                                 |
+| `waitForResponse`                 | After form submits that fire XHR — wait for the API call to complete |
+| `waitForLoadState("networkidle")` | After every navigation                                               |
+| `waitForFunction`                 | For custom predicates (e.g. "wait until window.appReady === true")   |
 
 Anti-pattern (forbidden): `page.waitForTimeout(2000)`. Fixed sleeps are flaky. If you need to wait, wait for a state change, not a duration.
 
 ## Recording & Trace
 
 Every flow run produces:
+
 - **Step screenshots** — one PNG per step, named `<flow>-step-<n>.png`
 - **Video** — `.webm` of the entire flow (only when `--record-video`)
 - **Trace** — Playwright trace ZIP, openable with `npx playwright show-trace <file>`
@@ -177,17 +178,18 @@ The trace is the single most valuable artifact when a flow fails. It lets you re
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `TimeoutError: Timeout 30000ms exceeded waiting for selector` | Element not in DOM, or selector wrong | Capture DOM snapshot, route to `debug-entry` |
-| `Error: strict mode violation: locator resolved to 3 elements` | Selector too broad | Tighten selector (add `name=` or use role) |
-| `Error: net::ERR_ABORTED` | Navigation interrupted (often auth redirect) | Check if flow needs to run after login |
-| `expect(received).toContain(expected)` — assertion fail | App state wrong | Capture screenshot + DOM, log to spec-sync for AC review |
-| Flow passes locally, fails in CI | Timezone / locale / env vars differ | Pin `--locale en-US --timezone UTC` in CI |
+| Symptom                                                        | Cause                                        | Recovery                                                 |
+| -------------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------- |
+| `TimeoutError: Timeout 30000ms exceeded waiting for selector`  | Element not in DOM, or selector wrong        | Capture DOM snapshot, route to `debug-entry`             |
+| `Error: strict mode violation: locator resolved to 3 elements` | Selector too broad                           | Tighten selector (add `name=` or use role)               |
+| `Error: net::ERR_ABORTED`                                      | Navigation interrupted (often auth redirect) | Check if flow needs to run after login                   |
+| `expect(received).toContain(expected)` — assertion fail        | App state wrong                              | Capture screenshot + DOM, log to spec-sync for AC review |
+| Flow passes locally, fails in CI                               | Timezone / locale / env vars differ          | Pin `--locale en-US --timezone UTC` in CI                |
 
 ## Self-Healing Loop
 
 When a flow step fails:
+
 1. Capture screenshot + DOM snapshot of the failure point
 2. Run `debug-entry` to root-cause: is it a selector change? A real bug? An async race?
 3. If selector drift: auto-update the flow definition's selector (record in `OMNIPROJECT_SELF_IMPROVEMENT.md`)
@@ -207,6 +209,7 @@ When a flow step fails:
 ## Spec-Sync
 
 After a flow passes, write the trace URL back to the spec:
+
 ```
 AC-42 [FLOW]: login — PASSED 2026-06-29
   Trace: evals/traces/login-2026-06-29T00-12-33.zip

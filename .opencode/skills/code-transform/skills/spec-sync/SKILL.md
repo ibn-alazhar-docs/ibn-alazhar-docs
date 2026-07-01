@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 6 — EXECUTE | After every commit | Catch drift immediately, not at Phase 7 |
-| Phase 7 — VERIFY | Full spec-coverage check | Verify all SP-Ns implemented, all ACs tested |
+| Phase                 | Trigger                                            | Why                                                                    |
+| --------------------- | -------------------------------------------------- | ---------------------------------------------------------------------- |
+| Phase 6 — EXECUTE     | After every commit                                 | Catch drift immediately, not at Phase 7                                |
+| Phase 7 — VERIFY      | Full spec-coverage check                           | Verify all SP-Ns implemented, all ACs tested                           |
 | Phase 13 — META-AUDIT | `meta-learning` routed a "wrong assumption" lesson | Spec had a false assumption; spec-sync identifies which SP-N to update |
-| Manual trigger | User asks "is the spec up to date?" | Diagnostic |
+| Manual trigger        | User asks "is the spec up to date?"                | Diagnostic                                                             |
 
-**Do NOT use this sub-skill for:** generating specs (use `spec-generator`), implementing features (use Phase 6 EXECUTE), or writing tests (use Phase 7 VERIFY). This sub-skill only *detects and reports* drift; it doesn't fix it (though it can propose fixes).
+**Do NOT use this sub-skill for:** generating specs (use `spec-generator`), implementing features (use Phase 6 EXECUTE), or writing tests (use Phase 7 VERIFY). This sub-skill only _detects and reports_ drift; it doesn't fix it (though it can propose fixes).
 
 ## What It Does
 
@@ -38,12 +38,12 @@ metadata:
 
 ## Drift Types
 
-| Drift type | Definition | Example | Fix |
-|------------|-----------|---------|-----|
-| **Code-first drift** | Code does X, spec doesn't mention X | Code adds rate limiting; spec SP-1 has no rate-limit AC | Update spec: add AC-1.4 for rate limiting |
-| **Spec-first drift** | Spec says X, code doesn't do X | Spec SP-2 requires email verification; code doesn't verify emails | Implement OR remove from spec (with reason) |
-| **Test gap** | AC has no test | AC-1.3 requires account lockout after 5 failed logins; no test for it | Add test: `test_ac_1_3_account_lockout` |
-| **Unspec'd code** | Code change has no `[SP-N]` tag in commit | Commit "refactor auth module" with no SP-N | Either add SP-N (if it's spec'd work) or justify + add to spec |
+| Drift type           | Definition                                | Example                                                               | Fix                                                            |
+| -------------------- | ----------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------- |
+| **Code-first drift** | Code does X, spec doesn't mention X       | Code adds rate limiting; spec SP-1 has no rate-limit AC               | Update spec: add AC-1.4 for rate limiting                      |
+| **Spec-first drift** | Spec says X, code doesn't do X            | Spec SP-2 requires email verification; code doesn't verify emails     | Implement OR remove from spec (with reason)                    |
+| **Test gap**         | AC has no test                            | AC-1.3 requires account lockout after 5 failed logins; no test for it | Add test: `test_ac_1_3_account_lockout`                        |
+| **Unspec'd code**    | Code change has no `[SP-N]` tag in commit | Commit "refactor auth module" with no SP-N                            | Either add SP-N (if it's spec'd work) or justify + add to spec |
 
 ## Integration Contract
 
@@ -94,12 +94,12 @@ OUTPUT (stdout JSON):
 ```markdown
 ## Spec Coverage Report — [Project Name]
 
-| SP-N | Description | Implemented | Tested | Status |
-|------|-------------|-------------|--------|--------|
-| SP-1 | User login | ✅ | ✅ | Done |
-| SP-2 | User registration | ✅ | ❌ | Needs tests |
-| SP-3 | Password reset | ❌ | ❌ | Not started |
-| SP-4 | Email verification | ✅ | ✅ | Done |
+| SP-N | Description        | Implemented | Tested | Status      |
+| ---- | ------------------ | ----------- | ------ | ----------- |
+| SP-1 | User login         | ✅          | ✅     | Done        |
+| SP-2 | User registration  | ✅          | ❌     | Needs tests |
+| SP-3 | Password reset     | ❌          | ❌     | Not started |
+| SP-4 | Email verification | ✅          | ✅     | Done        |
 
 **Coverage: 8/14 SP-N implemented (57%), 6/8 tested (75%)**
 **Drift: 2 items detected (1 code-first, 1 test-gap)**
@@ -167,6 +167,7 @@ feat(auth): implement login endpoint [SP-1]
 ```
 
 Tag formats:
+
 - `[SP-1]` — references spec item SP-1
 - `[SP-1,SP-2]` — references multiple spec items
 - `[NO-SP]` — justified spec-agnostic change (e.g. "refactor: extract util function [NO-SP]")
@@ -176,22 +177,32 @@ Commits without a tag (and without `[NO-SP]`) are rejected by the pre-commit hoo
 
 ## Drift Severity
 
-| Severity | Definition | Action |
-|----------|-----------|--------|
-| **Critical** | Code contradicts spec (spec says X, code does Y) | Halt EXECUTE; must resolve before next commit |
-| **High** | Test gap (AC has no test) | Halt EXECUTE; add test before next commit |
-| **Medium** | Code-first drift (new behavior not in spec) | Allow commit; spec update required within 1 commit |
-| **Low** | Spec-first drift (spec says X, code doesn't do X yet) | Allow; track as "not yet implemented"; if persists > 5 commits, surface |
+| Severity     | Definition                                            | Action                                                                  |
+| ------------ | ----------------------------------------------------- | ----------------------------------------------------------------------- |
+| **Critical** | Code contradicts spec (spec says X, code does Y)      | Halt EXECUTE; must resolve before next commit                           |
+| **High**     | Test gap (AC has no test)                             | Halt EXECUTE; add test before next commit                               |
+| **Medium**   | Code-first drift (new behavior not in spec)           | Allow commit; spec update required within 1 commit                      |
+| **Low**      | Spec-first drift (spec says X, code doesn't do X yet) | Allow; track as "not yet implemented"; if persists > 5 commits, surface |
 
 ## Self-Improvement Hook
 
 Every drift detection appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "6", "action": "spec-sync-check", "commit": "abc123", "sp_n": ["SP-1"], "drift_count": 1, "drift_types": ["code-first"], "resolved": false}
+{
+  "ts": "...",
+  "phase": "6",
+  "action": "spec-sync-check",
+  "commit": "abc123",
+  "sp_n": ["SP-1"],
+  "drift_count": 1,
+  "drift_types": ["code-first"],
+  "resolved": false
+}
 ```
 
 `meta-auditor` checks:
+
 - Drift count per project (high = spec-generator producing incomplete specs, or EXECUTE not respecting spec)
 - Time-to-resolve drift (long = team ignoring drift reports)
 - Most common drift type per project (pattern → lesson for spec-generator or self-patch-generator)
@@ -200,13 +211,13 @@ If `code-first drift` is the most common type, the spec was underspecified → l
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Commit has no [SP-N] tag | Developer forgot convention | Pre-commit hook rejects; ask to amend message |
-| spec.md is missing | spec-generator didn't run | Halt; run spec-generator first |
-| Spec item SP-N referenced but doesn't exist in spec.md | Typo or stale spec | Surface; ask to fix tag OR add SP-N to spec |
-| Drift detected but no fix proposed | Genuine ambiguity | Surface to user for decision; do not auto-fix |
-| Test gap can't be auto-fixed | Test infrastructure missing | Surface; ask user to add test infrastructure first |
+| Symptom                                                | Cause                       | Recovery                                           |
+| ------------------------------------------------------ | --------------------------- | -------------------------------------------------- |
+| Commit has no [SP-N] tag                               | Developer forgot convention | Pre-commit hook rejects; ask to amend message      |
+| spec.md is missing                                     | spec-generator didn't run   | Halt; run spec-generator first                     |
+| Spec item SP-N referenced but doesn't exist in spec.md | Typo or stale spec          | Surface; ask to fix tag OR add SP-N to spec        |
+| Drift detected but no fix proposed                     | Genuine ambiguity           | Surface to user for decision; do not auto-fix      |
+| Test gap can't be auto-fixed                           | Test infrastructure missing | Surface; ask user to add test infrastructure first |
 
 ## Tools
 

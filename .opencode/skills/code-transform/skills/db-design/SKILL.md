@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dim 9 (Data Layer) finds: missing FKs, missing indexes on FKs, no RLS on tenant-scoped tables, N+1 queries, raw `SELECT *` in production paths | Establish the schema-quality baseline |
-| Phase 6 — EXECUTE | Any commit that touches a `.sql` migration, a Prisma schema file, a SQLAlchemy model, a `CREATE TABLE`/`ALTER TABLE` | Validate the migration is reversible, safe, and indexed |
-| Phase 6 — EXECUTE | Adding a column, renaming a column, changing a column type, adding a constraint | Force the expand/contract pattern — never break the running app |
-| Phase 7 — OBSERVABILITY | Slow query log shows a new query > 100ms | EXPLAIN the query, suggest the index, generate the migration |
-| Phase 11 — ROLLOUT | Pre-deploy check: every migration in the release has a tested `down` migration (or is intentionally irreversible, with sign-off) | Catches un-reversible migrations before they hit prod |
+| Phase                   | Trigger                                                                                                                                        | Why                                                             |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| Phase 2 — AUDIT         | Dim 9 (Data Layer) finds: missing FKs, missing indexes on FKs, no RLS on tenant-scoped tables, N+1 queries, raw `SELECT *` in production paths | Establish the schema-quality baseline                           |
+| Phase 6 — EXECUTE       | Any commit that touches a `.sql` migration, a Prisma schema file, a SQLAlchemy model, a `CREATE TABLE`/`ALTER TABLE`                           | Validate the migration is reversible, safe, and indexed         |
+| Phase 6 — EXECUTE       | Adding a column, renaming a column, changing a column type, adding a constraint                                                                | Force the expand/contract pattern — never break the running app |
+| Phase 7 — OBSERVABILITY | Slow query log shows a new query > 100ms                                                                                                       | EXPLAIN the query, suggest the index, generate the migration    |
+| Phase 11 — ROLLOUT      | Pre-deploy check: every migration in the release has a tested `down` migration (or is intentionally irreversible, with sign-off)               | Catches un-reversible migrations before they hit prod           |
 
-**Do NOT use this sub-skill for:** seeding test data (use `db-seeding`), large backfills (use `data-migration`), or app-level ORM tuning (use the language-specific best-practices skill). Those sub-skills *call into* `db-design` to validate their schema changes — you call them, not this one.
+**Do NOT use this sub-skill for:** seeding test data (use `db-seeding`), large backfills (use `data-migration`), or app-level ORM tuning (use the language-specific best-practices skill). Those sub-skills _call into_ `db-design` to validate their schema changes — you call them, not this one.
 
 ## What It Does
 
@@ -186,16 +186,16 @@ Q: Is the table tenant-scoped?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `ALTER TABLE ... ADD COLUMN ... NOT NULL` hangs for 10 minutes | Postgres rewrites the whole table to enforce NOT NULL without a default | Pre-migrate: `ADD COLUMN ... DEFAULT 0 NOT NULL` (Postgres 11+ is metadata-only). Then backfill, then drop default if needed. |
-| `CREATE INDEX` blocks writes | Used plain `CREATE INDEX` instead of `CREATE INDEX CONCURRENTLY` | Always use `CONCURRENTLY` in prod. If already running, wait it out; next time, use `CONCURRENTLY`. |
-| `ALTER COLUMN ... TYPE` locks the table for the full duration | Type change requires a full rewrite | Use the 3-step expand/contract pattern. Never do type changes in a single migration. |
-| Lock contention crash on prod deploy | Migration took a heavy lock (e.g. `ALTER TABLE ... ADD CONSTRAINT ... NOT NULL`) during peak traffic | Run heavy migrations during the deploy window OR use `CREATE UNIQUE INDEX CONCURRENTLY` then `ALTER TABLE ... ADD CONSTRAINT ... USING INDEX` |
-| N+1 query causing 500ms page load | ORM default lazy-loads relations | Add `includes` (Rails) / `selectinload` (SQLAlchemy) / `Include` (Prisma) / `eager_load` (ActiveRecord) at the call site |
-| `SELECT *` breaks after column rename | App selected `*` and got the old column name from a stale cache | Never use `SELECT *` in production code paths. Use explicit column lists. If the column is already renamed, expand/contract: add new name, dual-write, migrate reads, drop old. |
-| RLS policy blocks the admin dashboard | RLS applies to all roles including admins | Create a `bypass_rls` role for admins, OR add a policy `USING (current_setting('app.role') = 'admin' OR tenant_id = ...)` |
-| `down` migration drops a column the app still reads | Down migration was destructive (dropped instead of renamed-back) | Test down migrations on a shadow DB: up → down → up. If the second up fails, the down is destructive — rewrite it. |
+| Symptom                                                        | Cause                                                                                                | Recovery                                                                                                                                                                        |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ALTER TABLE ... ADD COLUMN ... NOT NULL` hangs for 10 minutes | Postgres rewrites the whole table to enforce NOT NULL without a default                              | Pre-migrate: `ADD COLUMN ... DEFAULT 0 NOT NULL` (Postgres 11+ is metadata-only). Then backfill, then drop default if needed.                                                   |
+| `CREATE INDEX` blocks writes                                   | Used plain `CREATE INDEX` instead of `CREATE INDEX CONCURRENTLY`                                     | Always use `CONCURRENTLY` in prod. If already running, wait it out; next time, use `CONCURRENTLY`.                                                                              |
+| `ALTER COLUMN ... TYPE` locks the table for the full duration  | Type change requires a full rewrite                                                                  | Use the 3-step expand/contract pattern. Never do type changes in a single migration.                                                                                            |
+| Lock contention crash on prod deploy                           | Migration took a heavy lock (e.g. `ALTER TABLE ... ADD CONSTRAINT ... NOT NULL`) during peak traffic | Run heavy migrations during the deploy window OR use `CREATE UNIQUE INDEX CONCURRENTLY` then `ALTER TABLE ... ADD CONSTRAINT ... USING INDEX`                                   |
+| N+1 query causing 500ms page load                              | ORM default lazy-loads relations                                                                     | Add `includes` (Rails) / `selectinload` (SQLAlchemy) / `Include` (Prisma) / `eager_load` (ActiveRecord) at the call site                                                        |
+| `SELECT *` breaks after column rename                          | App selected `*` and got the old column name from a stale cache                                      | Never use `SELECT *` in production code paths. Use explicit column lists. If the column is already renamed, expand/contract: add new name, dual-write, migrate reads, drop old. |
+| RLS policy blocks the admin dashboard                          | RLS applies to all roles including admins                                                            | Create a `bypass_rls` role for admins, OR add a policy `USING (current_setting('app.role') = 'admin' OR tenant_id = ...)`                                                       |
+| `down` migration drops a column the app still reads            | Down migration was destructive (dropped instead of renamed-back)                                     | Test down migrations on a shadow DB: up → down → up. If the second up fails, the down is destructive — rewrite it.                                                              |
 
 ## Self-Healing Loop
 

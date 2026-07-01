@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 14 — SELF-UPGRADE | `meta-learning` routed a `weak_heuristic` lesson to `queue.self-patch-generator.jsonl` | A rule gave the wrong answer; refine it |
-| Phase 14 — SELF-UPGRADE | `meta-auditor` flagged a systemic friction pattern (reverts > 3 on same area) | Heuristic missed the pattern |
-| Phase 14 — SELF-UPGRADE | User intervention recorded in `audit-trail.jsonl` | A rule should have caught it before the human had to |
-| Manual trigger | User explicitly asks "fix the rule that flagged X" | Direct patch request |
+| Phase                   | Trigger                                                                                | Why                                                  |
+| ----------------------- | -------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| Phase 14 — SELF-UPGRADE | `meta-learning` routed a `weak_heuristic` lesson to `queue.self-patch-generator.jsonl` | A rule gave the wrong answer; refine it              |
+| Phase 14 — SELF-UPGRADE | `meta-auditor` flagged a systemic friction pattern (reverts > 3 on same area)          | Heuristic missed the pattern                         |
+| Phase 14 — SELF-UPGRADE | User intervention recorded in `audit-trail.jsonl`                                      | A rule should have caught it before the human had to |
+| Manual trigger          | User explicitly asks "fix the rule that flagged X"                                     | Direct patch request                                 |
 
-**Do NOT use this sub-skill for:** adding new capabilities (use `sub-skill-generator`), updating knowledge entries (use `knowledge-base`), or rewriting specs (use `spec-sync`). This sub-skill only *refines existing rules*.
+**Do NOT use this sub-skill for:** adding new capabilities (use `sub-skill-generator`), updating knowledge entries (use `knowledge-base`), or rewriting specs (use `spec-sync`). This sub-skill only _refines existing rules_.
 
 ## What It Does
 
@@ -35,13 +35,13 @@ metadata:
 
 ## Patch Types
 
-| Type | Description | Example |
-|------|-------------|---------|
-| Threshold adjustment | Change a numeric threshold | "Long-method threshold for test files: 30 → 40 lines" |
-| New rule | Add a conditional rule that didn't exist | "Before suggesting Extract Class, check if the class has >50% test coverage — if not, require test additions in same patch" |
-| Heuristic refinement | Add a condition to an existing heuristic | "H1 Long Method: add exception for test setup methods (annotated `@pytest.fixture` or `@Test setUp`)" |
-| Removal (deprecation) | A rule is no longer relevant | "Deprecate the 'no-arrow-functions-in-class' rule — modern JS supports class fields" |
-| Weight tuning | Adjust scoring weights | "Risk matrix: increase 'blast radius' weight from 0.3 to 0.4 for prod-critical files" |
+| Type                  | Description                              | Example                                                                                                                     |
+| --------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Threshold adjustment  | Change a numeric threshold               | "Long-method threshold for test files: 30 → 40 lines"                                                                       |
+| New rule              | Add a conditional rule that didn't exist | "Before suggesting Extract Class, check if the class has >50% test coverage — if not, require test additions in same patch" |
+| Heuristic refinement  | Add a condition to an existing heuristic | "H1 Long Method: add exception for test setup methods (annotated `@pytest.fixture` or `@Test setUp`)"                       |
+| Removal (deprecation) | A rule is no longer relevant             | "Deprecate the 'no-arrow-functions-in-class' rule — modern JS supports class fields"                                        |
+| Weight tuning         | Adjust scoring weights                   | "Risk matrix: increase 'blast radius' weight from 0.3 to 0.4 for prod-critical files"                                       |
 
 ## Integration Contract
 
@@ -84,9 +84,10 @@ Before a patch is applied, it's tested against the last 20 projects' audit-trail
 
 1. Re-run the relevant rule (e.g. H1 Long Method) with the **old** threshold → record outcome.
 2. Re-run with the **new** threshold → record outcome.
-3. Compare: did the new threshold *fix* the friction case (good), *break* a case that was previously correct (regression), or *not affect* it (neutral)?
+3. Compare: did the new threshold _fix_ the friction case (good), _break_ a case that was previously correct (regression), or _not affect_ it (neutral)?
 
 Scoring:
+
 - +1 per friction case fixed
 - −3 per regression (regressions are 3× more costly than fixes are beneficial)
 - 0 per neutral case
@@ -156,7 +157,8 @@ Every applied patch appends to `policy-evolution`'s changelog:
   "ts": "2024-11-22T14:33:00Z",
   "type": "threshold_adjustment",
   "target_rule": "H1_long_method",
-  "old_value": 30, "new_value": 40,
+  "old_value": 30,
+  "new_value": 40,
   "rationale": "Test setup methods are legitimately long; flagging causes noise.",
   "source_lesson": "lesson-2024-11-22-auth-reverts",
   "regression_score": 5,
@@ -169,12 +171,12 @@ Every applied patch appends to `policy-evolution`'s changelog:
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Regression test can't run (missing historical data) | audit-trail.jsonl pruned | Skip patch, log "insufficient test data", escalate to human review |
-| Patch fixes the friction case but breaks 2 others | Over-fitted patch | Reject, re-route lesson as "needs redesign" |
-| Experimental patch caused friction in project N | Bad patch | Auto-revert, restore old rule, re-queue lesson with "patch attempt N failed because Y" |
-| Two patches target the same rule | Concurrency | Serialize by patch_id timestamp; second patch re-tests against first's outcome |
+| Symptom                                             | Cause                    | Recovery                                                                               |
+| --------------------------------------------------- | ------------------------ | -------------------------------------------------------------------------------------- |
+| Regression test can't run (missing historical data) | audit-trail.jsonl pruned | Skip patch, log "insufficient test data", escalate to human review                     |
+| Patch fixes the friction case but breaks 2 others   | Over-fitted patch        | Reject, re-route lesson as "needs redesign"                                            |
+| Experimental patch caused friction in project N     | Bad patch                | Auto-revert, restore old rule, re-queue lesson with "patch attempt N failed because Y" |
+| Two patches target the same rule                    | Concurrency              | Serialize by patch_id timestamp; second patch re-tests against first's outcome         |
 
 ## Tools
 

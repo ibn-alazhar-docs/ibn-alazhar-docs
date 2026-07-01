@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 5 (Performance) finds: slow endpoints (>500ms p95), N+1 queries, high memory (>512MB RSS), high CPU (>70% sustained) | Measure the problem before fixing it |
-| Phase 6 — EXECUTE | User says "the app is slow", "page takes too long", "API is laggy" | Don't guess — profile to find the actual bottleneck |
-| Phase 6 — EXECUTE | Before/after an optimization | Verify the change actually improved things (and didn't regress elsewhere) |
-| Phase 6 — EXECUTE | Adding a new feature that's performance-sensitive (real-time, search, large data) | Establish a baseline before the feature, profile after |
-| Phase 9 — ACCEPTANCE | Verify p95 latency meets the SLO after all changes | Performance regression = release blocker if it crosses the SLO |
-| Phase 11 — ROLLOUT | APM dashboards confirm prod performance matches test env | Prod is the only true test; APM catches regressions test env can't |
+| Phase                | Trigger                                                                                                                        | Why                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 5 (Performance) finds: slow endpoints (>500ms p95), N+1 queries, high memory (>512MB RSS), high CPU (>70% sustained) | Measure the problem before fixing it                                      |
+| Phase 6 — EXECUTE    | User says "the app is slow", "page takes too long", "API is laggy"                                                             | Don't guess — profile to find the actual bottleneck                       |
+| Phase 6 — EXECUTE    | Before/after an optimization                                                                                                   | Verify the change actually improved things (and didn't regress elsewhere) |
+| Phase 6 — EXECUTE    | Adding a new feature that's performance-sensitive (real-time, search, large data)                                              | Establish a baseline before the feature, profile after                    |
+| Phase 9 — ACCEPTANCE | Verify p95 latency meets the SLO after all changes                                                                             | Performance regression = release blocker if it crosses the SLO            |
+| Phase 11 — ROLLOUT   | APM dashboards confirm prod performance matches test env                                                                       | Prod is the only true test; APM catches regressions test env can't        |
 
 **Do NOT use this sub-skill for:** load testing (use `k6` / `locust` / `Artillery` — different concern: simulate traffic, not profile code), capacity planning (use load testing + APM trends), or frontend bundle size analysis (use `webpack-bundle-analyzer` / `source-map-explorer` — that's a build-time concern, not runtime profiling).
 
@@ -172,18 +172,18 @@ Q5: Production profiling?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Flamegraph shows mostly idle / IO wait | Profiling idle process, or workload not representative | Increase load (k6/autocannon); ensure profiling runs during peak load |
-| `py-spy: Permission denied` | Not running as root, can't ptrace | Run as root (`sudo py-spy ...`); or use `--nonblocking` (may miss some samples) |
-| cProfile shows 100% in `builtin.method` | Python overhead — cProfile itself is slow | Use py-spy (sampling) for accurate picture; cProfile over-counts builtins |
-| Profile in prod causes latency spike | cProfile or v8-profiler left enabled | Remove instrumentation immediately; switch to sampled APM (5% overhead) |
-| Before/after shows no improvement | Wrong hotspot fixed, or measurement noise | Re-profile to confirm hotspot; ensure workload is identical; run 3x to reduce noise |
-| p95 improved but p99 regressed | Optimization helped the common case, hurt the tail | Always measure p50 AND p95 AND p99; never optimize only the median |
-| Clinic.js crashes on Node startup | Incompatible Node version | Use Node 18+ LTS; or use `0x` as alternative |
-| Lighthouse score wildly different run-to-run | Browser variance, network noise | Run Lighthouse 3x and report median; use `--preset=desktop` for desktop emulation |
-| EXPLAIN ANALYZE shows seq scan | Missing index, or planner chose wrong | Add index (check `pg_stat_statements` for hot queries); ANALYZE table to update stats |
-| Profile shows hot lock contention | Many threads waiting on same lock | Reduce critical section; use `asyncio.Lock` (Python) / lock-free structures; shard the lock |
+| Symptom                                      | Cause                                                  | Recovery                                                                                    |
+| -------------------------------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| Flamegraph shows mostly idle / IO wait       | Profiling idle process, or workload not representative | Increase load (k6/autocannon); ensure profiling runs during peak load                       |
+| `py-spy: Permission denied`                  | Not running as root, can't ptrace                      | Run as root (`sudo py-spy ...`); or use `--nonblocking` (may miss some samples)             |
+| cProfile shows 100% in `builtin.method`      | Python overhead — cProfile itself is slow              | Use py-spy (sampling) for accurate picture; cProfile over-counts builtins                   |
+| Profile in prod causes latency spike         | cProfile or v8-profiler left enabled                   | Remove instrumentation immediately; switch to sampled APM (5% overhead)                     |
+| Before/after shows no improvement            | Wrong hotspot fixed, or measurement noise              | Re-profile to confirm hotspot; ensure workload is identical; run 3x to reduce noise         |
+| p95 improved but p99 regressed               | Optimization helped the common case, hurt the tail     | Always measure p50 AND p95 AND p99; never optimize only the median                          |
+| Clinic.js crashes on Node startup            | Incompatible Node version                              | Use Node 18+ LTS; or use `0x` as alternative                                                |
+| Lighthouse score wildly different run-to-run | Browser variance, network noise                        | Run Lighthouse 3x and report median; use `--preset=desktop` for desktop emulation           |
+| EXPLAIN ANALYZE shows seq scan               | Missing index, or planner chose wrong                  | Add index (check `pg_stat_statements` for hot queries); ANALYZE table to update stats       |
+| Profile shows hot lock contention            | Many threads waiting on same lock                      | Reduce critical section; use `asyncio.Lock` (Python) / lock-free structures; shard the lock |
 
 ## Self-Healing Loop
 

@@ -1,7 +1,8 @@
-import { NotFoundError } from "@/lib/errors";
-import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { NotFoundError } from "@/lib/shared/errors";
+import { ownedWhere } from "@/core/authorization";
+import type { AuthSession } from "@/domain/types";
 import { isAdminRole } from "@/domain/auth";
-import { LIMITS } from "@/lib/constants";
+import { LIMITS } from "@/lib/shared/constants";
 import type { Prisma } from "@prisma/client";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";

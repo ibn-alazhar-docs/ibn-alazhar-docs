@@ -125,9 +125,9 @@ describe("loadConfig", () => {
       expect(c.minio.accessKey).toBe("minioadmin");
     });
 
-    it("default bucket is ibn-al-azhar-docs", () => {
+    it("default bucket is ibnalazhardocs", () => {
       const c = loadConfig();
-      expect(c.minio.bucket).toBe("ibn-al-azhar-docs");
+      expect(c.minio.bucket).toBe("ibnalazhardocs");
     });
   });
 

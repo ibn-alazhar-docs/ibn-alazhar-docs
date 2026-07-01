@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
 import {
   getContentCollection,
   getCategoryDescription,
@@ -7,7 +7,7 @@ import {
   getCategoryTotalReadingTime,
   getJourneys,
   getRecentDocs,
-} from "@/lib/content";
+} from "@/lib/backend/content";
 import { Container } from "@/components/ui/container";
 import { KnowledgeHero } from "@/components/discovery/knowledge-hero";
 import { CategoryCard } from "@/components/discovery/category-card";

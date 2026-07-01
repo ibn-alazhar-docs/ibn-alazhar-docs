@@ -1,9 +1,9 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
-import { AppError, NotFoundError } from "@/lib/errors";
-import { ERROR_CODES } from "@/lib/constants";
+import { AppError, NotFoundError } from "@/lib/shared/errors";
+import { ERROR_CODES } from "@/lib/shared/constants";
 import { isAdminRole } from "@/domain/auth";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/shared/logger";
 
 export class DocumentCrudUseCases {
   constructor(

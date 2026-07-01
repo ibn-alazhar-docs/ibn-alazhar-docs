@@ -26,11 +26,13 @@ Is this reusable across environments/projects?
 When building reusable infrastructure:
 
 1. **Scaffold new module with script:**
+
 ```bash
 python3 scripts/init_module.py my-module-name
 ```
 
 This automatically creates:
+
 - Standard module file structure
 - Template files with proper formatting
 - Examples directory
@@ -48,12 +50,14 @@ This automatically creates:
    - Input validation using `validation` blocks
    - Mark sensitive values with `sensitive = true`
 
-3. **Validate module:**
+4. **Validate module:**
+
 ```bash
 python3 scripts/validate_module.py /path/to/module
 ```
 
 This checks for:
+
 - Required files present
 - Variables have descriptions and types
 - Outputs have descriptions
@@ -62,6 +66,7 @@ This checks for:
 - Sensitive values properly marked
 
 4. **Test module:**
+
 ```bash
 cd examples/complete
 terraform init
@@ -76,6 +81,7 @@ terraform plan
 **Key Module Patterns:**
 
 See `references/best_practices.md` "Module Design" section for:
+
 - Composability patterns
 - Variable organization
 - Output design
@@ -86,6 +92,7 @@ See `references/best_practices.md` "Module Design" section for:
 For environment-specific infrastructure:
 
 1. **Structure by environment:**
+
 ```
 environments/
 ├── dev/
@@ -94,6 +101,7 @@ environments/
 ```
 
 2. **Use consistent file organization:**
+
 ```
 environment/
 ├── main.tf           # Resource definitions
@@ -106,10 +114,11 @@ environment/
 ```
 
 3. **Reference modules:**
+
 ```hcl
 module "vpc" {
   source = "git::https://github.com/company/terraform-modules.git//vpc?ref=v1.2.0"
-  
+
   name        = "${var.environment}-vpc"
   vpc_cidr    = var.vpc_cidr
   environment = var.environment
@@ -119,12 +128,14 @@ module "vpc" {
 ### 2. State Management & Inspection
 
 **When to inspect state:**
+
 - Before major changes
 - Investigating drift
 - Debugging resource issues
 - Auditing infrastructure
 
 **Inspect state and check health:**
+
 ```bash
 # List all managed resources
 terraform state list
@@ -137,12 +148,14 @@ terraform show
 ```
 
 **Check for drift:**
+
 ```bash
 # Exit code 0 = no changes, 1 = error, 2 = drift detected
 terraform plan -detailed-exitcode
 ```
 
 **State operations:**
+
 ```bash
 # List all resources
 terraform state list
@@ -161,6 +174,7 @@ terraform import aws_instance.web i-1234567890abcdef0
 ```
 
 **State best practices:** See `references/best_practices.md` "State Management" section for:
+
 - Remote backend setup (S3 + DynamoDB)
 - State file organization strategies
 - Encryption and security
@@ -189,6 +203,7 @@ terraform output
 ```
 
 **With Terragrunt:**
+
 ```bash
 # Run for single module
 terragrunt plan
@@ -215,6 +230,7 @@ When encountering errors:
    - Performance problems
 
 3. **Enable debug logging if needed:**
+
 ```bash
 export TF_LOG=DEBUG
 export TF_LOG_PATH=terraform-debug.log
@@ -222,6 +238,7 @@ terraform plan
 ```
 
 4. **Isolate the problem:**
+
 ```bash
 # Test specific resource
 terraform plan -target=aws_instance.web
@@ -231,18 +248,21 @@ terraform apply -target=aws_instance.web
 5. **Common quick fixes:**
 
 **State locked** (full resolution guide: `references/troubleshooting.md` → State Lock Error):
+
 ```bash
 # Verify no one else running, then:
 terraform force-unlock <lock-id>
 ```
 
 **Provider cache issues:**
+
 ```bash
 rm -rf .terraform
 terraform init -upgrade
 ```
 
 **Module cache issues:**
+
 ```bash
 rm -rf .terraform/modules
 terraform init
@@ -253,36 +273,43 @@ terraform init
 **Before committing:**
 
 1. **Format code:**
+
 ```bash
 terraform fmt -recursive
 ```
 
 2. **Validate syntax:**
+
 ```bash
 terraform validate
 ```
 
 3. **Lint with tflint:**
+
 ```bash
 tflint --module
 ```
 
 4. **Security scan with checkov:**
+
 ```bash
 checkov -d .
 ```
 
 5. **Validate modules:**
+
 ```bash
 python3 scripts/validate_module.py modules/vpc
 ```
 
 6. **Generate documentation:**
+
 ```bash
 terraform-docs markdown modules/vpc > modules/vpc/README.md
 ```
 
 **Review checklist:**
+
 - [ ] All variables have descriptions
 - [ ] Sensitive values marked as sensitive
 - [ ] Outputs have descriptions
@@ -324,7 +351,7 @@ terragrunt-project/
 # In eks/terragrunt.hcl
 dependency "vpc" {
   config_path = "../vpc"
-  
+
   # Mock outputs for plan/validate
   mock_outputs = {
     vpc_id         = "vpc-mock"
@@ -342,6 +369,7 @@ inputs = {
 ### Common Patterns
 
 See `assets/templates/MODULE_TEMPLATE.md` for complete Terragrunt configuration templates including:
+
 - Root terragrunt.hcl with provider generation
 - Remote state configuration
 - Module-level terragrunt.hcl patterns
@@ -357,18 +385,18 @@ See `assets/templates/MODULE_TEMPLATE.md` for complete Terragrunt configuration 
 
 Ready-to-use templates in `assets/workflows/`:
 
-| Template | Platform | Features |
-|----------|----------|----------|
-| `github-actions-terraform.yml` | GitHub Actions | Validation, TFLint, Checkov, plan on PRs, apply on main, OIDC |
+| Template                        | Platform       | Features                                                            |
+| ------------------------------- | -------------- | ------------------------------------------------------------------- |
+| `github-actions-terraform.yml`  | GitHub Actions | Validation, TFLint, Checkov, plan on PRs, apply on main, OIDC       |
 | `github-actions-terragrunt.yml` | GitHub Actions | Changed module detection, parallel planning, dependency-aware apply |
-| `gitlab-ci-terraform.yml` | GitLab CI | Multi-stage pipeline, artifact management, manual gates |
+| `gitlab-ci-terraform.yml`       | GitLab CI      | Multi-stage pipeline, artifact management, manual gates             |
 
 ## Scripts
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
-| `init_module.py` | Scaffold new module with standard structure | `python3 scripts/init_module.py <name> [--path ./modules] [--json]` |
-| `validate_module.py` | Validate module against best practices | `python3 scripts/validate_module.py <path>` |
+| Script               | Purpose                                     | Usage                                                               |
+| -------------------- | ------------------------------------------- | ------------------------------------------------------------------- |
+| `init_module.py`     | Scaffold new module with standard structure | `python3 scripts/init_module.py <name> [--path ./modules] [--json]` |
+| `validate_module.py` | Validate module against best practices      | `python3 scripts/validate_module.py <path>`                         |
 
 ## Assets
 
@@ -430,4 +458,3 @@ terragrunt run-all destroy
 # With specific modules
 terragrunt run-all apply --terragrunt-include-dir vpc --terragrunt-include-dir eks
 ```
-

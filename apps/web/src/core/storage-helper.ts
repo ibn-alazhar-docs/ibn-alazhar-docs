@@ -4,8 +4,8 @@ import {
   downloadFile,
   PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
-import { prisma } from "@/lib/prisma";
-import { AppError } from "@/lib/errors";
+import { prisma } from "@/lib/backend/prisma";
+import { AppError } from "@/lib/shared/errors";
 
 export async function downloadDocumentBuffer(
   storageKey: string,

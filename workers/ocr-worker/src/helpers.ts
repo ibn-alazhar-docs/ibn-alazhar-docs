@@ -16,14 +16,13 @@ import {
   uploadBuffer,
   getDriveClient,
   downloadFromDrive,
-  ensureDriveFolder,
-  uploadToDrive,
+  uploadExportBuffer,
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { DocStatus } from "@prisma/client";
-import { prisma } from "../../shared/prisma";
-import { logger } from "../../shared/logger";
+import { prisma } from "@ibn-al-azhar-docs/database";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export async function downloadDocumentBuffer(
   storageKey: string,
@@ -49,7 +48,7 @@ export async function downloadDocumentBuffer(
   return downloadFile(config, storageKey);
 }
 
-export async function uploadExportBuffer(
+export async function uploadExportBufferForWorker(
   config: PipelineConfig,
   userId: string,
   buffer: Buffer,
@@ -60,21 +59,7 @@ export async function uploadExportBuffer(
     where: { userId, provider: "google" },
   });
 
-  if (account && account.access_token && account.refresh_token) {
-    const drive = getDriveClient(
-      account.access_token,
-      account.refresh_token,
-      process.env.GOOGLE_CLIENT_ID || "",
-      process.env.GOOGLE_CLIENT_SECRET || "",
-    );
-    const folderId = await ensureDriveFolder(drive);
-    const fileId = await uploadToDrive(drive, fileName, mimeType, buffer, folderId);
-    return `gdrive://${fileId}`;
-  } else {
-    const key = `${config.paths.exports}/${userId}/${fileName}`;
-    await uploadBuffer(config, key, buffer, mimeType);
-    return key;
-  }
+  return uploadExportBuffer(config, userId, buffer, fileName, mimeType, account, true);
 }
 
 export async function updateDocStatus(

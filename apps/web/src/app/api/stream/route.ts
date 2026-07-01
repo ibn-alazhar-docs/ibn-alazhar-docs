@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth-guards";
-import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/conversion-status-utils";
-import { handleRouteError } from "@/lib/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { withAuth } from "@/lib/backend/auth-guards";
+import { normalizeStage, DOC_PROGRESS_MAP } from "@/lib/shared/conversion-status-utils";
+import { handleRouteError } from "@/lib/shared/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { repos } from "@/core/composition-root";
-import { ERROR_CODES, LIMITS, UI_TIMING } from "@/lib/constants";
+import { ERROR_CODES, LIMITS, UI_TIMING } from "@/lib/shared/constants";
 
 const sseConnectionsByUser = new Map<string, number>();
 

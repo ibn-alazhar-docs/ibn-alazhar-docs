@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 1 — DISCOVERY | Project type detected, look up known patterns | Avoid re-researching known tech |
-| Phase 6 — EXECUTE | Before implementing a feature, query for known patterns | Don't repeat others' mistakes |
-| Phase 6 — EXECUTE | Hit a framework quirk (weird error, undocumented flag) | Look up quirk entry; if missing, create one after solving |
-| Phase 13 — META-AUDIT | New learning captured, write entry with source | Persist it for next project |
-| Phase 14 — SELF-UPGRADE | `meta-learning` routed an "outdated knowledge" lesson | Re-verify and supersede stale entry |
+| Phase                   | Trigger                                                 | Why                                                       |
+| ----------------------- | ------------------------------------------------------- | --------------------------------------------------------- |
+| Phase 1 — DISCOVERY     | Project type detected, look up known patterns           | Avoid re-researching known tech                           |
+| Phase 6 — EXECUTE       | Before implementing a feature, query for known patterns | Don't repeat others' mistakes                             |
+| Phase 6 — EXECUTE       | Hit a framework quirk (weird error, undocumented flag)  | Look up quirk entry; if missing, create one after solving |
+| Phase 13 — META-AUDIT   | New learning captured, write entry with source          | Persist it for next project                               |
+| Phase 14 — SELF-UPGRADE | `meta-learning` routed an "outdated knowledge" lesson   | Re-verify and supersede stale entry                       |
 
-**Do NOT use this sub-skill for:** ephemeral project state (use `audit-trail`), lessons pending classification (use `meta-learning` queues), or policy/heuristic changes (use `policy-evolution`). This sub-skill is for *reusable technical knowledge* only.
+**Do NOT use this sub-skill for:** ephemeral project state (use `audit-trail`), lessons pending classification (use `meta-learning` queues), or policy/heuristic changes (use `policy-evolution`). This sub-skill is for _reusable technical knowledge_ only.
 
 ## What It Does
 
@@ -38,9 +38,9 @@ metadata:
 ```json
 {
   "id": "kb-nextjs-15-app-router-layout",
-  "type": "pattern",                    // pattern | anti-pattern | quirk | recipe
+  "type": "pattern", // pattern | anti-pattern | quirk | recipe
   "framework": "next.js",
-  "version": "15.x",                    // semver range; "*" if version-agnostic
+  "version": "15.x", // semver range; "*" if version-agnostic
   "title": "App Router layout.tsx wraps every route in its segment",
   "body": "In Next.js 15 App Router, `app/layout.tsx` is the root layout. It wraps every route. To have route-specific layouts, create `app/<route>/layout.tsx`. Unlike Pages Router `_app.tsx`, layouts preserve state across navigation.",
   "sources": [
@@ -48,10 +48,10 @@ metadata:
     "experience: proj-2024-11-payments"
   ],
   "last_verified": "2024-11-15",
-  "confidence": 0.9,                    // 0.0-1.0
+  "confidence": 0.9, // 0.0-1.0
   "supersedes": "kb-nextjs-14-pages-app",
   "superseded_by": null,
-  "status": "active",                   // active | stale | deprecated | superseded
+  "status": "active", // active | stale | deprecated | superseded
   "tags": ["routing", "app-router", "state"]
 }
 ```
@@ -110,12 +110,12 @@ Each entry is a single Markdown file with YAML frontmatter (the schema above as 
 
 ## Query Patterns
 
-| Question | Query |
-|----------|-------|
-| "How do I do X in framework Y version Z?" | `query: "X", framework: Y, version: Z` |
-| "What are the gotchas in framework Y?" | `type: quirk, framework: Y` |
-| "What anti-patterns should I avoid?" | `type: anti-pattern, framework: Y, version: Z` |
-| "Is there a recipe for auth setup in framework Y?" | `type: recipe, framework: Y, tags: [auth]` |
+| Question                                           | Query                                          |
+| -------------------------------------------------- | ---------------------------------------------- |
+| "How do I do X in framework Y version Z?"          | `query: "X", framework: Y, version: Z`         |
+| "What are the gotchas in framework Y?"             | `type: quirk, framework: Y`                    |
+| "What anti-patterns should I avoid?"               | `type: anti-pattern, framework: Y, version: Z` |
+| "Is there a recipe for auth setup in framework Y?" | `type: recipe, framework: Y, tags: [auth]`     |
 
 ## Conflict Resolution
 
@@ -179,19 +179,24 @@ Q (annual): Is last_verified > 365 days old?
 Every write appends to `_changelog.jsonl`:
 
 ```json
-{"ts": "2024-11-22T14:33:00Z", "action": "write", "id": "kb-nextjs-15-...", "source_project": "proj-2024-11-payments"}
+{
+  "ts": "2024-11-22T14:33:00Z",
+  "action": "write",
+  "id": "kb-nextjs-15-...",
+  "source_project": "proj-2024-11-payments"
+}
 ```
 
-`meta-auditor` reads this in Phase 13 to see what new knowledge was captured. `meta-learning` reads it to detect "outdated knowledge" lessons (entries that were *not* re-verified in 365+ days).
+`meta-auditor` reads this in Phase 13 to see what new knowledge was captured. `meta-learning` reads it to detect "outdated knowledge" lessons (entries that were _not_ re-verified in 365+ days).
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Query returns no matches for known topic | `_index.json` stale | `python3 scripts/kb.py rebuild-index` |
-| Entry has `confidence > 0.9` but is wrong | Source was bad | Add contradicting entry as `disputed`, drop confidence to 0.5 |
-| Two entries with same ID | Concurrent write | Append `_2` to newer, log warning |
-| Stale entries accumulate | No annual review ran | `kb.py find-stale` lists them; batch-verify in Phase 14 |
+| Symptom                                   | Cause                | Recovery                                                      |
+| ----------------------------------------- | -------------------- | ------------------------------------------------------------- |
+| Query returns no matches for known topic  | `_index.json` stale  | `python3 scripts/kb.py rebuild-index`                         |
+| Entry has `confidence > 0.9` but is wrong | Source was bad       | Add contradicting entry as `disputed`, drop confidence to 0.5 |
+| Two entries with same ID                  | Concurrent write     | Append `_2` to newer, log warning                             |
+| Stale entries accumulate                  | No annual review ran | `kb.py find-stale` lists them; batch-verify in Phase 14       |
 
 ## Tools
 
@@ -212,6 +217,6 @@ Every write appends to `_changelog.jsonl`:
 2. **Always cite a source.** No source → no write. "Experience" is a valid source only with a `project_id`.
 3. **Always version.** Every entry has a `version` field; entries without version are rejected (use `"*"` only when truly version-agnostic).
 4. **Always re-verify annually.** Entries with `last_verified` older than 365 days are flagged `stale` and excluded from default queries until re-verified.
-5. **Never auto-write from a web fetch.** A human (or the orchestrator) reviews and approves every entry; auto-scraped content can be a *candidate* but never directly persisted.
+5. **Never auto-write from a web fetch.** A human (or the orchestrator) reviews and approves every entry; auto-scraped content can be a _candidate_ but never directly persisted.
 6. **Always supersede, never overwrite.** When replacing an entry, set the old one's `superseded_by` and the new one's `supersedes` — both kept.
 7. **Always log to `_changelog.jsonl`.** Every write, supersede, deprecate, or re-verify is appended for audit.

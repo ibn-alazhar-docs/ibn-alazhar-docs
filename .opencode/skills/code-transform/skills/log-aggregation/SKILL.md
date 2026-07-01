@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | CENSUS lists a service with no logging backend | Gap — add one before prod |
-| Phase 7 — OBSERVABILITY | Always, for every new service | Centralized logging is a Day-1 requirement, not Day-100 |
-| Phase 8 — ROLLOUT | After first prod deploy | Verify logs are landing in the backend with trace_id populated |
-| Phase 13 — RETROSPECTIVE | After any incident that took >30 min to diagnose | Was log query the bottleneck? Tune retention or schema |
+| Phase                    | Trigger                                          | Why                                                            |
+| ------------------------ | ------------------------------------------------ | -------------------------------------------------------------- |
+| Phase 2 — AUDIT          | CENSUS lists a service with no logging backend   | Gap — add one before prod                                      |
+| Phase 7 — OBSERVABILITY  | Always, for every new service                    | Centralized logging is a Day-1 requirement, not Day-100        |
+| Phase 8 — ROLLOUT        | After first prod deploy                          | Verify logs are landing in the backend with trace_id populated |
+| Phase 13 — RETROSPECTIVE | After any incident that took >30 min to diagnose | Was log query the bottleneck? Tune retention or schema         |
 
 **Do NOT use this sub-skill for:** metrics (use `metrics-dashboard`), distributed tracing (use `tracing-setup`), or audit logs (those go to an append-only store with longer retention — route to `audit-log` sub-skill if it exists). Logs are for diagnosis; metrics are for alerting; traces are for causality.
 
@@ -29,7 +29,16 @@ metadata:
 2. Routes to a logging backend via the decision tree below.
 3. Defines the **structured-logging schema** every service must emit:
    ```json
-   {"ts":"2026-06-26T14:32:01.123Z","level":"info","service":"api","msg":"order created","trace_id":"abc123","user_id":"u_42","order_id":"o_99","duration_ms":17}
+   {
+     "ts": "2026-06-26T14:32:01.123Z",
+     "level": "info",
+     "service": "api",
+     "msg": "order created",
+     "trace_id": "abc123",
+     "user_id": "u_42",
+     "order_id": "o_99",
+     "duration_ms": 17
+   }
    ```
 4. Defines log levels and when to use each (see table below).
 5. Installs PII scrubbing at the edge (Logstash filter, Vector transform, or OpenTelemetry processor) so secrets never reach the backend.
@@ -135,35 +144,37 @@ Q: Retention configured?
 
 ## Log Levels
 
-| Level | When to use | Action |
-|-------|-------------|--------|
-| DEBUG | Verbose internals, only useful to a developer | Default OFF in prod; sample 1% when on |
-| INFO  | Normal lifecycle events (request served, job done) | Default ON; 100% retained |
-| WARN  | Something unexpected but recoverable (retry succeeded, fallback used) | ON; alert if rate >2x baseline |
-| ERROR | Operation failed but service still up (request 500'd, job failed) | ON; page on-call if rate >threshold |
-| FATAL | Service cannot continue (out of memory, lost DB connection) | ON; immediate page; expect restart |
+| Level | When to use                                                           | Action                                 |
+| ----- | --------------------------------------------------------------------- | -------------------------------------- |
+| DEBUG | Verbose internals, only useful to a developer                         | Default OFF in prod; sample 1% when on |
+| INFO  | Normal lifecycle events (request served, job done)                    | Default ON; 100% retained              |
+| WARN  | Something unexpected but recoverable (retry succeeded, fallback used) | ON; alert if rate >2x baseline         |
+| ERROR | Operation failed but service still up (request 500'd, job failed)     | ON; page on-call if rate >threshold    |
+| FATAL | Service cannot continue (out of memory, lost DB connection)           | ON; immediate page; expect restart     |
 
 Rule: **Never log at ERROR for things that aren't errors.** A user typing a wrong password is INFO ("auth failed: invalid credentials"), not ERROR. Logging normal control flow at ERROR trains on-calls to ignore pages.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Loki: `too many outstanding requests` | Querier overloaded by high-cardinality labels | Drop high-cardinality labels (user_id, request_id) — move them into log body, not labels |
-| ELK: cluster red, unassigned shards | Disk full or node lost | Add disk; `POST /_cluster/reroute`; reduce retention if disk chronically tight |
-| Datadog: log volume 5x budget | Service logging inside a hot loop | Sample DEBUG; move INFO to DEBUG for hot paths; use `dd.trace_id` correlation instead of re-logging |
-| CloudWatch: `Rate exceeded` | PutLogEvents throttled | Batch logs (10K events / 1MB per call); use subscription fanout via Kinesis |
-| Promtail can't parse JSON | Service switched from JSON to plain text | Fix the service — structured logging is a contract; add a CI check that fails on non-JSON stdout |
-| Logs missing trace_id | Service not instrumented with OTel | Add OTel SDK + autoinstrumentation; trace_id flows automatically once instrumented |
-| PII found in logs (scan-pii alert) | Logger called with raw user input | Add scrubber rule; fix call site; rotate any exposed credentials; file incident |
-| Cold restore from Glacier takes 12h | Restoring for incident diagnosis | Use expedited retrieval (1–5 min, higher cost) for incident-driven restores |
+| Symptom                               | Cause                                         | Recovery                                                                                            |
+| ------------------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| Loki: `too many outstanding requests` | Querier overloaded by high-cardinality labels | Drop high-cardinality labels (user_id, request_id) — move them into log body, not labels            |
+| ELK: cluster red, unassigned shards   | Disk full or node lost                        | Add disk; `POST /_cluster/reroute`; reduce retention if disk chronically tight                      |
+| Datadog: log volume 5x budget         | Service logging inside a hot loop             | Sample DEBUG; move INFO to DEBUG for hot paths; use `dd.trace_id` correlation instead of re-logging |
+| CloudWatch: `Rate exceeded`           | PutLogEvents throttled                        | Batch logs (10K events / 1MB per call); use subscription fanout via Kinesis                         |
+| Promtail can't parse JSON             | Service switched from JSON to plain text      | Fix the service — structured logging is a contract; add a CI check that fails on non-JSON stdout    |
+| Logs missing trace_id                 | Service not instrumented with OTel            | Add OTel SDK + autoinstrumentation; trace_id flows automatically once instrumented                  |
+| PII found in logs (scan-pii alert)    | Logger called with raw user input             | Add scrubber rule; fix call site; rotate any exposed credentials; file incident                     |
+| Cold restore from Glacier takes 12h   | Restoring for incident diagnosis              | Use expedited retrieval (1–5 min, higher cost) for incident-driven restores                         |
 
 ## Self-Healing Loop
 
 Every backend plan, verify run, and PII scan writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - Backend, shipper, log volume per service, query latency, PII hits.
 
 `meta-auditor` reads this in Phase 13. Patterns it acts on:
+
 - Same PII pattern (e.g., email in `msg` field) appearing across projects → `self-patch-generator` adds a scrubber rule to the default shipper config.
 - Log volume per service growing >2x month-over-month without traffic growth → flag hot-loop logging; suggest sampling.
 - Query latency exceeding 10s consistently on Loki → flag high-cardinality label abuse; suggest moving to log body.

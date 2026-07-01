@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 14 — SELF-UPGRADE | `self-patch-generator` produced an approved patch | Apply the patch to the policy file |
-| Phase 14 — SELF-UPGRADE | `meta-learning` routed a lesson requiring a new rule | Draft and add the rule |
-| Phase 14 — SELF-UPGRADE (monthly) | Prune sweep: policies not referenced in 90 days → sunset candidates | Keep the rulebook lean |
-| Phase 13 — META-AUDIT | `meta-auditor` needs to know which policy version was active during a project | Look up policy version by timestamp |
-| Manual trigger | User asks "what rules are active?" or "when did rule X change?" | Diagnostic |
+| Phase                             | Trigger                                                                       | Why                                 |
+| --------------------------------- | ----------------------------------------------------------------------------- | ----------------------------------- |
+| Phase 14 — SELF-UPGRADE           | `self-patch-generator` produced an approved patch                             | Apply the patch to the policy file  |
+| Phase 14 — SELF-UPGRADE           | `meta-learning` routed a lesson requiring a new rule                          | Draft and add the rule              |
+| Phase 14 — SELF-UPGRADE (monthly) | Prune sweep: policies not referenced in 90 days → sunset candidates           | Keep the rulebook lean              |
+| Phase 13 — META-AUDIT             | `meta-auditor` needs to know which policy version was active during a project | Look up policy version by timestamp |
+| Manual trigger                    | User asks "what rules are active?" or "when did rule X change?"               | Diagnostic                          |
 
-**Do NOT use this sub-skill for:** writing new sub-skills (use `sub-skill-generator`), capturing domain knowledge (use `knowledge-base`), or one-off decisions (use `audit-trail`). This sub-skill manages *persistent rules* that govern the skill's behavior.
+**Do NOT use this sub-skill for:** writing new sub-skills (use `sub-skill-generator`), capturing domain knowledge (use `knowledge-base`), or one-off decisions (use `audit-trail`). This sub-skill manages _persistent rules_ that govern the skill's behavior.
 
 ## What It Does
 
@@ -60,13 +60,13 @@ draft → active → superseded → archived
                 ↘ sunset → archived
 ```
 
-| State | Meaning |
-|-------|---------|
-| `draft` | Proposed but not yet active (e.g. experimental patch pending validation) |
-| `active` | Currently enforced by the skill |
-| `superseded` | Replaced by a newer version; no longer enforced but kept for audit |
-| `sunset` | Marked for archival due to no references in 90+30 days; not enforced |
-| `archived` | Moved to `policy-archive/`; queryable but not enforced; never deleted |
+| State        | Meaning                                                                  |
+| ------------ | ------------------------------------------------------------------------ |
+| `draft`      | Proposed but not yet active (e.g. experimental patch pending validation) |
+| `active`     | Currently enforced by the skill                                          |
+| `superseded` | Replaced by a newer version; no longer enforced but kept for audit       |
+| `sunset`     | Marked for archival due to no references in 90+30 days; not enforced     |
+| `archived`   | Moved to `policy-archive/`; queryable but not enforced; never deleted    |
 
 **Never deleted.** A policy may move from `active` to `superseded` to `archived`, but the record is always retained. This is the audit trail for the skill's own behavior.
 
@@ -192,29 +192,46 @@ Q: Did the patch cause a conflict with another active rule?
 Every policy change appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "14", "action": "policy-apply", "patch_id": "patch-2024-11-22-001", "rule_id": "rule-H1-long-method", "old_version": "1.4.6", "new_version": "1.4.7", "experimental": true}
+{
+  "ts": "...",
+  "phase": "14",
+  "action": "policy-apply",
+  "patch_id": "patch-2024-11-22-001",
+  "rule_id": "rule-H1-long-method",
+  "old_version": "1.4.6",
+  "new_version": "1.4.7",
+  "experimental": true
+}
 ```
 
 Every prune sweep appends:
 
 ```json
-{"ts": "...", "phase": "14", "action": "policy-prune", "candidates": 3, "archived": 2, "revived": 0}
+{
+  "ts": "...",
+  "phase": "14",
+  "action": "policy-prune",
+  "candidates": 3,
+  "archived": 2,
+  "revived": 0
+}
 ```
 
 `meta-auditor` checks:
+
 - Are experimental rules being promoted within 3 projects? (If not, the rule isn't being exercised — may be wrong)
 - Are rules being frequently rolled back? (If yes, self-patch-generator is producing bad patches)
 - Are prune sweeps actually running monthly? (If not, the rulebook is growing unbounded)
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Two active versions of the same rule | Apply race condition | Force-resolve: newest wins, older → `superseded` immediately |
-| Rule referenced in audit-trail but marked `sunset` | Prune sweep was too aggressive | Revive the rule from `sunset` to `active` |
-| Patch references a rule that doesn't exist | Stale patch | Halt; ask self-patch-generator to revalidate |
-| Rollback fails (old version archived) | Old version was already archived | Restore from `policy-archive/` to `superseded` state, then `active` |
-| Rulebook grows unbounded | Prune sweep not running | Force-run prune; surface sunset candidates |
+| Symptom                                            | Cause                            | Recovery                                                            |
+| -------------------------------------------------- | -------------------------------- | ------------------------------------------------------------------- |
+| Two active versions of the same rule               | Apply race condition             | Force-resolve: newest wins, older → `superseded` immediately        |
+| Rule referenced in audit-trail but marked `sunset` | Prune sweep was too aggressive   | Revive the rule from `sunset` to `active`                           |
+| Patch references a rule that doesn't exist         | Stale patch                      | Halt; ask self-patch-generator to revalidate                        |
+| Rollback fails (old version archived)              | Old version was already archived | Restore from `policy-archive/` to `superseded` state, then `active` |
+| Rulebook grows unbounded                           | Prune sweep not running          | Force-run prune; surface sunset candidates                          |
 
 ## Tools
 

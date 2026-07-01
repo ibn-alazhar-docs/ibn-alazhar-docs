@@ -4,7 +4,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
 import {
   getDocContent,
   getDocNavigation,
@@ -14,7 +14,7 @@ import {
   getPrerequisiteDocs,
   getContinuationDoc,
   getDocJourneys,
-} from "@/lib/content";
+} from "@/lib/backend/content";
 import { mdxComponents } from "@/components/mdx/mdx-components";
 import { Breadcrumbs } from "@/components/reading/breadcrumbs";
 import { DocMetadataBar } from "@/components/reading/doc-metadata";

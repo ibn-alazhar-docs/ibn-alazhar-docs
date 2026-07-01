@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 1 — DISCOVERY | Project spans multiple repos (detected via `project_analyzer`) | Need to map the dependency graph early |
-| Phase 5 — PRIORITIZE | Plan touches contracts (API/DB/event schema) across repos | Sequence producers before consumers |
-| Phase 6 — EXECUTE | Multi-repo changes ready to implement | Per-repo branches, coordinated merges |
-| Phase 7 — VERIFY | Cross-repo integration tests needed | Verify the contract holds end-to-end |
-| Manual trigger | User asks "what's the merge order for these 5 PRs?" | Diagnostic |
+| Phase                | Trigger                                                        | Why                                    |
+| -------------------- | -------------------------------------------------------------- | -------------------------------------- |
+| Phase 1 — DISCOVERY  | Project spans multiple repos (detected via `project_analyzer`) | Need to map the dependency graph early |
+| Phase 5 — PRIORITIZE | Plan touches contracts (API/DB/event schema) across repos      | Sequence producers before consumers    |
+| Phase 6 — EXECUTE    | Multi-repo changes ready to implement                          | Per-repo branches, coordinated merges  |
+| Phase 7 — VERIFY     | Cross-repo integration tests needed                            | Verify the contract holds end-to-end   |
+| Manual trigger       | User asks "what's the merge order for these 5 PRs?"            | Diagnostic                             |
 
 **Do NOT use this sub-skill for:** single-repo projects (use the regular workflow), independent changes in different repos with no shared contract (just do them in parallel, no coordination needed), or repo infrastructure changes that don't affect contracts (CI config, etc.).
 
@@ -69,11 +69,13 @@ OUTPUT (JSON to stdout):
 ### Step 1: Map Repo Dependency Graph
 
 For each repo, determine:
+
 - **Produces**: contracts this repo exposes (API endpoints, DB schemas, event schemas, shared type packages)
 - **Consumes**: contracts this repo depends on (which other repos' APIs/schemas/events it calls/reads)
 - **Version**: current contract version (semver)
 
 Sources for this map:
+
 - `package.json` dependencies (Node)
 - `requirements.txt` / `pyproject.toml` (Python)
 - `go.mod` (Go)
@@ -85,16 +87,16 @@ Sources for this map:
 
 Walk the plan (BLUEPRINT.md) and tag each task with the contract it touches:
 
-| Change type | Breaking? | Version bump | Sequence rule |
-|-------------|-----------|--------------|---------------|
-| API endpoint added | No | minor | Consumer can adopt anytime |
-| API endpoint removed | Yes | major | Producer must merge first; consumers must update before producer deploys |
-| API field added (optional) | No | minor | Producer first; consumers adopt at leisure |
-| API field removed | Yes | major | Producer must give deprecation notice; consumers update; producer removes in next major |
-| DB schema migration (additive) | No | n/a | Producer first; consumers unaffected |
-| DB schema migration (breaking) | Yes | n/a | Producer first; consumers must update queries before producer deploys |
-| Event schema change (additive) | No | minor | Producer first; consumers ignore new fields |
-| Event schema change (breaking) | Yes | major | Dual-publish (old + new) → consumers update → stop publishing old |
+| Change type                    | Breaking? | Version bump | Sequence rule                                                                           |
+| ------------------------------ | --------- | ------------ | --------------------------------------------------------------------------------------- |
+| API endpoint added             | No        | minor        | Consumer can adopt anytime                                                              |
+| API endpoint removed           | Yes       | major        | Producer must merge first; consumers must update before producer deploys                |
+| API field added (optional)     | No        | minor        | Producer first; consumers adopt at leisure                                              |
+| API field removed              | Yes       | major        | Producer must give deprecation notice; consumers update; producer removes in next major |
+| DB schema migration (additive) | No        | n/a          | Producer first; consumers unaffected                                                    |
+| DB schema migration (breaking) | Yes       | n/a          | Producer first; consumers must update queries before producer deploys                   |
+| Event schema change (additive) | No        | minor        | Producer first; consumers ignore new fields                                             |
+| Event schema change (breaking) | Yes       | major        | Dual-publish (old + new) → consumers update → stop publishing old                       |
 
 ### Step 3: Sequence Per-Repo Work
 
@@ -112,6 +114,7 @@ frontend (consumer of api-gateway)      → PR after api-gateway merges
 ### Step 4: Per-Repo Branch + PR
 
 For each repo, in dependency order:
+
 1. Create branch `multi-repo/<change-id>` in that repo
 2. Apply the planned changes
 3. Run repo-local tests (unit + integration within the repo)
@@ -122,6 +125,7 @@ For each repo, in dependency order:
 ### Step 5: Cross-Repo Integration Tests
 
 Before any merge, spin up the full stack and run cross-repo integration tests:
+
 - `docker-compose up` with all services using the new branches
 - Tests cover: every contract change, every producer→consumer flow
 - If a test fails → the producer PR is broken; do not merge; route to debug
@@ -129,6 +133,7 @@ Before any merge, spin up the full stack and run cross-repo integration tests:
 ### Step 6: Merge in Dependency Order
 
 Merge sequence (topological):
+
 1. Producer PRs merge first
 2. Wait for producer deployment (or local mock) to be available
 3. Consumer PRs merge next, in their own dependency order
@@ -209,20 +214,29 @@ This is the "expand-contract" pattern: expand the contract (add new, support bot
 Every multi-repo orchestration appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "6", "action": "multi-repo-merge", "repos": 4, "breaking_changes": 1, "merge_sequence_length": 4, "cross_repo_tests_passed": 12, "rollbacks": 0}
+{
+  "ts": "...",
+  "phase": "6",
+  "action": "multi-repo-merge",
+  "repos": 4,
+  "breaking_changes": 1,
+  "merge_sequence_length": 4,
+  "cross_repo_tests_passed": 12,
+  "rollbacks": 0
+}
 ```
 
 `meta-auditor` checks: if rollbacks > 0, the contract change planning was insufficient → route to `self-patch-generator` to tighten the breaking-change detection heuristic.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Circular dependency detected | Architecture issue | Halt, surface to user; cannot auto-fix |
-| Consumer fails after producer merges | Contract change was breaking and consumer wasn't updated | Revert producer PR, update consumer, retry |
-| Cross-repo tests can't spin up (missing service) | Service not containerized or missing docker-compose | Halt, ask user to provide docker-compose or skip cross-repo tests (with warning) |
-| Version conflict (two producers same contract) | Two repos both think they own a contract | Halt, surface to user; contract ownership must be clarified |
-| PR merge blocked by repo branch protection | CI checks pending | Wait, or ask user to override (with risk acknowledgment) |
+| Symptom                                          | Cause                                                    | Recovery                                                                         |
+| ------------------------------------------------ | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Circular dependency detected                     | Architecture issue                                       | Halt, surface to user; cannot auto-fix                                           |
+| Consumer fails after producer merges             | Contract change was breaking and consumer wasn't updated | Revert producer PR, update consumer, retry                                       |
+| Cross-repo tests can't spin up (missing service) | Service not containerized or missing docker-compose      | Halt, ask user to provide docker-compose or skip cross-repo tests (with warning) |
+| Version conflict (two producers same contract)   | Two repos both think they own a contract                 | Halt, surface to user; contract ownership must be clarified                      |
+| PR merge blocked by repo branch protection       | CI checks pending                                        | Wait, or ask user to override (with risk acknowledgment)                         |
 
 ## Tools
 

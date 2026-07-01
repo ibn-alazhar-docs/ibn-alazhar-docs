@@ -9,9 +9,9 @@ import {
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
-import { prisma } from "../../../shared/prisma";
-import { updateDocStatus, uploadExportBuffer } from "../helpers";
-import { logger } from "../../../shared/logger";
+import { prisma } from "@ibn-al-azhar-docs/database";
+import { updateDocStatus, uploadExportBufferForWorker } from "../helpers";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerGenerationStage(config: PipelineConfig): void {
   createGenerationWorker(config, async (job: ProcessingJob) => {
@@ -47,7 +47,7 @@ export function registerGenerationStage(config: PipelineConfig): void {
         .replace(/[^a-zA-Z0-9.\u0600-\u06FF\u0660-\u0669-]/g, "_")
         .slice(0, 100);
 
-      const mdKey = await uploadExportBuffer(
+      const mdKey = await uploadExportBufferForWorker(
         config,
         job.userId,
         Buffer.from(result.markdown, "utf-8"),
@@ -57,7 +57,7 @@ export function registerGenerationStage(config: PipelineConfig): void {
       outputKeys["md"] = mdKey;
 
       const txtContent = generateTxt(result);
-      const txtKey = await uploadExportBuffer(
+      const txtKey = await uploadExportBufferForWorker(
         config,
         job.userId,
         Buffer.from(txtContent, "utf-8"),
@@ -67,7 +67,7 @@ export function registerGenerationStage(config: PipelineConfig): void {
       outputKeys["txt"] = txtKey;
 
       const jsonContent = generateJson(result, job.fileName);
-      const jsonKey = await uploadExportBuffer(
+      const jsonKey = await uploadExportBufferForWorker(
         config,
         job.userId,
         Buffer.from(jsonContent, "utf-8"),
@@ -80,7 +80,7 @@ export function registerGenerationStage(config: PipelineConfig): void {
 
       try {
         const docxBuffer = await generateDocx(result);
-        const docxKey = await uploadExportBuffer(
+        const docxKey = await uploadExportBufferForWorker(
           config,
           job.userId,
           docxBuffer,

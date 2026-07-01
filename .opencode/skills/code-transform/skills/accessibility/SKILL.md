@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 14 (Accessibility Baseline) | Code-level a11y review before browser audit |
-| Phase 6 — EXECUTE | Any UI commit | Catch `<div onClick>`, missing `alt`, broken heading order before merge |
-| Phase 6 — EXECUTE | Bug report "can't tab past modal" | Find the keyboard trap in code |
-| Phase 9 — ACCEPTANCE | Cross-check with `accessibility-auditor` | Code review + browser audit together |
+| Phase                | Trigger                                  | Why                                                                     |
+| -------------------- | ---------------------------------------- | ----------------------------------------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 14 (Accessibility Baseline)    | Code-level a11y review before browser audit                             |
+| Phase 6 — EXECUTE    | Any UI commit                            | Catch `<div onClick>`, missing `alt`, broken heading order before merge |
+| Phase 6 — EXECUTE    | Bug report "can't tab past modal"        | Find the keyboard trap in code                                          |
+| Phase 9 — ACCEPTANCE | Cross-check with `accessibility-auditor` | Code review + browser audit together                                    |
 
-**Do NOT use this sub-skill for:** running axe-core or Lighthouse (use `accessibility-auditor`), keyboard-flow simulation (use `accessibility-auditor` manual sim), or visual contrast screenshots (use `accessibility-auditor`). This sub-skill is the *code-review guide* — it reads source, not the DOM. The two are complementary: this one catches patterns at write time; `accessibility-auditor` catches runtime issues at audit time.
+**Do NOT use this sub-skill for:** running axe-core or Lighthouse (use `accessibility-auditor`), keyboard-flow simulation (use `accessibility-auditor` manual sim), or visual contrast screenshots (use `accessibility-auditor`). This sub-skill is the _code-review guide_ — it reads source, not the DOM. The two are complementary: this one catches patterns at write time; `accessibility-auditor` catches runtime issues at audit time.
 
 ## What It Does
 
@@ -91,61 +91,62 @@ python3 scripts/quality_agent.py a11y-code --action lint --target ./src --fail-o
 
 ## Principles
 
-| Principle | What it means |
-|-----------|---------------|
-| **Semantic HTML first** | Use `<button>`, `<a>`, `<nav>`, `<main>`, `<label>`. Don't rebuild them with `<div>` + ARIA. |
-| **ARIA only when needed** | ARIA doesn't add behavior — it adds semantics. If HTML has the element, use it. No `role="button"` on `<button>`. |
-| **Keyboard always works** | Every interaction reachable by Tab, operable by Enter/Space/Escape/arrows. No mouse-only. |
-| **Visible focus** | `:focus-visible` ring on every interactive element. Never `outline: none` without replacement. |
-| **Sufficient contrast** | 4.5:1 body text, 3:1 large text (≥24px or ≥18.66px bold), 3:1 UI components (borders, icons). |
-| **Don't rely on color alone** | Error messages have an icon + text, not just red border. Colorblind users see the error. |
+| Principle                     | What it means                                                                                                     |
+| ----------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **Semantic HTML first**       | Use `<button>`, `<a>`, `<nav>`, `<main>`, `<label>`. Don't rebuild them with `<div>` + ARIA.                      |
+| **ARIA only when needed**     | ARIA doesn't add behavior — it adds semantics. If HTML has the element, use it. No `role="button"` on `<button>`. |
+| **Keyboard always works**     | Every interaction reachable by Tab, operable by Enter/Space/Escape/arrows. No mouse-only.                         |
+| **Visible focus**             | `:focus-visible` ring on every interactive element. Never `outline: none` without replacement.                    |
+| **Sufficient contrast**       | 4.5:1 body text, 3:1 large text (≥24px or ≥18.66px bold), 3:1 UI components (borders, icons).                     |
+| **Don't rely on color alone** | Error messages have an icon + text, not just red border. Colorblind users see the error.                          |
 
 ## Semantic HTML Cheatsheet
 
-| Don't | Do | Why |
-|-------|----|-----|
-| `<div onClick>` | `<button onClick>` | Button gets keyboard, focus, role for free |
-| `<div class="link">` | `<a href>` | Anchor gets Enter key + URL semantics |
-| `<span class="heading">` | `<h1>`/`<h2>`/`<h3>` | Headings are navigation landmarks for screen readers |
-| `<div role="navigation">` | `<nav>` | Native, well-supported, no ARIA needed |
-| `<div role="main">` | `<main>` | Same |
-| `<div role="article">` | `<article>` | Same |
-| `<div role="banner">` | `<header>` | Same |
-| `<div role="contentinfo">` | `<footer>` | Same |
-| `<div role="form">` | `<form>` | Same |
+| Don't                       | Do                                                                                          | Why                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------- |
+| `<div onClick>`             | `<button onClick>`                                                                          | Button gets keyboard, focus, role for free                  |
+| `<div class="link">`        | `<a href>`                                                                                  | Anchor gets Enter key + URL semantics                       |
+| `<span class="heading">`    | `<h1>`/`<h2>`/`<h3>`                                                                        | Headings are navigation landmarks for screen readers        |
+| `<div role="navigation">`   | `<nav>`                                                                                     | Native, well-supported, no ARIA needed                      |
+| `<div role="main">`         | `<main>`                                                                                    | Same                                                        |
+| `<div role="article">`      | `<article>`                                                                                 | Same                                                        |
+| `<div role="banner">`       | `<header>`                                                                                  | Same                                                        |
+| `<div role="contentinfo">`  | `<footer>`                                                                                  | Same                                                        |
+| `<div role="form">`         | `<form>`                                                                                    | Same                                                        |
 | `<input><span>Email</span>` | `<label><input/>Email</label>` or `<label htmlFor="email">Email</label><input id="email"/>` | Clicking label focuses input; screen reader announces label |
-| `<img src="x.png">` | `<img src="x.png" alt="Chart showing Q3 revenue up 12%">` | Decorative: `alt=""`. Meaningful: descriptive alt. |
-| `<table>` no headers | `<th scope="col">` for column headers | Screen readers navigate by headers |
+| `<img src="x.png">`         | `<img src="x.png" alt="Chart showing Q3 revenue up 12%">`                                   | Decorative: `alt=""`. Meaningful: descriptive alt.          |
+| `<table>` no headers        | `<th scope="col">` for column headers                                                       | Screen readers navigate by headers                          |
 
 ## ARIA Use Cases (when HTML isn't enough)
 
-| Pattern | ARIA |
-|---------|------|
-| Icon-only button | `<button aria-label="Close"><XIcon/></button>` (label not visible) |
-| Field with hint | `<input aria-describedby="email-hint"/>` + `<p id="email-hint">We'll never share</p>` |
-| Field with error | `<input aria-invalid="true" aria-describedby="email-error"/>` + `<p id="email-error" role="alert">Invalid</p>` |
-| Dynamic status | `<div role="status">3 items saved</div>` (polite, announces when changed) |
-| Alert (immediate) | `<div role="alert">Connection lost</div>` (assertive, announces immediately) |
-| Loading | `<button aria-busy="true" disabled>Saving...</button>` |
-| Live region | `<div aria-live="polite">` for non-critical updates (e.g. "showing 5 of 10") |
-| Expanded/collapsed | `<button aria-expanded="false" aria-controls="panel">Toggle</button>` |
-| Current page | `<a href="/" aria-current="page">Home</a>` |
-| Modal open | `<div role="dialog" aria-modal="true" aria-labelledby="title">` |
+| Pattern            | ARIA                                                                                                           |
+| ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| Icon-only button   | `<button aria-label="Close"><XIcon/></button>` (label not visible)                                             |
+| Field with hint    | `<input aria-describedby="email-hint"/>` + `<p id="email-hint">We'll never share</p>`                          |
+| Field with error   | `<input aria-invalid="true" aria-describedby="email-error"/>` + `<p id="email-error" role="alert">Invalid</p>` |
+| Dynamic status     | `<div role="status">3 items saved</div>` (polite, announces when changed)                                      |
+| Alert (immediate)  | `<div role="alert">Connection lost</div>` (assertive, announces immediately)                                   |
+| Loading            | `<button aria-busy="true" disabled>Saving...</button>`                                                         |
+| Live region        | `<div aria-live="polite">` for non-critical updates (e.g. "showing 5 of 10")                                   |
+| Expanded/collapsed | `<button aria-expanded="false" aria-controls="panel">Toggle</button>`                                          |
+| Current page       | `<a href="/" aria-current="page">Home</a>`                                                                     |
+| Modal open         | `<div role="dialog" aria-modal="true" aria-labelledby="title">`                                                |
 
 ## Keyboard Navigation Rules
 
-| Element | Keys |
-|---------|------|
-| Button / Link | Tab to focus, Enter/Space to activate |
-| Modal | Tab cycles within modal (focus trap), Escape closes, focus returns to trigger |
-| Dropdown menu | Arrow keys to navigate, Enter to select, Escape to close |
-| Tabs | Tab to enter, Arrow Left/Right between tabs, Tab again to leave |
+| Element                 | Keys                                                                                            |
+| ----------------------- | ----------------------------------------------------------------------------------------------- |
+| Button / Link           | Tab to focus, Enter/Space to activate                                                           |
+| Modal                   | Tab cycles within modal (focus trap), Escape closes, focus returns to trigger                   |
+| Dropdown menu           | Arrow keys to navigate, Enter to select, Escape to close                                        |
+| Tabs                    | Tab to enter, Arrow Left/Right between tabs, Tab again to leave                                 |
 | Combobox / Autocomplete | Arrow Down to open, type to filter, Arrow Up/Down to navigate, Enter to select, Escape to close |
-| Tooltip | Focus (Tab) shows tooltip, blur hides it (not just hover) |
-| Slider | Arrow Left/Right (or Up/Down) to change value, Home/End for min/max |
-| Dialog | First focusable element gets focus on open; focus returns to trigger on close |
+| Tooltip                 | Focus (Tab) shows tooltip, blur hides it (not just hover)                                       |
+| Slider                  | Arrow Left/Right (or Up/Down) to change value, Home/End for min/max                             |
+| Dialog                  | First focusable element gets focus on open; focus returns to trigger on close                   |
 
 Hard rules:
+
 - Tab order matches visual order (use DOM order, not `tabindex` tricks)
 - `tabindex="0"` only for non-interactive elements made interactive (rare); `tabindex="-1"` to skip or programmatically focus
 - Never `tabindex > 0` — it breaks DOM-order navigation
@@ -154,32 +155,33 @@ Hard rules:
 
 ## Contrast (WCAG AA)
 
-| Element | Ratio | Notes |
-|---------|-------|-------|
-| Body text < 24px (or < 18.66px bold) | 4.5:1 | Most text |
-| Large text ≥ 24px (or ≥ 18.66px bold) | 3:1 | Headings |
-| UI components (button borders, focus rings, icons) | 3:1 | WCAG 2.1 1.4.11 |
-| Disabled elements | exempt | But should still be distinguishable |
-| Decorative | exempt | Pure decoration |
+| Element                                            | Ratio  | Notes                               |
+| -------------------------------------------------- | ------ | ----------------------------------- |
+| Body text < 24px (or < 18.66px bold)               | 4.5:1  | Most text                           |
+| Large text ≥ 24px (or ≥ 18.66px bold)              | 3:1    | Headings                            |
+| UI components (button borders, focus rings, icons) | 3:1    | WCAG 2.1 1.4.11                     |
+| Disabled elements                                  | exempt | But should still be distinguishable |
+| Decorative                                         | exempt | Pure decoration                     |
 
 Test with: `accessibility-auditor` (axe-core) for automated; manual check with high-contrast mode for edge cases.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `<div onClick>` not keyboard accessible | Wrong element | Swap for `<button>` (preferred) or add `role="button"` + `tabIndex={0}` + `onKeyDown` |
-| Modal traps focus forever | No focus trap escape | Add Escape handler + focus-return-to-trigger; use Radix Dialog |
-| Screen reader skips content | Heading hierarchy broken (h1 → h3) | Renumber to h1 → h2 → h3 |
-| Tab order jumps around | `tabindex > 0` set manually | Remove tabindex, reorder DOM |
-| Click label doesn't focus input | `<label>` not wrapping/`htmlFor` the input | Use `<label htmlFor="id">` or wrap input in label |
-| Focus ring invisible | `outline: none` with no replacement | Add `:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }` |
-| Icon button has no name | `<button><Icon/></button>` | Add `aria-label="Close"` (or visible text + `aria-hidden` on icon) |
+| Symptom                                 | Cause                                      | Recovery                                                                              |
+| --------------------------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------- |
+| `<div onClick>` not keyboard accessible | Wrong element                              | Swap for `<button>` (preferred) or add `role="button"` + `tabIndex={0}` + `onKeyDown` |
+| Modal traps focus forever               | No focus trap escape                       | Add Escape handler + focus-return-to-trigger; use Radix Dialog                        |
+| Screen reader skips content             | Heading hierarchy broken (h1 → h3)         | Renumber to h1 → h2 → h3                                                              |
+| Tab order jumps around                  | `tabindex > 0` set manually                | Remove tabindex, reorder DOM                                                          |
+| Click label doesn't focus input         | `<label>` not wrapping/`htmlFor` the input | Use `<label htmlFor="id">` or wrap input in label                                     |
+| Focus ring invisible                    | `outline: none` with no replacement        | Add `:focus-visible { outline: 2px solid var(--brand-500); outline-offset: 2px; }`    |
+| Icon button has no name                 | `<button><Icon/></button>`                 | Add `aria-label="Close"` (or visible text + `aria-hidden` on icon)                    |
 
 ## Self-Healing Loop
 
 When an a11y violation is found in code:
-1. Identify the rule (jsx-a11y/*, heading-order, contrast, focus-ring)
+
+1. Identify the rule (jsx-a11y/\*, heading-order, contrast, focus-ring)
 2. Apply the mechanical fix (swap `<div>` for `<button>`, add `aria-label`, add `:focus-visible`)
 3. Re-lint the file
 4. If the fix needs design judgment (e.g. focus ring color) → route to `css-styling` + `frontend-bridge`

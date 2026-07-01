@@ -22,6 +22,9 @@ my-project/
 **/*.png
 **/*.jpg
 **/*.jpeg
+!apps/web/public/**/*.png
+!apps/web/public/**/*.jpg
+!apps/web/public/**/*.jpeg
 .opencode/
 specs/
 governance/

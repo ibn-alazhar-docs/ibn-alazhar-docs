@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dim 10 (Full-Stack) finds: API has no version, breaking changes shipped silently, no deprecation headers | Establish baseline versioning discipline |
-| Phase 6 — EXECUTE | Any change that alters response shape, status code semantics, or required parameters for an EXISTING endpoint | Must pick: version bump, alias, or in-place deprecation |
-| Phase 6 — EXECUTE | User explicitly requests "deprecate endpoint X" or "sunset version 1" | Walk the deprecation timeline |
-| Phase 11 — ROLLOUT | Pre-deploy check: every deprecated endpoint still emits correct headers | Catches header regressions before they reach prod |
+| Phase              | Trigger                                                                                                       | Why                                                     |
+| ------------------ | ------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Phase 2 — AUDIT    | Dim 10 (Full-Stack) finds: API has no version, breaking changes shipped silently, no deprecation headers      | Establish baseline versioning discipline                |
+| Phase 6 — EXECUTE  | Any change that alters response shape, status code semantics, or required parameters for an EXISTING endpoint | Must pick: version bump, alias, or in-place deprecation |
+| Phase 6 — EXECUTE  | User explicitly requests "deprecate endpoint X" or "sunset version 1"                                         | Walk the deprecation timeline                           |
+| Phase 11 — ROLLOUT | Pre-deploy check: every deprecated endpoint still emits correct headers                                       | Catches header regressions before they reach prod       |
 
 **Do NOT use this sub-skill for:** designing a brand-new API from scratch with no existing version (use `api-contract`), internal-only refactor with no behavior change (just use normal Phase 6 flow), or gRPC (buf handles breaking detection — only route here if a `deprecated` field annotation is needed). Those cases don't need a versioning decision.
 
@@ -160,26 +160,26 @@ Q: Has the sunset date arrived AND is v1 traffic zero?
 
 ## Deprecation Timeline (enforced)
 
-| Stage | When | Action | Header emitted |
-|-------|------|--------|----------------|
-| Announce | T+0 | Add `Deprecation` field to OpenAPI spec, blog post / changelog entry, email known consumers | `Deprecation: @<ts>` |
-| Window | T+0 to T+6mo (external) / T+1mo (internal) | Both v1 and v2 live; v1 logs every request with a deprecation warning | `Deprecation` + `Sunset` + `Link: rel="successor-version"` |
-| Sunset warning | T-30d from sunset | Alert if v1 traffic > 5% of total | Same headers + paged dashboard warning |
-| Sunset | T+12mo (external) / T+3mo (internal) | v1 returns `410 Gone` with a JSON body pointing to v2 docs | `Sunset` + `410 Gone` |
-| Removal | T+13mo (external) / T+4mo (internal) | v1 router deleted from codebase | (nothing — endpoint gone) |
+| Stage          | When                                       | Action                                                                                      | Header emitted                                             |
+| -------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Announce       | T+0                                        | Add `Deprecation` field to OpenAPI spec, blog post / changelog entry, email known consumers | `Deprecation: @<ts>`                                       |
+| Window         | T+0 to T+6mo (external) / T+1mo (internal) | Both v1 and v2 live; v1 logs every request with a deprecation warning                       | `Deprecation` + `Sunset` + `Link: rel="successor-version"` |
+| Sunset warning | T-30d from sunset                          | Alert if v1 traffic > 5% of total                                                           | Same headers + paged dashboard warning                     |
+| Sunset         | T+12mo (external) / T+3mo (internal)       | v1 returns `410 Gone` with a JSON body pointing to v2 docs                                  | `Sunset` + `410 Gone`                                      |
+| Removal        | T+13mo (external) / T+4mo (internal)       | v1 router deleted from codebase                                                             | (nothing — endpoint gone)                                  |
 
 **Never compress this timeline silently.** If a security vuln forces faster sunset, broadcast a CVE-grade notice to every known consumer first.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Client reports "your API broke" with no warning | Breaking change shipped without version bump or deprecation header | Roll back the deploy immediately. Re-ship under /v2/ with v1 preserved. Post-mortem: the contract gate failed. |
-| `Sunset` header has wrong date format | Used ISO 8601 (`2026-11-11`) instead of RFC 7231 HTTP date | Fix to `Wed, 11 Nov 2026 23:59:59 GMT` — strict parsers reject ISO dates |
-| v1 traffic doesn't drop after deprecation | Clients ignore headers / no telemetry / no outreach | Pull the API key logs, identify top callers, email them directly. Do NOT just extend sunset silently — that signals "we don't mean it." |
-| Both v1 and v2 return identical responses | Forgot to actually change v2 — just copied v1 and bumped the path | Run `oasdiff changelog openapi.v1.yaml openapi.v2.yaml` — if empty, the version bump was theater, revert it |
-| GraphQL `@deprecated` field still in use by clients | Clients haven't migrated; can't delete yet | Use `graphql-inspector` `@deprecated` usage report. Keep field until usage is zero, then remove in next schema publish. |
-| Header version middleware crashes on missing header | Required `X-API-Version` but didn't default | Default to the latest stable version (`X-API-Version: 2` if absent), don't 400 — that breaks every existing client |
+| Symptom                                             | Cause                                                              | Recovery                                                                                                                                |
+| --------------------------------------------------- | ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Client reports "your API broke" with no warning     | Breaking change shipped without version bump or deprecation header | Roll back the deploy immediately. Re-ship under /v2/ with v1 preserved. Post-mortem: the contract gate failed.                          |
+| `Sunset` header has wrong date format               | Used ISO 8601 (`2026-11-11`) instead of RFC 7231 HTTP date         | Fix to `Wed, 11 Nov 2026 23:59:59 GMT` — strict parsers reject ISO dates                                                                |
+| v1 traffic doesn't drop after deprecation           | Clients ignore headers / no telemetry / no outreach                | Pull the API key logs, identify top callers, email them directly. Do NOT just extend sunset silently — that signals "we don't mean it." |
+| Both v1 and v2 return identical responses           | Forgot to actually change v2 — just copied v1 and bumped the path  | Run `oasdiff changelog openapi.v1.yaml openapi.v2.yaml` — if empty, the version bump was theater, revert it                             |
+| GraphQL `@deprecated` field still in use by clients | Clients haven't migrated; can't delete yet                         | Use `graphql-inspector` `@deprecated` usage report. Keep field until usage is zero, then remove in next schema publish.                 |
+| Header version middleware crashes on missing header | Required `X-API-Version` but didn't default                        | Default to the latest stable version (`X-API-Version: 2` if absent), don't 400 — that breaks every existing client                      |
 
 ## Self-Healing Loop
 
@@ -220,5 +220,5 @@ If any gate fails: status = `error`, do NOT proceed to Phase 11 deploy. Emit the
 3. **Never silently extend a sunset date.** If v1 traffic is still high at T-30d, announce the extension publicly AND email known consumers. Silently extending teaches clients that sunset dates are suggestions.
 4. **Never use ISO 8601 in the `Sunset` header.** RFC 7231 (`Wed, 11 Nov 2026 23:59:59 GMT`) is the spec. Strict clients (and the W3C validator) reject ISO dates.
 5. **Never version GraphQL by URL.** `/v1/graphql` and `/v2/graphql` is an anti-pattern — GraphQL is designed for schema evolution via `@deprecated`. If you need a hard break, spin up a new persisted query set, not a new endpoint.
-6. **Never default a missing version header to the oldest version.** Default to the *latest stable*. Defaulting to the oldest means new clients get the deprecated behavior and never migrate.
+6. **Never default a missing version header to the oldest version.** Default to the _latest stable_. Defaulting to the oldest means new clients get the deprecated behavior and never migrate.
 7. **Never ship a version bump without a migration guide.** `oasdiff changelog` produces one in 5 seconds — if the PR doesn't touch `docs/MIGRATION-vX-to-vY.md`, it's blocked at review.

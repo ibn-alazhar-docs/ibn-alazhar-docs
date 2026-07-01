@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DocumentMoveUseCases } from "@/core/use-cases/document-move.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
-import { NotFoundError, AppError } from "@/lib/errors";
+import { NotFoundError, AppError } from "@/lib/shared/errors";
 
 function makeDoc(overrides: Record<string, unknown> = {}) {
   return {

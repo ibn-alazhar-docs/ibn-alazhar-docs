@@ -18,6 +18,7 @@
 ## API Contract
 
 ### Schema-First Design
+
 The API contract is defined BEFORE implementation. Both sides generate from it.
 
 ```
@@ -32,20 +33,22 @@ openapi.yaml (the contract)
 ### Type Sharing
 
 **tRPC (TypeScript end-to-end)**:
+
 ```typescript
 // server/router.ts
 export const appRouter = t.router({
   getUser: t.procedure.input(z.string()).query(({ input }) => {
-    return userRepo.get(input);  // returns User
+    return userRepo.get(input); // returns User
   }),
 });
 
 // client.ts
-const user = await trpc.getUser.query("123");  // typed as User
+const user = await trpc.getUser.query("123"); // typed as User
 // TypeScript knows user.id, user.name, user.email — no manual types
 ```
 
 **OpenAPI Codegen (any language)**:
+
 ```bash
 # Generate TypeScript client from OpenAPI spec
 npx openapi-typescript-codegen --input openapi.yaml --output src/api
@@ -57,12 +60,13 @@ openapi-python-client generate --url http://api.example.com/openapi.json
 ## Contract Testing
 
 ### Pact (Consumer-Driven)
+
 ```javascript
 // Frontend (consumer) defines expectations
 provider.addInteraction({
-  uponReceiving: 'a request for user 123',
-  withRequest: { method: 'GET', path: '/users/123' },
-  willRespondWith: { status: 200, body: { id: '123', name: 'Alice' } },
+  uponReceiving: "a request for user 123",
+  withRequest: { method: "GET", path: "/users/123" },
+  willRespondWith: { status: 200, body: { id: "123", name: "Alice" } },
 });
 
 // Backend (provider) verifies it meets expectations
@@ -72,6 +76,7 @@ provider.addInteraction({
 ## Error Format Consistency
 
 ### BAD (inconsistent)
+
 ```json
 // Endpoint 1
 { "error": "User not found" }
@@ -84,6 +89,7 @@ provider.addInteraction({
 ```
 
 ### GOOD (consistent)
+
 ```json
 {
   "error": {
@@ -98,6 +104,7 @@ provider.addInteraction({
 ## Full-Stack Coordination Recipes
 
 ### FSR1. Introduce tRPC for Type Safety
+
 ```typescript
 // Before: manual types, can drift
 // backend
@@ -106,8 +113,12 @@ app.get("/users/:id", (req, res) => {
 });
 
 // frontend
-interface User { id: string; name: string; email: string; }  // ← manual, can drift
-const user = await fetch(`/users/${id}`).then(r => r.json()) as User;
+interface User {
+  id: string;
+  name: string;
+  email: string;
+} // ← manual, can drift
+const user = (await fetch(`/users/${id}`).then((r) => r.json())) as User;
 
 // After: tRPC, types flow automatically
 // backend
@@ -118,11 +129,12 @@ const router = t.router({
 });
 
 // frontend
-const user = await trpc.getUser.query(id);  // typed as { id: string; name: string; email: string }
+const user = await trpc.getUser.query(id); // typed as { id: string; name: string; email: string }
 // No manual types, can't drift
 ```
 
 ### FSR2. Generate OpenAPI Spec
+
 ```python
 # Before: no API documentation
 @app.route("/users/<id>")
@@ -144,6 +156,7 @@ class UserView(OpenAPIView):
 ```
 
 ### FSR3. Standardize Error Format
+
 ```python
 # Before: inconsistent errors
 @app.route("/users/<id>")

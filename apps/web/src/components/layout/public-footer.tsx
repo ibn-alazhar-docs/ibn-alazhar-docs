@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { BRAND_NAME } from "@/lib/brand";
+import { BRAND_NAME } from "@/lib/frontend/brand";
 
 function GeometricStar({ className = "" }: { className?: string }) {
   return (

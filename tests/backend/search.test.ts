@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { SearchUseCases } from "@/core/use-cases/search.use-cases";
 import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
-import { ValidationError } from "@/lib/errors";
+import { ValidationError } from "@/lib/shared/errors";
 
 describe("SearchUseCases", () => {
   let searchRepo: {

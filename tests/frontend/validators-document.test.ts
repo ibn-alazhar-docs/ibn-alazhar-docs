@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { documentUpdateSchema } from "@/lib/validators/document";
+import { documentUpdateSchema } from "@/lib/shared/validators/document";
 
 describe("documentUpdateSchema", () => {
   it("valid title passes", () => {

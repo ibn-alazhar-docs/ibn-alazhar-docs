@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { CONTENT_LIMITS } from "@/lib/constants";
+import { CONTENT_LIMITS } from "@/lib/shared/constants";
 
 interface CreateFolderDialogProps {
   onSubmit: (name: string) => Promise<void>;

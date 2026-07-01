@@ -52,6 +52,7 @@ If the user says "don't do full audit" and a phase says "always audit," follow t
 ## Mandatory Checks Before Any Action
 
 ### Before ANY transformation (Phase 4):
+
 1. Read `CONSTRAINTS.md` in full
 2. Check HC-1 through HC-10 against the planned transformation
 3. If ANY hard constraint violated: STOP, escalate to user
@@ -59,6 +60,7 @@ If the user says "don't do full audit" and a phase says "always audit," follow t
 5. Update TRACEABILITY_MATRIX.md after every commit
 
 ### Before declaring "done" (Phase 5):
+
 - All success criteria met (from INTAKE.md)?
 - All P0-P3 items closed (from TRACEABILITY_MATRIX.md)?
 - Metrics diff generated (metrics_diff.py)?
@@ -75,16 +77,16 @@ Conversation memory does not survive compaction. Track progress in a ledger file
 
 ## Rationalization Red Flags
 
-| Thought | Reality |
-|---------|---------|
-| "I need more context first" | Phase check comes BEFORE clarifying questions |
-| "Let me explore the codebase first" | CENSUS phase tells you HOW to explore. Check first |
-| "This is just a simple fix" | Simple fixes are still transformations. Check constraints |
-| "I'll skip the audit, it's a small project" | AUDIT phase applies regardless of size |
-| "The user wants speed, not thoroughness" | User instructions override phases, but ask first |
-| "I remember what we did before compaction" | No you don't. Read the ledger |
-| "This transform is too small for MANTRA" | Check the decision tree in references/30 |
-| "Tests already exist, skip Phase 6" | Phase 6 verifies test QUALITY, not just existence |
+| Thought                                     | Reality                                                   |
+| ------------------------------------------- | --------------------------------------------------------- |
+| "I need more context first"                 | Phase check comes BEFORE clarifying questions             |
+| "Let me explore the codebase first"         | CENSUS phase tells you HOW to explore. Check first        |
+| "This is just a simple fix"                 | Simple fixes are still transformations. Check constraints |
+| "I'll skip the audit, it's a small project" | AUDIT phase applies regardless of size                    |
+| "The user wants speed, not thoroughness"    | User instructions override phases, but ask first          |
+| "I remember what we did before compaction"  | No you don't. Read the ledger                             |
+| "This transform is too small for MANTRA"    | Check the decision tree in references/30                  |
+| "Tests already exist, skip Phase 6"         | Phase 6 verifies test QUALITY, not just existence         |
 
 ## Dragon Protocol (ALWAYS Active)
 
@@ -92,6 +94,7 @@ Every decision runs through 11 phases:
 TRIAGE → PLAN → EXPLORE → DEBATE → SYNTHESIZE → EXECUTE → VERIFY → CRITIQUE → REFINE → META-CHECK → OUTPUT
 
 3 Non-Negotiable Rules:
+
 1. NEVER self-correct without external signal (tests/compiler/agents)
 2. Verification earns the output (terminal gate)
 3. Scale scaffolding to weakness + difficulty

@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 1 — DISCOVERY | Project type completely unknown (no sub-skill matches) | Need baseline understanding before any planning |
-| Phase 14 — SELF-UPGRADE | `sub-skill-generator` needs domain research before drafting | Drafts without research produce wrong content |
-| Phase 6 — EXECUTE | Hit a framework error with no knowledge-base match | Quick targeted research to unblock |
-| Phase 13 — META-AUDIT | `meta-learning` routed "outdated knowledge" lesson | Re-research to verify what's still true |
-| User explicit request | "Research X before we start" | Direct request |
+| Phase                   | Trigger                                                     | Why                                             |
+| ----------------------- | ----------------------------------------------------------- | ----------------------------------------------- |
+| Phase 1 — DISCOVERY     | Project type completely unknown (no sub-skill matches)      | Need baseline understanding before any planning |
+| Phase 14 — SELF-UPGRADE | `sub-skill-generator` needs domain research before drafting | Drafts without research produce wrong content   |
+| Phase 6 — EXECUTE       | Hit a framework error with no knowledge-base match          | Quick targeted research to unblock              |
+| Phase 13 — META-AUDIT   | `meta-learning` routed "outdated knowledge" lesson          | Re-research to verify what's still true         |
+| User explicit request   | "Research X before we start"                                | Direct request                                  |
 
 **Do NOT use this sub-skill for:** tech the skill already knows (use `knowledge-base`), production code changes (use the relevant domain sub-skill), or open-ended exploration without a target (research without a question is just browsing). Always have a specific question.
 
@@ -74,14 +74,14 @@ OUTPUT (stdout JSON):
 
 ## Source Priority
 
-| Priority | Source type | Trust level | Example |
-|----------|-------------|-------------|---------|
-| 1 | Official documentation | High | nextjs.org/docs, react.dev/learn |
-| 2 | Canonical repo README + docs/ | High | github.com/vercel/next.js/blob/canary/docs |
-| 3 | Authoritative tutorials | Medium-High | MDN Web Docs, Kubernetes official blog |
-| 4 | Stack Overflow (high-vote answers) | Medium | score > 1000, accepted answer |
-| 5 | Recognized author blog posts | Medium-Low | cited by official docs |
-| 6 | Community tutorials | Low | Medium articles, dev.to — only as cross-reference |
+| Priority | Source type                        | Trust level | Example                                           |
+| -------- | ---------------------------------- | ----------- | ------------------------------------------------- |
+| 1        | Official documentation             | High        | nextjs.org/docs, react.dev/learn                  |
+| 2        | Canonical repo README + docs/      | High        | github.com/vercel/next.js/blob/canary/docs        |
+| 3        | Authoritative tutorials            | Medium-High | MDN Web Docs, Kubernetes official blog            |
+| 4        | Stack Overflow (high-vote answers) | Medium      | score > 1000, accepted answer                     |
+| 5        | Recognized author blog posts       | Medium-Low  | cited by official docs                            |
+| 6        | Community tutorials                | Low         | Medium articles, dev.to — only as cross-reference |
 
 Claims sourced only from priority 6 are flagged `low_confidence` and never used as the sole basis for a sub-skill draft.
 
@@ -91,44 +91,54 @@ Claims sourced only from priority 6 are flagged `low_confidence` and never used 
 
 ```markdown
 # Research: <topic>
+
 **Question:** <the specific question>
 **Date:** YYYY-MM-DD
 **Time spent:** N minutes
 **Confidence:** 0.X
 
 ## Summary (3-5 sentences)
+
 <Direct answer to the question>
 
 ## Key Concepts
+
 - Concept 1: ...
 - Concept 2: ...
 
 ## Common Patterns
+
 1. Pattern name — when to use, code snippet
 2. ...
 
 ## Anti-Patterns
+
 1. What not to do and why
 2. ...
 
 ## Tooling
-| Tool | Purpose | Maturity |
-|------|---------|----------|
-| ws | WebSocket server/client | Stable |
-| artillery | Load testing with WS plugin | Stable |
+
+| Tool      | Purpose                     | Maturity |
+| --------- | --------------------------- | -------- |
+| ws        | WebSocket server/client     | Stable   |
+| artillery | Load testing with WS plugin | Stable   |
 
 ## Gotchas / Version-Specific Notes
+
 - Gotcha 1 (version X.Y): ...
 
 ## Comparison to Known Tech
+
 <topic> is similar to <known> but differs in <ways>.
 
 ## Sources
+
 1. [Official docs](URL) — fetched 2024-11-22
 2. [Repo README](URL) — fetched 2024-11-22
 3. [SO tag: X](URL) — fetched 2024-11-22
 
 ## Open Questions (low confidence)
+
 - Question that no source clearly answered
 ```
 
@@ -187,6 +197,7 @@ Q: Has the time budget been exceeded?
 Hard cap: 60 min per session. Default budget: 30 min.
 
 Time allocation within budget:
+
 - 5 min: source discovery (search, identify candidate URLs)
 - 20 min: fetch + parse (parallel where possible)
 - 5 min: synthesize + write report
@@ -198,7 +209,16 @@ If the budget is exceeded, the crawler stops fetching and synthesizes from what 
 Every research run appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "1", "action": "research", "topic": "ws-load-testing", "sources": 6, "duration_min": 24, "confidence": 0.8, "report_path": "research/2024-11-22-ws-load-testing.md"}
+{
+  "ts": "...",
+  "phase": "1",
+  "action": "research",
+  "topic": "ws-load-testing",
+  "sources": 6,
+  "duration_min": 24,
+  "confidence": 0.8,
+  "report_path": "research/2024-11-22-ws-load-testing.md"
+}
 ```
 
 `meta-auditor` checks: if research was done in Phase 1 and the project later hit friction that the research should have caught, the research methodology needs improvement (route to `self-patch-generator`).
@@ -207,13 +227,13 @@ Every research run appends to `audit-trail.jsonl`:
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| No sources found | Niche topic, poor search terms | Broaden the question; try alternative phrasings; if still nothing, defer and ask user |
-| All sources are priority 5-6 | Topic is niche or new | Flag low confidence, surface to user before relying on findings |
-| Sources contradict each other | Different versions / different contexts | Note both, tag each with version/context, mark "disputed" |
-| Fetch fails (404, paywall) | Source moved / gated | Skip source, log it; do not use cached versions older than 90 days without re-verifying |
-| Time budget exceeded | Topic too broad | Stop, synthesize partial report, flag incomplete sections |
+| Symptom                       | Cause                                   | Recovery                                                                                |
+| ----------------------------- | --------------------------------------- | --------------------------------------------------------------------------------------- |
+| No sources found              | Niche topic, poor search terms          | Broaden the question; try alternative phrasings; if still nothing, defer and ask user   |
+| All sources are priority 5-6  | Topic is niche or new                   | Flag low confidence, surface to user before relying on findings                         |
+| Sources contradict each other | Different versions / different contexts | Note both, tag each with version/context, mark "disputed"                               |
+| Fetch fails (404, paywall)    | Source moved / gated                    | Skip source, log it; do not use cached versions older than 90 days without re-verifying |
+| Time budget exceeded          | Topic too broad                         | Stop, synthesize partial report, flag incomplete sections                               |
 
 ## Tools
 

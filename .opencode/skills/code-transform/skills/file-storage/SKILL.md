@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security) finds a public bucket with no CDN, secrets in S3 metadata, or `app.post('/upload')` that streams bytes through the server | Server-proxied uploads waste bandwidth and memory; public buckets leak data; S3 metadata is not encrypted |
-| Phase 2 — AUDIT | Dimension 5 (Performance) finds uploads timing out at large sizes | Missing presigned URLs — server is the bottleneck |
-| Phase 6 — EXECUTE | User says "add file upload", "add image upload", "add S3", "add profile photos", "add document storage" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating storage backends (S3 → R2, MinIO → S3) | Full replace of storage layer, copy objects, update keys |
-| Phase 9 — ACCEPTANCE | Upload a test file, verify it's accessible via CDN, verify private file needs signed URL | Storage is foundational — must walk the full upload→store→retrieve loop |
-| Phase 11 — ROLLOUT | Verify bucket policies, lifecycle rules, versioning enabled, CORS configured | Misconfigured bucket = data loss or leak |
+| Phase                | Trigger                                                                                                                                          | Why                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 4 (Security) finds a public bucket with no CDN, secrets in S3 metadata, or `app.post('/upload')` that streams bytes through the server | Server-proxied uploads waste bandwidth and memory; public buckets leak data; S3 metadata is not encrypted |
+| Phase 2 — AUDIT      | Dimension 5 (Performance) finds uploads timing out at large sizes                                                                                | Missing presigned URLs — server is the bottleneck                                                         |
+| Phase 6 — EXECUTE    | User says "add file upload", "add image upload", "add S3", "add profile photos", "add document storage"                                          | This is the executing sub-skill                                                                           |
+| Phase 6 — EXECUTE    | Migrating storage backends (S3 → R2, MinIO → S3)                                                                                                 | Full replace of storage layer, copy objects, update keys                                                  |
+| Phase 9 — ACCEPTANCE | Upload a test file, verify it's accessible via CDN, verify private file needs signed URL                                                         | Storage is foundational — must walk the full upload→store→retrieve loop                                   |
+| Phase 11 — ROLLOUT   | Verify bucket policies, lifecycle rules, versioning enabled, CORS configured                                                                     | Misconfigured bucket = data loss or leak                                                                  |
 
 **Do NOT use this sub-skill for:** database BLOBs (use the DB's native binary type only if < 1MB and accessed transactionally — otherwise use object storage), video transcoding (use a dedicated service like Mux or AWS MediaConvert), or block storage for VMs (use EBS / persistent disks).
 
@@ -209,17 +209,17 @@ Q6: Storage class / lifecycle?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `403 Forbidden` on presigned upload | URL expired, or content-type mismatch, or bucket CORS missing | Increase `--expires`; ensure client sends exact `Content-Type` header; add CORS rule for `PUT` from origin |
-| Upload completes but file is public | Bucket policy allows `s3:GetObject` to `*` | Tighten bucket policy to private; serve via CDN with OAC |
-| Image processing Lambda times out | Image too large (>10MB) or sharp concurrency exhausted | Increase Lambda timeout to 30s, set memory to 1536MB, add SQS queue as buffer |
-| EXIF not stripped | Lambda/Worker missing `sharp.rotate().resize()` without `withMetadata: false` | Add `withMetadata: false` (or `strip` flag in ImageMagick) |
-| Signed URL leaked, file accessed by attacker | URL shared or logged | Reduce TTL to 5 min for sensitive files; rotate credentials; use IP-restricted signed URLs if supported |
-| Egress costs explode | Bucket accessed directly, no CDN | Add CloudFront/Cloudflare in front; verify `x-cache: Hit` in response headers |
-| `SlowDown` / 503 on high-volume uploads | Burst exceeds bucket rate limit | Add client-side exponential backoff; S3 supports 3,500 PUT/s per partition — use prefix hashing if higher |
-| Lost object due to overwrite | Versioning disabled | Enable versioning immediately (recoverable within 90 days via MFA delete); never disable on prod |
-| Migrate stuck on large bucket | Sequential copy | Parallelize with `aws s3 sync --quiet` or `rclone copy` with `--transfers 32` |
+| Symptom                                      | Cause                                                                         | Recovery                                                                                                   |
+| -------------------------------------------- | ----------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `403 Forbidden` on presigned upload          | URL expired, or content-type mismatch, or bucket CORS missing                 | Increase `--expires`; ensure client sends exact `Content-Type` header; add CORS rule for `PUT` from origin |
+| Upload completes but file is public          | Bucket policy allows `s3:GetObject` to `*`                                    | Tighten bucket policy to private; serve via CDN with OAC                                                   |
+| Image processing Lambda times out            | Image too large (>10MB) or sharp concurrency exhausted                        | Increase Lambda timeout to 30s, set memory to 1536MB, add SQS queue as buffer                              |
+| EXIF not stripped                            | Lambda/Worker missing `sharp.rotate().resize()` without `withMetadata: false` | Add `withMetadata: false` (or `strip` flag in ImageMagick)                                                 |
+| Signed URL leaked, file accessed by attacker | URL shared or logged                                                          | Reduce TTL to 5 min for sensitive files; rotate credentials; use IP-restricted signed URLs if supported    |
+| Egress costs explode                         | Bucket accessed directly, no CDN                                              | Add CloudFront/Cloudflare in front; verify `x-cache: Hit` in response headers                              |
+| `SlowDown` / 503 on high-volume uploads      | Burst exceeds bucket rate limit                                               | Add client-side exponential backoff; S3 supports 3,500 PUT/s per partition — use prefix hashing if higher  |
+| Lost object due to overwrite                 | Versioning disabled                                                           | Enable versioning immediately (recoverable within 90 days via MFA delete); never disable on prod           |
+| Migrate stuck on large bucket                | Sequential copy                                                               | Parallelize with `aws s3 sync --quiet` or `rclone copy` with `--transfers 32`                              |
 
 ## Self-Healing Loop
 

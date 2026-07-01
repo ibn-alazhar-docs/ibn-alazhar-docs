@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
-import { getAllDocs, getJourneys } from "@/lib/content";
-import { SITE_URL } from "@/lib/constants";
+import { getAllDocs, getJourneys } from "@/lib/backend/content";
+import { SITE_URL } from "@/lib/shared/constants";
 
 const locales = ["ar", "en"] as const;
 

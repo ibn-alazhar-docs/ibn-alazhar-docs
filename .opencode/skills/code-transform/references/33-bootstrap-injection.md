@@ -5,6 +5,7 @@
 ## The Problem
 
 Skills on disk are inert. Without a bootstrap mechanism:
+
 - Agent doesn't know to check for skills before acting
 - After context compaction, the agent forgets ALL rules
 - "Simple" tasks bypass the workflow (no audit, no constraints check)
@@ -37,11 +38,13 @@ Tier 2: All other phases/references
     "SessionStart": [
       {
         "matcher": "startup|clear|compact",
-        "hooks": [{
-          "type": "command",
-          "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start\"",
-          "async": false
-        }]
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"${CLAUDE_PLUGIN_ROOT}/hooks/session-start\"",
+            "async": false
+          }
+        ]
       }
     ]
   }
@@ -49,6 +52,7 @@ Tier 2: All other phases/references
 ```
 
 **Critical**: The matcher `"startup|clear|compact"` is the entire compaction-survival mechanism:
+
 - `startup` → fires on new session
 - `clear` → fires on `/clear`
 - `compact` → **fires after every context compaction**
@@ -56,6 +60,7 @@ Tier 2: All other phases/references
 ### Injection Script
 
 The `hooks/session-start` script:
+
 1. Reads `skills/using-code-transform/SKILL.md`
 2. Wraps it in `<EXTREMELY_IMPORTANT>` tags
 3. Emits platform-specific JSON (Claude Code, Cursor, or generic)
@@ -64,6 +69,7 @@ The `hooks/session-start` script:
 ### Bootstrap Content
 
 The bootstrap (`using-code-transform/SKILL.md`) contains:
+
 - **The 1% Rule**: "Even 1% chance a phase applies → invoke it"
 - **Rationalization Red Flags table**: blocks common escape hatches
 - **Instruction Priority**: User > code-transform > system prompt
@@ -85,6 +91,7 @@ The bootstrap (`using-code-transform/SKILL.md`) contains:
 ```
 
 Format (append-only, one line per completed transform):
+
 ```
 Phase 2: AUDIT complete (5 dimensions, 23 findings)
 Phase 3: PRIORITIZE complete (P0: 3, P1: 5, P2: 8)

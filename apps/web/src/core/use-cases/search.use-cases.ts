@@ -1,6 +1,6 @@
-import { ValidationError } from "@/lib/errors";
+import { ValidationError } from "@/lib/shared/errors";
 import { isAdminRole } from "@/domain/auth";
-import { LIMITS } from "@/lib/constants";
+import { LIMITS } from "@/lib/shared/constants";
 import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
 
 export interface SearchFilters {

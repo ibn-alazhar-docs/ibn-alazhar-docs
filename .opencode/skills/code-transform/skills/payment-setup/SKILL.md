@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security) finds card data on the server, missing webhook signature check, or `amount` taken from client | Critical — PCI-DSS and money-loss risk |
-| Phase 6 — EXECUTE | User says "add Stripe", "add payments", "add subscriptions", "add checkout" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating from one provider to another (PayPal → Stripe, Braintree → Stripe) | Full replace of integration layer |
-| Phase 9 — ACCEPTANCE | Run a test charge in sandbox, verify webhook delivery, simulate 3DS | End-to-end money flow must be walked |
-| Phase 11 — ROLLOUT | Verify Stripe live keys are in env, webhooks endpoint registered, idempotency store flushed | Money-touching config drift is the most expensive kind |
+| Phase                | Trigger                                                                                                              | Why                                                    |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Phase 2 — AUDIT      | Dimension 4 (Security) finds card data on the server, missing webhook signature check, or `amount` taken from client | Critical — PCI-DSS and money-loss risk                 |
+| Phase 6 — EXECUTE    | User says "add Stripe", "add payments", "add subscriptions", "add checkout"                                          | This is the executing sub-skill                        |
+| Phase 6 — EXECUTE    | Migrating from one provider to another (PayPal → Stripe, Braintree → Stripe)                                         | Full replace of integration layer                      |
+| Phase 9 — ACCEPTANCE | Run a test charge in sandbox, verify webhook delivery, simulate 3DS                                                  | End-to-end money flow must be walked                   |
+| Phase 11 — ROLLOUT   | Verify Stripe live keys are in env, webhooks endpoint registered, idempotency store flushed                          | Money-touching config drift is the most expensive kind |
 
 **Do NOT use this sub-skill directly for:** subscription business logic (dunning, proration — handled by Stripe Billing or Chargebee, configured here but logic lives with the provider), marketplace seller onboarding UI (Stripe Connect Express accounts via dashboard), or tax calculation (use Stripe Tax / TaxJar — separate concern).
 
@@ -165,32 +165,32 @@ Q4: Idempotency store?
 
 ## Patterns (mandatory)
 
-| Concern | Pattern | Why |
-|---------|---------|-----|
-| Card capture | Stripe.js / PaymentSheet on client | Card data never reaches your server — PCI scope = SAQ-A |
-| Amount | Server-side only (from price ID + quantity) | Never trust `req.body.amount` — trivially manipulated |
-| Idempotency | `Idempotency-Key` header + 24h store | Network retries create duplicate charges without it |
-| Webhook signature | `stripe.Webhook.construct_event` on raw body | Prevents forged webhooks from crediting accounts |
-| Customer | Create Stripe Customer for repeat purchases | Avoids re-entering card; supports subscriptions |
-| Refunds | `stripe.Refund.create` with idempotency | Refunds can be partial; never refund twice by accident |
-| Failed payment | Webhook `invoice.payment_failed` → retry via Stripe Smart Retries | Don't write your own dunning — Stripe's is better |
-| Webhook idempotency | Store event ID, skip if already processed | Stripe retries; without idempotency you double-process |
-| Currency | Always integer minor units (cents) | `$10.00` = `1000`. Float math = rounding bugs |
-| Test mode | Default to `sk_test_`, never `sk_live_` in dev | Live keys in dev = accidental real charges |
+| Concern             | Pattern                                                           | Why                                                     |
+| ------------------- | ----------------------------------------------------------------- | ------------------------------------------------------- |
+| Card capture        | Stripe.js / PaymentSheet on client                                | Card data never reaches your server — PCI scope = SAQ-A |
+| Amount              | Server-side only (from price ID + quantity)                       | Never trust `req.body.amount` — trivially manipulated   |
+| Idempotency         | `Idempotency-Key` header + 24h store                              | Network retries create duplicate charges without it     |
+| Webhook signature   | `stripe.Webhook.construct_event` on raw body                      | Prevents forged webhooks from crediting accounts        |
+| Customer            | Create Stripe Customer for repeat purchases                       | Avoids re-entering card; supports subscriptions         |
+| Refunds             | `stripe.Refund.create` with idempotency                           | Refunds can be partial; never refund twice by accident  |
+| Failed payment      | Webhook `invoice.payment_failed` → retry via Stripe Smart Retries | Don't write your own dunning — Stripe's is better       |
+| Webhook idempotency | Store event ID, skip if already processed                         | Stripe retries; without idempotency you double-process  |
+| Currency            | Always integer minor units (cents)                                | `$10.00` = `1000`. Float math = rounding bugs           |
+| Test mode           | Default to `sk_test_`, never `sk_live_` in dev                    | Live keys in dev = accidental real charges              |
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
+| Symptom                                               | Cause                                                                | Recovery                                                                                                                                                                         |
+| ----------------------------------------------------- | -------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `No signatures found matching the expected signature` | Webhook signed with wrong secret, OR body parsed before verification | Use RAW body (Express: `express.raw({type: 'application/json'})` before `express.json()`; FastAPI: `Request.body()` not `Request.json()`). Re-fetch secret from Stripe dashboard |
-| `Charge already exists with this Idempotency-Key` | Key reused with different params | Generate new key per logical operation; never reuse across requests |
-| Duplicate charge in DB but one in Stripe | Webhook processed twice (retried) | Store event ID; skip if seen. Add `UNIQUE(event_id)` constraint |
-| `PaymentIntent requires action` not handled | 3DS challenge not surfaced to client | Return `client_secret` to frontend; call `stripe.confirmCardPayment` |
-| `card_declined` UX is "Try again" with no detail | Stripe `decline_code` not surfaced | Map `insufficient_funds`, `stolen_card`, `expired_card` to user-friendly messages |
-| Amount mismatch between client and server | Client sent amount, server used it | Always derive amount from server-side price lookup; reject `req.body.amount` |
-| Webhook delivery delayed > 1 min | Stripe queue backlog or your endpoint slow | Webhook handler must return 200 in < 3s — push heavy work to background queue |
-| Subscription active but DB shows canceled | `customer.subscription.deleted` webhook missed | Reconcile via `stripe.Subscription.list(customer=...)` cron job nightly |
-| Live key leaked in git history | Committed `.env` accidentally | Rotate key in Stripe dashboard immediately; scrub git history with `git filter-repo`; treat as a security incident |
+| `Charge already exists with this Idempotency-Key`     | Key reused with different params                                     | Generate new key per logical operation; never reuse across requests                                                                                                              |
+| Duplicate charge in DB but one in Stripe              | Webhook processed twice (retried)                                    | Store event ID; skip if seen. Add `UNIQUE(event_id)` constraint                                                                                                                  |
+| `PaymentIntent requires action` not handled           | 3DS challenge not surfaced to client                                 | Return `client_secret` to frontend; call `stripe.confirmCardPayment`                                                                                                             |
+| `card_declined` UX is "Try again" with no detail      | Stripe `decline_code` not surfaced                                   | Map `insufficient_funds`, `stolen_card`, `expired_card` to user-friendly messages                                                                                                |
+| Amount mismatch between client and server             | Client sent amount, server used it                                   | Always derive amount from server-side price lookup; reject `req.body.amount`                                                                                                     |
+| Webhook delivery delayed > 1 min                      | Stripe queue backlog or your endpoint slow                           | Webhook handler must return 200 in < 3s — push heavy work to background queue                                                                                                    |
+| Subscription active but DB shows canceled             | `customer.subscription.deleted` webhook missed                       | Reconcile via `stripe.Subscription.list(customer=...)` cron job nightly                                                                                                          |
+| Live key leaked in git history                        | Committed `.env` accidentally                                        | Rotate key in Stripe dashboard immediately; scrub git history with `git filter-repo`; treat as a security incident                                                               |
 
 ## Self-Healing Loop
 

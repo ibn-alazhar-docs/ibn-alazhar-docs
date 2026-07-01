@@ -1,49 +1,34 @@
 "use client";
 
 import { useEffect } from "react";
-import { Container } from "@/components/ui/container";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
 
-interface LocaleErrorProps {
+interface ErrorPageProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
-export default function LocaleError({ error, reset }: LocaleErrorProps) {
+export default function LocaleError({ error, reset }: ErrorPageProps) {
   useEffect(() => {
-    console.error("[LocaleError]", error);
+    console.error("Application error:", error);
   }, [error]);
 
   return (
-    <Container>
-      <div role="alert" aria-live="assertive">
-        <Stack gap={4} className="items-center justify-center py-20 text-center">
-          <Heading level={2}>خطأ / Error</Heading>
-          <Text color="muted">تعذر تحميل الصفحة — Something went wrong.</Text>
-          {error.digest && (
-            <Text color="muted" className="text-xs font-mono">
-              digest: {error.digest}
-            </Text>
-          )}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={reset}
-              className="rounded-lg bg-btn-primary px-4 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-colors"
-            >
-              إعادة المحاولة / Try again
-            </button>
-            <a
-              href="/"
-              className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover transition-colors"
-            >
-              الرئيسية / Home
-            </a>
-          </div>
-        </Stack>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
+      <div className="rounded-lg border border-red-200 bg-red-50 p-6 dark:border-red-800 dark:bg-red-950">
+        <h2 className="mb-2 text-lg font-bold text-red-800 dark:text-red-200">حدث خطأ غير متوقع</h2>
+        <p className="text-sm text-red-600 dark:text-red-400">
+          {error.message || "حدث خطأ أثناء تحميل الصفحة"}
+        </p>
+        {error.digest && (
+          <p className="mt-2 font-mono text-xs text-red-500">Error ID: {error.digest}</p>
+        )}
       </div>
-    </Container>
+      <button
+        onClick={reset}
+        className="rounded border border-gray-300 px-4 py-2 text-sm hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-800"
+      >
+        حاول مرة أخرى
+      </button>
+    </div>
   );
 }

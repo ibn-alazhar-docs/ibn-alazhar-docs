@@ -1,1 +1,12 @@
-{"name":"remove-hardcoded-secret","description":"Remove hardcoded secrets","difficulty":"easy","category":"security","prompt":"Remove hardcoded secrets, use env vars","assertions":[{"type":"file_not_contains","file":"src/config.py","pattern":"sk-"},{"type":"file_contains","file":"src/config.py","pattern":"os.environ"},{"type":"no_secrets"}]}
+{
+  "name": "remove-hardcoded-secret",
+  "description": "Remove hardcoded secrets",
+  "difficulty": "easy",
+  "category": "security",
+  "prompt": "Remove hardcoded secrets, use env vars",
+  "assertions": [
+    { "type": "file_not_contains", "file": "src/config.py", "pattern": "sk-" },
+    { "type": "file_contains", "file": "src/config.py", "pattern": "os.environ" },
+    { "type": "no_secrets" }
+  ]
+}

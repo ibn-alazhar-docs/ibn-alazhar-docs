@@ -8,7 +8,7 @@ import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { TAG_COLORS } from "@/lib/validators/tag";
+import { TAG_COLORS } from "@/lib/shared/validators/tag";
 import type { TagWithCount } from "@/components/tags/types";
 
 interface TagWithCountWithDate extends TagWithCount {

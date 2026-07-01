@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 9 (Frontend Architecture) | Find god components, prop drilling, HOC nesting |
-| Phase 6 — EXECUTE | New component or refactor | Pick the right composition pattern |
-| Phase 6 — EXECUTE | "Extract this logic" | Hook vs render prop vs context decision |
-| Phase 9 — ACCEPTANCE | "Component is reusable" AC | Verify the public API is composable |
+| Phase                | Trigger                             | Why                                             |
+| -------------------- | ----------------------------------- | ----------------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 9 (Frontend Architecture) | Find god components, prop drilling, HOC nesting |
+| Phase 6 — EXECUTE    | New component or refactor           | Pick the right composition pattern              |
+| Phase 6 — EXECUTE    | "Extract this logic"                | Hook vs render prop vs context decision         |
+| Phase 9 — ACCEPTANCE | "Component is reusable" AC          | Verify the public API is composable             |
 
-**Do NOT use this sub-skill for:** styling (use `css-styling`), state architecture (use `state-management`), or design taste (use `frontend-bridge`). This sub-skill owns *component structure and reuse patterns*.
+**Do NOT use this sub-skill for:** styling (use `css-styling`), state architecture (use `state-management`), or design taste (use `frontend-bridge`). This sub-skill owns _component structure and reuse patterns_.
 
 ## What It Does
 
@@ -118,6 +118,7 @@ Q: Are you about to prop-drill past 2 levels?
 ## Patterns
 
 ### Compound components (shared state, flexible layout)
+
 ```tsx
 const Tabs = ({ children, default_value }) => {
   const [active, setActive] = useState(default_value);
@@ -126,7 +127,11 @@ const Tabs = ({ children, default_value }) => {
 const TabsList = ({ children }) => <div role="tablist">{children}</div>;
 const TabsTrigger = ({ value, children }) => {
   const { active, setActive } = useTabsContext();
-  return <button role="tab" aria-selected={active === value} onClick={() => setActive(value)}>{children}</button>;
+  return (
+    <button role="tab" aria-selected={active === value} onClick={() => setActive(value)}>
+      {children}
+    </button>
+  );
 };
 const TabsContent = ({ value, children }) => {
   const { active } = useTabsContext();
@@ -135,13 +140,21 @@ const TabsContent = ({ value, children }) => {
 
 // Consumer composes freely — no `active` prop drilling
 <Tabs default_value="account">
-  <TabsList><TabsTrigger value="account">Account</TabsTrigger><TabsTrigger value="billing">Billing</TabsTrigger></TabsList>
-  <TabsContent value="account"><AccountForm/></TabsContent>
-  <TabsContent value="billing"><BillingForm/></TabsContent>
-</Tabs>
+  <TabsList>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="billing">Billing</TabsTrigger>
+  </TabsList>
+  <TabsContent value="account">
+    <AccountForm />
+  </TabsContent>
+  <TabsContent value="billing">
+    <BillingForm />
+  </TabsContent>
+</Tabs>;
 ```
 
 ### Hooks composition (extract logic, testable)
+
 ```ts
 // ✅ logic extracted — testable in isolation, composable
 function useDebouncedValue<T>(value: T, delayMs = 300) {
@@ -154,44 +167,58 @@ function useDebouncedValue<T>(value: T, delayMs = 300) {
 }
 
 function useSearch() {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const debounced = useDebouncedValue(query);
-  const { data, isFetching } = useQuery({ queryKey: ['search', debounced], queryFn: () => api.search(debounced), enabled: !!debounced });
+  const { data, isFetching } = useQuery({
+    queryKey: ["search", debounced],
+    queryFn: () => api.search(debounced),
+    enabled: !!debounced,
+  });
   return { query, setQuery, results: data, isFetching };
 }
 ```
 
 ### Slots / children-based composition (maximum flexibility)
+
 ```tsx
 <Card>
-  <Card.Header><h3>Title</h3></Card.Header>
+  <Card.Header>
+    <h3>Title</h3>
+  </Card.Header>
   <Card.Body>{children}</Card.Body>
-  <Card.Footer><Button>Save</Button></Card.Footer>
+  <Card.Footer>
+    <Button>Save</Button>
+  </Card.Footer>
 </Card>
 ```
 
 ### Context (cross-cutting, low-frequency)
+
 ```tsx
 // Theme, auth, locale — changes rarely. Context is fine.
-const ThemeContext = createContext<'light' | 'dark'>('light');
+const ThemeContext = createContext<"light" | "dark">("light");
 // Cart, form,实时 UI — changes often. Use Zustand, NOT Context.
 ```
 
 ### Render props (rare — when consumer needs internals)
+
 ```tsx
-<List items={users} renderItem={(user, isActive) => <UserRow user={user} highlighted={isActive} />} />
+<List
+  items={users}
+  renderItem={(user, isActive) => <UserRow user={user} highlighted={isActive} />}
+/>
 ```
 
 ## Anti-Patterns
 
-| Anti-pattern | Why bad | Refactor to |
-|--------------|---------|-------------|
-| **HOCs** (`withAuth(Component)`) | Nesting tax, prop collisions, type nightmares, no hook rules | Hook (`useAuth()`) called inside the component |
-| **Prop drilling > 2 levels** | Fragile, painful to refactor, every intermediary knows too much | Context (low-freq) or Zustand (high-freq) |
-| **God components** (>300 lines) | Untestable, unreusable, unreviewable | Split by responsibility (Table → Table/Row/Cell/Pagination) |
-| **Non-UI logic in components** | Untestable, duplicate-able | Extract to hook |
-| **Inheritance** (`class Foo extends Bar`) | Rigid, hard to compose | Composition (props + hooks) |
-| **Render props everywhere** | Pyramid of doom, hook rules awkward | Hooks (95% of cases) |
+| Anti-pattern                              | Why bad                                                         | Refactor to                                                 |
+| ----------------------------------------- | --------------------------------------------------------------- | ----------------------------------------------------------- |
+| **HOCs** (`withAuth(Component)`)          | Nesting tax, prop collisions, type nightmares, no hook rules    | Hook (`useAuth()`) called inside the component              |
+| **Prop drilling > 2 levels**              | Fragile, painful to refactor, every intermediary knows too much | Context (low-freq) or Zustand (high-freq)                   |
+| **God components** (>300 lines)           | Untestable, unreusable, unreviewable                            | Split by responsibility (Table → Table/Row/Cell/Pagination) |
+| **Non-UI logic in components**            | Untestable, duplicate-able                                      | Extract to hook                                             |
+| **Inheritance** (`class Foo extends Bar`) | Rigid, hard to compose                                          | Composition (props + hooks)                                 |
+| **Render props everywhere**               | Pyramid of doom, hook rules awkward                             | Hooks (95% of cases)                                        |
 
 ## Atomic Design Direction
 
@@ -208,18 +235,19 @@ Rule: a file may only import from the same level or LOWER. `atoms/Button.tsx` im
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| HOC nesting crashes on hook rules | withAuth(withTheme(withLoading(C))) | Convert all three to hooks, call inside the component |
-| Prop drilling makes refactor painful | 4 levels of intermediaries | Introduce Context or Zustand at the right level |
-| Component can't be reused | Hardcoded content, no slots | Add `children` + named slots (Header/Body/Footer) |
-| God component untestable | 500-line file with 5 responsibilities | Split by responsibility; extract hooks for logic |
-| Re-renders cascade from Context | High-frequency state in Context | Move to Zustand; only theme/auth in Context |
-| Storybook stories out of date | Component evolved, stories didn't | Regenerate stories after each refactor |
+| Symptom                              | Cause                                 | Recovery                                              |
+| ------------------------------------ | ------------------------------------- | ----------------------------------------------------- |
+| HOC nesting crashes on hook rules    | withAuth(withTheme(withLoading(C)))   | Convert all three to hooks, call inside the component |
+| Prop drilling makes refactor painful | 4 levels of intermediaries            | Introduce Context or Zustand at the right level       |
+| Component can't be reused            | Hardcoded content, no slots           | Add `children` + named slots (Header/Body/Footer)     |
+| God component untestable             | 500-line file with 5 responsibilities | Split by responsibility; extract hooks for logic      |
+| Re-renders cascade from Context      | High-frequency state in Context       | Move to Zustand; only theme/auth in Context           |
+| Storybook stories out of date        | Component evolved, stories didn't     | Regenerate stories after each refactor                |
 
 ## Self-Healing Loop
 
 When an anti-pattern is found:
+
 1. Identify the type (HOC, prop-drilling, god-component, non-UI-logic, inheritance)
 2. Apply the mechanical refactor (HOC → hook, extract hook, split along responsibility boundary)
 3. Re-run tests (delegates to `webapp-testing`) + Storybook

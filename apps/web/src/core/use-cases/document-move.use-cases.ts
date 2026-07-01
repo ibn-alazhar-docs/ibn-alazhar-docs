@@ -1,6 +1,6 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
-import { AppError, NotFoundError } from "@/lib/errors";
+import { AppError, NotFoundError } from "@/lib/shared/errors";
 
 export class DocumentMoveUseCases {
   constructor(

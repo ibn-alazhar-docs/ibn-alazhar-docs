@@ -1,1 +1,15 @@
-{"name":"extract-method","description":"Refactor long method by extracting","difficulty":"medium","category":"refactoring","prompt":"Refactor process_order - extract methods","assertions":[{"type":"file_contains","file":"src/orders.py","pattern":"def _"},{"type":"file_not_contains","file":"src/orders.py","pattern":"def process_order(self, order):"}]}
+{
+  "name": "extract-method",
+  "description": "Refactor long method by extracting",
+  "difficulty": "medium",
+  "category": "refactoring",
+  "prompt": "Refactor process_order - extract methods",
+  "assertions": [
+    { "type": "file_contains", "file": "src/orders.py", "pattern": "def _" },
+    {
+      "type": "file_not_contains",
+      "file": "src/orders.py",
+      "pattern": "def process_order(self, order):"
+    }
+  ]
+}

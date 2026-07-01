@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import type { DocEntry } from "@/lib/content";
+import type { DocEntry } from "@/lib/backend/content";
 
 interface DocNavigationProps {
   prev: DocEntry | null;

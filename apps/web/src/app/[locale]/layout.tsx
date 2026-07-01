@@ -4,9 +4,10 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
-import { cairo, amiri } from "@/lib/fonts";
+import { cairo, amiri } from "@/lib/frontend/fonts";
 import { ThemeWrapper } from "@/components/theme/theme-wrapper";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { Toaster } from "sonner";
 
 interface LocaleLayoutProps {
   children: ReactNode;
@@ -64,6 +65,15 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
       />
       <NextIntlClientProvider locale={locale} messages={messages}>
         <ThemeWrapper>{children}</ThemeWrapper>
+        <Toaster
+          position="top-center"
+          dir={locale === "ar" ? "rtl" : "ltr"}
+          toastOptions={{
+            style: {
+              fontFamily: locale === "ar" ? "Cairo, sans-serif" : "inherit",
+            },
+          }}
+        />
       </NextIntlClientProvider>
     </div>
   );

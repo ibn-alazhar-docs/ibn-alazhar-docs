@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { buildFolderTree, type FolderNode } from "@/lib/build-folder-tree";
+import { buildFolderTree, type FolderNode } from "@/lib/shared/build-folder-tree";
 
 export function useFolders() {
   const [folders, setFolders] = useState<FolderNode[]>([]);

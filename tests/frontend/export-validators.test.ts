@@ -4,7 +4,7 @@ import {
   batchExportSchema,
   folderExportSchema,
   tagExportSchema,
-} from "@/lib/export/validators";
+} from "@/lib/backend/export/validators";
 
 describe("singleExportSchema", () => {
   it("valid input passes", () => {

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/frontend/cn";
 
 type TextSize = "xs" | "sm" | "base" | "lg";
 type TextWeight = "normal" | "medium" | "bold";

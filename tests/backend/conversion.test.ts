@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { ConversionUseCases } from "@/core/use-cases/conversion.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
-import { NotFoundError } from "@/lib/errors";
-import type { AuthSession } from "@/lib/auth-guards";
+import { NotFoundError } from "@/lib/shared/errors";
+import type { AuthSession } from "@/lib/backend/auth-guards";
 
 vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
   loadConfig: vi.fn(() => ({})),

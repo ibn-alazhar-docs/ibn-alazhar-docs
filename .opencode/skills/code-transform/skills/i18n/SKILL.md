@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | "Will this app ship multi-language?" | Audit hardcoded strings, RTL readiness |
-| Phase 6 — EXECUTE | Add a second locale | Set up i18n library, extract strings, add locale files |
-| Phase 6 — EXECUTE | Any new user-facing string | Add to locale file, never inline |
-| Phase 9 — ACCEPTANCE | "Arabic version works" AC | Verify RTL layout, plural forms, date/number format |
+| Phase                | Trigger                              | Why                                                    |
+| -------------------- | ------------------------------------ | ------------------------------------------------------ |
+| Phase 4 — AUDIT      | "Will this app ship multi-language?" | Audit hardcoded strings, RTL readiness                 |
+| Phase 6 — EXECUTE    | Add a second locale                  | Set up i18n library, extract strings, add locale files |
+| Phase 6 — EXECUTE    | Any new user-facing string           | Add to locale file, never inline                       |
+| Phase 9 — ACCEPTANCE | "Arabic version works" AC            | Verify RTL layout, plural forms, date/number format    |
 
-**Do NOT use this sub-skill for:** styling (use `css-styling`), translation management platform setup (use Crowdin/Localazy docs), or content management (use `cms-setup`). This sub-skill owns the *code-level i18n architecture*.
+**Do NOT use this sub-skill for:** styling (use `css-styling`), translation management platform setup (use Crowdin/Localazy docs), or content management (use `cms-setup`). This sub-skill owns the _code-level i18n architecture_.
 
 ## What It Does
 
@@ -122,6 +122,7 @@ Q: Plurals or gender in copy?
 ## Patterns
 
 ### Locale file structure
+
 ```json
 // en.json
 {
@@ -138,39 +139,51 @@ Q: Plurals or gender in copy?
 ```
 
 ### ICU MessageFormat (plurals, gender, formatting)
+
 ```tsx
 // ✅ ICU handles plurals + number formatting locale-aware
-<FormattedMessage id="cart.items" values={{ count: items.length }} />
+<FormattedMessage id="cart.items" values={{ count: items.length }} />;
 // → English: "3 items"
 // → Arabic: "٣ عناصر" (Arabic numerals, plural form)
 
 // ❌ never concatenate
-items.length + ' items'   // breaks in Arabic (no plural), wrong in ja (no plural)
+items.length + " items"; // breaks in Arabic (no plural), wrong in ja (no plural)
 ```
 
 ### Intl API for formatting (never hardcode formats)
+
 ```ts
 // ✅ locale-aware via Intl
-new Intl.DateTimeFormat(locale, { dateStyle: 'medium' }).format(date);
-new Intl.NumberFormat(locale, { style: 'currency', currency: 'USD' }).format(amount);
-new Intl.PluralRules(locale).select(count);  // 'one' | 'few' | 'many' | 'other'
-new Intl.RelativeTimeFormat(locale, { numeric: 'auto' }).format(-1, 'day');  // "yesterday"
+new Intl.DateTimeFormat(locale, { dateStyle: "medium" }).format(date);
+new Intl.NumberFormat(locale, { style: "currency", currency: "USD" }).format(amount);
+new Intl.PluralRules(locale).select(count); // 'one' | 'few' | 'many' | 'other'
+new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(-1, "day"); // "yesterday"
 
 // ❌ never hardcode
-date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear();  // US-only
-'$' + amount.toFixed(2);  // wrong currency symbol, wrong decimal for Europe
+date.getMonth() + "/" + date.getDate() + "/" + date.getFullYear(); // US-only
+"$" + amount.toFixed(2); // wrong currency symbol, wrong decimal for Europe
 ```
 
 ### RTL via logical properties
+
 ```css
 /* ❌ physical properties — break in RTL */
-.card { margin-left: 16px; padding-right: 8px; text-align: left; }
+.card {
+  margin-left: 16px;
+  padding-right: 8px;
+  text-align: left;
+}
 
 /* ✅ logical properties — work in both LTR and RTL */
-.card { margin-inline-start: 16px; padding-inline-end: 8px; text-align: start; }
+.card {
+  margin-inline-start: 16px;
+  padding-inline-end: 8px;
+  text-align: start;
+}
 ```
 
 ### Direction switching
+
 ```tsx
 // Set <html dir="rtl"> based on locale (one place)
 import { dir } from 'i18n';
@@ -181,28 +194,30 @@ import { dir } from 'i18n';
 ```
 
 ### Locale routing (Next.js App Router)
+
 ```ts
 // middleware.ts — /en/dashboard, /ar/dashboard, /es/dashboard
 export const middleware = createMiddleware({
-  locales: ['en', 'es', 'ar', 'fr'],
-  defaultLocale: 'en',
+  locales: ["en", "es", "ar", "fr"],
+  defaultLocale: "en",
 });
 ```
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Strings render as keys (`nav.home`) | Locale file missing key | Run `add-locale` to copy template, fill translations |
-| Plural wrong in Arabic | Used `count + ' items'` not ICU | Switch to `<FormattedMessage id="cart.items" values={{count}}/>` |
-| Layout broken in RTL | Used `margin-left` not `margin-inline-start` | Run `audit --action lint`, fix non-logical CSS |
-| Date shows as `5/15/24` in Europe | `toLocaleDateString()` without locale | Use `Intl.DateTimeFormat(locale, {...}).format()` |
-| Currency wrong symbol | `'$' + amount` hardcoded | Use `Intl.NumberFormat(locale, {style:'currency',currency}).format()` |
-| SSR shows English then flashes to Arabic | Locale detected client-side | Use Next.js middleware for locale routing + cookie |
+| Symptom                                  | Cause                                        | Recovery                                                              |
+| ---------------------------------------- | -------------------------------------------- | --------------------------------------------------------------------- |
+| Strings render as keys (`nav.home`)      | Locale file missing key                      | Run `add-locale` to copy template, fill translations                  |
+| Plural wrong in Arabic                   | Used `count + ' items'` not ICU              | Switch to `<FormattedMessage id="cart.items" values={{count}}/>`      |
+| Layout broken in RTL                     | Used `margin-left` not `margin-inline-start` | Run `audit --action lint`, fix non-logical CSS                        |
+| Date shows as `5/15/24` in Europe        | `toLocaleDateString()` without locale        | Use `Intl.DateTimeFormat(locale, {...}).format()`                     |
+| Currency wrong symbol                    | `'$' + amount` hardcoded                     | Use `Intl.NumberFormat(locale, {style:'currency',currency}).format()` |
+| SSR shows English then flashes to Arabic | Locale detected client-side                  | Use Next.js middleware for locale routing + cookie                    |
 
 ## Self-Healing Loop
 
 When an i18n violation is found:
+
 1. Identify the rule (`no-hardcoded-strings`, `use-logical-properties`, `use-icu-plurals`, `use-intl-format`)
 2. Apply the mechanical fix (extract string to locale file, swap `margin-left` for `margin-inline-start`, swap `+ ' items'` for ICU)
 3. Re-run the linter

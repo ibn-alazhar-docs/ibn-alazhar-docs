@@ -32,6 +32,7 @@ export interface PipelineConfig {
     host: string;
     port: number;
     password?: string;
+    tls?: boolean;
   };
   google: {
     serviceAccountEmail: string;
@@ -81,16 +82,7 @@ export type JobStage =
   | "completed"
   | "failed";
 
-export const DOCUMENT_STATUS_MAP: Record<string, string> = {
-  pending: "UPLOADED",
-  validating: "VALIDATING",
-  splitting: "SPLITTING",
-  ocr: "OCR_PROCESSING",
-  cleaning: "CLEANING",
-  generating: "GENERATING",
-  completed: "COMPLETED",
-  failed: "FAILED",
-};
+export { DOC_STATUS_MAP as DOCUMENT_STATUS_MAP } from "@ibn-al-azhar-docs/shared";
 
 export interface ExportRequest {
   jobId: string;

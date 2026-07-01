@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 4 — Visual baseline audit | Need a running app to screenshot |
-| Phase 6 — Visual Guard after UI change | Need to restart dev server if HMR broke |
-| Phase 9 — Acceptance testing | Need app running for flow-simulator |
-| Phase 11 — Pre-rollout smoke | Spin up production build locally before deploy |
-| Interactive debugging | "Let me see what the agent sees" — exposes URL to the user |
+| Trigger                                | Example                                                    |
+| -------------------------------------- | ---------------------------------------------------------- |
+| Phase 4 — Visual baseline audit        | Need a running app to screenshot                           |
+| Phase 6 — Visual Guard after UI change | Need to restart dev server if HMR broke                    |
+| Phase 9 — Acceptance testing           | Need app running for flow-simulator                        |
+| Phase 11 — Pre-rollout smoke           | Spin up production build locally before deploy             |
+| Interactive debugging                  | "Let me see what the agent sees" — exposes URL to the user |
 
 **Do NOT use this for:** production deploys (use `ship-router`), Docker builds (use `containerize`), CI test runs (use `webapp-testing`). This sub-skill is for **local dev servers**, not deployments.
 
@@ -102,21 +102,21 @@ python3 scripts/browser_agent.py serve-list
 
 The detection is **exhaustive before failing** — never ask the user "what framework is this?" if it can be inferred from the codebase.
 
-| Marker file | Framework | Command (dev) | Command (prod) | Default port |
-|-------------|-----------|---------------|-----------------|--------------|
-| `next.config.{js,mjs,ts}` | Next.js | `npm run dev` | `npm run build && npm start` | 3000 |
-| `vite.config.{js,ts}` | Vite | `npm run dev` | `npm run build && npm run preview` | 5173 |
-| `astro.config.{js,mjs,ts}` | Astro | `npm run dev` | `npm run build && npm run preview` | 4321 |
-| `package.json` + `"start"` script | CRA/Expo | `npm start` | `npm run build && npx serve build` | 3000 |
-| `manage.py` | Django | `python manage.py runserver` | `gunicorn wsgi` | 8000 |
-| `app.py` + `from flask` | Flask | `flask run --debug` | `gunicorn app:app` | 5000 |
-| `main.py` + `from fastapi` | FastAPI | `uvicorn main:app --reload` | `uvicorn main:app` | 8000 |
-| `Gemfile` + `config/routes.rb` | Rails | `bin/rails server` | `bin/rails server -e production` | 3000 |
-| `mix.exs` + `phoenix` dep | Phoenix | `mix phx.server` | `mix phx.server` | 4000 |
-| `go.mod` + `net/http` | Go | `go run .` | `./bin/app` | 8080 |
-| `Cargo.toml` + `actix_web` | Rust/Actix | `cargo run` | `./target/release/app` | 8080 |
-| `Cargo.toml` + `axum` | Rust/Axum | `cargo run` | `./target/release/app` | 8080 |
-| `index.html` only (no JS framework) | Static | `python -m http.server` | same | 8000 |
+| Marker file                         | Framework  | Command (dev)                | Command (prod)                     | Default port |
+| ----------------------------------- | ---------- | ---------------------------- | ---------------------------------- | ------------ |
+| `next.config.{js,mjs,ts}`           | Next.js    | `npm run dev`                | `npm run build && npm start`       | 3000         |
+| `vite.config.{js,ts}`               | Vite       | `npm run dev`                | `npm run build && npm run preview` | 5173         |
+| `astro.config.{js,mjs,ts}`          | Astro      | `npm run dev`                | `npm run build && npm run preview` | 4321         |
+| `package.json` + `"start"` script   | CRA/Expo   | `npm start`                  | `npm run build && npx serve build` | 3000         |
+| `manage.py`                         | Django     | `python manage.py runserver` | `gunicorn wsgi`                    | 8000         |
+| `app.py` + `from flask`             | Flask      | `flask run --debug`          | `gunicorn app:app`                 | 5000         |
+| `main.py` + `from fastapi`          | FastAPI    | `uvicorn main:app --reload`  | `uvicorn main:app`                 | 8000         |
+| `Gemfile` + `config/routes.rb`      | Rails      | `bin/rails server`           | `bin/rails server -e production`   | 3000         |
+| `mix.exs` + `phoenix` dep           | Phoenix    | `mix phx.server`             | `mix phx.server`                   | 4000         |
+| `go.mod` + `net/http`               | Go         | `go run .`                   | `./bin/app`                        | 8080         |
+| `Cargo.toml` + `actix_web`          | Rust/Actix | `cargo run`                  | `./target/release/app`             | 8080         |
+| `Cargo.toml` + `axum`               | Rust/Axum  | `cargo run`                  | `./target/release/app`             | 8080         |
+| `index.html` only (no JS framework) | Static     | `python -m http.server`      | same                               | 8000         |
 
 If multiple markers match (e.g. monorepo with both Next.js frontend and FastAPI backend): start BOTH, return both URLs.
 
@@ -124,29 +124,29 @@ If multiple markers match (e.g. monorepo with both Next.js frontend and FastAPI 
 
 Naive polling of `http://localhost:PORT/` returns 200 too early for SPAs (the HTML shell is served but React hasn't booted). Smart strategy per framework:
 
-| Framework | "Ready" signal |
-|-----------|----------------|
-| Next.js | HTTP 200 on `/` AND `/__nextjs_original-stack-frame` returns 200 |
-| Vite | HTTP 200 on `/` AND `/_vite/ping` returns `{"ready": true}` |
-| Flask/FastAPI | HTTP 200 on `/` OR `/health` (whitelisted routes) |
-| Django | HTTP 200 on `/` OR `/admin/login/` |
-| Rails | HTTP 200 on `/` AND no `Booting` in log |
-| Go | TCP port open AND first HTTP request returns anything (even 404) |
-| Rust | TCP port open |
+| Framework     | "Ready" signal                                                   |
+| ------------- | ---------------------------------------------------------------- |
+| Next.js       | HTTP 200 on `/` AND `/__nextjs_original-stack-frame` returns 200 |
+| Vite          | HTTP 200 on `/` AND `/_vite/ping` returns `{"ready": true}`      |
+| Flask/FastAPI | HTTP 200 on `/` OR `/health` (whitelisted routes)                |
+| Django        | HTTP 200 on `/` OR `/admin/login/`                               |
+| Rails         | HTTP 200 on `/` AND no `Booting` in log                          |
+| Go            | TCP port open AND first HTTP request returns anything (even 404) |
+| Rust          | TCP port open                                                    |
 
 **Universal fallback**: poll TCP port with `socket.connect_ex`. Once port is open, poll HTTP. Once HTTP returns anything (even 404), the server is "ready" for sub-skills to navigate to specific URLs.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Port already in use | Previous server didn't shut down | Kill PID on that port, or pick next free port |
-| `EADDRINUSE` after restart | Process zombie | `kill -9 $(lsof -t -i:3000)` then retry |
-| Server boots but never returns 200 | App has uncaught error at startup | Tail log, route to `debug-entry` |
-| `npm run dev` exits immediately | Missing `node_modules` | Run `npm install` first (Phase 3 should have caught this) |
-| `python: command not found` | Wrong venv | Activate venv before running, or use `python3` |
-| Server runs but on wrong port | Hardcoded port in app | Set `PORT` env var explicitly |
-| Log shows "compiling..." forever | TypeScript error blocking HMR | Route to `debug-entry` with the log |
+| Symptom                            | Cause                             | Recovery                                                  |
+| ---------------------------------- | --------------------------------- | --------------------------------------------------------- |
+| Port already in use                | Previous server didn't shut down  | Kill PID on that port, or pick next free port             |
+| `EADDRINUSE` after restart         | Process zombie                    | `kill -9 $(lsof -t -i:3000)` then retry                   |
+| Server boots but never returns 200 | App has uncaught error at startup | Tail log, route to `debug-entry`                          |
+| `npm run dev` exits immediately    | Missing `node_modules`            | Run `npm install` first (Phase 3 should have caught this) |
+| `python: command not found`        | Wrong venv                        | Activate venv before running, or use `python3`            |
+| Server runs but on wrong port      | Hardcoded port in app             | Set `PORT` env var explicitly                             |
+| Log shows "compiling..." forever   | TypeScript error blocking HMR     | Route to `debug-entry` with the log                       |
 
 ## Process Lifecycle
 
@@ -177,17 +177,19 @@ python3 scripts/browser_agent.py serve --dir . --multi-service
 ```
 
 Reads `docker-compose.yml`'s `services` block, maps each to a host command:
+
 - `web` service → `npm run dev` on port 3000
 - `api` service → `uvicorn main:app` on port 8000
 - `db` service → skip (assume Postgres is running locally OR start via Docker separately)
 
 Returns JSON with multiple URLs:
+
 ```json
 {
   "status": "ok",
   "services": [
-    {"name": "web", "url": "http://localhost:3000", "pid": 12345},
-    {"name": "api", "url": "http://localhost:8000", "pid": 12346}
+    { "name": "web", "url": "http://localhost:3000", "pid": 12345 },
+    { "name": "api", "url": "http://localhost:8000", "pid": 12346 }
   ]
 }
 ```
@@ -206,6 +208,7 @@ $ python3 scripts/browser_agent.py serve --dir . --expose
 ```
 
 `--expose` tunnels the local port to a public URL using a built-in tunnel client. Useful for:
+
 - User review without local clone
 - Mobile device testing (scan QR code of the URL)
 - Sharing with stakeholders
@@ -225,6 +228,7 @@ If any gate fails: status = `error`, capture last 50 log lines, route to `debug-
 ## Self-Improvement Hook
 
 Every framework detection that falls back to "unknown" (user had to specify `--framework`) gets logged to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - What markers were present
 - What the user specified
 - What new marker file should be added to the detection table

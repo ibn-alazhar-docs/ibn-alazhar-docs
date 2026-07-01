@@ -109,9 +109,9 @@ describe("Share API", () => {
       });
       const data = await res.json();
 
-      expect(res.status).toBe(400);
+      expect(res.status).toBe(409);
       expect(data.error.code).toBe("VALIDATION_ERROR");
-      expect(data.error.message).toBe("Document not ready");
+      expect(data.error.message).toBe("الملف جاهز للتصدير بعد");
     });
 
     it("should reject invalid expiration date", async () => {

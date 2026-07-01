@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getClientIp } from "@/lib/rate-limit";
+import { getClientIp } from "@/lib/backend/rate-limit";
 
 describe("Security Fixes — Rate Limiting", () => {
   describe("getClientIp", () => {

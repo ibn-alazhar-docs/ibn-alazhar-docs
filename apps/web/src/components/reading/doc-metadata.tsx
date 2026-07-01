@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import type { DocMetadata } from "@/lib/content";
+import type { DocMetadata } from "@/lib/backend/content";
 
 interface DocMetadataBarProps {
   metadata: DocMetadata;

@@ -1,5 +1,7 @@
 import type { PipelineConfig, OcrEngineType, OcrEngineResult } from "./types";
-import { logger } from "./logger";
+import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+
+const logger = baseLogger.child({ module: "ocr-provider" });
 import { GoogleDriveOcrProvider } from "./ocr-providers/google";
 import { SuryaOcrProvider } from "./ocr-providers/surya";
 import { GeminiOcrProvider } from "./ocr-providers/gemini";
@@ -62,15 +64,12 @@ export class OcrManager {
       try {
         const result = await provider.extractText(config, fileBuffer, fileName, mimeType);
         if (errors.length > 0) {
-          logger.warn(
-            "ocr-manager",
-            `${provider.name} succeeded after ${errors.length} failure(s)`,
-          );
+          logger.warn(`${provider.name} succeeded after ${errors.length} failure(s)`);
         }
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        logger.warn("ocr-manager", `${provider.name} failed: ${msg}`);
+        logger.warn(`${provider.name} failed: ${msg}`);
         errors.push({ provider: provider.name, error: msg });
       }
     }
@@ -97,15 +96,12 @@ export class OcrManager {
       try {
         const result = await provider.extractPages(config, pageGetters, fileName);
         if (errors.length > 0) {
-          logger.warn(
-            "ocr-manager",
-            `${provider.name} succeeded after ${errors.length} failure(s)`,
-          );
+          logger.warn(`${provider.name} succeeded after ${errors.length} failure(s)`);
         }
         return result;
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);
-        logger.warn("ocr-manager", `${provider.name} failed: ${msg}`);
+        logger.warn(`${provider.name} failed: ${msg}`);
         errors.push({ provider: provider.name, error: msg });
       }
     }

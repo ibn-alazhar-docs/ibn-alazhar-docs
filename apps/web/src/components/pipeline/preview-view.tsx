@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkBreaks from "remark-breaks";
-import { UI_TIMING } from "@/lib/constants";
+import { UI_TIMING } from "@/lib/shared/constants";
 
 interface PreviewViewProps {
   jobId: string;

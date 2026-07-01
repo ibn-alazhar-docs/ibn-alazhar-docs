@@ -43,7 +43,7 @@ services:
       - redisdata-dev:/data
       - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 5s
       timeout: 5s
       retries: 5

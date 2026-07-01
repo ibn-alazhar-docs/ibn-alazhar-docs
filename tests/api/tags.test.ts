@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { mockSession } from "./setup";
 import { GET as getTags, POST as createTag } from "@/app/api/tags/route";
 import { GET as getTag, PATCH as updateTag, DELETE as deleteTag } from "@/app/api/tags/[id]/route";
-import { MAX_TAGS_PER_USER } from "@/lib/validators/tag";
+import { MAX_TAGS_PER_USER } from "@/lib/shared/validators/tag";
 import { createApiRequest } from "./helpers";
 import { createTestUser, cleanupTestUsers, createTestTag, prisma } from "../integration/helpers/db";
 
@@ -235,14 +235,15 @@ describe("Tags API", () => {
       expect(res.status).toBe(401);
     });
 
-    it("should delete a tag if owned by user", async () => {
+    it("should soft-delete a tag if owned by user", async () => {
       const tag = await createTestTag(userA.id, { name: "Delete Me" });
       const req = createApiRequest(`/api/tags/${tag.id}`, { method: "DELETE" });
       const res = await deleteTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(200);
 
       const dbTag = await prisma.tag.findUnique({ where: { id: tag.id } });
-      expect(dbTag).toBeNull();
+      expect(dbTag).not.toBeNull();
+      expect(dbTag?.deletedAt).not.toBeNull();
     });
 
     it("should return 404 if trying to delete someone else's tag", async () => {

@@ -86,7 +86,7 @@ function buildManifest(
   return {
     exportId,
     exportedAt: new Date().toISOString(),
-    generator: "ibn-al-azhar-docs/v1",
+    generator: "ibnalazhardocs/v1",
     profile,
     documentCount: documents.length,
     totalSize,

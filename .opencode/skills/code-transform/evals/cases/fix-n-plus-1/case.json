@@ -1,1 +1,11 @@
-{"name":"fix-n-plus-1","description":"Fix N+1 query with JOIN","difficulty":"hard","category":"performance","prompt":"Fix the N+1 query problem","assertions":[{"type":"file_contains","file":"src/user_service.py","pattern":"JOIN"},{"type":"file_not_contains","file":"src/user_service.py","pattern":"for user in users"}]}
+{
+  "name": "fix-n-plus-1",
+  "description": "Fix N+1 query with JOIN",
+  "difficulty": "hard",
+  "category": "performance",
+  "prompt": "Fix the N+1 query problem",
+  "assertions": [
+    { "type": "file_contains", "file": "src/user_service.py", "pattern": "JOIN" },
+    { "type": "file_not_contains", "file": "src/user_service.py", "pattern": "for user in users" }
+  ]
+}

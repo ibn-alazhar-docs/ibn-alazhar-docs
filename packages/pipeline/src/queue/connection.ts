@@ -34,6 +34,8 @@ export function getConnection(config: PipelineConfig): IORedis {
         host: config.redis.host,
         port: config.redis.port,
         password: config.redis.password,
+        // WHY: Upstash Redis uses rediss:// URLs which require TLS.
+        tls: config.redis.tls ? {} : undefined,
         // WHY: BullMQ requires null here — it handles retries internally via
         // job-level retry strategies, not per-command retries.
         maxRetriesPerRequest: null,

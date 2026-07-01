@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { TagChip } from "./tag-chip";
-import { TAG_COLORS } from "@/lib/validators/tag";
+import { TAG_COLORS } from "@/lib/shared/validators/tag";
 import type { Tag } from "./types";
 
 interface TagPickerProps {

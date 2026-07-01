@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 13 — META-LEARN | Immediately after `meta-auditor` completes | Consumes `lesson-candidates.json`, produces `prioritized-lessons.json` |
-| Phase 14 — SELF-UPGRADE | Each routed lesson is then picked up by its target sub-skill | `self-patch-generator`, `sub-skill-generator`, `knowledge-base`, `spec-sync` pull from the prioritized queue |
-| User asks "what have you learned?" | Anytime | Read `prioritized-lessons.json`, summarize top lessons |
-| Cross-project trend review | Monthly | Aggregate `prioritized-lessons.json` across projects to find systemic gaps |
+| Phase                              | Trigger                                                      | Why                                                                                                          |
+| ---------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------ |
+| Phase 13 — META-LEARN              | Immediately after `meta-auditor` completes                   | Consumes `lesson-candidates.json`, produces `prioritized-lessons.json`                                       |
+| Phase 14 — SELF-UPGRADE            | Each routed lesson is then picked up by its target sub-skill | `self-patch-generator`, `sub-skill-generator`, `knowledge-base`, `spec-sync` pull from the prioritized queue |
+| User asks "what have you learned?" | Anytime                                                      | Read `prioritized-lessons.json`, summarize top lessons                                                       |
+| Cross-project trend review         | Monthly                                                      | Aggregate `prioritized-lessons.json` across projects to find systemic gaps                                   |
 
-**Do NOT use this sub-skill for:** auditing performance (use `meta-auditor`), generating patches (use `self-patch-generator`), writing knowledge entries (use `knowledge-base`). This sub-skill only *classifies*, *prioritizes*, and *routes*.
+**Do NOT use this sub-skill for:** auditing performance (use `meta-auditor`), generating patches (use `self-patch-generator`), writing knowledge entries (use `knowledge-base`). This sub-skill only _classifies_, _prioritizes_, and _routes_.
 
 ## What It Does
 
@@ -65,12 +65,12 @@ OUTPUT (stdout JSON):
 
 ## Lesson Taxonomy
 
-| Bucket | Definition | Example | Route |
-|--------|-----------|---------|-------|
-| Missing sub-skill | A capability the skill doesn't have — it improvised | "Had to manually test SSE; no sse-testing sub-skill" | `sub-skill-generator` |
-| Weak heuristic | An existing rule gave the wrong answer | "Long-method threshold flagged a 25-line test setup as a smell" | `self-patch-generator` |
-| Outdated knowledge | Knowledge-base entry no longer accurate | "Next.js 13 advice used Pages Router; project is App Router" | `knowledge-base` (re-verify + update) |
-| Wrong assumption | Spec or plan made a false assumption | "Assumed Postgres; project uses MySQL — spec item SP-3 needs rewrite" | `spec-sync` |
+| Bucket             | Definition                                          | Example                                                               | Route                                 |
+| ------------------ | --------------------------------------------------- | --------------------------------------------------------------------- | ------------------------------------- |
+| Missing sub-skill  | A capability the skill doesn't have — it improvised | "Had to manually test SSE; no sse-testing sub-skill"                  | `sub-skill-generator`                 |
+| Weak heuristic     | An existing rule gave the wrong answer              | "Long-method threshold flagged a 25-line test setup as a smell"       | `self-patch-generator`                |
+| Outdated knowledge | Knowledge-base entry no longer accurate             | "Next.js 13 advice used Pages Router; project is App Router"          | `knowledge-base` (re-verify + update) |
+| Wrong assumption   | Spec or plan made a false assumption                | "Assumed Postgres; project uses MySQL — spec item SP-3 needs rewrite" | `spec-sync`                           |
 
 If a lesson doesn't cleanly fit one bucket, default to **weak heuristic** (most common) and add a note in `prioritized-lessons.json` flagging it for human review.
 
@@ -129,6 +129,7 @@ Q: Is priority ≥ 15?
 ## Deduplication
 
 Two lessons are "near-duplicates" if they share:
+
 - Same bucket
 - Same root-cause signature (a normalized phrase: e.g. "auth-jwt-reverts", "circular-import-late-detection")
 - Same target sub-skill
@@ -162,12 +163,12 @@ Every classified lesson appends a one-liner to `OMNIPROJECT_SELF_IMPROVEMENT.md`
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Lesson doesn't fit any bucket | Genuine novel case | Default to weak_heuristic, flag `needs_human_review: true` |
-| Same lesson routed 5+ times with no patch applied | Downstream sub-skill backlog | Escalate to high_priority, surface in next Phase 14 stand-up |
-| Frequency counts drift | `OMNIPROJECT_SELF_IMPROVEMENT.md` got pruned | Re-build frequency index from audit-trail.jsonl |
-| Conflicting lessons (opposite directions) | Different projects, different contexts | Keep both, tag with `context: <framework/version>` |
+| Symptom                                           | Cause                                        | Recovery                                                     |
+| ------------------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ |
+| Lesson doesn't fit any bucket                     | Genuine novel case                           | Default to weak_heuristic, flag `needs_human_review: true`   |
+| Same lesson routed 5+ times with no patch applied | Downstream sub-skill backlog                 | Escalate to high_priority, surface in next Phase 14 stand-up |
+| Frequency counts drift                            | `OMNIPROJECT_SELF_IMPROVEMENT.md` got pruned | Re-build frequency index from audit-trail.jsonl              |
+| Conflicting lessons (opposite directions)         | Different projects, different contexts       | Keep both, tag with `context: <framework/version>`           |
 
 ## Tools
 

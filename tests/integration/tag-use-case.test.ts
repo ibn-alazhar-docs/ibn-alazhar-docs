@@ -9,8 +9,12 @@ import {
 import { TagUseCases } from "../../apps/web/src/core/use-cases/tag.use-cases";
 import { TagRepository } from "../../apps/web/src/core/repositories/tag.repository";
 import { TagDocumentRepository } from "../../apps/web/src/core/repositories/tag-document.repository";
-import type { AuthSession } from "../../apps/web/src/lib/auth-guards";
-import { NotFoundError, ConflictError, ValidationError } from "../../apps/web/src/lib/errors";
+import type { AuthSession } from "../../apps/web/src/lib/backend/auth-guards";
+import {
+  NotFoundError,
+  ConflictError,
+  ValidationError,
+} from "../../apps/web/src/lib/shared/errors";
 
 describe("TagUseCases (use-case level)", () => {
   let userA: { id: string; role: string };

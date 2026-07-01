@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import type { FolderNode } from "@/lib/build-folder-tree";
+import type { FolderNode } from "@/lib/shared/build-folder-tree";
 
 interface MoveDialogProps {
   selectedCount: number;

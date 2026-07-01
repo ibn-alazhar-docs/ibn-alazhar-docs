@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 6 — EXECUTE | Spec requires renaming a column, splitting a table, changing a column type, or backfilling a new column from existing data | In-place renames/changes break running app — must use expand/contract |
-| Phase 6 — EXECUTE | New column needs `NOT NULL` but existing rows have no value | Must add nullable, backfill, then add NOT NULL constraint in a separate step |
-| Phase 6 — EXECUTE | Index needed on a large table (> 1M rows) | `CREATE INDEX` blocks writes; must use `CONCURRENTLY` (Postgres) or online alter (MySQL) |
-| Phase 6 — EXECUTE | Cross-database migration (MySQL → Postgres, etc.) | Expand/contract over a dual-write bridge |
-| Phase 12 — MAINTAIN | Cleanup task: dedupe rows, archive old data, normalize enums | Same backfill + batch patterns, even without schema change |
-| Phase 12 — MAINTAIN | Drop a column flagged for removal > 1 week ago | Execute the contract step now that safety period has elapsed |
+| Phase               | Trigger                                                                                                                    | Why                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Phase 6 — EXECUTE   | Spec requires renaming a column, splitting a table, changing a column type, or backfilling a new column from existing data | In-place renames/changes break running app — must use expand/contract                    |
+| Phase 6 — EXECUTE   | New column needs `NOT NULL` but existing rows have no value                                                                | Must add nullable, backfill, then add NOT NULL constraint in a separate step             |
+| Phase 6 — EXECUTE   | Index needed on a large table (> 1M rows)                                                                                  | `CREATE INDEX` blocks writes; must use `CONCURRENTLY` (Postgres) or online alter (MySQL) |
+| Phase 6 — EXECUTE   | Cross-database migration (MySQL → Postgres, etc.)                                                                          | Expand/contract over a dual-write bridge                                                 |
+| Phase 12 — MAINTAIN | Cleanup task: dedupe rows, archive old data, normalize enums                                                               | Same backfill + batch patterns, even without schema change                               |
+| Phase 12 — MAINTAIN | Drop a column flagged for removal > 1 week ago                                                                             | Execute the contract step now that safety period has elapsed                             |
 
 **Do NOT use this sub-skill for:** initial schema creation on an empty DB (use `db-design`), seed data (use `db-seeding`), application-level data transforms that don't touch schema (write a one-off script in `scripts/`), or migrations on tables with zero rows (just use the ORM's `alter table` — no expand/contract needed when there's no data to migrate).
 
@@ -189,16 +189,16 @@ M5 CONTRACT (after safety period, irreversible):
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `lock_timeout exceeded` during backfill | Batch too large, or concurrent long-running transactions | Reduce batch_size to 500; reduce statement_timeout to 2s; check `pg_stat_activity` for blocking queries and terminate the blocker, not the backfill |
-| `permission denied` on a migration step | Migration runner role lacks ALTER privilege | Grant ALTER on the table to the migration role; never run migrations as superuser (masks permission bugs) |
-| Backfill rows don't match (drift > 0 after M3) | App kept writing to old column after trigger created, but trigger only fires on UPDATE OF email | Fix trigger to fire on any INSERT/UPDATE; re-run drift check; if drift persists, investigate app code paths that bypass ORM |
-| Type conversion fails on row 3,000,000 of 5,000,000 | Bad data in old_col that pre-flight scan missed (scan sampled, didn't exhaust) | Backfill is idempotent — the 3M done rows are safe. Fix the bad row manually (`UPDATE users SET old_col = NULL WHERE id = X`), re-run backfill, it resumes from row 3,000,001 |
-| M5 CONTRACT ran too early, app still reads old column | Safety period not actually elapsed, or app deploy for M4 was rolled back | **EMERGENCY**: restore from backup taken < 24h before M5; re-deploy app at M4 state; postmortem on why contract-check passed (likely the read_errors counter wasn't wired to the right metric) |
-| Replication lag spikes during backfill | Batch writes faster than replica can apply | Pause backfill (it's resumable); increase sleep_ms to 500; check replica CPU/IO; consider running backfill during off-peak |
-| `CREATE INDEX CONCURRENTLY` failed mid-way (left invalid index) | Concurrent index build can fail if a conflicting transaction holds a lock | `DROP INDEX CONCURRENTLY idx_name;` then retry `CREATE INDEX CONCURRENTLY`. Never `DROP INDEX` (non-concurrent) on a prod table — it takes an exclusive lock |
-| FK violation during table split | New table's FK to parent not yet in place when app dual-writes | Add FK with `NOT VALID` first (doesn't lock, doesn't scan existing rows), then `VALIDATE CONSTRAINT` separately (scans but doesn't block writes) |
+| Symptom                                                         | Cause                                                                                           | Recovery                                                                                                                                                                                       |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lock_timeout exceeded` during backfill                         | Batch too large, or concurrent long-running transactions                                        | Reduce batch_size to 500; reduce statement_timeout to 2s; check `pg_stat_activity` for blocking queries and terminate the blocker, not the backfill                                            |
+| `permission denied` on a migration step                         | Migration runner role lacks ALTER privilege                                                     | Grant ALTER on the table to the migration role; never run migrations as superuser (masks permission bugs)                                                                                      |
+| Backfill rows don't match (drift > 0 after M3)                  | App kept writing to old column after trigger created, but trigger only fires on UPDATE OF email | Fix trigger to fire on any INSERT/UPDATE; re-run drift check; if drift persists, investigate app code paths that bypass ORM                                                                    |
+| Type conversion fails on row 3,000,000 of 5,000,000             | Bad data in old_col that pre-flight scan missed (scan sampled, didn't exhaust)                  | Backfill is idempotent — the 3M done rows are safe. Fix the bad row manually (`UPDATE users SET old_col = NULL WHERE id = X`), re-run backfill, it resumes from row 3,000,001                  |
+| M5 CONTRACT ran too early, app still reads old column           | Safety period not actually elapsed, or app deploy for M4 was rolled back                        | **EMERGENCY**: restore from backup taken < 24h before M5; re-deploy app at M4 state; postmortem on why contract-check passed (likely the read_errors counter wasn't wired to the right metric) |
+| Replication lag spikes during backfill                          | Batch writes faster than replica can apply                                                      | Pause backfill (it's resumable); increase sleep_ms to 500; check replica CPU/IO; consider running backfill during off-peak                                                                     |
+| `CREATE INDEX CONCURRENTLY` failed mid-way (left invalid index) | Concurrent index build can fail if a conflicting transaction holds a lock                       | `DROP INDEX CONCURRENTLY idx_name;` then retry `CREATE INDEX CONCURRENTLY`. Never `DROP INDEX` (non-concurrent) on a prod table — it takes an exclusive lock                                   |
+| FK violation during table split                                 | New table's FK to parent not yet in place when app dual-writes                                  | Add FK with `NOT VALID` first (doesn't lock, doesn't scan existing rows), then `VALIDATE CONSTRAINT` separately (scans but doesn't block writes)                                               |
 
 ## Self-Healing Loop
 

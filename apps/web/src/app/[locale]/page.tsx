@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { generatePageMetadata } from "@/lib/metadata";
-import { auth } from "@/lib/auth";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { auth } from "@/lib/backend/auth";
 import { PublicHeader } from "@/components/layout/public-header";
 import { PublicFooter } from "@/components/layout/public-footer";
 import { Hero } from "@/components/sections/hero";

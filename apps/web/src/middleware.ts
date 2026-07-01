@@ -2,8 +2,8 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
-import { checkRateLimit } from "./lib/rate-limit";
-import { generateRequestId } from "./lib/logger";
+import { checkRateLimit } from "./lib/backend/rate-limit";
+import { generateRequestId } from "./lib/shared/logger";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -114,7 +114,14 @@ export async function middleware(request: NextRequest) {
       );
     }
 
-    return NextResponse.next();
+    // Default Cache-Control for API routes — private, no-store unless overridden by route
+    const response = NextResponse.next();
+    if (request.method === "GET") {
+      response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
+    } else {
+      response.headers.set("Cache-Control", "private, no-store");
+    }
+    return response;
   }
 
   const isLoggedIn = hasSessionCookie(request);

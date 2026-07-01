@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 13 (Visual Consistency) + Dimension 14 (Accessibility Baseline) | Need a live page to snapshot and audit |
-| Phase 6 — EXECUTE | Every UI/frontend commit (Visual Guard) | Diff before/after the change |
-| Phase 9 — BROWSER-BASED ACCEPTANCE | Always | Walk user flows in a real browser |
-| Phase 11 — ROLLOUT | Smoke test on staging URL | Verify deployed build matches local |
+| Phase                              | Trigger                                                                   | Why                                    |
+| ---------------------------------- | ------------------------------------------------------------------------- | -------------------------------------- |
+| Phase 4 — AUDIT                    | Dimension 13 (Visual Consistency) + Dimension 14 (Accessibility Baseline) | Need a live page to snapshot and audit |
+| Phase 6 — EXECUTE                  | Every UI/frontend commit (Visual Guard)                                   | Diff before/after the change           |
+| Phase 9 — BROWSER-BASED ACCEPTANCE | Always                                                                    | Walk user flows in a real browser      |
+| Phase 11 — ROLLOUT                 | Smoke test on staging URL                                                 | Verify deployed build matches local    |
 
 **Do NOT use this sub-skill directly for:** taking screenshots (use `screenshot-capture`), comparing images (use `visual-diff`), running a11y scans (use `accessibility-auditor`), simulating clicks (use `flow-simulator`). Those sub-skills call `browser-launcher` internally — you call them, not this one.
 
@@ -113,33 +113,33 @@ Q: Is Python playwright installed?
 
 ## Headless vs Headed
 
-| Mode | When |
-|------|------|
-| Headless (default) | CI, Docker, autonomous runs, production-grade verification |
-| Headed | Local debugging only — when you need to *see* what the agent sees to debug a flow that fails |
+| Mode               | When                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------- |
+| Headless (default) | CI, Docker, autonomous runs, production-grade verification                                   |
+| Headed             | Local debugging only — when you need to _see_ what the agent sees to debug a flow that fails |
 
 Rule: **Headless for verification, headed only for diagnosis.** Never ship a "it passed in headed mode" claim — headed runs are non-deterministic on focus and display.
 
 ## Viewport Defaults
 
-| Target | Viewport |
-|--------|----------|
-| Desktop default | 1280×720 |
-| Mobile (iPhone 12) | 390×844 |
-| Tablet (iPad) | 768×1024 |
-| Wide desktop | 1440×900 |
+| Target              | Viewport                                         |
+| ------------------- | ------------------------------------------------ |
+| Desktop default     | 1280×720                                         |
+| Mobile (iPhone 12)  | 390×844                                          |
+| Tablet (iPad)       | 768×1024                                         |
+| Wide desktop        | 1440×900                                         |
 | Reduced-motion test | same viewport + `prefers-reduced-motion: reduce` |
 
 For multi-viewport sweeps, delegate to `responsive-validator` — it manages the loop.
 
 ## Wait Strategy Cheat Sheet
 
-| Wait until | When to use |
-|------------|-------------|
-| `domcontentloaded` | Static pages, no JS, or you control the page |
-| `load` | Standard pages with images/fonts |
-| `networkidle` | SPA, anything async — **default** |
-| Custom selector | Page never goes idle (websockets, polling) — pass `--wait-for "text=Welcome"` |
+| Wait until         | When to use                                                                   |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `domcontentloaded` | Static pages, no JS, or you control the page                                  |
+| `load`             | Standard pages with images/fonts                                              |
+| `networkidle`      | SPA, anything async — **default**                                             |
+| Custom selector    | Page never goes idle (websockets, polling) — pass `--wait-for "text=Welcome"` |
 
 ## Quality Gates (enforced before declaring "page ready")
 
@@ -159,17 +159,18 @@ Anti-pattern (forbidden): launching 3 browsers for 3 screenshots. Costs ~2s per 
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `playwright._impl._api_types.Error: Executable doesn't exist` | Browsers not installed | Run `playwright install chromium` once, retry |
-| `net::ERR_CONNECTION_REFUSED` | App not running | Phase 9 should first call `live-preview` to start the app |
-| `Timeout 30000ms exceeded` | Slow app / wrong wait strategy | Bump timeout to 60000 OR switch to `--wait-for selector` |
-| `Navigation failed because page crashed!` | JS error during load | Capture pageerror, route to `debug-entry` |
-| `browser has disconnected` | Process killed / OOM | Reduce concurrency, switch to firefox (lower memory) |
+| Symptom                                                       | Cause                          | Recovery                                                  |
+| ------------------------------------------------------------- | ------------------------------ | --------------------------------------------------------- |
+| `playwright._impl._api_types.Error: Executable doesn't exist` | Browsers not installed         | Run `playwright install chromium` once, retry             |
+| `net::ERR_CONNECTION_REFUSED`                                 | App not running                | Phase 9 should first call `live-preview` to start the app |
+| `Timeout 30000ms exceeded`                                    | Slow app / wrong wait strategy | Bump timeout to 60000 OR switch to `--wait-for selector`  |
+| `Navigation failed because page crashed!`                     | JS error during load           | Capture pageerror, route to `debug-entry`                 |
+| `browser has disconnected`                                    | Process killed / OOM           | Reduce concurrency, switch to firefox (lower memory)      |
 
 ## Self-Improvement Hook
 
 Every failed launch writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - The failing URL
 - The error class
 - The wait strategy that was used

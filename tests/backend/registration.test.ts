@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RegistrationUseCases } from "@/core/use-cases/registration.use-cases";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
-import { ConflictError } from "@/lib/errors";
+import { ConflictError } from "@/lib/shared/errors";
 
 vi.mock("bcryptjs", () => ({
   default: {

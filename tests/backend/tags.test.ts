@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ─── Module-level mocks (hoisted) ──────────────────────────────────────────────
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/backend/auth", () => ({
   auth: vi.fn(),
 }));
 
@@ -15,7 +15,7 @@ vi.mock("next/server", () => ({
   },
 }));
 
-vi.mock("@/lib/prisma", () => {
+vi.mock("@/lib/backend/prisma", () => {
   function mockModel() {
     return {
       findMany: vi.fn(),
@@ -49,15 +49,15 @@ vi.mock("@/lib/prisma", () => {
   };
 });
 
-vi.mock("@/lib/logger", () => ({
+vi.mock("@/lib/shared/logger", () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   generateRequestId: () => "test-request-id",
 }));
 
 // ─── Imports (run after hoisted mocks) ─────────────────────────────────────────
 
-import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { auth } from "@/lib/backend/auth";
+import { prisma } from "@/lib/backend/prisma";
 
 import { GET as listTags, POST as createTag } from "@/app/api/tags/route";
 import { GET as getTag, PATCH as updateTag, DELETE as deleteTag } from "@/app/api/tags/[id]/route";

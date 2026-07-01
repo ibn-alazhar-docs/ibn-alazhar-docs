@@ -6,11 +6,11 @@ import {
   resolveOcrData,
   resolvePipelineData,
   buildExportMetadata,
-} from "../../apps/web/src/lib/export/metadata";
-import { prisma } from "../../apps/web/src/lib/prisma";
-import type { ExportProfile } from "../../apps/web/src/lib/export/types";
+} from "../../apps/web/src/lib/backend/export/metadata";
+import { prisma } from "../../apps/web/src/lib/backend/prisma";
+import type { ExportProfile } from "../../apps/web/src/lib/backend/export/types";
 
-vi.mock("../../apps/web/src/lib/prisma", () => ({
+vi.mock("../../apps/web/src/lib/backend/prisma", () => ({
   prisma: {
     $queryRaw: vi.fn(),
     document: {
@@ -29,7 +29,7 @@ vi.mock("../../apps/web/src/lib/prisma", () => ({
   },
 }));
 
-vi.mock("../../apps/web/src/lib/auth-guards", () => ({
+vi.mock("../../apps/web/src/lib/backend/auth-guards", () => ({
   ownedWhere: vi.fn((where) => where),
 }));
 
@@ -42,7 +42,7 @@ describe("Export Metadata Helpers", () => {
     it("throws if document not found", async () => {
       vi.mocked(prisma.document.findFirst).mockResolvedValueOnce(null);
       await expect(resolveDocumentForExport("doc1", { user: { id: "u1" } } as any)).rejects.toThrow(
-        "Document not found: doc1",
+        "المستند غير موجود: doc1",
       );
     });
 

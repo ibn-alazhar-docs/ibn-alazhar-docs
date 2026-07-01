@@ -5,7 +5,7 @@ import {
   getContentType,
   getProfileConfig,
   EXPORT_PROFILE_CONFIGS,
-} from "@/lib/export/profiles";
+} from "@/lib/backend/export/profiles";
 
 describe("sanitizeTitle", () => {
   it("normal title preserved", () => {

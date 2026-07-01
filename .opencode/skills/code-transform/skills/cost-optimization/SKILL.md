@@ -24,6 +24,7 @@ Systematic workflows for AWS cost optimization and financial operations manageme
 **Frequency**: Run monthly (first week of each month)
 
 **Step 1: Find Unused Resources**
+
 ```bash
 # Find unattached EBS volumes
 aws ec2 describe-volumes --filters Name=status,Values=available \
@@ -48,6 +49,7 @@ aws elbv2 describe-target-health --target-group-arn TARGET_GROUP_ARN
 ```
 
 **Step 2: Analyze Cost Anomalies**
+
 ```bash
 # Get daily costs for the past 30 days
 aws ce get-cost-and-usage \
@@ -67,6 +69,7 @@ aws ce get-cost-and-usage \
 ```
 
 **Step 3: Identify Rightsizing Opportunities**
+
 ```bash
 # Get Compute Optimizer rightsizing recommendations
 aws compute-optimizer get-ec2-instance-recommendations \
@@ -84,6 +87,7 @@ aws compute-optimizer get-ecs-service-recommendations 2>/dev/null || \
 ```
 
 **Step 4: Generate Monthly Report**
+
 ```bash
 # Use the template to compile findings
 cp assets/templates/monthly_cost_report.md reports/$(date +%Y-%m)-cost-report.md
@@ -96,6 +100,7 @@ cp assets/templates/monthly_cost_report.md reports/$(date +%Y-%m)-cost-report.md
 ```
 
 **Step 5: Team Review Meeting**
+
 - Present findings to engineering teams
 - Assign optimization tasks
 - Track action items to completion
@@ -107,6 +112,7 @@ cp assets/templates/monthly_cost_report.md reports/$(date +%Y-%m)-cost-report.md
 **When**: Quarterly or when usage patterns stabilize
 
 **Step 1: Analyze Current Usage**
+
 ```bash
 # Get EC2 RI purchase recommendations
 aws ce get-reservation-purchase-recommendation --service "Amazon Elastic Compute Cloud - Compute" \
@@ -125,6 +131,7 @@ aws ce get-savings-plans-purchase-recommendation \
 **Step 2: Review Recommendations**
 
 Evaluate each recommendation:
+
 ```
 ✅ Good candidate if:
   - Running 24/7 for 60+ days
@@ -142,16 +149,19 @@ Evaluate each recommendation:
 **Step 3: Choose Commitment Type**
 
 **Reserved Instances**:
+
 - Standard RI: Highest discount (63%), no flexibility
 - Convertible RI: Moderate discount (54%), can change instance type
 - Best for: Specific instance types, stable workloads
 
 **Savings Plans**:
+
 - Compute SP: Flexible across instance types, regions (66% savings)
 - EC2 Instance SP: Flexible across sizes in same family (72% savings)
 - Best for: Variable workloads within constraints
 
 **Decision Matrix**:
+
 ```
 Known instance type, won't change → Standard RI
 May need to change types → Convertible RI or Compute SP
@@ -160,6 +170,7 @@ Maximum flexibility → Compute Savings Plan
 ```
 
 **Step 4: Purchase and Track**
+
 - Purchase through AWS Console or CLI
 - Tag commitments with purchase date and owner
 - Monitor utilization monthly
@@ -174,6 +185,7 @@ Maximum flexibility → Compute Savings Plan
 **When**: During architecture reviews or optimization sprints
 
 **Step 1: Detect Old Instances**
+
 ```bash
 # Find old-generation instances (t2, m4, c4, r4, etc.)
 aws ec2 describe-instances --filters Name=instance-state-name,Values=running \
@@ -190,6 +202,7 @@ aws ec2 describe-instances --filters Name=instance-state-name,Values=running \
 **Step 2: Prioritize Migrations**
 
 **Quick Wins (Low Risk)**:
+
 ```
 t2 → t3: Drop-in replacement, 10% savings
 m4 → m5: Better performance, 5% savings
@@ -197,6 +210,7 @@ gp2 → gp3: No downtime, 20% savings
 ```
 
 **Medium Effort (Test Required)**:
+
 ```
 x86 → Graviton (ARM64): 20% savings
 - Requires ARM64 compatibility testing
@@ -207,12 +221,14 @@ x86 → Graviton (ARM64): 20% savings
 **Step 3: Execute Migration**
 
 **For EC2 (x86 to x86)**:
+
 1. Stop instance
 2. Change instance type
 3. Start instance
 4. Verify application
 
 **For Graviton Migration**:
+
 1. Create ARM64 AMI or Docker image
 2. Launch new Graviton instance
 3. Test thoroughly
@@ -220,6 +236,7 @@ x86 → Graviton (ARM64): 20% savings
 5. Terminate old instance
 
 **Step 4: Validate Savings**
+
 - Monitor new costs in Cost Explorer
 - Verify performance is acceptable
 - Document migration for other teams
@@ -233,6 +250,7 @@ x86 → Graviton (ARM64): 20% savings
 **When**: For fault-tolerant workloads or Auto Scaling Groups
 
 **Step 1: Identify Candidates**
+
 ```bash
 # Check current Spot pricing vs On-Demand for target instance types
 aws ec2 describe-spot-price-history --instance-types m5.large m5.xlarge m6i.large \
@@ -253,6 +271,7 @@ aws autoscaling describe-auto-scaling-groups \
 **Step 2: Assess Suitability**
 
 **Excellent for Spot**:
+
 - Stateless applications
 - Batch jobs
 - CI/CD pipelines
@@ -260,6 +279,7 @@ aws autoscaling describe-auto-scaling-groups \
 - Auto Scaling Groups
 
 **NOT suitable for Spot**:
+
 - Databases (without replicas)
 - Stateful applications
 - Real-time services
@@ -284,11 +304,13 @@ aws autoscaling describe-auto-scaling-groups \
 Use AWS CLI commands directly -- Claude Code can run `aws ce`, `aws ec2`, `aws cloudwatch`, and `aws compute-optimizer` commands to perform cost analysis.
 
 **Monthly review commands**:
+
 - `aws ec2 describe-volumes --filters Name=status,Values=available` (unused volumes)
 - `aws ce get-cost-and-usage --granularity DAILY --metrics BlendedCost` (cost trends)
 - `aws compute-optimizer get-ec2-instance-recommendations` (rightsizing)
 
 **Quarterly optimization commands**:
+
 - `aws ce get-reservation-purchase-recommendation --service EC2` (RI analysis)
 - `aws ec2 describe-instances` with instance type filters (old generations)
 - `aws ec2 describe-spot-price-history` (Spot pricing)
@@ -300,7 +322,9 @@ Add `--region REGION` and `--profile PROFILE` to any AWS CLI command as needed.
 ## Service-Specific Optimization
 
 ### Compute Optimization
+
 **Key Actions**:
+
 - Migrate to Graviton (20% savings)
 - Use Spot for fault-tolerant workloads (70% savings)
 - Purchase RIs for stable workloads (40-65% savings)
@@ -309,7 +333,9 @@ Add `--region REGION` and `--profile PROFILE` to any AWS CLI command as needed.
 **Reference**: `references/best_practices.md` → Compute Optimization
 
 ### Storage Optimization
+
 **Key Actions**:
+
 - Convert gp2 → gp3 (20% savings)
 - Implement S3 lifecycle policies (50-95% savings)
 - Delete old snapshots
@@ -318,7 +344,9 @@ Add `--region REGION` and `--profile PROFILE` to any AWS CLI command as needed.
 **Reference**: `references/best_practices.md` → Storage Optimization
 
 ### Network Optimization
+
 **Key Actions**:
+
 - Replace NAT Gateways with VPC Endpoints (save $25-30/month each)
 - Use CloudFront to reduce data transfer costs
 - Colocate resources in same AZ when possible
@@ -326,7 +354,9 @@ Add `--region REGION` and `--profile PROFILE` to any AWS CLI command as needed.
 **Reference**: `references/best_practices.md` → Network Optimization
 
 ### Database Optimization
+
 **Key Actions**:
+
 - Right-size RDS instances
 - Use gp3 storage (20% cheaper than gp2)
 - Evaluate Aurora Serverless for variable workloads
@@ -363,21 +393,25 @@ Full guide: `references/finops_governance.md`
 ### Monthly Review Process
 
 **Week 1**: Data Collection
+
 - Run AWS CLI cost analysis commands (see Workflow 1)
 - Export Cost & Usage Reports
 - Compile findings
 
 **Week 2**: Analysis
+
 - Identify trends
 - Find opportunities
 - Prioritize actions
 
 **Week 3**: Team Reviews
+
 - Present to engineering teams
 - Discuss optimizations
 - Assign action items
 
 **Week 4**: Executive Reporting
+
 - Create executive summary
 - Forecast next quarter
 - Report optimization wins
@@ -391,6 +425,7 @@ Full guide: `references/finops_governance.md`
 ## Cost Optimization Checklist
 
 ### Quick Wins (Do First)
+
 - [ ] Delete unattached EBS volumes
 - [ ] Delete old EBS snapshots (>90 days)
 - [ ] Release unused Elastic IPs
@@ -400,6 +435,7 @@ Full guide: `references/finops_governance.md`
 - [ ] Set up AWS Budgets and alerts
 
 ### Medium Effort (This Quarter)
+
 - [ ] Right-size oversized instances
 - [ ] Migrate to newer instance generations
 - [ ] Purchase Reserved Instances for stable workloads
@@ -409,6 +445,7 @@ Full guide: `references/finops_governance.md`
 - [ ] Implement tagging strategy and enforcement
 
 ### Strategic Initiatives (Ongoing)
+
 - [ ] Migrate to Graviton instances
 - [ ] Implement Spot for fault-tolerant workloads
 - [ ] Establish monthly cost review process
@@ -423,6 +460,7 @@ Full guide: `references/finops_governance.md`
 ### "My bill suddenly increased"
 
 1. Check daily cost breakdown by service:
+
    ```bash
    aws ce get-cost-and-usage \
      --time-period Start=$(date -u -v-30d +%Y-%m-%d),End=$(date -u +%Y-%m-%d) \
@@ -438,6 +476,7 @@ Full guide: `references/finops_governance.md`
 ### "I need to reduce costs by X%"
 
 Follow the optimization workflow:
+
 1. Run the discovery commands from Workflow 1 above (unused resources, cost anomalies, rightsizing)
 2. Calculate total potential savings
 3. Prioritize by: Savings Amount x (1 / Effort)
@@ -447,6 +486,7 @@ Follow the optimization workflow:
 ### "How do I know if Reserved Instances make sense?"
 
 Run RI analysis:
+
 ```bash
 aws ce get-reservation-purchase-recommendation \
   --service "Amazon Elastic Compute Cloud - Compute" \
@@ -454,6 +494,7 @@ aws ce get-reservation-purchase-recommendation \
 ```
 
 Look for:
+
 - Instances running 60+ days consistently
 - Workloads that won't change
 - Savings > 30%
@@ -461,6 +502,7 @@ Look for:
 ### "Which resources can I safely delete?"
 
 Find unused resources:
+
 ```bash
 aws ec2 describe-volumes --filters Name=status,Values=available --output table
 aws ec2 describe-addresses --query 'Addresses[?AssociationId==null]' --output table
@@ -469,6 +511,7 @@ aws ec2 describe-snapshots --owner-ids self \
 ```
 
 Safe to delete (usually):
+
 - Unattached EBS volumes (after verifying)
 - Snapshots > 90 days (if backups exist elsewhere)
 - Unused Elastic IPs (after verifying not in DNS)

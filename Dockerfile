@@ -15,14 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc* ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/pipeline/package.json packages/pipeline/package.json
+COPY packages/database/package.json packages/database/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --frozen-lockfile && pnpm rebuild
 
-RUN pnpm rebuild
-
-COPY prisma ./prisma
-RUN npx prisma generate
+COPY packages/database ./packages/database
+RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 COPY packages ./packages
 COPY apps ./apps
@@ -52,7 +51,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
-COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/packages/database ./packages/database
 
 # bcryptjs is required by auth but Next.js standalone tracing misses it in pnpm layout
 COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/bcryptjs
@@ -67,6 +66,6 @@ ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health/ready || exit 1
 
 CMD ["node", "apps/web/server.js"]

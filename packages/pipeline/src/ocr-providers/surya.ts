@@ -3,7 +3,9 @@ import { mkdtemp, writeFile, unlink, rm } from "fs/promises";
 import { tmpdir } from "os";
 import { join } from "path";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
-import { logger } from "../logger";
+import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+
+const logger = baseLogger.child({ module: "ocr-surya" });
 import type { OcrProvider } from "./types";
 import { getPythonCommand } from "./types";
 
@@ -120,10 +122,7 @@ export class SuryaOcrProvider implements OcrProvider {
       }
 
       if (pageErrors.length > 0) {
-        logger.warn(
-          "ocr-provider:surya",
-          `Page-level failures for ${fileName}: ${JSON.stringify(pageErrors)}`,
-        );
+        logger.warn(`Page-level failures for ${fileName}: ${JSON.stringify(pageErrors)}`);
       }
 
       return {

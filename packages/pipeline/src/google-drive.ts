@@ -1,5 +1,7 @@
 import { google, drive_v3 } from "googleapis";
 import { Readable } from "stream";
+import { uploadBuffer } from "./storage";
+import type { PipelineConfig } from "./types";
 
 export function getDriveClient(
   accessToken: string,
@@ -77,4 +79,35 @@ export async function downloadFromDrive(drive: drive_v3.Drive, fileId: string): 
       .on("error", reject)
       .on("end", () => resolve(Buffer.concat(chunks)));
   });
+}
+
+interface GoogleAccount {
+  access_token: string | null;
+  refresh_token: string | null;
+}
+
+export async function uploadExportBuffer(
+  config: PipelineConfig,
+  userId: string,
+  buffer: Buffer,
+  fileName: string,
+  mimeType: string,
+  account: GoogleAccount | null,
+  preferDrive = true,
+): Promise<string> {
+  if (preferDrive && account?.access_token && account.refresh_token) {
+    const drive = getDriveClient(
+      account.access_token,
+      account.refresh_token,
+      process.env.GOOGLE_CLIENT_ID || "",
+      process.env.GOOGLE_CLIENT_SECRET || "",
+    );
+    const folderId = await ensureDriveFolder(drive);
+    const fileId = await uploadToDrive(drive, fileName, mimeType, buffer, folderId);
+    return `gdrive://${fileId}`;
+  }
+
+  const key = `${config.paths.exports}/${userId}/${fileName}`;
+  await uploadBuffer(config, key, buffer, mimeType);
+  return key;
 }

@@ -6,22 +6,26 @@
 ## 27 Test Types
 
 ### Tier 1 — Unit & Property (<10ms)
+
 1. Unit Test — single function in isolation
 2. Property-Based Test — invariants over 1000s of inputs (Hypothesis/fast-check)
 3. Snapshot Test — capture output, compare to baseline (sparingly)
 
 ### Tier 2 — Integration & Contract (<1s)
+
 4. Integration Test — multiple units with REAL dependencies (testcontainers)
 5. Contract Test — microservices API compatibility (Pact)
 6. DB Migration Test — every migration must be reversible
 7. Idempotency Test — calling N times = calling once (payments)
 
 ### Tier 3 — E2E & Visual (<30s)
+
 8. E2E Test — top 5 user flows; Playwright/Cypress
 9. Visual Regression — pixel-diff UI changes
 10. Accessibility Test — WCAG 2.2 AA; axe-core
 
 ### Tier 4 — Performance & Load (minutes-hours)
+
 11. Performance Test — latency/throughput under load
 12. Load Test — peak traffic capacity (k6/Locust)
 13. Stress Test — find breaking point
@@ -29,10 +33,12 @@
 15. Spike Test — sudden 10x traffic
 
 ### Tier 5 — Continuous (indefinite)
+
 16. Fuzz Test — random/malformed inputs (libFuzzer/Atheris)
 17. Chaos Engineering — inject failures (Chaos Mesh)
 
 ### Cross-Cutting
+
 18. Smoke Test — post-deploy; 5-10 critical checks
 19. Sanity Test — post-build; --version checks
 20. Regression Test — one per bug fixed
@@ -45,11 +51,13 @@
 27. A/B Test — statistical comparison in production
 
 ## Test Shape Decision
+
 - UI-heavy → Trophy (integration + static typing)
 - Distributed → Honeycomb (integration-heavy)
 - Otherwise → Pyramid (unit-heavy, 70/20/10)
 
 ## Fakes over Mocks
+
 ```python
 # BAD: Mock — breaks on refactor
 mock_repo.save.assert_called_once()  # breaks if save() renamed
@@ -61,6 +69,7 @@ assert repo.find(1) is not None  # behavior, not interaction
 ```
 
 ## 13-Step Workflow
+
 ```
 6.0  TEST AUDIT → generate_test_suite.py audit
 6.1  TEST STRATEGY → generate TEST_PLAN.md
@@ -78,15 +87,17 @@ assert repo.find(1) is not None  # behavior, not interaction
 ```
 
 ## Quality Gates
-| Gate | Threshold |
-|------|-----------|
-| Tests pass | 100% |
-| Coverage (changed lines) | >80% |
-| Mutation (critical) | >80% |
-| Flaky tests | 0 |
-| Unit test runtime | <10s total |
+
+| Gate                     | Threshold  |
+| ------------------------ | ---------- |
+| Tests pass               | 100%       |
+| Coverage (changed lines) | >80%       |
+| Mutation (critical)      | >80%       |
+| Flaky tests              | 0          |
+| Unit test runtime        | <10s total |
 
 ## Anti-Patterns
+
 1. Coverage chasers — testing getters for 100%
 2. Implementation testers — mocking internals
 3. Everything tests — 200 lines, 50 assertions

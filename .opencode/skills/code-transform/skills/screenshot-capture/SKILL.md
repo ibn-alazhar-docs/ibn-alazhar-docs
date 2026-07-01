@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 4 — Visual baseline | Capture every route at every viewport as the "before" reference |
-| Phase 6 — Visual Guard (before) | Snapshot the page before applying a UI change |
-| Phase 6 — Visual Guard (after) | Snapshot the page after applying the change |
-| Phase 9 — Acceptance evidence | Attach screenshots to each AC in the spec |
-| Phase 12 — Visual proof album | Compile gallery of all pages × states for delivery |
-| Bug report | "Capture what the user is seeing right now" |
+| Trigger                         | Example                                                         |
+| ------------------------------- | --------------------------------------------------------------- |
+| Phase 4 — Visual baseline       | Capture every route at every viewport as the "before" reference |
+| Phase 6 — Visual Guard (before) | Snapshot the page before applying a UI change                   |
+| Phase 6 — Visual Guard (after)  | Snapshot the page after applying the change                     |
+| Phase 9 — Acceptance evidence   | Attach screenshots to each AC in the spec                       |
+| Phase 12 — Visual proof album   | Compile gallery of all pages × states for delivery              |
+| Bug report                      | "Capture what the user is seeing right now"                     |
 
 **Do NOT use this for:** diffing two screenshots (use `visual-diff`), comparing across viewports (use `responsive-validator`), running user flows (use `flow-simulator`). This sub-skill **captures pixels**, nothing more.
 
@@ -45,12 +45,12 @@ metadata:
 
 ## Capture Modes
 
-| Mode | What it captures | When to use |
-|------|------------------|-------------|
-| `full-page` | Entire scrollable height, stitched | Acceptance evidence, proof album |
-| `viewport` | Only what's visible in the window (default 1280×720) | Visual-diff baselines, regression testing |
-| `element` | Bounding box of a single element | Component-level evidence, isolated bug reports |
-| `sticky-header` | Full-page but with `position: sticky` elements fixed in place (avoids them appearing multiple times in the stitch) | Long pages with sticky nav |
+| Mode            | What it captures                                                                                                   | When to use                                    |
+| --------------- | ------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------- |
+| `full-page`     | Entire scrollable height, stitched                                                                                 | Acceptance evidence, proof album               |
+| `viewport`      | Only what's visible in the window (default 1280×720)                                                               | Visual-diff baselines, regression testing      |
+| `element`       | Bounding box of a single element                                                                                   | Component-level evidence, isolated bug reports |
+| `sticky-header` | Full-page but with `position: sticky` elements fixed in place (avoids them appearing multiple times in the stitch) | Long pages with sticky nav                     |
 
 ## Integration Contract
 
@@ -134,7 +134,7 @@ python3 scripts/browser_agent.py screenshot --url http://localhost:3000 \
   "url": "http://localhost:3000/login",
   "final_url": "http://localhost:3000/login",
   "route": "/login",
-  "viewport": {"w": 1280, "h": 720},
+  "viewport": { "w": 1280, "h": 720 },
   "mode": "viewport",
   "color_scheme": "light",
   "reduced_motion": false,
@@ -194,6 +194,7 @@ Override stabilization with `--no-stabilize` (faster but flakier — for debug o
 ```
 
 Examples:
+
 - `login-1280x720-2026-06-29T001234.png`
 - `dashboard-375x812-2026-06-29T001245.png`
 - `checkout-1440x900-2026-06-29T001301.png`
@@ -215,18 +216,19 @@ If any gate fails: status = `error`, do not use the screenshot for diffing or ev
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Blank white screenshot | Page didn't render in time | Increase wait timeout, or use `--wait-for "selector"` |
-| Screenshot shows loading spinner | Async content not loaded | Use `--wait-for "text=Welcome"` instead of `networkidle` |
-| Full-page screenshot is cut off | Lazy-loaded sections not triggered | Enable scroll-stabilization (default in v1.0+) |
-| Different screenshot every run | Animations or carousels | `--inject-css "* { animation: none !important; }"` |
-| Element screenshot is empty | Selector matched nothing | Verify selector in DOM, route to `debug-entry` |
-| File too large (>5MB) | High-DPI display, uncompressed | Use `--compression-level 6` (default 6, max 9) |
+| Symptom                          | Cause                              | Recovery                                                 |
+| -------------------------------- | ---------------------------------- | -------------------------------------------------------- |
+| Blank white screenshot           | Page didn't render in time         | Increase wait timeout, or use `--wait-for "selector"`    |
+| Screenshot shows loading spinner | Async content not loaded           | Use `--wait-for "text=Welcome"` instead of `networkidle` |
+| Full-page screenshot is cut off  | Lazy-loaded sections not triggered | Enable scroll-stabilization (default in v1.0+)           |
+| Different screenshot every run   | Animations or carousels            | `--inject-css "* { animation: none !important; }"`       |
+| Element screenshot is empty      | Selector matched nothing           | Verify selector in DOM, route to `debug-entry`           |
+| File too large (>5MB)            | High-DPI display, uncompressed     | Use `--compression-level 6` (default 6, max 9)           |
 
 ## Self-Healing Loop
 
 When capture fails:
+
 1. Re-try with longer timeout (bump from 30s → 60s)
 2. If still failing: capture DOM snapshot for diagnosis
 3. If blank screenshot: check if URL returned 200 (maybe auth redirect)
@@ -235,24 +237,24 @@ When capture fails:
 
 ## Integration with Other Sub-Skills
 
-| Consumer | How it uses screenshot-capture |
-|----------|-------------------------------|
-| `visual-diff` | Calls with `--mode viewport` for baseline + current; compares results |
-| `responsive-validator` | Calls in a loop, once per viewport; builds comparison grid from results |
-| `flow-simulator` | Calls with `--mode viewport` after each step; attaches to flow trace |
-| `accessibility-auditor` | Calls after a11y scan, to attach visual evidence to violations |
-| Phase 12 proof album | Calls in batch mode for all routes × viewports |
+| Consumer                | How it uses screenshot-capture                                          |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `visual-diff`           | Calls with `--mode viewport` for baseline + current; compares results   |
+| `responsive-validator`  | Calls in a loop, once per viewport; builds comparison grid from results |
+| `flow-simulator`        | Calls with `--mode viewport` after each step; attaches to flow trace    |
+| `accessibility-auditor` | Calls after a11y scan, to attach visual evidence to violations          |
+| Phase 12 proof album    | Calls in batch mode for all routes × viewports                          |
 
 ## Phase-Specific Defaults
 
-| Phase | Default mode | Default viewport | Default output |
-|-------|--------------|------------------|----------------|
-| Phase 4 (baseline) | viewport | 4 viewports (mobile/tablet/desktop/wide) | /screenshots/baselines/ |
-| Phase 6 (visual guard before) | viewport | matching the change scope | /screenshots/before/ |
-| Phase 6 (visual guard after) | viewport | matching the change scope | /screenshots/after/ |
-| Phase 9 (acceptance) | full-page | desktop (1280×720) | /screenshots/acceptance/ |
-| Phase 12 (proof album) | full-page | 4 viewports | /screenshots/proof-album/ |
-| Bug report | full-page + viewport | desktop | /screenshots/bugs/<bug-id>/ |
+| Phase                         | Default mode         | Default viewport                         | Default output              |
+| ----------------------------- | -------------------- | ---------------------------------------- | --------------------------- |
+| Phase 4 (baseline)            | viewport             | 4 viewports (mobile/tablet/desktop/wide) | /screenshots/baselines/     |
+| Phase 6 (visual guard before) | viewport             | matching the change scope                | /screenshots/before/        |
+| Phase 6 (visual guard after)  | viewport             | matching the change scope                | /screenshots/after/         |
+| Phase 9 (acceptance)          | full-page            | desktop (1280×720)                       | /screenshots/acceptance/    |
+| Phase 12 (proof album)        | full-page            | 4 viewports                              | /screenshots/proof-album/   |
+| Bug report                    | full-page + viewport | desktop                                  | /screenshots/bugs/<bug-id>/ |
 
 ## Tools
 

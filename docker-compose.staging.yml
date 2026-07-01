@@ -26,7 +26,7 @@ x-common-env: &common-env
   REDIS_URL: redis://:${STAGING_REDIS_PASSWORD:?STAGING_REDIS_PASSWORD must be set}@redis:6379
   S3_ENDPOINT: http://minio:9000
   S3_REGION: us-east-1
-  S3_BUCKET: ibn-al-azhar-docs-staging
+  S3_BUCKET: ibnalazhardocs-staging
   S3_ACCESS_KEY_ID: ${STAGING_MINIO_ACCESS_KEY:?STAGING_MINIO_ACCESS_KEY must be set}
   S3_SECRET_ACCESS_KEY: ${STAGING_MINIO_SECRET_KEY:?STAGING_MINIO_SECRET_KEY must be set}
 
@@ -179,7 +179,7 @@ services:
       [
         "sh",
         "-c",
-        "npx prisma migrate deploy && (test -f prisma/seed.ts && npx prisma db seed || true)",
+        "npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma && (test -f packages/database/prisma/seed.ts && npx prisma db seed --schema=packages/database/prisma/schema.prisma || true)",
       ]
     environment:
       <<: *common-env

@@ -1,1 +1,12 @@
-{"name":"add-missing-tests","description":"Add comprehensive unit tests","difficulty":"medium","category":"testing","prompt":"Add unit tests for calc.py","assertions":[{"type":"file_contains","file":"tests/test_calc.py","pattern":"def test_"},{"type":"file_contains","file":"tests/test_calc.py","pattern":"ZeroDivisionError"},{"type":"file_contains","file":"tests/test_calc.py","pattern":"pytest"}]}
+{
+  "name": "add-missing-tests",
+  "description": "Add comprehensive unit tests",
+  "difficulty": "medium",
+  "category": "testing",
+  "prompt": "Add unit tests for calc.py",
+  "assertions": [
+    { "type": "file_contains", "file": "tests/test_calc.py", "pattern": "def test_" },
+    { "type": "file_contains", "file": "tests/test_calc.py", "pattern": "ZeroDivisionError" },
+    { "type": "file_contains", "file": "tests/test_calc.py", "pattern": "pytest" }
+  ]
+}

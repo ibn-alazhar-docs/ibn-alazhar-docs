@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 5 — PRIORITIZE | Project has > 8 tasks in BLUEPRINT.md | Manual sequencing is error-prone at scale |
-| Phase 5 — PRIORITIZE | Plan spans multiple layers (frontend/backend/infra) | Layers are usually parallelizable |
-| Phase 6 — EXECUTE | `subagent-dev` available, plan has independent chunks | Spawn subagents in parallel |
-| Phase 6 — EXECUTE | User requests "make this faster" | Re-decompose for more parallelism |
-| Manual trigger | User asks "what can run in parallel?" | Diagnostic |
+| Phase                | Trigger                                               | Why                                       |
+| -------------------- | ----------------------------------------------------- | ----------------------------------------- |
+| Phase 5 — PRIORITIZE | Project has > 8 tasks in BLUEPRINT.md                 | Manual sequencing is error-prone at scale |
+| Phase 5 — PRIORITIZE | Plan spans multiple layers (frontend/backend/infra)   | Layers are usually parallelizable         |
+| Phase 6 — EXECUTE    | `subagent-dev` available, plan has independent chunks | Spawn subagents in parallel               |
+| Phase 6 — EXECUTE    | User requests "make this faster"                      | Re-decompose for more parallelism         |
+| Manual trigger       | User asks "what can run in parallel?"                 | Diagnostic                                |
 
 **Do NOT use this sub-skill for:** small plans (< 8 tasks — just execute serially), plans with all tasks depending on each other (nothing to parallelize), or sub-tasks within a single chunk (decompose once, then execute the chunk as a unit).
 
@@ -71,12 +71,12 @@ OUTPUT (JSON to stdout):
 
 ## Decomposition Strategies
 
-| Strategy | When to use | Parallelism | Example |
-|----------|-------------|-------------|---------|
-| **By layer** | Frontend / backend / infra are independent | High (3-way parallel) | Frontend (React components), Backend (API), Infra (Terraform) |
-| **By feature** | Features are orthogonal (auth, payments, search) | High (N-way parallel, N = feature count) | Auth service, Payments service, Search service |
-| **By phase** | Tasks within a phase are sequential, phases are gated | Low (1-way, but explicit gates) | Audit → Execute → Verify (each blocks the next) |
-| **Auto** (default) | Decomposer picks per project | Varies | Inspect dependencies, choose strategy that maximizes parallelism without breaking deps |
+| Strategy           | When to use                                           | Parallelism                              | Example                                                                                |
+| ------------------ | ----------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| **By layer**       | Frontend / backend / infra are independent            | High (3-way parallel)                    | Frontend (React components), Backend (API), Infra (Terraform)                          |
+| **By feature**     | Features are orthogonal (auth, payments, search)      | High (N-way parallel, N = feature count) | Auth service, Payments service, Search service                                         |
+| **By phase**       | Tasks within a phase are sequential, phases are gated | Low (1-way, but explicit gates)          | Audit → Execute → Verify (each blocks the next)                                        |
+| **Auto** (default) | Decomposer picks per project                          | Varies                                   | Inspect dependencies, choose strategy that maximizes parallelism without breaking deps |
 
 `auto` strategy: try `by-feature` first (highest parallelism). If features share > 30% of files, fall back to `by-layer`. If layers share > 50%, fall back to `by-phase` (mostly serial).
 
@@ -167,6 +167,7 @@ chunk-4 (integration, depends on chunk-1, chunk-2, chunk-3) → merge last
 ```
 
 Each merge runs:
+
 1. `git merge --no-ff chunk-N/branch` into integration branch
 2. Full test suite (not just chunk tests — integration tests too)
 3. If tests fail → revert merge, route chunk back to subagent for fix
@@ -189,20 +190,29 @@ If a chunk touches files outside its declared scope → halt, surface as "scope 
 Every decomposition run appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "5", "action": "decompose", "strategy": "by-layer", "chunks": 4, "parallel_speedup": 2.4, "critical_path_hours": 18, "actual_hours": 19}
+{
+  "ts": "...",
+  "phase": "5",
+  "action": "decompose",
+  "strategy": "by-layer",
+  "chunks": 4,
+  "parallel_speedup": 2.4,
+  "critical_path_hours": 18,
+  "actual_hours": 19
+}
 ```
 
 `meta-auditor` compares `parallel_speedup` (predicted) vs actual time saved. If actual consistently < predicted, the decomposer is over-optimistic — `self-patch-generator` tunes the estimation.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Cycle detected in DAG | Bad BLUEPRINT (A depends on B, B depends on A) | Halt, surface to user, ask for plan fix |
-| Chunk fails to merge (conflicts) | Two chunks touched same file | Re-decompose with finer granularity, or serialize the conflicting chunks |
-| Subagent produces off-scope changes | Subagent didn't respect chunk boundary | Discard off-scope changes, re-dispatch with stricter scope guard |
-| Critical path dominates (parallel speedup < 1.2) | Plan is inherently serial | Accept serial execution; don't force parallelism that isn't there |
-| One subagent hangs | Subagent crash | Timeout (30 min), re-dispatch chunk to another subagent |
+| Symptom                                          | Cause                                          | Recovery                                                                 |
+| ------------------------------------------------ | ---------------------------------------------- | ------------------------------------------------------------------------ |
+| Cycle detected in DAG                            | Bad BLUEPRINT (A depends on B, B depends on A) | Halt, surface to user, ask for plan fix                                  |
+| Chunk fails to merge (conflicts)                 | Two chunks touched same file                   | Re-decompose with finer granularity, or serialize the conflicting chunks |
+| Subagent produces off-scope changes              | Subagent didn't respect chunk boundary         | Discard off-scope changes, re-dispatch with stricter scope guard         |
+| Critical path dominates (parallel speedup < 1.2) | Plan is inherently serial                      | Accept serial execution; don't force parallelism that isn't there        |
+| One subagent hangs                               | Subagent crash                                 | Timeout (30 min), re-dispatch chunk to another subagent                  |
 
 ## Tools
 

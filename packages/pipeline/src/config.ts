@@ -33,7 +33,7 @@ export function loadConfig(): PipelineConfig {
         useSSL,
         accessKey: accessKey ?? "minioadmin",
         secretKey: secretKey ?? "minioadmin",
-        bucket: process.env.S3_BUCKET ?? process.env.MINIO_BUCKET ?? "ibn-al-azhar-docs",
+        bucket: process.env.S3_BUCKET ?? process.env.MINIO_BUCKET ?? "ibnalazhardocs",
       };
     })(),
     redis: (() => {
@@ -45,6 +45,7 @@ export function loadConfig(): PipelineConfig {
             host: parsed.hostname,
             port: Number(parsed.port || 6379),
             password: parsed.password || undefined,
+            tls: parsed.protocol === "rediss:",
           };
         } catch {
           // fall through to individual vars

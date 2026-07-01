@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 6 — EXECUTE | New project bootstrap; schema migrations just ran against an empty DB | Need baseline data (admin accounts, reference tables, demo content) before app starts |
-| Phase 6 — EXECUTE | User says "I need demo data" or "seed the database" | Explicit request |
-| Phase 8 — TESTING | Test suite needs deterministic fixtures but tests should share setup, not each create their own | Seed once per test run, tests assert against known rows |
-| Phase 8 — TESTING | Integration tests against a real DB need a known starting state | Seed before test suite, truncate after |
-| Phase 11 — ROLLOUT | New staging environment stood up | Seed with anonymized prod subset OR Faker-generated data so QA has something to click through |
-| Phase 12 — MAINTAIN | Onboarding new dev; they cloned the repo and need local data fast | `npm run seed` should give them a working local app in < 60s |
+| Phase               | Trigger                                                                                         | Why                                                                                           |
+| ------------------- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| Phase 6 — EXECUTE   | New project bootstrap; schema migrations just ran against an empty DB                           | Need baseline data (admin accounts, reference tables, demo content) before app starts         |
+| Phase 6 — EXECUTE   | User says "I need demo data" or "seed the database"                                             | Explicit request                                                                              |
+| Phase 8 — TESTING   | Test suite needs deterministic fixtures but tests should share setup, not each create their own | Seed once per test run, tests assert against known rows                                       |
+| Phase 8 — TESTING   | Integration tests against a real DB need a known starting state                                 | Seed before test suite, truncate after                                                        |
+| Phase 11 — ROLLOUT  | New staging environment stood up                                                                | Seed with anonymized prod subset OR Faker-generated data so QA has something to click through |
+| Phase 12 — MAINTAIN | Onboarding new dev; they cloned the repo and need local data fast                               | `npm run seed` should give them a working local app in < 60s                                  |
 
 **Do NOT use this sub-skill for:** production user data (never seed real PII), schema changes (use `data-migration`), performance/load test data at scale > 100k rows (use a dedicated load-test seed with bulk-insert paths, not Faker one-row-at-a-time), or one-off admin scripts (those go in `scripts/` not the seed pipeline).
 
@@ -134,31 +134,31 @@ Q: Is reference data or sample data?
 
 ## Environment Tier Defaults
 
-| Entity | Dev | Staging | Prod |
-|--------|-----|---------|------|
-| Users | 1000 (Faker) | 100 (anonymized prod OR Faker) | 0 (admin from env only) |
-| Posts | 5000 (Faker) | 500 (Faker) | 0 |
-| Orders | 200 (Faker) | 20 (Faker) | 0 |
-| Comments | 10000 (Faker) | 1000 (Faker) | 0 |
-| Countries | 249 (static) | 249 (static) | 249 (static) |
-| Currencies | 168 (static) | 168 (static) | 168 (static) |
-| Subscription plans | 4 (static) | 4 (static) | 4 (static) |
-| Admin accounts | 0 (use env) | 1 (from env) | 1+ (from env, required) |
+| Entity             | Dev           | Staging                        | Prod                    |
+| ------------------ | ------------- | ------------------------------ | ----------------------- |
+| Users              | 1000 (Faker)  | 100 (anonymized prod OR Faker) | 0 (admin from env only) |
+| Posts              | 5000 (Faker)  | 500 (Faker)                    | 0                       |
+| Orders             | 200 (Faker)   | 20 (Faker)                     | 0                       |
+| Comments           | 10000 (Faker) | 1000 (Faker)                   | 0                       |
+| Countries          | 249 (static)  | 249 (static)                   | 249 (static)            |
+| Currencies         | 168 (static)  | 168 (static)                   | 168 (static)            |
+| Subscription plans | 4 (static)    | 4 (static)                     | 4 (static)              |
+| Admin accounts     | 0 (use env)   | 1 (from env)                   | 1+ (from env, required) |
 
 Counts are overridable via `--counts` flag or `SEED_COUNT_<ENTITY>` env vars. Production NEVER accepts Faker counts — the override is ignored with a warning.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `ForeignKeyViolation` during seed | Factories inserted child before parent, or parent factory failed silently | Check factory composition order; ensure each factory returns the created row's ID; wrap each entity seed in a transaction so partial failures roll back |
-| `UniqueViolation: duplicate key` | Seed not idempotent — used plain `INSERT` not `ON CONFLICT DO NOTHING` | Rewrite all inserts as upserts; re-run is now safe; clean up duplicates via `seed:undo` then re-seed |
-| Prod accidentally seeded with Faker data | `NODE_ENV` was wrong, or `--confirm-prod` was passed without checking env | `seed:undo` immediately (within the same `seed_runs` audit row); audit `seed_runs` table to confirm scope; rotate any credentials that might have been Faker-generated; postmortem required |
-| Staging has real PII from prod | Anonymization step skipped or scrubber config out of date | Run PII scanner (`scripts/scan_pii.py`) against staging; delete offending rows; rerun anonymization with updated config; notify privacy officer if regulated data leaked |
-| Seed runs slowly (> 60s in dev) | Inserting one row at a time | Batch inserts (1000 rows per `INSERT`); use `COPY` (Postgres) or `LOAD DATA` (MySQL) for > 10k rows; Faker is fast, the round-trips are slow |
-| Tests flaky because seed data varied between runs | `faker.seed` not set | Set `SEED_FAKER_SEED=42` in test env; use snapshot tests against deterministic seed output |
-| `seed:undo` deleted too much | Undo script used `DELETE FROM users` instead of `DELETE FROM users WHERE seeded_by = 'seed_2026_01_15'` | Restore from nightly backup; rewrite undo script to scope by `seeded_by` column or stable ID prefix (`seed_`); never let undo touch rows it didn't create |
-| Anonymized prod data still has PII | Faker `replace` only swapped names but kept emails, or left PII in JSON columns | Use a typed scrubber: name→Faker.name, email→`userN@example.test`, phone→Faker.phone, JSON→recursive scrub; add a CI check that scans staging for PII patterns |
+| Symptom                                           | Cause                                                                                                   | Recovery                                                                                                                                                                                    |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ForeignKeyViolation` during seed                 | Factories inserted child before parent, or parent factory failed silently                               | Check factory composition order; ensure each factory returns the created row's ID; wrap each entity seed in a transaction so partial failures roll back                                     |
+| `UniqueViolation: duplicate key`                  | Seed not idempotent — used plain `INSERT` not `ON CONFLICT DO NOTHING`                                  | Rewrite all inserts as upserts; re-run is now safe; clean up duplicates via `seed:undo` then re-seed                                                                                        |
+| Prod accidentally seeded with Faker data          | `NODE_ENV` was wrong, or `--confirm-prod` was passed without checking env                               | `seed:undo` immediately (within the same `seed_runs` audit row); audit `seed_runs` table to confirm scope; rotate any credentials that might have been Faker-generated; postmortem required |
+| Staging has real PII from prod                    | Anonymization step skipped or scrubber config out of date                                               | Run PII scanner (`scripts/scan_pii.py`) against staging; delete offending rows; rerun anonymization with updated config; notify privacy officer if regulated data leaked                    |
+| Seed runs slowly (> 60s in dev)                   | Inserting one row at a time                                                                             | Batch inserts (1000 rows per `INSERT`); use `COPY` (Postgres) or `LOAD DATA` (MySQL) for > 10k rows; Faker is fast, the round-trips are slow                                                |
+| Tests flaky because seed data varied between runs | `faker.seed` not set                                                                                    | Set `SEED_FAKER_SEED=42` in test env; use snapshot tests against deterministic seed output                                                                                                  |
+| `seed:undo` deleted too much                      | Undo script used `DELETE FROM users` instead of `DELETE FROM users WHERE seeded_by = 'seed_2026_01_15'` | Restore from nightly backup; rewrite undo script to scope by `seeded_by` column or stable ID prefix (`seed_`); never let undo touch rows it didn't create                                   |
+| Anonymized prod data still has PII                | Faker `replace` only swapped names but kept emails, or left PII in JSON columns                         | Use a typed scrubber: name→Faker.name, email→`userN@example.test`, phone→Faker.phone, JSON→recursive scrub; add a CI check that scans staging for PII patterns                              |
 
 ## Self-Healing Loop
 

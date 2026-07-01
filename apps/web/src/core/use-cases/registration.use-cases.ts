@@ -1,5 +1,5 @@
 import bcrypt from "bcryptjs";
-import { ConflictError } from "@/lib/errors";
+import { ConflictError } from "@/lib/shared/errors";
 import { ROLE } from "@/domain/auth";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 

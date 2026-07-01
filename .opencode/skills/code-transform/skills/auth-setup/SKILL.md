@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security): no auth, broken auth, or insecure auth (MD5 passwords, JWT in localStorage, plaintext tokens logged) | Phase must halt — auth is a release blocker |
-| Phase 6 — EXECUTE | User says "add login", "add OAuth", "fix authentication", "add MFA", "add roles" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating session → JWT, JWT → Auth0, Firebase → Supabase Auth | Strategy migration, run full replace |
-| Phase 9 — ACCEPTANCE | Login/signup/reset flows must be walked end-to-end | Coordinates with `browser-launcher` + `flow-simulator` |
-| Phase 11 — ROLLOUT | Smoke-test auth on staging (token lifetime, cookie flags, redirect URLs) | Catches environment-specific config drift |
+| Phase                | Trigger                                                                                                                      | Why                                                    |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| Phase 2 — AUDIT      | Dimension 4 (Security): no auth, broken auth, or insecure auth (MD5 passwords, JWT in localStorage, plaintext tokens logged) | Phase must halt — auth is a release blocker            |
+| Phase 6 — EXECUTE    | User says "add login", "add OAuth", "fix authentication", "add MFA", "add roles"                                             | This is the executing sub-skill                        |
+| Phase 6 — EXECUTE    | Migrating session → JWT, JWT → Auth0, Firebase → Supabase Auth                                                               | Strategy migration, run full replace                   |
+| Phase 9 — ACCEPTANCE | Login/signup/reset flows must be walked end-to-end                                                                           | Coordinates with `browser-launcher` + `flow-simulator` |
+| Phase 11 — ROLLOUT   | Smoke-test auth on staging (token lifetime, cookie flags, redirect URLs)                                                     | Catches environment-specific config drift              |
 
 **Do NOT use this sub-skill directly for:** API rate limiting per user (use `rate-limiting` — it consumes the `user_id` from this sub-skill's middleware), CSRF token issuance (handled here as part of cookie auth but coordinated by `owasp-security`), or SSO provider configuration UI (provider-specific dashboard).
 
@@ -159,31 +159,31 @@ Q3: MFA?
 
 ## Patterns (mandatory)
 
-| Concern | Pattern | Why |
-|---------|---------|-----|
-| Token storage (SPA) | httpOnly + Secure + SameSite=Lax cookie | XSS cannot read, CSRF needs SameSite |
-| Token storage (mobile) | OS keychain (iOS Keychain, Android Keystore) | localStorage on webview is XSS-exposed |
-| Password hashing | argon2id (preferred), bcrypt cost ≥ 12 (fallback) | OWASP-recommended; MD5/SHA1 = Critical |
-| Password reset | Signed token, TTL 15 min, single-use | Prevents replay; rotated on use |
-| Refresh tokens | Rotation + reuse detection | Stolen token = immediate revoke chain |
-| Login throttling | 5 attempts / minute / IP + 3 / minute / email | Delegates enforcement to `rate-limiting` |
-| JWT secret | ≥ 32 chars random, from env var, never in code | `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` |
-| Session ID | 256-bit CSPRNG, server-side store | `secrets.token_urlsafe(32)` |
-| OAuth state param | Random per-request, validated on callback | Prevents CSRF on OAuth flow |
-| Password rules | Min 12 chars, check against HIBP k-anonymity API | Length over complexity; breach check |
+| Concern                | Pattern                                           | Why                                                             |
+| ---------------------- | ------------------------------------------------- | --------------------------------------------------------------- |
+| Token storage (SPA)    | httpOnly + Secure + SameSite=Lax cookie           | XSS cannot read, CSRF needs SameSite                            |
+| Token storage (mobile) | OS keychain (iOS Keychain, Android Keystore)      | localStorage on webview is XSS-exposed                          |
+| Password hashing       | argon2id (preferred), bcrypt cost ≥ 12 (fallback) | OWASP-recommended; MD5/SHA1 = Critical                          |
+| Password reset         | Signed token, TTL 15 min, single-use              | Prevents replay; rotated on use                                 |
+| Refresh tokens         | Rotation + reuse detection                        | Stolen token = immediate revoke chain                           |
+| Login throttling       | 5 attempts / minute / IP + 3 / minute / email     | Delegates enforcement to `rate-limiting`                        |
+| JWT secret             | ≥ 32 chars random, from env var, never in code    | `python3 -c "import secrets; print(secrets.token_urlsafe(48))"` |
+| Session ID             | 256-bit CSPRNG, server-side store                 | `secrets.token_urlsafe(32)`                                     |
+| OAuth state param      | Random per-request, validated on callback         | Prevents CSRF on OAuth flow                                     |
+| Password rules         | Min 12 chars, check against HIBP k-anonymity API  | Length over complexity; breach check                            |
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `argon2 package fails to build` | Missing `libffi-dev` / build tools | `apt-get install libffi-dev build-essential` then `pip install argon2-cffi` |
-| `JWT signature invalid after deploy` | Secret rotation done hard-cutover | Roll back to old secret, then re-run `rotate-secret` with 24h grace |
-| `Refresh token replay detected` | Stolen refresh token being reused | Revoke entire token family for that user; force re-login; alert user |
-| `OAuth callback ERR_REDIRECT_URI` | Staging vs prod URL not registered with provider | Add exact callback URL to provider dashboard; never use wildcard |
-| `Cookie not sent on cross-origin` | Missing `SameSite=None; Secure` for legit cross-site | Only enable for explicit cross-site flows; always pair with Secure |
-| `MFA lockout (lost device)` | User lost TOTP device | Backup codes (single-use) → if exhausted, admin reset with identity proof |
-| `Session fixation after login` | Session ID not rotated post-login | Rotate session ID immediately after successful credential check |
-| `Login throttling false-positives` | Shared office NAT, one IP many users | Throttle per (IP + email), not IP alone; CAPTCHA after 5 fails |
+| Symptom                              | Cause                                                | Recovery                                                                    |
+| ------------------------------------ | ---------------------------------------------------- | --------------------------------------------------------------------------- |
+| `argon2 package fails to build`      | Missing `libffi-dev` / build tools                   | `apt-get install libffi-dev build-essential` then `pip install argon2-cffi` |
+| `JWT signature invalid after deploy` | Secret rotation done hard-cutover                    | Roll back to old secret, then re-run `rotate-secret` with 24h grace         |
+| `Refresh token replay detected`      | Stolen refresh token being reused                    | Revoke entire token family for that user; force re-login; alert user        |
+| `OAuth callback ERR_REDIRECT_URI`    | Staging vs prod URL not registered with provider     | Add exact callback URL to provider dashboard; never use wildcard            |
+| `Cookie not sent on cross-origin`    | Missing `SameSite=None; Secure` for legit cross-site | Only enable for explicit cross-site flows; always pair with Secure          |
+| `MFA lockout (lost device)`          | User lost TOTP device                                | Backup codes (single-use) → if exhausted, admin reset with identity proof   |
+| `Session fixation after login`       | Session ID not rotated post-login                    | Rotate session ID immediately after successful credential check             |
+| `Login throttling false-positives`   | Shared office NAT, one IP many users                 | Throttle per (IP + email), not IP alone; CAPTCHA after 5 fails              |
 
 ## Self-Healing Loop
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth-guards";
-import { handleRouteError } from "@/lib/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { withAuth } from "@/lib/backend/auth-guards";
+import { handleRouteError } from "@/lib/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 export const PATCH = withAuth(async (_request, { session, params }) => {

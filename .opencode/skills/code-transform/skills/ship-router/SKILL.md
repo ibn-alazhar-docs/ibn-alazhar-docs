@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | CENSUS shows a deploy target (K8s, Lambda, Vercel, EC2, mobile store) | Pick the right strategy before writing pipeline code |
-| Phase 8 — ROLLOUT | Always | Routes the deploy, emits the rollback plan |
-| Phase 9 — ACCEPTANCE | After first canary slice or blue/green flip | Smoke-test the new version before declaring done |
-| Phase 13 — RETROSPECTIVE | After any incident triggered post-deploy | Was the strategy right? File a rule update if not |
+| Phase                    | Trigger                                                               | Why                                                  |
+| ------------------------ | --------------------------------------------------------------------- | ---------------------------------------------------- |
+| Phase 2 — AUDIT          | CENSUS shows a deploy target (K8s, Lambda, Vercel, EC2, mobile store) | Pick the right strategy before writing pipeline code |
+| Phase 8 — ROLLOUT        | Always                                                                | Routes the deploy, emits the rollback plan           |
+| Phase 9 — ACCEPTANCE     | After first canary slice or blue/green flip                           | Smoke-test the new version before declaring done     |
+| Phase 13 — RETROSPECTIVE | After any incident triggered post-deploy                              | Was the strategy right? File a rule update if not    |
 
 **Do NOT use this sub-skill for:** local deploys to a developer laptop, ephemeral preview environments (those are CI artifacts, not releases), or database migrations (route those to `migration-runner`, which itself calls `backup-strategy` first).
 
@@ -132,34 +132,36 @@ Q: Did the build come from CI (not a local machine)?
 
 ## Rollback Triggers
 
-| Trigger | Threshold | Action |
-|---------|-----------|--------|
-| Error rate | >2x baseline over 5 min | Auto-rollback (canary/blue-green) or manual rollback (rolling) |
-| Latency p99 | >2x baseline over 5 min | Hold + investigate; rollback if no fix within 10 min |
-| Data loss | Any confirmed (missing rows, dropped events) | Immediate rollback; incident commander paged |
-| Crash rate (mobile) | >1% in staged rollout | Halt rollout in store console; previous version stays live |
-| Failed health checks | >0 on new version for 2 min | Auto-rollback before traffic swap completes |
-| Manual | On-call decides | Always allowed — better to roll back than to "fix forward" under pressure |
+| Trigger              | Threshold                                    | Action                                                                    |
+| -------------------- | -------------------------------------------- | ------------------------------------------------------------------------- |
+| Error rate           | >2x baseline over 5 min                      | Auto-rollback (canary/blue-green) or manual rollback (rolling)            |
+| Latency p99          | >2x baseline over 5 min                      | Hold + investigate; rollback if no fix within 10 min                      |
+| Data loss            | Any confirmed (missing rows, dropped events) | Immediate rollback; incident commander paged                              |
+| Crash rate (mobile)  | >1% in staged rollout                        | Halt rollout in store console; previous version stays live                |
+| Failed health checks | >0 on new version for 2 min                  | Auto-rollback before traffic swap completes                               |
+| Manual               | On-call decides                              | Always allowed — better to roll back than to "fix forward" under pressure |
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Blue/green swap: new target failing health checks | Bad image, missing env var, schema mismatch | Do NOT swap traffic; auto-rollback target group to old version; route to `debug-entry` |
-| Canary: error rate spikes at 5% | New code has a bug affecting real traffic | Auto-rollback to 0% on old version within 60s; preserve canary logs for postmortem |
-| Canary: error rate flat but p99 latency 3x | Resource contention, N+1 query | Hold canary at current %; investigate; either fix-and-redeploy or rollback |
-| Feature flag stuck on after rollback | Flag not wired to be killed | Always implement flag's "off" path first; emergency `kill switch` URL owned by on-call |
-| Lambda alias shift: 50% of invocations failing | IAM role mismatch on new version | Rollback alias to previous version (one command); fix IAM, redeploy |
-| ArgoCD sync looping: manifest drift | Someone manually kubectl-applied | `argocd app sync --force` after removing the manual change; lock down prod cluster |
-| Vercel deploy succeeded but page is 500 | Build-time env var missing | Instant rollback via `vercel --prod <previous-deploy-url>`; add missing env in dashboard |
-| Mobile staged rollout: crash rate >1% in first 1% | Device-specific bug | Halt rollout in store console; previous version remains live for new downloads |
+| Symptom                                           | Cause                                       | Recovery                                                                                 |
+| ------------------------------------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Blue/green swap: new target failing health checks | Bad image, missing env var, schema mismatch | Do NOT swap traffic; auto-rollback target group to old version; route to `debug-entry`   |
+| Canary: error rate spikes at 5%                   | New code has a bug affecting real traffic   | Auto-rollback to 0% on old version within 60s; preserve canary logs for postmortem       |
+| Canary: error rate flat but p99 latency 3x        | Resource contention, N+1 query              | Hold canary at current %; investigate; either fix-and-redeploy or rollback               |
+| Feature flag stuck on after rollback              | Flag not wired to be killed                 | Always implement flag's "off" path first; emergency `kill switch` URL owned by on-call   |
+| Lambda alias shift: 50% of invocations failing    | IAM role mismatch on new version            | Rollback alias to previous version (one command); fix IAM, redeploy                      |
+| ArgoCD sync looping: manifest drift               | Someone manually kubectl-applied            | `argocd app sync --force` after removing the manual change; lock down prod cluster       |
+| Vercel deploy succeeded but page is 500           | Build-time env var missing                  | Instant rollback via `vercel --prod <previous-deploy-url>`; add missing env in dashboard |
+| Mobile staged rollout: crash rate >1% in first 1% | Device-specific bug                         | Halt rollout in store console; previous version remains live for new downloads           |
 
 ## Self-Healing Loop
 
 Every deploy, rollback, and post-deploy verification writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - Strategy chosen, delegate used, deploy duration, whether rollback fired, root cause if rolled back.
 
 `meta-auditor` reads this in Phase 13. Patterns it acts on:
+
 - Same rollback reason ≥3 times across projects → `self-patch-generator` adds a pre-deploy gate (e.g., "always run `knip` before Vercel deploys to catch missing env vars").
 - Strategy consistently overridden to canary for services CENSUS flagged stateless → update CENSUS classifier (stateless heuristic too aggressive).
 - Canary rollbacks clustered around schema-changing deploys → route all schema changes through `feature-flag` by default.

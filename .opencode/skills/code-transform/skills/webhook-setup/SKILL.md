@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 6 — EXECUTE | User requests Stripe/GitHub/Slack integration; spec mentions "webhook", "event notification", "callback URL" | Need verified, retried, idempotent event plumbing |
-| Phase 6 — EXECUTE | Audit finds `app.post('/webhook')` handler with no signature check | Security hole — must add verification |
-| Phase 7 — OBSERVABILITY | Webhook delivery success rate < 99% in metrics | Need retry + dead letter telemetry |
-| Phase 8 — TESTING | Webhook handler exists but no integration tests | Must simulate provider payloads + retries |
-| Phase 11 — ROLLOUT | First production webhook endpoint | Smoke-test signature flow against provider's test event |
+| Phase                   | Trigger                                                                                                      | Why                                                     |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| Phase 6 — EXECUTE       | User requests Stripe/GitHub/Slack integration; spec mentions "webhook", "event notification", "callback URL" | Need verified, retried, idempotent event plumbing       |
+| Phase 6 — EXECUTE       | Audit finds `app.post('/webhook')` handler with no signature check                                           | Security hole — must add verification                   |
+| Phase 7 — OBSERVABILITY | Webhook delivery success rate < 99% in metrics                                                               | Need retry + dead letter telemetry                      |
+| Phase 8 — TESTING       | Webhook handler exists but no integration tests                                                              | Must simulate provider payloads + retries               |
+| Phase 11 — ROLLOUT      | First production webhook endpoint                                                                            | Smoke-test signature flow against provider's test event |
 
 **Do NOT use this sub-skill for:** pub/sub inside a single process (use in-memory event emitter), long-polling APIs (those are not webhooks), or server-sent events to browsers (use `realtime-setup`). Webhooks are HTTP callbacks between servers — if either endpoint is a browser, this is the wrong sub-skill.
 
@@ -137,30 +137,30 @@ Q: Did a delivery fail?
 
 ## Retry Schedule (exponential backoff + jitter)
 
-| Attempt | Delay from previous | Cumulative | Jitter (±20%) |
-|---------|---------------------|------------|---------------|
-| 1 (immediate) | — | 0s | — |
-| 2 | 1 min | 1 min | 48s – 72s |
-| 3 | 5 min | 6 min | 4 min – 6 min |
-| 4 | 30 min | 36 min | 24 min – 36 min |
-| 5 | 2 h | 2h 36min | 1h 36min – 2h 24min |
-| 6 | 6 h | 8h 36min | 4h 48min – 7h 12min |
-| 7 | 24 h | 1d 8h 36min | 19h 12min – 1d 4h 48min |
-| → dead letter | — | — | — |
+| Attempt       | Delay from previous | Cumulative  | Jitter (±20%)           |
+| ------------- | ------------------- | ----------- | ----------------------- |
+| 1 (immediate) | —                   | 0s          | —                       |
+| 2             | 1 min               | 1 min       | 48s – 72s               |
+| 3             | 5 min               | 6 min       | 4 min – 6 min           |
+| 4             | 30 min              | 36 min      | 24 min – 36 min         |
+| 5             | 2 h                 | 2h 36min    | 1h 36min – 2h 24min     |
+| 6             | 6 h                 | 8h 36min    | 4h 48min – 7h 12min     |
+| 7             | 24 h                | 1d 8h 36min | 19h 12min – 1d 4h 48min |
+| → dead letter | —                   | —           | —                       |
 
 Jitter is computed as `delay * (0.8 + random() * 0.4)` to prevent thundering-herd retries when a recipient recovers from an outage.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `webhook.signature_mismatch` spike | Secret rotated on one side but not the other | `webhook_agent.py rotate-secret` on both sides; support a 10-min dual-secret window during rotation |
-| Duplicate side effects (same charge twice) | Handler not idempotent; provider retried because we were slow to ack | Add `X-Webhook-Id` dedup table: `INSERT ... ON CONFLICT (event_id) DO NOTHING`; ensure all side-effecting code is idempotent (use external IDs, not auto-generated) |
-| Handler times out, provider retries | Slow DB write or external API call inside handler | Move work to background queue — return 200 within 5s, process async |
-| Recipient down for 6h+ → all events dead-lettered | Recipient outage longer than retry schedule | Don't auto-replay (could flood). Wait for recipient recovery, then `webhook_agent.py replay --since <time> --provider <p>` in batches of 100 |
-| Lost events (provider says "delivered", we have no record) | Handler returned 200 before persisting | Order of operations MUST be: persist → ack. Never ack-then-persist (a crash between = lost event) |
-| Replay attack (old event re-delivered) | Timestamp check missing or window too wide | Enforce `abs(now - timestamp) <= 300s`; reject otherwise with `401` |
-| Clock skew between sender and receiver | Server clocks off by > 5 min | Sync with NTP; widen window to 600s temporarily; do NOT disable timestamp check |
+| Symptom                                                    | Cause                                                                | Recovery                                                                                                                                                            |
+| ---------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `webhook.signature_mismatch` spike                         | Secret rotated on one side but not the other                         | `webhook_agent.py rotate-secret` on both sides; support a 10-min dual-secret window during rotation                                                                 |
+| Duplicate side effects (same charge twice)                 | Handler not idempotent; provider retried because we were slow to ack | Add `X-Webhook-Id` dedup table: `INSERT ... ON CONFLICT (event_id) DO NOTHING`; ensure all side-effecting code is idempotent (use external IDs, not auto-generated) |
+| Handler times out, provider retries                        | Slow DB write or external API call inside handler                    | Move work to background queue — return 200 within 5s, process async                                                                                                 |
+| Recipient down for 6h+ → all events dead-lettered          | Recipient outage longer than retry schedule                          | Don't auto-replay (could flood). Wait for recipient recovery, then `webhook_agent.py replay --since <time> --provider <p>` in batches of 100                        |
+| Lost events (provider says "delivered", we have no record) | Handler returned 200 before persisting                               | Order of operations MUST be: persist → ack. Never ack-then-persist (a crash between = lost event)                                                                   |
+| Replay attack (old event re-delivered)                     | Timestamp check missing or window too wide                           | Enforce `abs(now - timestamp) <= 300s`; reject otherwise with `401`                                                                                                 |
+| Clock skew between sender and receiver                     | Server clocks off by > 5 min                                         | Sync with NTP; widen window to 600s temporarily; do NOT disable timestamp check                                                                                     |
 
 ## Self-Healing Loop
 

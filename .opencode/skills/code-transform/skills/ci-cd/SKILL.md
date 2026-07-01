@@ -12,6 +12,7 @@ Comprehensive guide for CI/CD pipeline design, optimization, security, and troub
 ### 1. Creating a New Pipeline
 
 **Decision tree:**
+
 ```
 What are you building?
 ├── Node.js/Frontend → GitHub: templates/github-actions/node-ci.yml | GitLab: templates/gitlab-ci/node-ci.yml
@@ -22,6 +23,7 @@ What are you building?
 ```
 
 **Basic pipeline structure:**
+
 ```yaml
 # 1. Fast feedback (lint, format) - <1 min
 # 2. Unit tests - 1-5 min
@@ -32,6 +34,7 @@ What are you building?
 ```
 
 **Key principles** (from `references/best_practices.md`):
+
 - Fail fast: Run cheap validation first
 - Parallelize: Remove unnecessary job dependencies
 - Cache dependencies: Use `actions/cache` or GitLab cache (`references/optimization.md` for strategies)
@@ -41,6 +44,7 @@ What are you building?
 ### 2. Optimizing Pipeline Performance
 
 **Quick wins checklist:**
+
 - [ ] Add dependency caching (50-90% faster builds)
 - [ ] Remove unnecessary `needs` dependencies
 - [ ] Add path filters to skip unnecessary runs
@@ -49,12 +53,14 @@ What are you building?
 - [ ] Enable concurrency cancellation for duplicate runs
 
 **Analyze existing pipeline:**
+
 ```bash
 # Use the pipeline analyzer script
 python3 scripts/pipeline_analyzer.py --platform github --workflow .github/workflows/ci.yml
 ```
 
 **Common optimizations** (detailed in `references/optimization.md`):
+
 - **Slow tests:** Shard tests with matrix builds
 - **Repeated dependency installs:** Add caching
 - **Sequential jobs:** Parallelize with proper `needs`
@@ -65,6 +71,7 @@ See [optimization.md](references/optimization.md) for detailed caching strategie
 ### 3. Securing Your Pipeline
 
 **Essential security checklist:**
+
 - [ ] Use OIDC instead of static credentials
 - [ ] Pin actions/includes to commit SHAs
 - [ ] Use minimal permissions
@@ -76,6 +83,7 @@ See [optimization.md](references/optimization.md) for detailed caching strategie
 **Quick setup - OIDC authentication:**
 
 **GitHub Actions → AWS:**
+
 ```yaml
 permissions:
   id-token: write
@@ -89,6 +97,7 @@ steps:
 ```
 
 **Secrets management:**
+
 - Store in platform secret stores (GitHub Secrets, GitLab CI/CD Variables)
 - Mark as "masked" in GitLab
 - Use environment-specific secrets
@@ -102,6 +111,7 @@ See [security.md](references/security.md) for comprehensive security patterns, s
 **Systematic approach:**
 
 **Step 1: Check pipeline health**
+
 ```bash
 gh run list --limit 20    # Recent runs with status (success/failure rates)
 gh run view <run-id>      # Detailed run info and failure logs
@@ -110,17 +120,18 @@ gh workflow list           # All configured workflows
 
 **Step 2: Identify the failure type**
 
-| Error Pattern | Common Cause | Quick Fix |
-|---------------|--------------|-----------|
-| "Module not found" | Missing dependency or cache issue | Clear cache, run `npm ci` |
-| "Timeout" | Job taking too long | Add caching, increase timeout |
-| "Permission denied" | Missing permissions | Add to `permissions:` block |
-| "Cannot connect to Docker daemon" | Docker not available | Use correct runner or DinD |
-| Intermittent failures | Flaky tests or race conditions | Add retries, fix timing issues |
+| Error Pattern                     | Common Cause                      | Quick Fix                      |
+| --------------------------------- | --------------------------------- | ------------------------------ |
+| "Module not found"                | Missing dependency or cache issue | Clear cache, run `npm ci`      |
+| "Timeout"                         | Job taking too long               | Add caching, increase timeout  |
+| "Permission denied"               | Missing permissions               | Add to `permissions:` block    |
+| "Cannot connect to Docker daemon" | Docker not available              | Use correct runner or DinD     |
+| Intermittent failures             | Flaky tests or race conditions    | Add retries, fix timing issues |
 
 **Step 3: Enable debug logging**
 
 GitHub Actions:
+
 ```yaml
 # Add repository secrets:
 # ACTIONS_RUNNER_DEBUG = true
@@ -128,12 +139,14 @@ GitHub Actions:
 ```
 
 GitLab CI:
+
 ```yaml
 variables:
   CI_DEBUG_TRACE: "true"
 ```
 
 **Step 4: Reproduce locally**
+
 ```bash
 # GitHub Actions - use act
 act -j build
@@ -149,14 +162,15 @@ See [troubleshooting.md](references/troubleshooting.md) for comprehensive issue 
 
 **Deployment pattern selection:**
 
-| Pattern | Use Case | Complexity | Risk |
-|---------|----------|------------|------|
-| Direct | Simple apps, low traffic | Low | Medium |
-| Blue-Green | Zero downtime required | Medium | Low |
-| Canary | Gradual rollout, monitoring | High | Very Low |
-| Rolling | Kubernetes, containers | Medium | Low |
+| Pattern    | Use Case                    | Complexity | Risk     |
+| ---------- | --------------------------- | ---------- | -------- |
+| Direct     | Simple apps, low traffic    | Low        | Medium   |
+| Blue-Green | Zero downtime required      | Medium     | Low      |
+| Canary     | Gradual rollout, monitoring | High       | Very Low |
+| Rolling    | Kubernetes, containers      | Medium     | Low      |
 
 **Basic deployment structure:**
+
 ```yaml
 deploy:
   needs: [build, test]
@@ -172,6 +186,7 @@ deploy:
 ```
 
 **Multi-environment setup:**
+
 - **Development:** Auto-deploy on develop branch
 - **Staging:** Auto-deploy on main, requires passing tests
 - **Production:** Manual approval required, smoke tests mandatory
@@ -182,17 +197,18 @@ See [best_practices.md](references/best_practices.md#deployment-strategies) for 
 
 **Security scanning types:**
 
-| Scan Type | Purpose | When to Run | Speed | Tools |
-|-----------|---------|-------------|-------|-------|
-| Secret Scanning | Find exposed credentials | Every commit | Fast (<1 min) | TruffleHog, Gitleaks |
-| SAST | Find code vulnerabilities | Every commit | Medium (5-15 min) | CodeQL, Semgrep, Bandit, Gosec |
-| SCA | Find dependency vulnerabilities | Every commit | Fast (1-5 min) | npm audit, pip-audit, Snyk |
-| Container Scanning | Find image vulnerabilities | After build | Medium (5-10 min) | Trivy, Grype |
-| DAST | Find runtime vulnerabilities | Scheduled/main only | Slow (15-60 min) | OWASP ZAP |
+| Scan Type          | Purpose                         | When to Run         | Speed             | Tools                          |
+| ------------------ | ------------------------------- | ------------------- | ----------------- | ------------------------------ |
+| Secret Scanning    | Find exposed credentials        | Every commit        | Fast (<1 min)     | TruffleHog, Gitleaks           |
+| SAST               | Find code vulnerabilities       | Every commit        | Medium (5-15 min) | CodeQL, Semgrep, Bandit, Gosec |
+| SCA                | Find dependency vulnerabilities | Every commit        | Fast (1-5 min)    | npm audit, pip-audit, Snyk     |
+| Container Scanning | Find image vulnerabilities      | After build         | Medium (5-10 min) | Trivy, Grype                   |
+| DAST               | Find runtime vulnerabilities    | Scheduled/main only | Slow (15-60 min)  | OWASP ZAP                      |
 
 **Quick setup - Add security to existing pipeline:**
 
 **GitHub Actions:**
+
 ```yaml
 jobs:
   # Add before build job
@@ -213,17 +229,18 @@ jobs:
       - uses: actions/checkout@v4
       - uses: github/codeql-action/init@v3
         with:
-          languages: javascript  # or python, go
+          languages: javascript # or python, go
       - uses: github/codeql-action/analyze@v3
 
   build:
-    needs: [secret-scan, sast]  # Add dependencies
+    needs: [secret-scan, sast] # Add dependencies
 ```
 
 **GitLab CI:**
+
 ```yaml
 stages:
-  - security  # Add before other stages
+  - security # Add before other stages
   - build
   - test
 
@@ -248,6 +265,7 @@ include:
 ```
 
 **Comprehensive security pipeline templates:**
+
 - **GitHub Actions:** `templates/github-actions/security-scan.yml` - Complete DevSecOps pipeline with all scanning stages
 - **GitLab CI:** `templates/gitlab-ci/security-scan.yml` - Complete DevSecOps pipeline with GitLab security templates
 
@@ -271,6 +289,7 @@ security-gate:
 - **Go:** CodeQL, Semgrep, Gosec, govulncheck
 
 All language-specific templates now include security scanning stages. See:
+
 - `templates/github-actions/node-ci.yml`
 - `templates/github-actions/python-ci.yml`
 - `templates/github-actions/go-ci.yml`
@@ -331,6 +350,7 @@ gl project-job artifacts <job-id>
 ### GitHub Actions
 
 **Reusable workflows:**
+
 ```yaml
 # .github/workflows/reusable-test.yml
 on:
@@ -350,17 +370,19 @@ jobs:
 ```
 
 **Call from another workflow:**
+
 ```yaml
 jobs:
   test:
     uses: ./.github/workflows/reusable-test.yml
     with:
-      node-version: '20'
+      node-version: "20"
 ```
 
 ### GitLab CI
 
 **Templates with extends:**
+
 ```yaml
 .test_template:
   image: node:20
@@ -379,6 +401,7 @@ integration-test:
 ```
 
 **DAG pipelines with needs:**
+
 ```yaml
 build:
   stage: build
@@ -398,8 +421,8 @@ deploy:
 
 ## Diagnostic Scripts
 
-| Script | Purpose | Usage |
-|--------|---------|-------|
+| Script                 | Purpose                                                                      | Usage                                                                      |
+| ---------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------------- |
 | `pipeline_analyzer.py` | Find optimization opportunities (caching, parallelization, outdated actions) | `python3 scripts/pipeline_analyzer.py --platform github --workflow <path>` |
 
 For pipeline health checks (success/failure rates, failure patterns), use `gh` CLI: `gh run list --limit 20`, `gh run view <run-id>`, `gh workflow list`.
@@ -416,13 +439,13 @@ For pipeline health checks (success/failure rates, failure patterns), use `gh` C
 
 Starter templates in `assets/templates/` for both GitHub Actions and GitLab CI:
 
-| Language/Type | GitHub Actions | GitLab CI |
-|---------------|---------------|-----------|
-| Node.js | `github-actions/node-ci.yml` | `gitlab-ci/node-ci.yml` |
-| Python | `github-actions/python-ci.yml` | `gitlab-ci/python-ci.yml` |
-| Go | `github-actions/go-ci.yml` | `gitlab-ci/go-ci.yml` |
-| Docker | `github-actions/docker-build.yml` | `gitlab-ci/docker-build.yml` |
-| Security | `github-actions/security-scan.yml` | `gitlab-ci/security-scan.yml` |
+| Language/Type | GitHub Actions                     | GitLab CI                     |
+| ------------- | ---------------------------------- | ----------------------------- |
+| Node.js       | `github-actions/node-ci.yml`       | `gitlab-ci/node-ci.yml`       |
+| Python        | `github-actions/python-ci.yml`     | `gitlab-ci/python-ci.yml`     |
+| Go            | `github-actions/go-ci.yml`         | `gitlab-ci/go-ci.yml`         |
+| Docker        | `github-actions/docker-build.yml`  | `gitlab-ci/docker-build.yml`  |
+| Security      | `github-actions/security-scan.yml` | `gitlab-ci/security-scan.yml` |
 
 All templates include security scanning, caching, and multi-environment deployment.
 
@@ -431,6 +454,7 @@ All templates include security scanning, caching, and multi-environment deployme
 ### Caching Dependencies
 
 **GitHub Actions:**
+
 ```yaml
 - uses: actions/cache@v4
   with:
@@ -442,6 +466,7 @@ All templates include security scanning, caching, and multi-environment deployme
 ```
 
 **GitLab CI:**
+
 ```yaml
 cache:
   key:
@@ -454,6 +479,7 @@ cache:
 ### Matrix Builds
 
 **GitHub Actions:**
+
 ```yaml
 strategy:
   matrix:
@@ -463,22 +489,25 @@ strategy:
 ```
 
 **GitLab CI:**
+
 ```yaml
 test:
   parallel:
     matrix:
-      - NODE_VERSION: ['18', '20', '22']
+      - NODE_VERSION: ["18", "20", "22"]
 ```
 
 ### Conditional Execution
 
 **GitHub Actions:**
+
 ```yaml
 - name: Deploy
   if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 ```
 
 **GitLab CI:**
+
 ```yaml
 deploy:
   rules:

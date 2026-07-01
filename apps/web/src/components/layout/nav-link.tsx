@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, Link } from "@/i18n/navigation";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/frontend/cn";
 import { useSyncExternalStore, type ReactNode } from "react";
 
 const emptySubscribe = () => () => {};

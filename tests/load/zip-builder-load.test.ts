@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import JSZip from "jszip";
-import { buildZipPackage, type ZipBuildDocument } from "@/lib/export/zip-builder";
-import type { ExportMetadata } from "@/lib/export/types";
+import { buildZipPackage, type ZipBuildDocument } from "@/lib/backend/export/zip-builder";
+import type { ExportMetadata } from "@/lib/backend/export/types";
 
 function makeMetadata(): ExportMetadata {
   return {

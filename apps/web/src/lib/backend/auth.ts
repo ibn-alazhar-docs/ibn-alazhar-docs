@@ -6,7 +6,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { auditLog, AUDIT_ACTIONS } from "./audit";
 import { ROLE } from "@/domain/auth";
-import { LIMITS } from "@/lib/constants";
+import { LIMITS } from "@/lib/shared/constants";
 
 declare module "next-auth" {
   interface Session {

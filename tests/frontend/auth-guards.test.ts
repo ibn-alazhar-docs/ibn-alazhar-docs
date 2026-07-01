@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/backend/auth", () => ({
   auth: vi.fn(),
 }));
 
@@ -24,8 +24,8 @@ import {
   requireRole,
   unauthorizedResponse,
   forbiddenResponse,
-} from "@/lib/auth-guards";
-import { auth } from "@/lib/auth";
+} from "@/lib/backend/auth-guards";
+import { auth } from "@/lib/backend/auth";
 
 const mockedAuth = vi.mocked(auth);
 

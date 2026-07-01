@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/auth-guards";
-import { handleRouteError } from "@/lib/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { bulkUntagSchema } from "@/lib/validators/tag";
+import { withAuth } from "@/lib/backend/auth-guards";
+import { handleRouteError } from "@/lib/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { bulkUntagSchema } from "@/lib/shared/validators/tag";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session }) => {

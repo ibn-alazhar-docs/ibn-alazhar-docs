@@ -2,20 +2,14 @@ import { cache } from "react";
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse, NextRequest } from "next/server";
-import { ForbiddenError } from "./errors";
+import { ForbiddenError } from "@/lib/shared/errors";
 import { isAdminRole } from "@/domain/auth";
+import type { AuthSession } from "@/domain/types";
+
+export type { AuthSession } from "@/domain/types";
+export { ownedWhere } from "@/core/authorization";
 
 const DEFAULT_LOCALE = "ar";
-
-export interface AuthSession {
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    image: string | null;
-    role: string;
-  };
-}
 
 const getCachedAuth = cache(auth);
 
@@ -45,15 +39,6 @@ export function unauthorizedResponse(message = "يجب تسجيل الدخول")
 
 export function forbiddenResponse(message = "ليس لديك صلاحية للوصول") {
   return NextResponse.json({ error: { code: "FORBIDDEN", message } }, { status: 403 });
-}
-
-export function ownedWhere(
-  baseWhere: Record<string, unknown>,
-  session: AuthSession,
-  userIdField = "userId",
-): Record<string, unknown> {
-  if (isAdminRole(session.user.role)) return baseWhere;
-  return { ...baseWhere, [userIdField]: session.user.id };
 }
 
 type AuthenticatedHandler = (

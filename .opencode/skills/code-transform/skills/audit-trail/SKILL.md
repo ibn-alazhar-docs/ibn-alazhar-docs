@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Every phase, every decision | Always | This is a background service, always on |
-| Phase 7 — VERIFY | User asks "why did you choose X over Y?" | Query audit trail for the decision record |
-| Phase 13 — META-AUDIT | `meta-auditor` reads entries to score friction | Source of truth for what happened |
-| Compliance audit | External auditor needs to verify decisions | Export filtered audit trail |
-| Post-incident review | Production issue, need to trace what changed | Query by file/path/date |
+| Phase                       | Trigger                                        | Why                                       |
+| --------------------------- | ---------------------------------------------- | ----------------------------------------- |
+| Every phase, every decision | Always                                         | This is a background service, always on   |
+| Phase 7 — VERIFY            | User asks "why did you choose X over Y?"       | Query audit trail for the decision record |
+| Phase 13 — META-AUDIT       | `meta-auditor` reads entries to score friction | Source of truth for what happened         |
+| Compliance audit            | External auditor needs to verify decisions     | Export filtered audit trail               |
+| Post-incident review        | Production issue, need to trace what changed   | Query by file/path/date                   |
 
-**Do NOT use this sub-skill for:** ephemeral state (use PROGRESS.md), lesson classification (use `meta-learning`), or knowledge persistence (use `knowledge-base`). This sub-skill is purely the *what happened and why* record.
+**Do NOT use this sub-skill for:** ephemeral state (use PROGRESS.md), lesson classification (use `meta-learning`), or knowledge persistence (use `knowledge-base`). This sub-skill is purely the _what happened and why_ record.
 
 ## What It Does
 
@@ -37,21 +37,28 @@ metadata:
 
 ```json
 {
-  "ts": "2024-11-22T14:33:00.123Z",       // ISO 8601, UTC, millisecond precision
+  "ts": "2024-11-22T14:33:00.123Z", // ISO 8601, UTC, millisecond precision
   "project_id": "proj-2024-11-payments",
-  "phase": "6",                             // 1-15
-  "subskill": "auth-setup",                 // which sub-skill made the decision
+  "phase": "6", // 1-15
+  "subskill": "auth-setup", // which sub-skill made the decision
   "decision": "chose JWT over session cookies for auth",
   "rationale": "stateless, scales better, matches API-first architecture",
   "alternatives_considered": [
-    {"option": "session cookies + Redis store", "rejected_reason": "adds Redis dependency, stateful"},
-    {"option": "OAuth2 + Passport", "rejected_reason": "overkill for this scope, no third-party auth needed"}
+    {
+      "option": "session cookies + Redis store",
+      "rejected_reason": "adds Redis dependency, stateful"
+    },
+    {
+      "option": "OAuth2 + Passport",
+      "rejected_reason": "overkill for this scope, no third-party auth needed"
+    }
   ],
   "files_affected": ["src/auth/jwt.ts", "src/auth/middleware.ts"],
-  "tests_run": [{"name": "auth.test.ts", "passed": true}],
-  "outcome": "success",                     // success | failure | partial | pending
-  "reverses_entry": null,                   // ID of a prior entry this corrects (if applicable)
-  "metadata": {                             // optional, free-form per sub-skill
+  "tests_run": [{ "name": "auth.test.ts", "passed": true }],
+  "outcome": "success", // success | failure | partial | pending
+  "reverses_entry": null, // ID of a prior entry this corrects (if applicable)
+  "metadata": {
+    // optional, free-form per sub-skill
     "library_version": "jsonwebtoken@9.0.0"
   }
 }
@@ -164,18 +171,19 @@ If S3 upload fails, the rotated log stays local and the rotation is retried hour
 
 ## Query Patterns
 
-| Question | Query |
-|----------|-------|
-| Why did we choose X? | `decision_contains: X` |
-| What changed in this file? | `files_affected: path/to/file` |
-| What happened in phase N? | `phase: N` |
-| What did sub-skill X do? | `subskill: X` |
-| What happened on this date? | `ts_from`, `ts_to` |
+| Question                         | Query                                |
+| -------------------------------- | ------------------------------------ |
+| Why did we choose X?             | `decision_contains: X`               |
+| What changed in this file?       | `files_affected: path/to/file`       |
+| What happened in phase N?        | `phase: N`                           |
+| What did sub-skill X do?         | `subskill: X`                        |
+| What happened on this date?      | `ts_from`, `ts_to`                   |
 | Show me the full project history | `project_id: <id>`, no other filters |
 
 ## Self-Improvement Hook
 
 `meta-auditor` queries the audit trail in Phase 13 to:
+
 - Count decisions per phase (low count = phase was rushed or skipped)
 - Count `outcome: failure` entries (high count = lots of friction)
 - Find decisions where `alternatives_considered` is empty (no alternatives = snap decision, may be a process gap)
@@ -185,13 +193,13 @@ If `meta-auditor` finds decisions without `rationale` or `alternatives_considere
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Write fails (disk full) | Local disk exhausted | Halt all decisions; cannot proceed without audit trail; surface immediately |
-| Rotation failed | File in use (rare) | Retry in 1 hour; if still failing, force-rotate with explicit lock |
-| S3 upload fails repeatedly | Credentials / network | Keep local; alert; never delete local until S3 confirmed |
-| Tamper detected (hash mismatch) | File was modified (security incident) | Halt; alert security; do not proceed until investigated |
-| Query slow (> 5s) | Log too large, no index | Build index on `project_id`, `phase`, `ts`; archive old entries |
+| Symptom                         | Cause                                 | Recovery                                                                    |
+| ------------------------------- | ------------------------------------- | --------------------------------------------------------------------------- |
+| Write fails (disk full)         | Local disk exhausted                  | Halt all decisions; cannot proceed without audit trail; surface immediately |
+| Rotation failed                 | File in use (rare)                    | Retry in 1 hour; if still failing, force-rotate with explicit lock          |
+| S3 upload fails repeatedly      | Credentials / network                 | Keep local; alert; never delete local until S3 confirmed                    |
+| Tamper detected (hash mismatch) | File was modified (security incident) | Halt; alert security; do not proceed until investigated                     |
+| Query slow (> 5s)               | Log too large, no index               | Build index on `project_id`, `phase`, `ts`; archive old entries             |
 
 ## Tools
 

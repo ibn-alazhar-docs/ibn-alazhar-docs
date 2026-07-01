@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { DEFAULT_TAG_COLOR } from "@/lib/constants";
+import { DEFAULT_TAG_COLOR } from "@/lib/shared/constants";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {

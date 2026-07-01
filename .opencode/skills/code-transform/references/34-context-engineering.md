@@ -7,6 +7,7 @@
 > "Find the smallest set of high-signal tokens that maximize the likelihood of your desired outcome."
 
 The context window is a **public good**. Your skill shares it with:
+
 - System prompt
 - Conversation history
 - Other skills' metadata
@@ -15,6 +16,7 @@ The context window is a **public good**. Your skill shares it with:
 ## 3 Techniques for Long-Horizon Tasks
 
 ### 1. Compaction
+
 Summarize conversation nearing context limit, reinitiate with summary + recent files.
 
 **Tuning**: Maximize RECALL first (capture everything relevant), then iterate PRECISION (remove fluff).
@@ -22,24 +24,26 @@ Summarize conversation nearing context limit, reinitiate with summary + recent f
 **Lightest form**: tool result clearing (old tool outputs → references).
 
 ### 2. Structured Note-Taking (Agentic Memory)
+
 Agent writes notes persisted OUTSIDE the context window (`NOTES.md`, `progress.md`, to-do list).
 
 Pulled back into context at later times. After context resets, agent reads its own notes and continues.
 
 ### 3. Subagent Architectures
+
 Specialized subagents handle focused tasks with clean context. Main agent coordinates; subagents explore (tens of thousands of tokens) but return only **1,000-2,000 token distilled summary**.
 
 ## Claude Code's 5-Layer Shaper Ladder
 
 Runs before EVERY model call. Each layer at different cost-benefit; cheaper layers first.
 
-| # | Layer | Trigger | What It Does |
-|---|-------|---------|-------------|
-| 1 | **Budget reduction** | Always active | Per-message size limits on tool results; oversized → content references |
-| 2 | **Snip** | `HISTORY_SNIP` flag | Lightweight trim of older history segments |
-| 3 | **Microcompact** | `CACHED_MICROCOMPACT` | Fine-grained compression; time-based + cache-aware paths |
-| 4 | **Context collapse** | `CONTEXT_COLLAPSE` | Read-time projection over history; does NOT mutate stored history |
-| 5 | **Auto-compact** | After all 4 above insufficient | Full model-generated summary; fires PreCompact hooks |
+| #   | Layer                | Trigger                        | What It Does                                                            |
+| --- | -------------------- | ------------------------------ | ----------------------------------------------------------------------- |
+| 1   | **Budget reduction** | Always active                  | Per-message size limits on tool results; oversized → content references |
+| 2   | **Snip**             | `HISTORY_SNIP` flag            | Lightweight trim of older history segments                              |
+| 3   | **Microcompact**     | `CACHED_MICROCOMPACT`          | Fine-grained compression; time-based + cache-aware paths                |
+| 4   | **Context collapse** | `CONTEXT_COLLAPSE`             | Read-time projection over history; does NOT mutate stored history       |
+| 5   | **Auto-compact**     | After all 4 above insufficient | Full model-generated summary; fires PreCompact hooks                    |
 
 **Lazy-degradation principle**: apply least disruptive compression first, escalate only when cheaper strategies prove insufficient.
 
@@ -76,6 +80,7 @@ Maintain lightweight identifiers (file paths, stored queries, web links). Use th
 ## Right-Altitude Prompting
 
 Goldilocks zone between:
+
 - ❌ Hardcoded brittle if-else logic (too specific)
 - ❌ Vague high-level guidance (too generic)
 - ✅ Specific enough to guide behavior, flexible enough for model judgment

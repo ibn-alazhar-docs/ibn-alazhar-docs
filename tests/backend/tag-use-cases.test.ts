@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { TagUseCases } from "@/core/use-cases/tag.use-cases";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
-import { NotFoundError, ConflictError, ValidationError } from "@/lib/errors";
-import type { AuthSession } from "@/lib/auth-guards";
+import { NotFoundError, ConflictError, ValidationError } from "@/lib/shared/errors";
+import type { AuthSession } from "@/lib/backend/auth-guards";
 
 function makeSession(overrides: Record<string, unknown> = {}): AuthSession {
   return {

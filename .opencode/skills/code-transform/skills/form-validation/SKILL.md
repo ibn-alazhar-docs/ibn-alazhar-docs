@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Any route with a form (auth, checkout, profile, settings) | Find inputs that trust the client |
-| Phase 6 — EXECUTE | Any form commit (Visual + Logic Guard) | Re-run schema, re-test error states |
-| Phase 9 — ACCEPTANCE | "Form rejects invalid input" AC | Replay malicious payloads server-side |
-| Bug report | "User submitted empty email and it went through" | Bisect schema vs handler |
+| Phase                | Trigger                                                   | Why                                   |
+| -------------------- | --------------------------------------------------------- | ------------------------------------- |
+| Phase 4 — AUDIT      | Any route with a form (auth, checkout, profile, settings) | Find inputs that trust the client     |
+| Phase 6 — EXECUTE    | Any form commit (Visual + Logic Guard)                    | Re-run schema, re-test error states   |
+| Phase 9 — ACCEPTANCE | "Form rejects invalid input" AC                           | Replay malicious payloads server-side |
+| Bug report           | "User submitted empty email and it went through"          | Bisect schema vs handler              |
 
-**Do NOT use this sub-skill for:** authentication/authorization logic (use `auth-setup`), payment field tokenization (use `payment-setup`), or styling form controls (use `css-styling`). This sub-skill owns the *validation contract*.
+**Do NOT use this sub-skill for:** authentication/authorization logic (use `auth-setup`), payment field tokenization (use `payment-setup`), or styling form controls (use `css-styling`). This sub-skill owns the _validation contract_.
 
 ## What It Does
 
@@ -107,9 +107,10 @@ Q: Async uniqueness check needed (email/username/slug)?
 ## Patterns
 
 ### Schema-first (the contract)
+
 ```ts
 // src/schemas/login.ts — shared client + server
-import { z } from 'zod';
+import { z } from "zod";
 
 export const loginSchema = z.object({
   email: z.string().email().max(254),
@@ -120,35 +121,43 @@ export type LoginInput = z.infer<typeof loginSchema>;
 ```
 
 ### Client wiring (React Hook Form)
+
 ```tsx
-const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginInput>({
+const {
+  register,
+  handleSubmit,
+  formState: { errors, isSubmitting },
+} = useForm<LoginInput>({
   resolver: zodResolver(loginSchema),
-  mode: 'onBlur',          // validate on blur, not every keystroke
-  reValidateMode: 'onChange', // re-validate on change after first error
+  mode: "onBlur", // validate on blur, not every keystroke
+  reValidateMode: "onChange", // re-validate on change after first error
 });
 
 <input
   id="email"
   type="email"
   aria-invalid={!!errors.email}
-  aria-describedby={errors.email ? 'email-error' : undefined}
-  {...register('email')}
-/>
-{errors.email && (
-  <p id="email-error" role="alert" className="text-error">
-    {errors.email.message}
-  </p>
-)}
+  aria-describedby={errors.email ? "email-error" : undefined}
+  {...register("email")}
+/>;
+{
+  errors.email && (
+    <p id="email-error" role="alert" className="text-error">
+      {errors.email.message}
+    </p>
+  );
+}
 ```
 
 ### Server re-validation (mandatory)
+
 ```ts
 // src/app/api/login/route.ts
-import { loginSchema } from '@app/schemas/login';
+import { loginSchema } from "@app/schemas/login";
 
 export async function POST(req: Request) {
   const body = await req.json();
-  const parsed = loginSchema.safeParse(body);   // NEVER trust the client
+  const parsed = loginSchema.safeParse(body); // NEVER trust the client
   if (!parsed.success) {
     return Response.json({ errors: parsed.error.flatten() }, { status: 422 });
   }
@@ -157,29 +166,31 @@ export async function POST(req: Request) {
 ```
 
 ### Async uniqueness (debounced + abortable)
+
 ```ts
 const checkEmail = useAsyncValidation({
-  field: 'email',
-  endpoint: '/api/check-unique',
+  field: "email",
+  endpoint: "/api/check-unique",
   debounceMs: 300,
-  message: 'Email already registered',
+  message: "Email already registered",
 });
 ```
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Form submits with empty required field | Client validation bypassed (devtools) | Server `safeParse` rejects — never trust client |
-| Validation fires on every keystroke | `mode: 'onChange'` default | Switch to `mode: 'onBlur'`, `reValidateMode: 'onChange'` |
-| Async uniqueness spam | No debounce | Add 300ms debounce + AbortController |
-| Screen reader doesn't announce error | Missing `role="alert"` / `aria-describedby` | Add both — see Patterns |
-| Server accepts `{}` body | No server validation | Add `schema.safeParse(req.body)` — reject if `!success` |
-| Schema drift client vs server | Two schemas maintained separately | Move to shared package `@app/schemas`, single import |
+| Symptom                                | Cause                                       | Recovery                                                 |
+| -------------------------------------- | ------------------------------------------- | -------------------------------------------------------- |
+| Form submits with empty required field | Client validation bypassed (devtools)       | Server `safeParse` rejects — never trust client          |
+| Validation fires on every keystroke    | `mode: 'onChange'` default                  | Switch to `mode: 'onBlur'`, `reValidateMode: 'onChange'` |
+| Async uniqueness spam                  | No debounce                                 | Add 300ms debounce + AbortController                     |
+| Screen reader doesn't announce error   | Missing `role="alert"` / `aria-describedby` | Add both — see Patterns                                  |
+| Server accepts `{}` body               | No server validation                        | Add `schema.safeParse(req.body)` — reject if `!success`  |
+| Schema drift client vs server          | Two schemas maintained separately           | Move to shared package `@app/schemas`, single import     |
 
 ## Self-Healing Loop
 
 When a validation violation is found:
+
 1. Identify the rule (`no-client-trust`, `accessible-errors`, `debounce-async`, `shared-schema`)
 2. Apply the mechanical fix (add `safeParse` to server, add `aria-describedby` to input)
 3. Re-run the E2E test for that form

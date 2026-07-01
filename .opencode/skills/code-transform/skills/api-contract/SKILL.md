@@ -10,18 +10,18 @@ metadata:
 
 # API Contract
 
-> Source-of-truth sub-skill for every HTTP/GraphQL/gRPC boundary in the project. Owns spec generation, type generation, breaking-change detection, and contract test wiring. Other backend sub-skills (`api-versioning`, `auth-setup`, `rate-limiting`, `webhook-setup`) mutate endpoints — this sub-skill validates that the mutation is *contract-safe* before it ships.
+> Source-of-truth sub-skill for every HTTP/GraphQL/gRPC boundary in the project. Owns spec generation, type generation, breaking-change detection, and contract test wiring. Other backend sub-skills (`api-versioning`, `auth-setup`, `rate-limiting`, `webhook-setup`) mutate endpoints — this sub-skill validates that the mutation is _contract-safe_ before it ships.
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dim 10 (Full-Stack) finds: no OpenAPI/SDL/proto file, frontend and backend types drift, no contract tests | Establish the contract baseline before any code changes |
-| Phase 6 — EXECUTE | Any commit that adds/changes/removes an endpoint, request/response shape, status code, or header | Verify the contract still holds and ship updated types |
-| Phase 7 — OBSERVABILITY | Adding red-team / fuzz tests | Schemathesis needs the spec to generate cases |
-| Phase 11 — ROLLOUT | Pre-deploy gate | Re-run `oasdiff` against production spec — block deploy on breaking changes |
+| Phase                   | Trigger                                                                                                   | Why                                                                         |
+| ----------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| Phase 2 — AUDIT         | Dim 10 (Full-Stack) finds: no OpenAPI/SDL/proto file, frontend and backend types drift, no contract tests | Establish the contract baseline before any code changes                     |
+| Phase 6 — EXECUTE       | Any commit that adds/changes/removes an endpoint, request/response shape, status code, or header          | Verify the contract still holds and ship updated types                      |
+| Phase 7 — OBSERVABILITY | Adding red-team / fuzz tests                                                                              | Schemathesis needs the spec to generate cases                               |
+| Phase 11 — ROLLOUT      | Pre-deploy gate                                                                                           | Re-run `oasdiff` against production spec — block deploy on breaking changes |
 
-**Do NOT use this sub-skill for:** version bump strategy (use `api-versioning`), auth scheme design (use `auth-setup`), or DB schema (use `db-design`). Those sub-skills *call into* `api-contract` to register their changes — you call them, not this one.
+**Do NOT use this sub-skill for:** version bump strategy (use `api-versioning`), auth scheme design (use `auth-setup`), or DB schema (use `db-design`). Those sub-skills _call into_ `api-contract` to register their changes — you call them, not this one.
 
 ## What It Does
 
@@ -154,15 +154,15 @@ Q: What API style is in use?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `Spec is invalid: Structural error at paths./users/{id}` | Hand-authored spec has typo / missing `$ref` | Run `redocly lint`, fix every error before regenerating types — never generate types from an invalid spec |
-| `oasdiff: 3 breaking changes detected` | Endpoint shape changed without version bump | Route to `api-versioning` — either bump version or add backwards-compat alias; do NOT auto-merge |
-| `Schemathesis: response does not match schema` | Code returns a shape that differs from spec (spec drift) | Regenerate spec from code OR fix code to match spec; never edit the test to silence it |
-| `openapi-typescript: circular $ref detected` | Spec uses recursive `$ref` without proper naming | Use `@redocly/cli bundle --dereference` first, then generate types |
-| `Pact verification failed: missing provider state 'user exists'` | Provider missing a `ProviderState` setup hook | Add `providerStateHandlers` to the Pact verifier config in `tests/contract/` |
-| `graphql-inspector: cannot find schema source` | Codegen not wired (missing `codegen.ts`) | Scaffold `codegen.ts` from template, re-run |
-| No route metadata found (bare Express/FastAPI) | Code-first generation impossible without schemas | Switch to spec-first: hand-author `openapi.yaml`, then generate server stubs via `openapi-generator-cli` |
+| Symptom                                                          | Cause                                                    | Recovery                                                                                                  |
+| ---------------------------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `Spec is invalid: Structural error at paths./users/{id}`         | Hand-authored spec has typo / missing `$ref`             | Run `redocly lint`, fix every error before regenerating types — never generate types from an invalid spec |
+| `oasdiff: 3 breaking changes detected`                           | Endpoint shape changed without version bump              | Route to `api-versioning` — either bump version or add backwards-compat alias; do NOT auto-merge          |
+| `Schemathesis: response does not match schema`                   | Code returns a shape that differs from spec (spec drift) | Regenerate spec from code OR fix code to match spec; never edit the test to silence it                    |
+| `openapi-typescript: circular $ref detected`                     | Spec uses recursive `$ref` without proper naming         | Use `@redocly/cli bundle --dereference` first, then generate types                                        |
+| `Pact verification failed: missing provider state 'user exists'` | Provider missing a `ProviderState` setup hook            | Add `providerStateHandlers` to the Pact verifier config in `tests/contract/`                              |
+| `graphql-inspector: cannot find schema source`                   | Codegen not wired (missing `codegen.ts`)                 | Scaffold `codegen.ts` from template, re-run                                                               |
+| No route metadata found (bare Express/FastAPI)                   | Code-first generation impossible without schemas         | Switch to spec-first: hand-author `openapi.yaml`, then generate server stubs via `openapi-generator-cli`  |
 
 ## Self-Healing Loop
 
