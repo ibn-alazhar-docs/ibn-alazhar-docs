@@ -28,6 +28,8 @@ COPY apps ./apps
 COPY workers ./workers
 
 WORKDIR /app/apps/web
+ARG SENTRY_RELEASE=""
+ENV SENTRY_RELEASE=$SENTRY_RELEASE
 RUN NODE_ENV=production npx next build
 
 FROM node:22-slim AS runner
