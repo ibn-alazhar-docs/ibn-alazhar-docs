@@ -10,18 +10,18 @@ metadata:
 
 # Web Design
 
-> Before tokens, before Tailwind, before components: design principles. Hierarchy, contrast, repetition, alignment, proximity (Gestalt). This sub-skill owns the *why* of the visual system; `css-styling` owns the *how*; `frontend-bridge` owns the *enforcement*.
+> Before tokens, before Tailwind, before components: design principles. Hierarchy, contrast, repetition, alignment, proximity (Gestalt). This sub-skill owns the _why_ of the visual system; `css-styling` owns the _how_; `frontend-bridge` owns the _enforcement_.
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 13 (Visual Consistency) | Score the design, find drift |
-| Phase 6 — EXECUTE | "Redesign the homepage", "Build a landing page" | Generate the design system first |
-| Phase 6 — EXECUTE | New brand / rebrand | Generate palette + type scale from brand brief |
-| Phase 9 — ACCEPTANCE | "Does it look professional?" AC | Audit against principles |
+| Phase                | Trigger                                         | Why                                            |
+| -------------------- | ----------------------------------------------- | ---------------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 13 (Visual Consistency)               | Score the design, find drift                   |
+| Phase 6 — EXECUTE    | "Redesign the homepage", "Build a landing page" | Generate the design system first               |
+| Phase 6 — EXECUTE    | New brand / rebrand                             | Generate palette + type scale from brand brief |
+| Phase 9 — ACCEPTANCE | "Does it look professional?" AC                 | Audit against principles                       |
 
-**Do NOT use this sub-skill for:** implementing tokens (use `css-styling`), enforcing polish (use `frontend-bridge`), or running browsers (use `browser-launcher`). This sub-skill produces the *design blueprint* — palette, type, layout, motion — that other sub-skills implement.
+**Do NOT use this sub-skill for:** implementing tokens (use `css-styling`), enforcing polish (use `frontend-bridge`), or running browsers (use `browser-launcher`). This sub-skill produces the _design blueprint_ — palette, type, layout, motion — that other sub-skills implement.
 
 ## What It Does
 
@@ -83,14 +83,14 @@ python3 scripts/frontend_agent.py design --audit --url http://localhost:3000
 
 ## Design Principles
 
-| Principle | What it means | How to check |
-|-----------|---------------|--------------|
-| **Hierarchy** | Most important thing is biggest/boldest/darkest | Squint test: can you still see the structure? |
-| **Contrast** | Difference between elements (size, weight, color, space) | Adjacent elements either clearly same or clearly different |
-| **Repetition** | Same patterns reused (button, card, list style) | Audit: are there 4 button styles? consolidate |
-| **Alignment** | Everything aligns to a grid column or baseline | No "loose" elements; everything snaps |
-| **Proximity** (Gestalt) | Related items grouped, unrelated items separated | White space between groups > white space within |
-| **Whitespace** | Negative space carries the design | 50%+ of any page is whitespace |
+| Principle               | What it means                                            | How to check                                               |
+| ----------------------- | -------------------------------------------------------- | ---------------------------------------------------------- |
+| **Hierarchy**           | Most important thing is biggest/boldest/darkest          | Squint test: can you still see the structure?              |
+| **Contrast**            | Difference between elements (size, weight, color, space) | Adjacent elements either clearly same or clearly different |
+| **Repetition**          | Same patterns reused (button, card, list style)          | Audit: are there 4 button styles? consolidate              |
+| **Alignment**           | Everything aligns to a grid column or baseline           | No "loose" elements; everything snaps                      |
+| **Proximity** (Gestalt) | Related items grouped, unrelated items separated         | White space between groups > white space within            |
+| **Whitespace**          | Negative space carries the design                        | 50%+ of any page is whitespace                             |
 
 ## Typography Rules
 
@@ -134,28 +134,29 @@ python3 scripts/frontend_agent.py design --audit --url http://localhost:3000
 
 ## AI-Slop Defaults to Avoid
 
-Three looks that AI generates regardless of brief — all are legitimate for *some* briefs but appear by default:
+Three looks that AI generates regardless of brief — all are legitimate for _some_ briefs but appear by default:
 
 1. **Cream + serif + terracotta** — `#F4F1EA` bg, high-contrast serif display, terracotta accent
 2. **Near-black + acid accent** — `#0a0a0a` bg, single bright acid-green or vermilion accent
 3. **Broadsheet + hairlines** — zero border-radius, dense newspaper columns, `1px` rules
 
-If the brief doesn't pin down the aesthetic, spend the freedom on something *specific to this brief*, not one of these defaults. State the choice and the reason in the design spec.
+If the brief doesn't pin down the aesthetic, spend the freedom on something _specific to this brief_, not one of these defaults. State the choice and the reason in the design spec.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Generated palette looks AI-default | Brief too generic | Ask for a specific subject, audience, single job — regenerate |
-| Type scale inconsistent | Manual sizes, no clamp | Switch to `clamp()` with `--font-size-*` tokens |
-| Contrast fails WCAG | Brand color too light on white | Darken brand by 10-15%, re-check with `accessibility-auditor` |
-| Dark mode contrast fails | Token not flipped correctly | Route to `css-styling` to add `.dark` counterparts |
-| Layout breaks at 320px | Fixed widths, no reflow | Switch to `flex/grid` + `max-w-*`, test with `responsive-validator` |
-| Looks like 4 different designers made it | No repetition rule enforced | Consolidate button/card/list variants, audit with `frontend-bridge` |
+| Symptom                                  | Cause                          | Recovery                                                            |
+| ---------------------------------------- | ------------------------------ | ------------------------------------------------------------------- |
+| Generated palette looks AI-default       | Brief too generic              | Ask for a specific subject, audience, single job — regenerate       |
+| Type scale inconsistent                  | Manual sizes, no clamp         | Switch to `clamp()` with `--font-size-*` tokens                     |
+| Contrast fails WCAG                      | Brand color too light on white | Darken brand by 10-15%, re-check with `accessibility-auditor`       |
+| Dark mode contrast fails                 | Token not flipped correctly    | Route to `css-styling` to add `.dark` counterparts                  |
+| Layout breaks at 320px                   | Fixed widths, no reflow        | Switch to `flex/grid` + `max-w-*`, test with `responsive-validator` |
+| Looks like 4 different designers made it | No repetition rule enforced    | Consolidate button/card/list variants, audit with `frontend-bridge` |
 
 ## Self-Healing Loop
 
 When a principle check fails:
+
 1. Identify the broken principle (hierarchy flat, contrast low, repetition broken, alignment loose, proximity wrong)
 2. Apply the mechanical fix (raise heading weight, darken text, consolidate variants, snap to grid, group items)
 3. Re-screenshot, re-check

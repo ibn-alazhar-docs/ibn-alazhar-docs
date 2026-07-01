@@ -6,7 +6,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatus } from "../helpers";
-import { logger } from "../../../shared/logger";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerValidationStage(config: PipelineConfig): void {
   createValidationWorker(config, async (job: ProcessingJob) => {

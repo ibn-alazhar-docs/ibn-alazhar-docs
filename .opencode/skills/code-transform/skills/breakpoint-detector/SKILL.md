@@ -30,16 +30,16 @@ If none are available, inform the user and suggest installing playwright-cli or 
 
 Test 8 key breakpoints that cover the device spectrum:
 
-| Width | Device Context |
-|-------|---------------|
-| 320px | Small phone (iPhone SE) |
-| 375px | Standard phone (iPhone 14) |
-| 768px | Tablet portrait (iPad) |
+| Width  | Device Context                  |
+| ------ | ------------------------------- |
+| 320px  | Small phone (iPhone SE)         |
+| 375px  | Standard phone (iPhone 14)      |
+| 768px  | Tablet portrait (iPad)          |
 | 1024px | Tablet landscape / small laptop |
-| 1280px | Laptop |
-| 1440px | Desktop |
-| 1920px | Full HD |
-| 2560px | Ultra-wide / 4K |
+| 1280px | Laptop                          |
+| 1440px | Desktop                         |
+| 1920px | Full HD                         |
+| 2560px | Ultra-wide / 4K                 |
 
 **Process**:
 
@@ -90,22 +90,23 @@ playwright-cli -s=page2 open https://example.com/about &
 
 These 8 checks target issues that **actually vary by viewport width**:
 
-| # | Check | What to Look For |
-|---|-------|-----------------|
-| 1 | **Horizontal overflow** | Content wider than viewport — horizontal scrollbar appears, elements cut off |
-| 2 | **Text overflow** | Text truncated mid-word, overlapping adjacent elements, font size unreadable (< 12px) |
-| 3 | **Navigation transition** | Hamburger menu appears/disappears at correct width, no "broken" state between modes |
-| 4 | **Content stacking** | Multi-column layouts stack to single column in logical reading order on narrow widths |
-| 5 | **Image/media scaling** | Images overflow container, distorted aspect ratios, missing responsive sizing |
-| 6 | **Touch targets** | Interactive elements < 44px on mobile widths (< 768px) — buttons, links, form inputs |
-| 7 | **Whitespace balance** | Too cramped on mobile (no breathing room), too sparse on wide screens (content lost in space) |
-| 8 | **CTA visibility** | Primary call-to-action visible above the fold at each width without scrolling |
+| #   | Check                     | What to Look For                                                                              |
+| --- | ------------------------- | --------------------------------------------------------------------------------------------- |
+| 1   | **Horizontal overflow**   | Content wider than viewport — horizontal scrollbar appears, elements cut off                  |
+| 2   | **Text overflow**         | Text truncated mid-word, overlapping adjacent elements, font size unreadable (< 12px)         |
+| 3   | **Navigation transition** | Hamburger menu appears/disappears at correct width, no "broken" state between modes           |
+| 4   | **Content stacking**      | Multi-column layouts stack to single column in logical reading order on narrow widths         |
+| 5   | **Image/media scaling**   | Images overflow container, distorted aspect ratios, missing responsive sizing                 |
+| 6   | **Touch targets**         | Interactive elements < 44px on mobile widths (< 768px) — buttons, links, form inputs          |
+| 7   | **Whitespace balance**    | Too cramped on mobile (no breathing room), too sparse on wide screens (content lost in space) |
+| 8   | **CTA visibility**        | Primary call-to-action visible above the fold at each width without scrolling                 |
 
 ## Transition Detection
 
 The unique value of this skill is **finding where layout transitions happen** and whether they're clean.
 
 When comparing screenshots at adjacent widths, flag any width where:
+
 - **Column count changes** (3-col → 2-col → 1-col grid)
 - **Navigation mode switches** (full nav → hamburger, or vice versa)
 - **Sidebar appears/disappears** (content width jumps)
@@ -113,11 +114,11 @@ When comparing screenshots at adjacent widths, flag any width where:
 
 Report the **exact width range** where each transition occurs:
 
-| Transition | From | To | Width Range |
-|-----------|------|-----|-------------|
-| Nav: hamburger → full | 768px | 1024px | Switches at ~960px |
-| Grid: 1-col → 2-col | 640px | 768px | Reflows at ~700px |
-| Sidebar appears | 1024px | 1280px | Shows at ~1100px |
+| Transition            | From   | To     | Width Range        |
+| --------------------- | ------ | ------ | ------------------ |
+| Nav: hamburger → full | 768px  | 1024px | Switches at ~960px |
+| Grid: 1-col → 2-col   | 640px  | 768px  | Reflows at ~700px  |
+| Sidebar appears       | 1024px | 1280px | Shows at ~1100px   |
 
 This tells the developer exactly where to set (or fix) their CSS breakpoints.
 
@@ -125,12 +126,12 @@ This tells the developer exactly where to set (or fix) their CSS breakpoints.
 
 Consistent with ux-audit:
 
-| Severity | Meaning |
-|----------|---------|
-| **Critical** | Layout is broken — content unreadable, navigation inaccessible, page unusable |
-| **High** | Significant layout issue — major overflow, key content hidden, broken transition |
-| **Medium** | Noticeable but usable — awkward spacing, minor overflow, suboptimal stacking order |
-| **Low** | Polish — whitespace tweaks, slight alignment issues, minor touch target shortfalls |
+| Severity     | Meaning                                                                            |
+| ------------ | ---------------------------------------------------------------------------------- |
+| **Critical** | Layout is broken — content unreadable, navigation inaccessible, page unusable      |
+| **High**     | Significant layout issue — major overflow, key content hidden, broken transition   |
+| **Medium**   | Noticeable but usable — awkward spacing, minor overflow, suboptimal stacking order |
+| **Low**      | Polish — whitespace tweaks, slight alignment issues, minor touch target shortfalls |
 
 ## Autonomy Rules
 
@@ -146,7 +147,7 @@ See [references/report-template.md](references/report-template.md) for the repor
 
 ## Reference Files
 
-| When | Read |
-|------|------|
-| Looking up breakpoint details and trouble zones | [references/breakpoints.md](references/breakpoints.md) |
-| Writing the responsiveness report | [references/report-template.md](references/report-template.md) |
+| When                                            | Read                                                           |
+| ----------------------------------------------- | -------------------------------------------------------------- |
+| Looking up breakpoint details and trouble zones | [references/breakpoints.md](references/breakpoints.md)         |
+| Writing the responsiveness report               | [references/report-template.md](references/report-template.md) |

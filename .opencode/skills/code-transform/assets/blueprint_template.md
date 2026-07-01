@@ -11,14 +11,14 @@
 
 ## Priority Matrix
 
-| Priority | Severity | Effort | Action |
-|----------|----------|--------|--------|
-| P0 | Critical | Low | Fix NOW (this session) |
-| P1 | Critical | High | Next session |
-| P2 | High | Low | Quick win (batch) |
-| P3 | High | High | Dedicated session |
-| P4 | Medium | Low | When convenient |
-| P5 | Medium/High | High | Backlog |
+| Priority | Severity    | Effort | Action                 |
+| -------- | ----------- | ------ | ---------------------- |
+| P0       | Critical    | Low    | Fix NOW (this session) |
+| P1       | Critical    | High   | Next session           |
+| P2       | High        | Low    | Quick win (batch)      |
+| P3       | High        | High   | Dedicated session      |
+| P4       | Medium      | Low    | When convenient        |
+| P5       | Medium/High | High   | Backlog                |
 
 ## P0 — Immediate (This Session)
 
@@ -60,13 +60,13 @@
 
 ## Session Plan
 
-| Session | Items | Estimated Time |
-|---------|-------|----------------|
-| 1 | P0 items + P2 quick wins | <!-- 2-4 hours --> |
-| 2 | P1 items (start) | <!-- 4 hours --> |
-| 3 | P1 items (continue) + P3 (start) | <!-- 4 hours --> |
-| 4 | P3 (continue) | <!-- 4 hours --> |
-| 5 | P4 items + verify | <!-- 2 hours --> |
+| Session | Items                            | Estimated Time     |
+| ------- | -------------------------------- | ------------------ |
+| 1       | P0 items + P2 quick wins         | <!-- 2-4 hours --> |
+| 2       | P1 items (start)                 | <!-- 4 hours -->   |
+| 3       | P1 items (continue) + P3 (start) | <!-- 4 hours -->   |
+| 4       | P3 (continue)                    | <!-- 4 hours -->   |
+| 5       | P4 items + verify                | <!-- 2 hours -->   |
 
 ## Progress Tracking
 

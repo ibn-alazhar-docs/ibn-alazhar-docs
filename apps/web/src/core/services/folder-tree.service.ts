@@ -1,7 +1,7 @@
-import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
-import type { FolderNode, FlatFolder } from "@/lib/build-folder-tree";
-import { AppError } from "@/lib/errors";
-import { ERROR_CODES } from "@/lib/constants";
+import { MAX_FOLDER_DEPTH } from "@/lib/shared/validators/folder";
+import type { FolderNode, FlatFolder } from "@/lib/shared/build-folder-tree";
+import { AppError } from "@/lib/shared/errors";
+import { ERROR_CODES } from "@/lib/shared/constants";
 
 interface FolderParent {
   parentId: string | null;

@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security) finds hardcoded API keys, DB passwords, or JWT secrets in source | Hardcoded secrets in git = security incident waiting to happen |
-| Phase 2 — AUDIT | Dimension 4 finds `.env` committed to git (no `.gitignore` entry, or committed before ignore) | Rotate all secrets immediately; treat as a breach |
-| Phase 2 — AUDIT | Dimension 5 finds app crashing mid-request with `KeyError: 'DATABASE_URL'` | Missing startup validation — should fail at boot, not at first request |
-| Phase 2 — AUDIT | Dimension 9 finds no `.env.example` | New developers can't onboard without guessing what env vars are needed |
-| Phase 6 — EXECUTE | User says "set up env", "add config", "add secrets management", "use Doppler/Vault" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Scaffolding a new app — config layer is the first thing installed | Every other module depends on this |
-| Phase 11 — ROLLOUT | Verify secrets in production secret store, verify rotation schedule set, verify audit log enabled | Misconfigured secrets = outage or breach |
+| Phase              | Trigger                                                                                           | Why                                                                    |
+| ------------------ | ------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Phase 2 — AUDIT    | Dimension 4 (Security) finds hardcoded API keys, DB passwords, or JWT secrets in source           | Hardcoded secrets in git = security incident waiting to happen         |
+| Phase 2 — AUDIT    | Dimension 4 finds `.env` committed to git (no `.gitignore` entry, or committed before ignore)     | Rotate all secrets immediately; treat as a breach                      |
+| Phase 2 — AUDIT    | Dimension 5 finds app crashing mid-request with `KeyError: 'DATABASE_URL'`                        | Missing startup validation — should fail at boot, not at first request |
+| Phase 2 — AUDIT    | Dimension 9 finds no `.env.example`                                                               | New developers can't onboard without guessing what env vars are needed |
+| Phase 6 — EXECUTE  | User says "set up env", "add config", "add secrets management", "use Doppler/Vault"               | This is the executing sub-skill                                        |
+| Phase 6 — EXECUTE  | Scaffolding a new app — config layer is the first thing installed                                 | Every other module depends on this                                     |
+| Phase 11 — ROLLOUT | Verify secrets in production secret store, verify rotation schedule set, verify audit log enabled | Misconfigured secrets = outage or breach                               |
 
 **Do NOT use this sub-skill for:** runtime feature flags (use a feature-flag service — LaunchDarkly, Unleash, Flagsmith — for dynamic toggles; env vars are for static config), application config that changes per-user (use DB), or cryptographic key management for end-to-end encryption (use KMS — AWS KMS, GCP KMS, Vault Transit).
 
@@ -171,18 +171,18 @@ Q6: Audit log?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| App crashes mid-request with `KeyError: 'DATABASE_URL'` | No startup validation; missing env var | Add `ConfigSchema.parse(process.env)` at boot; fail fast with clear error |
-| `SecretStr` object has no attribute `strip` (Python) | Code treats pydantic `SecretStr` as raw string | Use `config.jwt_secret.get_secret_value()` to access; never log it |
-| App works locally but fails in prod | Dev `.env` has var; prod secret store missing it | Sync `.env.example` and prod secret store; CI check: validate against prod secret store schema |
-| Secret rotation breaks app | App only accepts one key; rotation invalidates immediately | Implement dual-key overlap; app accepts both keys for 24h window |
-| `.env` committed to git by accident | Forgot to add to `.gitignore`, or committed before adding | Rotate ALL secrets immediately (treat as breach); scrub git history with `git filter-repo`; add `.env*` to `.gitignore` |
-| App can't read Doppler secrets | Not running under `doppler run --` wrapper | Start app with `doppler run -- node server.js` (or whatever entry); verify `process.env.DATABASE_URL` is set |
-| AWS Secrets Manager throttling | App fetches secret on every request | Fetch once on startup; cache in memory; refresh every 5 min for rotation |
-| Vault lease expired, app can't renew | App didn't implement lease renewal | Use `vault-client` with auto-renew; or run `vault agent` sidecar that handles renewal |
-| New developer can't run app locally | No `.env.example`, or `.env.example` out of sync with schema | Auto-generate `.env.example` from schema in CI; fail CI if out of sync |
-| Config validation error message unhelpful | Schema doesn't have `.describe()` / docstrings | Add descriptions to every field; pydantic: `Field(..., description="...")`; zod: `.describe("...")` |
+| Symptom                                                 | Cause                                                        | Recovery                                                                                                                |
+| ------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| App crashes mid-request with `KeyError: 'DATABASE_URL'` | No startup validation; missing env var                       | Add `ConfigSchema.parse(process.env)` at boot; fail fast with clear error                                               |
+| `SecretStr` object has no attribute `strip` (Python)    | Code treats pydantic `SecretStr` as raw string               | Use `config.jwt_secret.get_secret_value()` to access; never log it                                                      |
+| App works locally but fails in prod                     | Dev `.env` has var; prod secret store missing it             | Sync `.env.example` and prod secret store; CI check: validate against prod secret store schema                          |
+| Secret rotation breaks app                              | App only accepts one key; rotation invalidates immediately   | Implement dual-key overlap; app accepts both keys for 24h window                                                        |
+| `.env` committed to git by accident                     | Forgot to add to `.gitignore`, or committed before adding    | Rotate ALL secrets immediately (treat as breach); scrub git history with `git filter-repo`; add `.env*` to `.gitignore` |
+| App can't read Doppler secrets                          | Not running under `doppler run --` wrapper                   | Start app with `doppler run -- node server.js` (or whatever entry); verify `process.env.DATABASE_URL` is set            |
+| AWS Secrets Manager throttling                          | App fetches secret on every request                          | Fetch once on startup; cache in memory; refresh every 5 min for rotation                                                |
+| Vault lease expired, app can't renew                    | App didn't implement lease renewal                           | Use `vault-client` with auto-renew; or run `vault agent` sidecar that handles renewal                                   |
+| New developer can't run app locally                     | No `.env.example`, or `.env.example` out of sync with schema | Auto-generate `.env.example` from schema in CI; fail CI if out of sync                                                  |
+| Config validation error message unhelpful               | Schema doesn't have `.describe()` / docstrings               | Add descriptions to every field; pydantic: `Field(..., description="...")`; zod: `.describe("...")`                     |
 
 ## Self-Healing Loop
 

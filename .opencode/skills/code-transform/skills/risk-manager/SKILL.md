@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 5 — PRIORITIZE | Plan items marked `risky` or touching production-critical paths | Score before sequencing |
-| Phase 5 — PRIORITIZE | Plan items involving DB migrations, auth changes, payment flows | High blast radius by definition |
-| Phase 6 — EXECUTE (pre) | Before any EXECUTE on a critical-path item | Last-chance go/no-go |
-| Phase 11 — ROLLOUT | Before production deployment | Final risk check |
-| Manual trigger | User asks "how risky is this change?" | Diagnostic |
+| Phase                   | Trigger                                                         | Why                             |
+| ----------------------- | --------------------------------------------------------------- | ------------------------------- |
+| Phase 5 — PRIORITIZE    | Plan items marked `risky` or touching production-critical paths | Score before sequencing         |
+| Phase 5 — PRIORITIZE    | Plan items involving DB migrations, auth changes, payment flows | High blast radius by definition |
+| Phase 6 — EXECUTE (pre) | Before any EXECUTE on a critical-path item                      | Last-chance go/no-go            |
+| Phase 11 — ROLLOUT      | Before production deployment                                    | Final risk check                |
+| Manual trigger          | User asks "how risky is this change?"                           | Diagnostic                      |
 
 **Do NOT use this sub-skill for:** trivial changes (typo fixes, comment updates — risk too low to assess), changes already covered by an experimental sub-skill (those have their own safety gates), or post-hoc risk analysis (use `meta-auditor`).
 
@@ -40,20 +40,20 @@ metadata:
 
 ## Risk Matrix
 
-| Axis | 1 (low) | 3 (medium) | 5 (high) |
-|------|---------|------------|----------|
-| Blast radius | Single file, no external effect | Multiple files, single service | Production-critical, multi-system, customer-facing |
-| Reversibility | `git revert` (code only) | Config change + redeploy | DB migration, data loss possible, irreversible |
-| Test coverage | > 80% on affected files, integration tests exist | 40-80%, some integration tests | < 40%, no integration tests |
-| Familiarity | Done this 10+ times | Done this 2-9 times | First time, or done once with friction |
+| Axis          | 1 (low)                                          | 3 (medium)                     | 5 (high)                                           |
+| ------------- | ------------------------------------------------ | ------------------------------ | -------------------------------------------------- |
+| Blast radius  | Single file, no external effect                  | Multiple files, single service | Production-critical, multi-system, customer-facing |
+| Reversibility | `git revert` (code only)                         | Config change + redeploy       | DB migration, data loss possible, irreversible     |
+| Test coverage | > 80% on affected files, integration tests exist | 40-80%, some integration tests | < 40%, no integration tests                        |
+| Familiarity   | Done this 10+ times                              | Done this 2-9 times            | First time, or done once with friction             |
 
 ### Total Risk Scoring
 
-| Total | Action |
-|-------|--------|
-| 4-9 (low) | Proceed normally |
+| Total          | Action                                                                                                  |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| 4-9 (low)      | Proceed normally                                                                                        |
 | 10-15 (medium) | Create fallback branch; proceed with heightened verification (every commit verified, not just every PR) |
-| 16-20 (high) | Create fallback branch; **mandatory human sign-off** before EXECUTE; no autonomous merge |
+| 16-20 (high)   | Create fallback branch; **mandatory human sign-off** before EXECUTE; no autonomous merge                |
 
 ## Integration Contract
 
@@ -101,6 +101,7 @@ For any item with total risk ≥ 10:
 5. After the risky change is verified, the fallback branch can be deleted (after 30 days, to allow for late-discovered regressions).
 
 For total risk ≥ 16, additionally:
+
 - Flag the item in `audit-trail.jsonl` as `human_signoff_required: true`.
 - Halt Phase 6 EXECUTE on this item until a human explicitly approves (via `risk-manager approve --item-id <id>`).
 - No autonomous merge — even if all tests pass.
@@ -169,36 +170,44 @@ Q: Is this a production-critical path?
 
 These patterns trigger assessment even without explicit `risky` tag:
 
-| Pattern | Detection | Default risk boost |
-|---------|-----------|-------------------|
-| DB migration with `DROP TABLE` / `DROP COLUMN` | SQL scan | reversibility=5 |
-| Auth flow change (login, session, JWT) | file path match `auth/`, `login/` | blast_radius+=1 |
-| Payment flow change | file path match `payment/`, `billing/`, `checkout/` | blast_radius=5 |
-| Infra change (Terraform, CloudFormation) | file extension `.tf`, `.yaml` in `infra/` | reversibility+=1 |
-| Contract change (API/DB/event) | multi-repo-orchestrator flagged | blast_radius+=1 |
-| Production config change | file match `production.yml`, `prod.env` | blast_radius=5 |
-| Dependency major version bump | `package.json` / `requirements.txt` diff | familiarity+=1 |
-| First-time tech (no knowledge-base entry) | KB lookup returns empty | familiarity=5 |
+| Pattern                                        | Detection                                           | Default risk boost |
+| ---------------------------------------------- | --------------------------------------------------- | ------------------ |
+| DB migration with `DROP TABLE` / `DROP COLUMN` | SQL scan                                            | reversibility=5    |
+| Auth flow change (login, session, JWT)         | file path match `auth/`, `login/`                   | blast_radius+=1    |
+| Payment flow change                            | file path match `payment/`, `billing/`, `checkout/` | blast_radius=5     |
+| Infra change (Terraform, CloudFormation)       | file extension `.tf`, `.yaml` in `infra/`           | reversibility+=1   |
+| Contract change (API/DB/event)                 | multi-repo-orchestrator flagged                     | blast_radius+=1    |
+| Production config change                       | file match `production.yml`, `prod.env`             | blast_radius=5     |
+| Dependency major version bump                  | `package.json` / `requirements.txt` diff            | familiarity+=1     |
+| First-time tech (no knowledge-base entry)      | KB lookup returns empty                             | familiarity=5      |
 
 ## Self-Improvement Hook
 
 Every risk assessment appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "5", "action": "risk-assess", "item_id": "item-7", "total_risk": 15, "action_taken": "fallback_branch + human_signoff", "fallback_branch": "fallback/item-7-pre-migration"}
+{
+  "ts": "...",
+  "phase": "5",
+  "action": "risk-assess",
+  "item_id": "item-7",
+  "total_risk": 15,
+  "action_taken": "fallback_branch + human_signoff",
+  "fallback_branch": "fallback/item-7-pre-migration"
+}
 ```
 
 `meta-auditor` checks post-project: did any item with total risk ≥ 10 actually cause friction? If yes, the risk matrix is under-scoring → `self-patch-generator` tunes the scoring. If no item with risk ≥ 10 caused friction but several with risk < 10 did, the matrix is under-detecting → tighten the risky patterns list.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Risk assessment skipped on a prod-critical item | Pattern not in risky list | Add pattern to risky list (self-patch); retroactively assess |
-| Fallback branch creation failed | Git remote unavailable | Halt EXECUTE; do not proceed without fallback for risk ≥ 10 |
-| Human signoff never comes | Reviewer unavailable | Halt; surface to user; do not auto-merge under any circumstance |
-| Risk matrix under-scoring (hindsight) | Friction on a low-risk item | `meta-auditor` flags → `self-patch-generator` tunes scoring |
-| Risk matrix over-scoring (too cautious) | Everything flagged high | Tune thresholds; not every DB migration is risk=5 |
+| Symptom                                         | Cause                       | Recovery                                                        |
+| ----------------------------------------------- | --------------------------- | --------------------------------------------------------------- |
+| Risk assessment skipped on a prod-critical item | Pattern not in risky list   | Add pattern to risky list (self-patch); retroactively assess    |
+| Fallback branch creation failed                 | Git remote unavailable      | Halt EXECUTE; do not proceed without fallback for risk ≥ 10     |
+| Human signoff never comes                       | Reviewer unavailable        | Halt; surface to user; do not auto-merge under any circumstance |
+| Risk matrix under-scoring (hindsight)           | Friction on a low-risk item | `meta-auditor` flags → `self-patch-generator` tunes scoring     |
+| Risk matrix over-scoring (too cautious)         | Everything flagged high     | Tune thresholds; not every DB migration is risk=5               |
 
 ## Tools
 

@@ -21,6 +21,7 @@ compatibility: "Works with any Agent Skills-compatible agent. Scripts require Py
 **Spec → Plan → Tasks → Implement → Verify (Code + Visual) → Deliver.**
 
 With browser powers, verification now includes:
+
 - **Does it look right?** (visual diffing, screenshot comparison)
 - **Does it behave right?** (click flows, form submissions, state changes)
 - **Is it accessible?** (axe-core audits in-browser)
@@ -58,16 +59,19 @@ python3 scripts/spec_generator.py .
 ```
 
 **Before anything else**, generate or update `spec.md`, `plan.md`, `tasks.md`:
+
 - If no `spec.md` exists → analyse codebase (README, routes, models, tests, configs) → generate BDD-style spec
 - If `spec.md` exists but outdated → update it
 - If project is empty → generate from best-practice defaults
 
 Then run:
+
 ```bash
 python3 scripts/project_analyzer.py .
 ```
 
 ### Decision Tree (autonomous)
+
 ```
 Empty project? → Generate spec from best-practice → scaffold from spec
 🔴 RED risk?   → git init → characterization tests → spec generation → audit
@@ -78,10 +82,12 @@ Otherwise?     → Spec generation → 13-phase flow
 ## The 13-Phase Spec-Driven Workflow
 
 ### Phase 0: SPEC GENERATION
+
 **Script**: `python3 scripts/spec_generator.py .`
 **Asset**: `assets/spec_template.md`
 
 If no `spec.md` exists:
+
 1. Scan README, package.json, code structure, comments, configs, routes, models, tests
 2. Infer: purpose, users, expected behavior, constraints
 3. Generate:
@@ -91,6 +97,7 @@ If no `spec.md` exists:
 4. Assign SP-N IDs for traceability
 
 **Autonomous spec generation** (for existing projects):
+
 - Read README → extract stated purpose
 - Scan routes → infer user-facing features
 - Scan models → infer data entities
@@ -98,54 +105,60 @@ If no `spec.md` exists:
 - Synthesize into spec.md
 
 ### Phase 1: DISCOVERY & TRIAGE
+
 **Script**: `python3 scripts/project_analyzer.py .`
 
 Stub detection, partial features, stack ID. **Validate against spec** — are all spec items implemented?
 
 ### Phase 2: INTAKE (autonomous — filled with best-practice defaults)
+
 Fill `INTAKE.md` and `CONSTRAINTS.md` with:
+
 - Goal: inferred from project type (e.g., "production-ready web API" for a FastAPI project)
 - Constraints: auto-detected (e.g., "Python 3.11 detected — stay on 3.11")
 - Success criteria: all tests pass, 0 critical security findings, Docker builds, CI green
 - Risk tolerance: Balanced (default for autonomous mode)
 
 ### Phase 3: CENSUS
+
 **Script**: `bash scripts/codebase_census.sh .`
 **Script**: `python3 scripts/metrics_diff.py snapshot . --label before`
 
 Profile: files by language, total lines, framework, test coverage, git history, domain classification.
 
 ### Phase 4: AUDIT (14 Dimensions + Stub Detection + Spec-Coverage)
+
 **Script**: `bash scripts/audit_orchestrate.sh .`
 
-| Dim | Reference | Key Script |
-|-----|-----------|------------|
-| 1 Architecture | `references/01-architecture-audit.md` | `scripts/layer_violation_detector.py` |
-| 2 Database | `references/02-database-audit.md` | — |
-| 3 Testing | `references/03-testing-audit.md` | — |
-| 4 Security | `references/04-security-audit.md` | `scripts/security_scan.sh` |
-| 5 Performance | `references/05-performance-audit.md` | — |
-| 6 UI/UX | `references/06-uiux-audit.md` | — |
-| 7 Code Quality | `references/07-code-quality-audit.md` | `scripts/detect_smells.py`, `scripts/dead_code_detector.sh` |
-| 8 DevOps | `references/08-devops-audit.md` | — |
-| 9 Documentation | `references/09-documentation-audit.md` | — |
-| 10 Full-Stack | `references/10-fullstack-audit.md` | — |
-| 11 Stubs/Placeholders | (inline — scan for `pass`, `TODO`, `NotImplementedError`) | — |
-| 12 Spec-Coverage | (spec-sync sub-skill — are all SP-N items implemented/tested?) | — |
-| 13 Visual Consistency | (browser-agent screenshot + visual-diff) | `scripts/browser_agent.py screenshot` |
-| 14 Accessibility Baseline | (browser-agent a11y — axe-core in-browser) | `scripts/browser_agent.py a11y` |
+| Dim                       | Reference                                                      | Key Script                                                  |
+| ------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------- |
+| 1 Architecture            | `references/01-architecture-audit.md`                          | `scripts/layer_violation_detector.py`                       |
+| 2 Database                | `references/02-database-audit.md`                              | —                                                           |
+| 3 Testing                 | `references/03-testing-audit.md`                               | —                                                           |
+| 4 Security                | `references/04-security-audit.md`                              | `scripts/security_scan.sh`                                  |
+| 5 Performance             | `references/05-performance-audit.md`                           | —                                                           |
+| 6 UI/UX                   | `references/06-uiux-audit.md`                                  | —                                                           |
+| 7 Code Quality            | `references/07-code-quality-audit.md`                          | `scripts/detect_smells.py`, `scripts/dead_code_detector.sh` |
+| 8 DevOps                  | `references/08-devops-audit.md`                                | —                                                           |
+| 9 Documentation           | `references/09-documentation-audit.md`                         | —                                                           |
+| 10 Full-Stack             | `references/10-fullstack-audit.md`                             | —                                                           |
+| 11 Stubs/Placeholders     | (inline — scan for `pass`, `TODO`, `NotImplementedError`)      | —                                                           |
+| 12 Spec-Coverage          | (spec-sync sub-skill — are all SP-N items implemented/tested?) | —                                                           |
+| 13 Visual Consistency     | (browser-agent screenshot + visual-diff)                       | `scripts/browser_agent.py screenshot`                       |
+| 14 Accessibility Baseline | (browser-agent a11y — axe-core in-browser)                     | `scripts/browser_agent.py a11y`                             |
 
 ### Phase 5: PRIORITIZE (autonomous — no user sign-off needed)
+
 Prioritize: **stability → spec-compliance → visual perfection → tests → architecture → docs → deployment**
 
-| Severity | Effort | Priority |
-|----------|--------|----------|
-| Critical | Low | **P0** — fix now |
-| Critical | High | **P1** — next |
-| High | Low | **P2** — quick win |
-| High | High | **P3** — dedicated |
-| Medium | Low | **P4** — batch |
-| Medium/High | High | **P5** — backlog |
+| Severity    | Effort | Priority           |
+| ----------- | ------ | ------------------ |
+| Critical    | Low    | **P0** — fix now   |
+| Critical    | High   | **P1** — next      |
+| High        | Low    | **P2** — quick win |
+| High        | High   | **P3** — dedicated |
+| Medium      | Low    | **P4** — batch     |
+| Medium/High | High   | **P5** — backlog   |
 
 **Output**: `BLUEPRINT.md` + `TRACEABILITY_MATRIX.md`
 
@@ -156,6 +169,7 @@ Prioritize: **stability → spec-compliance → visual perfection → tests → 
 **Traceability Iron Law**: Every commit MUST reference a spec item: `feat(auth): implement 2FA [SP-42]`. Every test MUST reference an acceptance criterion. No unspec'd code — justify + add to spec, or remove.
 
 **Per transformation (atomic, verified, self-healing)**:
+
 ```
 1. Name it (Fowler recipe)
 2. Output as diff (not whole-file)
@@ -174,6 +188,7 @@ Prioritize: **stability → spec-compliance → visual perfection → tests → 
 ```
 
 **Visual Guard Loop** (for every frontend change):
+
 ```
 1. Before: capture baseline screenshot (or use existing)
 2. Implement UI change
@@ -187,6 +202,7 @@ Prioritize: **stability → spec-compliance → visual perfection → tests → 
 **After each**: `scripts/synthesize_tool.py --reflect` (create reusable recipe if pattern is generalizable)
 
 ### Phase 7: VERIFY
+
 1. Re-run audit on affected dimensions
 2. `python3 scripts/metrics_diff.py snapshot . --label after`
 3. `python3 scripts/metrics_diff.py report before.json after.json --output FINAL_REPORT_metrics.md`
@@ -196,15 +212,18 @@ Prioritize: **stability → spec-compliance → visual perfection → tests → 
 **Stop conditions**: A) success criteria met | B) P0-P3 closed | C) user says stop | D) budget exhausted | E) unresolved escalation
 
 ### Phase 8: TESTING MASTERY (spec-aware — BDD + contract tests from spec)
+
 > **MANDATORY.** See `references/20-testing-mastery.md` (27 test types)
-**Script**: `scripts/generate_test_suite.py` (audit | scaffold | plan)
-**Mutation**: `scripts/mutation_harden.py`
-**Spec-aware**: Generate BDD tests from acceptance criteria. Every AC gets a test. Contract tests from spec items.
+> **Script**: `scripts/generate_test_suite.py` (audit | scaffold | plan)
+> **Mutation**: `scripts/mutation_harden.py`
+> **Spec-aware**: Generate BDD tests from acceptance criteria. Every AC gets a test. Contract tests from spec items.
 
 ### Phase 9: BROWSER-BASED ACCEPTANCE (NEW v18.0)
+
 **Script**: `python3 scripts/browser_agent.py flows --url http://localhost:3000 --flows login,checkout,signup`
 
 Run user flows in real browser:
+
 1. Launch headless browser (Playwright)
 2. Execute acceptance criteria as browser flows
 3. Capture screenshots of every screen state (loading, empty, error, success)
@@ -213,18 +232,21 @@ Run user flows in real browser:
 6. Record key user journeys as screenshot gallery
 7. Validate against spec acceptance criteria
 
-**Motto**: *If it doesn't look and feel premium, it's not done.*
+**Motto**: _If it doesn't look and feel premium, it's not done._
 
 ### Phase 10: OBSERVABILITY
+
 > **MANDATORY for production.** See `references/25-observability-mastery.md`
 
 ### Phase 11: ROLLOUT (spec-aware CI/CD with visual testing stage)
+
 > **MANDATORY.** See `assets/rollout_plan_template.md` + `references/22-safe-migration-patterns.md`
 
 5-step: pre-rollout → strategy → rollout (staged) → monitor → verify
 CI/CD runs tests grouped by spec area. Rollback if: error >2x baseline, latency >2x, data loss.
 
 ### Phase 12: PACKAGING & DELIVERY (with visual proof album)
+
 - Build optimized Docker images (multi-stage, non-root, <500MB)
 - Verify one-command startup: `docker-compose up` works
 - Generate final CI/CD pipeline definitions
@@ -238,21 +260,22 @@ CI/CD runs tests grouped by spec area. Rollback if: error >2x baseline, latency 
 
 ## Extreme Scenario Handler (autonomous self-correction)
 
-| Scenario | Autonomous Response |
-|----------|-------------------|
-| **Test failures after refactor** | Don't revert blindly. Debug root cause (mocked API change? interface mismatch?). Fix production code or tests correctly. |
-| **Undetectable project type** | Assume sensible modernization (reorganize into standard Python/Node project). Document the assumption. Proceed. |
-| **Contradictory configs** (npm + yarn) | Choose the most complete one. Remove the other. If both equally valid and removal is destructive → ask (one question). |
-| **Missing production secrets** | NEVER hardcode. Create `.env.example` with all required vars. Document in README. Use secret references in CI. |
-| **Massive monolith** | Break down incrementally. Extract clear bounded contexts into modules while keeping backward compatibility. Start with the highest-pain module. |
-| **Zero tests + deadline** | Add smoke tests + critical path coverage BEFORE any refactoring. Never introduce regressions. |
-| **Circular dependencies** | Detect with `layer_violation_detector.py`. Break by introducing interface/abstraction. Never delete — always extract. |
+| Scenario                               | Autonomous Response                                                                                                                             |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Test failures after refactor**       | Don't revert blindly. Debug root cause (mocked API change? interface mismatch?). Fix production code or tests correctly.                        |
+| **Undetectable project type**          | Assume sensible modernization (reorganize into standard Python/Node project). Document the assumption. Proceed.                                 |
+| **Contradictory configs** (npm + yarn) | Choose the most complete one. Remove the other. If both equally valid and removal is destructive → ask (one question).                          |
+| **Missing production secrets**         | NEVER hardcode. Create `.env.example` with all required vars. Document in README. Use secret references in CI.                                  |
+| **Massive monolith**                   | Break down incrementally. Extract clear bounded contexts into modules while keeping backward compatibility. Start with the highest-pain module. |
+| **Zero tests + deadline**              | Add smoke tests + critical path coverage BEFORE any refactoring. Never introduce regressions.                                                   |
+| **Circular dependencies**              | Detect with `layer_violation_detector.py`. Break by introducing interface/abstraction. Never delete — always extract.                           |
 
 ---
 
 ## Self-Healing & Iterative Improvement Loop
 
 After EVERY atomic change:
+
 ```
 ┌─→ Run tests + lint + type-check
 │   ├─ ALL GREEN → commit → proceed to next
@@ -269,53 +292,57 @@ After EVERY atomic change:
 
 ### Phase 5 EXECUTE — which sub-skill fires?
 
-| Trigger | Sub-skill | What it does |
-|---------|-----------|-------------|
-| Bug/test failure | `debug-entry` | 4-phase RCA (Iron Law: no fix w/o root cause) |
-| New code needed | `tdd` | Red-green-refactor (Iron Law: no code w/o failing test) |
-| UI redesign | `frontend-bridge` | Anti-AI-slop design lead |
-| React perf | `react-best-practices` | 70 rules (8 categories) |
-| CSS/styling | `css-styling` | Tailwind / design tokens / dark mode |
-| State management | `state-management` | Redux/Zustand/React Query |
-| Forms | `form-validation` | Zod/Yup — client + server |
-| DB schema | `db-design` | Postgres: schema, RLS, query perf |
-| Data backfill | `data-migration` | Expand/contract + batch backfill |
-| Seed data | `db-seeding` | Faker + factories + idempotent |
-| API contract | `api-contract` | OpenAPI/GraphQL SDL + types |
-| GraphQL | `graphql-schema` + `apollo-server` | Schema + server |
-| API versioning | `api-versioning` | URL/header + sunset headers |
-| Auth | `auth-setup` | JWT/OAuth/Auth0 decision tree |
-| Payments | `payment-setup` | Stripe + idempotency + webhooks |
-| Rate limiting | `rate-limiting` | Redis token bucket |
-| Webhooks | `webhook-setup` | Signature + retry + dead letter |
-| Docker | `containerize` | Dockerfile + compose + .dockerignore |
-| Secrets | `env-config` | Extract to .env + validation |
-| Dep updates | `dependency-update` | Patch/minor/major + security priority |
-| Perf profiling | `performance-profiling` | cProfile/py-spy/clinic.js |
-| Accessibility | `accessibility` | WCAG 2.2 AA + axe-core |
-| i18n | `i18n` | RTL + locale files + formatting |
-| File storage | `file-storage` | S3/MinIO + resize + CDN |
-| Email | `email-setup` | SendGrid/SES + templates |
-| Search | `search-engine` | Elasticsearch/Meilisearch |
-| Message queue | `message-queue` | Kafka/RabbitMQ/SQS |
-| Real-time | `realtime-setup` | WebSocket/SSE/WebRTC |
-| CMS | `cms-setup` | Sanity/Contentful/Strapi |
-| Docs | `doc-generator` | OpenAPI/JSDoc/Sphinx |
-| Mobile | `mobile-router` | Expo/RN: native UI + store |
+| Trigger          | Sub-skill                          | What it does                                            |
+| ---------------- | ---------------------------------- | ------------------------------------------------------- |
+| Bug/test failure | `debug-entry`                      | 4-phase RCA (Iron Law: no fix w/o root cause)           |
+| New code needed  | `tdd`                              | Red-green-refactor (Iron Law: no code w/o failing test) |
+| UI redesign      | `frontend-bridge`                  | Anti-AI-slop design lead                                |
+| React perf       | `react-best-practices`             | 70 rules (8 categories)                                 |
+| CSS/styling      | `css-styling`                      | Tailwind / design tokens / dark mode                    |
+| State management | `state-management`                 | Redux/Zustand/React Query                               |
+| Forms            | `form-validation`                  | Zod/Yup — client + server                               |
+| DB schema        | `db-design`                        | Postgres: schema, RLS, query perf                       |
+| Data backfill    | `data-migration`                   | Expand/contract + batch backfill                        |
+| Seed data        | `db-seeding`                       | Faker + factories + idempotent                          |
+| API contract     | `api-contract`                     | OpenAPI/GraphQL SDL + types                             |
+| GraphQL          | `graphql-schema` + `apollo-server` | Schema + server                                         |
+| API versioning   | `api-versioning`                   | URL/header + sunset headers                             |
+| Auth             | `auth-setup`                       | JWT/OAuth/Auth0 decision tree                           |
+| Payments         | `payment-setup`                    | Stripe + idempotency + webhooks                         |
+| Rate limiting    | `rate-limiting`                    | Redis token bucket                                      |
+| Webhooks         | `webhook-setup`                    | Signature + retry + dead letter                         |
+| Docker           | `containerize`                     | Dockerfile + compose + .dockerignore                    |
+| Secrets          | `env-config`                       | Extract to .env + validation                            |
+| Dep updates      | `dependency-update`                | Patch/minor/major + security priority                   |
+| Perf profiling   | `performance-profiling`            | cProfile/py-spy/clinic.js                               |
+| Accessibility    | `accessibility`                    | WCAG 2.2 AA + axe-core                                  |
+| i18n             | `i18n`                             | RTL + locale files + formatting                         |
+| File storage     | `file-storage`                     | S3/MinIO + resize + CDN                                 |
+| Email            | `email-setup`                      | SendGrid/SES + templates                                |
+| Search           | `search-engine`                    | Elasticsearch/Meilisearch                               |
+| Message queue    | `message-queue`                    | Kafka/RabbitMQ/SQS                                      |
+| Real-time        | `realtime-setup`                   | WebSocket/SSE/WebRTC                                    |
+| CMS              | `cms-setup`                        | Sanity/Contentful/Strapi                                |
+| Docs             | `doc-generator`                    | OpenAPI/JSDoc/Sphinx                                    |
+| Mobile           | `mobile-router`                    | Expo/RN: native UI + store                              |
 
 ### Phase 6 VERIFY
+
 | `review-gate` | Dispatch reviewer subagent (severity-gated) |
 | `verification-gate` | "Are we REALLY done?" final check |
 
 ### Phase 7 TESTING
+
 | `webapp-testing` | Playwright real-browser E2E |
 
 ### Phase 8 OBSERVABILITY
+
 | `error-monitoring` | Sentry/Bugsnag setup |
 | `log-aggregation` | ELK/Loki/Datadog |
 | `monitoring` | Prometheus + Grafana |
 
 ### Phase 9 ROLLOUT
+
 | `ci-cd` | GitHub Actions/GitLab |
 | `k8s` | Manifests + troubleshooting |
 | `iac-terraform` | Terraform authoring |
@@ -326,6 +353,7 @@ After EVERY atomic change:
 | `finishing-branch` | Merge + cleanup |
 
 ### Cross-Phase
+
 | `using-code-transform` | Bootstrap (1% rule, re-inject after compaction) |
 | `brainstorming` | Collaborative ideation |
 | `writing-plans` | Structured planning |
@@ -337,6 +365,7 @@ After EVERY atomic change:
 ## Full-Stack Orchestration
 
 When a project spans frontend + backend + mobile + Docker:
+
 1. **DISCOVERY** tags modules: `web-frontend`, `api-backend`, `mobile`, `infra`
 2. **AUDIT** runs per-surface (sub-agents)
 3. **PRIORITIZE** sequences: stability → infra → contract → backend → frontend → mobile
@@ -350,37 +379,38 @@ When a project spans frontend + backend + mobile + Docker:
 python3 scripts/run_eval.py --cases evals/cases --output evals/benchmark.json
 python3 scripts/generate_review.py evals/benchmark.json --open
 ```
+
 Current: with-skill 93% vs baseline 19% (+457%, 7 cases). F1=100%.
 
 ## Scripts (25)
 
-| Script | Phase | Purpose |
-|--------|-------|---------|
-| `project_analyzer.py` | 0 | **Deep analysis (type/size/stack/health/risk/stubs)** |
-| `spec_generator.py` | 0 | **Generate spec.md / plan.md / tasks.md** |
-| `codebase_census.sh` | 3 | Profile codebase |
-| `metrics_diff.py` | 3+7 | Before/after metrics |
-| `audit_orchestrate.sh` | 4 | Run all audit scripts |
-| `detect_smells.py` | 4 | Detect 30+ code smells |
-| `cognitive_complexity.py` | 4 | Calculate complexity |
-| `layer_violation_detector.py` | 4 | Check dependency direction |
-| `security_scan.sh` | 4 | Semgrep+Bandit+pip-audit+gitleaks |
-| `dead_code_detector.sh` | 4 | vulture/knip/deadcode |
-| `duplicate_code_detector.sh` | 4 | jscpd |
-| `traceability_matrix.py` | 4-7 | Generate + check + drift |
-| `verify_behavior.sh` | 6 | Type-check + tests + lint |
-| `behavior_snapshot.sh` | 6 | Golden-master behavior diff |
-| `mantra_refactor.py` | 6 | MANTRA multi-agent refactoring |
-| `synthesize_tool.py` | 6 | Tool synthesis (reusable recipes) |
-| `generate_test_suite.py` | 8 | Audit + scaffold + plan tests |
-| `mutation_harden.py` | 8 | Mutation-guided test hardening |
-| `browser_agent.py` | 4+6+9 | **Browser agent: serve, screenshot, flows, a11y, responsive, visual diff** |
-| `run_eval.py` | Eval | With-skill vs baseline harness |
-| `generate_review.py` | Eval | HTML report from benchmark |
-| `optimize_description.py` | Maint | Description optimization |
-| `context_shaper.py` | Long | 5-layer context compression |
-| `validate_skill.py` | Maint | **Validate skill structure (counts, versions, sections)** |
-| `rebuild_all.py` | Maint | Rebuild missing files |
+| Script                        | Phase | Purpose                                                                    |
+| ----------------------------- | ----- | -------------------------------------------------------------------------- |
+| `project_analyzer.py`         | 0     | **Deep analysis (type/size/stack/health/risk/stubs)**                      |
+| `spec_generator.py`           | 0     | **Generate spec.md / plan.md / tasks.md**                                  |
+| `codebase_census.sh`          | 3     | Profile codebase                                                           |
+| `metrics_diff.py`             | 3+7   | Before/after metrics                                                       |
+| `audit_orchestrate.sh`        | 4     | Run all audit scripts                                                      |
+| `detect_smells.py`            | 4     | Detect 30+ code smells                                                     |
+| `cognitive_complexity.py`     | 4     | Calculate complexity                                                       |
+| `layer_violation_detector.py` | 4     | Check dependency direction                                                 |
+| `security_scan.sh`            | 4     | Semgrep+Bandit+pip-audit+gitleaks                                          |
+| `dead_code_detector.sh`       | 4     | vulture/knip/deadcode                                                      |
+| `duplicate_code_detector.sh`  | 4     | jscpd                                                                      |
+| `traceability_matrix.py`      | 4-7   | Generate + check + drift                                                   |
+| `verify_behavior.sh`          | 6     | Type-check + tests + lint                                                  |
+| `behavior_snapshot.sh`        | 6     | Golden-master behavior diff                                                |
+| `mantra_refactor.py`          | 6     | MANTRA multi-agent refactoring                                             |
+| `synthesize_tool.py`          | 6     | Tool synthesis (reusable recipes)                                          |
+| `generate_test_suite.py`      | 8     | Audit + scaffold + plan tests                                              |
+| `mutation_harden.py`          | 8     | Mutation-guided test hardening                                             |
+| `browser_agent.py`            | 4+6+9 | **Browser agent: serve, screenshot, flows, a11y, responsive, visual diff** |
+| `run_eval.py`                 | Eval  | With-skill vs baseline harness                                             |
+| `generate_review.py`          | Eval  | HTML report from benchmark                                                 |
+| `optimize_description.py`     | Maint | Description optimization                                                   |
+| `context_shaper.py`           | Long  | 5-layer context compression                                                |
+| `validate_skill.py`           | Maint | **Validate skill structure (counts, versions, sections)**                  |
+| `rebuild_all.py`              | Maint | Rebuild missing files                                                      |
 
 ## Assets (12)
 
@@ -415,6 +445,7 @@ BROWSER: screenshot + flows + a11y + responsive + visual-diff + playwright-pro +
 ## Phase 13: META-AUDIT & SELF-UPGRADE (with visual heuristics)
 
 After project delivery, audit your own performance:
+
 1. Review all actions (PROGRESS.md + git log)
 2. Identify friction: reverts, long debugs, wrong assumptions, missing sub-skills
 3. Score each phase: efficiency (1-5), accuracy (1-5), friction (1-5)
@@ -429,6 +460,7 @@ After project delivery, audit your own performance:
 ## Phase 14: SELF-UPGRADE (with visual learning)
 
 Turn lessons into permanent improvements:
+
 1. **Capture**: For every revert, long debug, or unclear assumption → record lesson candidate
 2. **Analyse**: Was it missing sub-skill? Weak heuristic? Outdated knowledge?
 3. **Generate**: Create a rule/policy/sub-skill patch (via `self-patch-generator` or `sub-skill-generator`)
@@ -444,7 +476,8 @@ Turn lessons into permanent improvements:
 ## Self-Consistency Guard
 
 Before marking ANY phase complete, ask:
-> *"If a senior developer reviewed this, would they find a critical gap?"*
+
+> _"If a senior developer reviewed this, would they find a critical gap?"_
 
 If yes → fix it. "Done means done": passing tests + clean lint + no security warnings + runnable Docker + readable docs + CI green.
 
@@ -452,29 +485,30 @@ If yes → fix it. "Done means done": passing tests + clean lint + no security w
 
 ## Expanded Extreme Scenarios (v17.0 — 15 total)
 
-| Scenario | Autonomous Response |
-|----------|-------------------|
-| Test failures after refactor | Debug root cause, don't blindly revert |
-| Undetectable project type | Assume modernization, document, proceed |
-| Contradictory configs (npm+yarn) | Choose most complete, remove other |
-| Missing production secrets | .env.example, never hardcode |
-| Massive monolith | Extract bounded contexts incrementally |
-| Zero tests + deadline | Smoke tests first, no refactoring before safety net |
-| Circular dependencies | Introduce interface, never delete |
-| **No Git + full of node_modules** | git init → .gitignore → deduplicate → discovery |
-| **CI/CD completely absent** | Select GitHub Actions, create matrix testing, auto-deploy staging |
-| **Hardcoded secrets everywhere** | Extract ALL to .env, replace with env vars, .gitignore |
-| **Database missing migrations** | Auto-generate initial migration from models |
-| **Mobile app with no API** | Generate OpenAPI from frontend hooks, scaffold backend |
-| **Novel language/framework** | research-crawler → sub-skill-generator → proceed cautiously |
-| **Multi-repo platform** | multi-repo-orchestrator: each service = mini-project, then align contracts |
-| **Risk > threshold** | risk-manager: auto-create fallback branch before proceeding |
+| Scenario                          | Autonomous Response                                                        |
+| --------------------------------- | -------------------------------------------------------------------------- |
+| Test failures after refactor      | Debug root cause, don't blindly revert                                     |
+| Undetectable project type         | Assume modernization, document, proceed                                    |
+| Contradictory configs (npm+yarn)  | Choose most complete, remove other                                         |
+| Missing production secrets        | .env.example, never hardcode                                               |
+| Massive monolith                  | Extract bounded contexts incrementally                                     |
+| Zero tests + deadline             | Smoke tests first, no refactoring before safety net                        |
+| Circular dependencies             | Introduce interface, never delete                                          |
+| **No Git + full of node_modules** | git init → .gitignore → deduplicate → discovery                            |
+| **CI/CD completely absent**       | Select GitHub Actions, create matrix testing, auto-deploy staging          |
+| **Hardcoded secrets everywhere**  | Extract ALL to .env, replace with env vars, .gitignore                     |
+| **Database missing migrations**   | Auto-generate initial migration from models                                |
+| **Mobile app with no API**        | Generate OpenAPI from frontend hooks, scaffold backend                     |
+| **Novel language/framework**      | research-crawler → sub-skill-generator → proceed cautiously                |
+| **Multi-repo platform**           | multi-repo-orchestrator: each service = mini-project, then align contracts |
+| **Risk > threshold**              | risk-manager: auto-create fallback branch before proceeding                |
 
 ---
 
 ## Final Delivery Format
 
 Produce:
+
 - The transformed project (clean architecture, full tests, documented)
 - `README.md` with badges, setup, architecture diagram
 - `CHANGELOG.md` of project changes

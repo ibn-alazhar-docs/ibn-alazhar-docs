@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 13 — META-AUDIT | After every project delivery (mandatory) | Project is fresh in memory; friction events are still in PROGRESS.md and git log |
-| User asks "how did it go?" | Anytime | Pull the latest audit-report and summarize |
-| `meta-learning` invoked | Phase 13, immediately after this sub-skill | `meta-learning` consumes `lesson-candidates.json` produced here |
-| Cross-project pattern search | Monthly | `meta-auditor` re-runs across last 10 audits to detect systemic friction |
+| Phase                        | Trigger                                    | Why                                                                              |
+| ---------------------------- | ------------------------------------------ | -------------------------------------------------------------------------------- |
+| Phase 13 — META-AUDIT        | After every project delivery (mandatory)   | Project is fresh in memory; friction events are still in PROGRESS.md and git log |
+| User asks "how did it go?"   | Anytime                                    | Pull the latest audit-report and summarize                                       |
+| `meta-learning` invoked      | Phase 13, immediately after this sub-skill | `meta-learning` consumes `lesson-candidates.json` produced here                  |
+| Cross-project pattern search | Monthly                                    | `meta-auditor` re-runs across last 10 audits to detect systemic friction         |
 
-**Do NOT use this sub-skill for:** patching the skill (use `self-patch-generator`), classifying lessons (use `meta-learning`), writing new knowledge entries (use `knowledge-base`). This sub-skill only *observes* and *scores* — it never mutates the skill.
+**Do NOT use this sub-skill for:** patching the skill (use `self-patch-generator`), classifying lessons (use `meta-learning`), writing new knowledge entries (use `knowledge-base`). This sub-skill only _observes_ and _scores_ — it never mutates the skill.
 
 ## What It Does
 
@@ -86,25 +86,25 @@ python3 scripts/meta_audit.py show --project-id proj-2024-11-payments
 
 ## Friction Patterns
 
-| Pattern | Detector | Severity | Routes to |
-|---------|----------|----------|-----------|
-| Reverts > 3 on same area | `git log` revert count per file | Systemic | `self-patch-generator` (weak heuristic) |
-| Debug session > 30 min | `audit-trail.jsonl` time delta between DEBUG entries | High | `sub-skill-generator` (missing sub-skill) |
-| Wrong assumption (spec gap) | Spec items added retroactively in Phase 7 | High | `spec-generator` / `spec-sync` |
-| Missing sub-skill (improvised) | PROGRESS.md mentions "ad-hoc" or "manual" | Medium | `sub-skill-generator` |
-| Outdated knowledge | Knowledge-base entry citation older than 12 months | Low | `knowledge-base` re-verify |
-| Manual user intervention | `audit-trail.jsonl` `human_input_required` flag | High | `self-patch-generator` |
-| Skipped quality gate | `audit-trail.jsonl` `gate_skipped` flag | Systemic | `policy-evolution` |
+| Pattern                        | Detector                                             | Severity | Routes to                                 |
+| ------------------------------ | ---------------------------------------------------- | -------- | ----------------------------------------- |
+| Reverts > 3 on same area       | `git log` revert count per file                      | Systemic | `self-patch-generator` (weak heuristic)   |
+| Debug session > 30 min         | `audit-trail.jsonl` time delta between DEBUG entries | High     | `sub-skill-generator` (missing sub-skill) |
+| Wrong assumption (spec gap)    | Spec items added retroactively in Phase 7            | High     | `spec-generator` / `spec-sync`            |
+| Missing sub-skill (improvised) | PROGRESS.md mentions "ad-hoc" or "manual"            | Medium   | `sub-skill-generator`                     |
+| Outdated knowledge             | Knowledge-base entry citation older than 12 months   | Low      | `knowledge-base` re-verify                |
+| Manual user intervention       | `audit-trail.jsonl` `human_input_required` flag      | High     | `self-patch-generator`                    |
+| Skipped quality gate           | `audit-trail.jsonl` `gate_skipped` flag              | Systemic | `policy-evolution`                        |
 
 ## Scoring Rubric
 
-| Score | Efficiency | Accuracy | Friction |
-|-------|-----------|----------|----------|
-| 5 | Under typical time, automated | No corrections needed | Zero retries |
-| 4 | On time | Minor self-corrections | 1 retry |
-| 3 | Slightly over | 1 revert | 2 retries |
-| 2 | 2× typical | 2 reverts | 3 retries |
-| 1 | ≥3× typical | ≥3 reverts or user-blocked | ≥4 retries or human intervention |
+| Score | Efficiency                    | Accuracy                   | Friction                         |
+| ----- | ----------------------------- | -------------------------- | -------------------------------- |
+| 5     | Under typical time, automated | No corrections needed      | Zero retries                     |
+| 4     | On time                       | Minor self-corrections     | 1 retry                          |
+| 3     | Slightly over                 | 1 revert                   | 2 retries                        |
+| 2     | 2× typical                    | 2 reverts                  | 3 retries                        |
+| 1     | ≥3× typical                   | ≥3 reverts or user-blocked | ≥4 retries or human intervention |
 
 A phase with any score ≤2 automatically generates a lesson candidate.
 
@@ -139,6 +139,7 @@ Every audit run appends a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`
 
 ```markdown
 ## [2024-11-22] proj-2024-11-payments — Audit
+
 - Phase scores: DISCOVERY 4/5/4, EXECUTE 2/3/2, VERIFY 5/5/5
 - Friction: 3 reverts on auth module (missing JWT sub-skill knowledge)
 - Lessons emitted: 4 (1 → sub-skill-generator, 2 → self-patch-generator, 1 → knowledge-base)
@@ -149,12 +150,12 @@ Every audit run appends a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Empty PROGRESS.md | Sub-agent didn't log | Score from git log alone, flag in report |
-| Corrupt audit-trail.jsonl | Concurrent write | Skip corrupt lines, log count skipped |
-| Phase scores all 5/5/5 | Auditor not looking hard enough | Force the Iron Law: re-scan for near-misses |
-| >20 lesson candidates | Threshold too loose | Deduplicate by root-cause; keep top 10 by severity |
+| Symptom                   | Cause                           | Recovery                                           |
+| ------------------------- | ------------------------------- | -------------------------------------------------- |
+| Empty PROGRESS.md         | Sub-agent didn't log            | Score from git log alone, flag in report           |
+| Corrupt audit-trail.jsonl | Concurrent write                | Skip corrupt lines, log count skipped              |
+| Phase scores all 5/5/5    | Auditor not looking hard enough | Force the Iron Law: re-scan for near-misses        |
+| >20 lesson candidates     | Threshold too loose             | Deduplicate by root-cause; keep top 10 by severity |
 
 ## Tools
 

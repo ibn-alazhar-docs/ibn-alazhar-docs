@@ -5,58 +5,72 @@
 ## The 14 AI Failure Modes
 
 ### AFM1. Catch-All Error Swallowing
+
 `try: ... except Exception: pass` — LLMs add this "defensively." Silently hides real errors.
 **Fix**: catch specific exceptions. Log or re-raise everything else.
 
 ### AFM2. Defensive Guards for Impossible Cases
+
 `if x is None:` when the type system guarantees `x` is non-null. Dead code that misleads.
 **Fix**: if the type guarantees it, don't guard. Fix the type if it doesn't.
 
 ### AFM3. Package/API Hallucination
+
 `import pyyaml_loader` (doesn't exist). USENIX 2025: 19.6% of LLM-suggested packages are hallucinated.
 **Fix**: verify packages exist before importing. Never invent package names.
 
 ### AFM4. Mock-Fallback "Declare Success"
+
 Real test fails → LLM swaps in a mock that always passes → "success!" — verified nothing.
 **Fix**: mocks isolate the unit under test, not make tests pass. If test only passes with mocks, something is wrong.
 
 ### AFM5. Copy-From-Similar Off-By-Ones
+
 Copies a pattern but gets the boundary wrong: `>` instead of `>=`, off-by-one in slice indices.
 **Fix**: after copying, verify boundary conditions. Test boundary cases (0, 1, len-1, len, len+1).
 
 ### AFM6. Comment Pollution
+
 Comments that restate code (`# Increment i by 1`), stale TODOs, "explain WHAT" comments.
 **Fix**: comments explain WHY, not WHAT. Delete WHAT comments. Implement or remove TODOs.
 
 ### AFM7. Premature Abstraction
+
 Interface with one implementation, Strategy pattern for 2 branches, "for future flexibility."
 **Fix**: YAGNI. Wait for the 3rd occurrence (Rule of 3). Exception: repository interfaces for testability.
 
 ### AFM8. Generic Naming
+
 `data`, `result`, `process`, `handle`, `Manager`, `Helper`, `Util`, `info`, `obj`, `thing`.
 **Fix**: names state intent. `activeUsers` not `filteredArray`. `parseDate` not `doLoop`.
 
 ### AFM9. Dead Code / Half-Implementations
+
 Unused functions, unreachable branches, `pass` / `// not implemented` blocks.
 **Fix**: delete dead code. Implement features fully or remove them. No `pass` stubs.
 
 ### AFM10. Misleading Error Messages
+
 `raise ValueError("Invalid input")` — doesn't say what was invalid or what was expected.
 **Fix**: error messages include: what was invalid, the actual value (repr'd), what was expected.
 
 ### AFM11. Inconsistent State Across Layers
+
 Renames `user_id` to `userId` in API but not in repository. Layer mismatch.
 **Fix**: after renaming, `git grep` for the old name. Verify all layers consistent.
 
 ### AFM12. Phantom Test Coverage
+
 Test imports the function but doesn't assert behavior — just checks "doesn't crash."
 **Fix**: every test must have ≥1 assertion that would fail if behavior changed.
 
 ### AFM13. Type Assertion Without Validation
+
 `as User` (TS) or `# type: ignore` (Python) to suppress type errors instead of fixing the model.
 **Fix**: fix the model. If you must cast, document why the runtime invariant is guaranteed.
 
 ### AFM14. Over-Engineering for "Best Practices"
+
 Factory, Singleton, Observer where a simple function would do.
 **Fix**: a pattern earns its place with a real second use case or genuine test seam.
 

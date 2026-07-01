@@ -26,7 +26,7 @@ x-common-env: &common-env
   REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
   S3_ENDPOINT: http://minio:9000
   S3_REGION: us-east-1
-  S3_BUCKET: ibn-al-azhar-docs
+  S3_BUCKET: ibnalazhardocs
   S3_ACCESS_KEY_ID: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY must be set}
   S3_SECRET_ACCESS_KEY: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY must be set}
 
@@ -44,7 +44,7 @@ services:
       - frontend
     depends_on:
       web:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
     logging: *default-logging
     deploy:
@@ -87,7 +87,7 @@ services:
           memory: 512M
 
   pgbouncer:
-    image: edoburu/pgbouncer:latest
+    image: edoburu/pgbouncer:1.23.1
     ports:
       - "127.0.0.1:6432:6432"
     environment:
@@ -107,8 +107,6 @@ services:
       LOG_DISCONNECTIONS: "0"
       IGNORE_STARTUP_PARAMETERS: "extra_float_digits,search_path"
       QUIET: "yes"
-    extra_hosts:
-      - "postgres:172.20.0.2"
     networks:
       - backend
     healthcheck:
@@ -195,7 +193,7 @@ services:
       [
         "sh",
         "-c",
-        "npx prisma migrate deploy && (test -f prisma/seed.ts && npx prisma db seed || true)",
+        "npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma && (test -f packages/database/prisma/seed.ts && npx prisma db seed --schema=packages/database/prisma/schema.prisma || true)",
       ]
     environment:
       <<: *common-env
@@ -337,6 +335,7 @@ services:
       - backend
     restart: unless-stopped
     logging: *default-logging
+    <<: *default-security
     deploy:
       resources:
         limits:

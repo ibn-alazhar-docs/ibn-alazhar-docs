@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security) finds no rate limit on `/login`, `/signup`, `/reset-password` | Critical — brute force is unrestricted |
-| Phase 2 — AUDIT | Public API has no per-caller throttle | Abuse / DoS risk |
-| Phase 6 — EXECUTE | User says "add rate limiting", "throttle API", "prevent abuse" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Multi-server deploy — in-memory limiter no longer works | Must move to Redis-backed |
-| Phase 9 — ACCEPTANCE | Verify 429 returned at limit, Retry-After correct, headers present | Limits must be testable |
-| Phase 11 — ROLLOUT | Verify Redis available in prod; fail-open behavior confirmed | Limiter outage must degrade gracefully |
+| Phase                | Trigger                                                                              | Why                                    |
+| -------------------- | ------------------------------------------------------------------------------------ | -------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 4 (Security) finds no rate limit on `/login`, `/signup`, `/reset-password` | Critical — brute force is unrestricted |
+| Phase 2 — AUDIT      | Public API has no per-caller throttle                                                | Abuse / DoS risk                       |
+| Phase 6 — EXECUTE    | User says "add rate limiting", "throttle API", "prevent abuse"                       | This is the executing sub-skill        |
+| Phase 6 — EXECUTE    | Multi-server deploy — in-memory limiter no longer works                              | Must move to Redis-backed              |
+| Phase 9 — ACCEPTANCE | Verify 429 returned at limit, Retry-After correct, headers present                   | Limits must be testable                |
+| Phase 11 — ROLLOUT   | Verify Redis available in prod; fail-open behavior confirmed                         | Limiter outage must degrade gracefully |
 
 **Do NOT use this sub-skill directly for:** WAF-level DDoS protection (Cloudflare/AWS WAF — that's infrastructure, not application), per-customer quota enforcement in business logic (that's a billing concern), or CDN edge caching (separate layer). This sub-skill is the application-level limiter that sits inside your request pipeline.
 
@@ -167,12 +167,12 @@ Q4: Strict global limit?
 
 ## Algorithms (cheat sheet)
 
-| Algorithm | Memory per key | Burst behavior | Boundary edge case | Use when |
-|-----------|----------------|----------------|--------------------| ----------|
-| Token bucket | O(1) — 2 numbers | Allows full bucket burst | None | **Default** — most APIs |
-| Sliding window | O(N) — sorted set per window | Smooth, no burst beyond rate | None | Strict per-second (auth, payment) |
-| Fixed window | O(1) — 1 counter | Allows rate, no burst within window | 2x burst at boundary | Internal, low-traffic |
-| Leaky bucket | O(1) — queue size | Smooths to steady rate | None | Queue/pipe, downstream protection |
+| Algorithm      | Memory per key               | Burst behavior                      | Boundary edge case   | Use when                          |
+| -------------- | ---------------------------- | ----------------------------------- | -------------------- | --------------------------------- |
+| Token bucket   | O(1) — 2 numbers             | Allows full bucket burst            | None                 | **Default** — most APIs           |
+| Sliding window | O(N) — sorted set per window | Smooth, no burst beyond rate        | None                 | Strict per-second (auth, payment) |
+| Fixed window   | O(1) — 1 counter             | Allows rate, no burst within window | 2x burst at boundary | Internal, low-traffic             |
+| Leaky bucket   | O(1) — queue size            | Smooths to steady rate              | None                 | Queue/pipe, downstream protection |
 
 **Token bucket Lua script** (must be atomic — `INCR` + `EXPIRE` in two commands is a race condition):
 
@@ -200,33 +200,33 @@ return {1, 0}  -- allowed, no retry_after
 
 ## Patterns (mandatory)
 
-| Concern | Pattern | Why |
-|---------|---------|-----|
-| Response headers | `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` | Standard, lets clients self-throttle |
-| 429 status | `429 Too Many Requests` with `Retry-After: <seconds>` | RFC 6585 + RFC 7231 — clients know when to retry |
-| Key composition | `{route_pattern}:{caller_id}` (e.g. `login:ip:1.2.3.4`) | Per-route isolation — a noisy /search shouldn't lock out /login |
-| Anonymous callers | Per-IP (or /24 subnet for IPv4 to mitigate NAT) | No API key = no per-user identity |
-| Authenticated callers | Per-API-key or per-user-id | More accurate than IP; revoking the key kills traffic |
-| Tiered limits | `multiplier` on base limit (paid = 10x) | Business model — paid users get more |
-| Auth endpoints | Always strict (5/min/IP for /login, 3/min/IP for /signup) | Brute force prevention — non-negotiable |
-| Redis outage | Fail-open (degrade to in-memory or allow) — see Hard Rules | Rejecting all traffic is worse than allowing some abuse |
-| Reset spike | Use sliding window or token bucket (not fixed window) | Fixed window allows 2x burst at the boundary |
-| Memory bloat | TTL on every Redis key (1h default) | Without TTL, the keyspace grows unbounded |
+| Concern               | Pattern                                                           | Why                                                             |
+| --------------------- | ----------------------------------------------------------------- | --------------------------------------------------------------- |
+| Response headers      | `X-RateLimit-Limit`, `X-RateLimit-Remaining`, `X-RateLimit-Reset` | Standard, lets clients self-throttle                            |
+| 429 status            | `429 Too Many Requests` with `Retry-After: <seconds>`             | RFC 6585 + RFC 7231 — clients know when to retry                |
+| Key composition       | `{route_pattern}:{caller_id}` (e.g. `login:ip:1.2.3.4`)           | Per-route isolation — a noisy /search shouldn't lock out /login |
+| Anonymous callers     | Per-IP (or /24 subnet for IPv4 to mitigate NAT)                   | No API key = no per-user identity                               |
+| Authenticated callers | Per-API-key or per-user-id                                        | More accurate than IP; revoking the key kills traffic           |
+| Tiered limits         | `multiplier` on base limit (paid = 10x)                           | Business model — paid users get more                            |
+| Auth endpoints        | Always strict (5/min/IP for /login, 3/min/IP for /signup)         | Brute force prevention — non-negotiable                         |
+| Redis outage          | Fail-open (degrade to in-memory or allow) — see Hard Rules        | Rejecting all traffic is worse than allowing some abuse         |
+| Reset spike           | Use sliding window or token bucket (not fixed window)             | Fixed window allows 2x burst at the boundary                    |
+| Memory bloat          | TTL on every Redis key (1h default)                               | Without TTL, the keyspace grows unbounded                       |
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `Redis connection refused` | Redis down | Fail-open: log outage, allow request (or degrade to in-memory limiter). Alert ops. Never return 503 to all users |
-| `429 storm` — every request rejected | Limiter key collision (all users share one key) | Check key composition — must include caller_id, not just route |
-| Limit resets early | TTL on Redis key < window_sec | Set TTL = window_sec * 2 (or 3600s default) so bucket state persists |
-| Boundary spike (2x traffic at minute boundary) | Fixed window algorithm | Switch to token bucket or sliding window |
-| Per-IP false positives (entire office blocked) | NAT — one IP, many users | For /login use per-(IP + email) key; for general API use per-API-key |
-| Limiter costs 50ms per request | Network round-trip to Redis per request | Use connection pool; co-locate Redis with app; consider in-memory for hot paths |
-| Limit not enforced | Middleware registered after route handlers | Order matters — limiter must be in the global middleware chain BEFORE routes |
-| `X-RateLimit-*` headers missing | Headers only set on allow path, not 429 | Set headers on BOTH 200 and 429 responses |
-| Limiter state lost on deploy | In-memory store, no persistence | Use Redis for prod; in-memory is dev-only |
-| Thundering herd at reset | All clients retry at the exact reset time | Add jitter to Retry-After (±10%); client libraries should also add jitter |
+| Symptom                                        | Cause                                           | Recovery                                                                                                         |
+| ---------------------------------------------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `Redis connection refused`                     | Redis down                                      | Fail-open: log outage, allow request (or degrade to in-memory limiter). Alert ops. Never return 503 to all users |
+| `429 storm` — every request rejected           | Limiter key collision (all users share one key) | Check key composition — must include caller_id, not just route                                                   |
+| Limit resets early                             | TTL on Redis key < window_sec                   | Set TTL = window_sec \* 2 (or 3600s default) so bucket state persists                                            |
+| Boundary spike (2x traffic at minute boundary) | Fixed window algorithm                          | Switch to token bucket or sliding window                                                                         |
+| Per-IP false positives (entire office blocked) | NAT — one IP, many users                        | For /login use per-(IP + email) key; for general API use per-API-key                                             |
+| Limiter costs 50ms per request                 | Network round-trip to Redis per request         | Use connection pool; co-locate Redis with app; consider in-memory for hot paths                                  |
+| Limit not enforced                             | Middleware registered after route handlers      | Order matters — limiter must be in the global middleware chain BEFORE routes                                     |
+| `X-RateLimit-*` headers missing                | Headers only set on allow path, not 429         | Set headers on BOTH 200 and 429 responses                                                                        |
+| Limiter state lost on deploy                   | In-memory store, no persistence                 | Use Redis for prod; in-memory is dev-only                                                                        |
+| Thundering herd at reset                       | All clients retry at the exact reset time       | Add jitter to Retry-After (±10%); client libraries should also add jitter                                        |
 
 ## Self-Healing Loop
 

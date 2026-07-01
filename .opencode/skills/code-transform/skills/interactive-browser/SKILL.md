@@ -76,7 +76,7 @@ try {
   console.log("Playwright loaded");
 } catch (error) {
   throw new Error(
-    `Could not load playwright from the current js_repl cwd. Run the setup commands from this workspace first. Original error: ${error}`
+    `Could not load playwright from the current js_repl cwd. Run the setup commands from this workspace first. Original error: ${error}`,
   );
 }
 ```
@@ -159,9 +159,7 @@ If `context` or `page` is stale, set `context = page = undefined` and rerun the 
 Reuse `TARGET_URL` when it already exists; otherwise set a mobile target directly.
 
 ```javascript
-var MOBILE_TARGET_URL = typeof TARGET_URL === "string"
-  ? TARGET_URL
-  : "http://127.0.0.1:3000";
+var MOBILE_TARGET_URL = typeof TARGET_URL === "string" ? TARGET_URL : "http://127.0.0.1:3000";
 
 if (mobilePage?.isClosed()) mobilePage = undefined;
 
@@ -370,26 +368,22 @@ var emitJpeg = async function (bytes) {
 };
 
 var emitWebJpeg = async function (surface, options = {}) {
-  await emitJpeg(await surface.screenshot({
-    type: "jpeg",
-    quality: 85,
-    scale: "css",
-    ...options,
-  }));
+  await emitJpeg(
+    await surface.screenshot({
+      type: "jpeg",
+      quality: 85,
+      scale: "css",
+      ...options,
+    }),
+  );
 };
 
 var clickCssPoint = async function ({ surface, x, y, clip }) {
-  await surface.mouse.click(
-    clip ? clip.x + x : x,
-    clip ? clip.y + y : y
-  );
+  await surface.mouse.click(clip ? clip.x + x : x, clip ? clip.y + y : y);
 };
 
 var tapCssPoint = async function ({ page, x, y, clip }) {
-  await page.touchscreen.tap(
-    clip ? clip.x + x : x,
-    clip ? clip.y + y : y
-  );
+  await page.touchscreen.tap(clip ? clip.x + x : x, clip ? clip.y + y : y);
 };
 ```
 
@@ -464,9 +458,7 @@ var emitWebScreenshotCssScaled = async function ({ page, clip, quality = 0.85 } 
       ctx.imageSmoothingEnabled = true;
       ctx.drawImage(image, 0, 0, targetWidth, targetHeight);
 
-      const blob = await new Promise((resolve) =>
-        canvas.toBlob(resolve, "image/jpeg", quality)
-      );
+      const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
 
       return new Uint8Array(await blob.arrayBuffer());
     },
@@ -475,7 +467,7 @@ var emitWebScreenshotCssScaled = async function ({ page, clip, quality = 0.85 } 
       targetWidth: target.width,
       targetHeight: target.height,
       quality,
-    }
+    },
   );
 
   await emitJpeg(bytes);
@@ -502,25 +494,28 @@ For Electron, normalize in the main process instead of opening a scratch Playwri
 
 ```javascript
 var emitElectronScreenshotCssScaled = async function ({ electronApp, clip, quality = 85 } = {}) {
-  const bytes = await electronApp.evaluate(async ({ BrowserWindow }, { clip, quality }) => {
-    const win = BrowserWindow.getAllWindows()[0];
-    const image = clip ? await win.capturePage(clip) : await win.capturePage();
+  const bytes = await electronApp.evaluate(
+    async ({ BrowserWindow }, { clip, quality }) => {
+      const win = BrowserWindow.getAllWindows()[0];
+      const image = clip ? await win.capturePage(clip) : await win.capturePage();
 
-    const target = clip
-      ? { width: clip.width, height: clip.height }
-      : (() => {
-          const [width, height] = win.getContentSize();
-          return { width, height };
-        })();
+      const target = clip
+        ? { width: clip.width, height: clip.height }
+        : (() => {
+            const [width, height] = win.getContentSize();
+            return { width, height };
+          })();
 
-    const resized = image.resize({
-      width: target.width,
-      height: target.height,
-      quality: "best",
-    });
+      const resized = image.resize({
+        width: target.width,
+        height: target.height,
+        quality: "best",
+      });
 
-    return resized.toJPEG(quality);
-  }, { clip, quality });
+      return resized.toJPEG(quality);
+    },
+    { clip, quality },
+  );
 
   await emitJpeg(bytes);
 };
@@ -601,31 +596,35 @@ Do not assume a screenshot is acceptable just because the main widget is visible
 Web or renderer check:
 
 ```javascript
-console.log(await page.evaluate(() => ({
-  innerWidth: window.innerWidth,
-  innerHeight: window.innerHeight,
-  clientWidth: document.documentElement.clientWidth,
-  clientHeight: document.documentElement.clientHeight,
-  scrollWidth: document.documentElement.scrollWidth,
-  scrollHeight: document.documentElement.scrollHeight,
-  canScrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  canScrollY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
-})));
+console.log(
+  await page.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    clientWidth: document.documentElement.clientWidth,
+    clientHeight: document.documentElement.clientHeight,
+    scrollWidth: document.documentElement.scrollWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    canScrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    canScrollY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+  })),
+);
 ```
 
 Electron check:
 
 ```javascript
-console.log(await appWindow.evaluate(() => ({
-  innerWidth: window.innerWidth,
-  innerHeight: window.innerHeight,
-  clientWidth: document.documentElement.clientWidth,
-  clientHeight: document.documentElement.clientHeight,
-  scrollWidth: document.documentElement.scrollWidth,
-  scrollHeight: document.documentElement.scrollHeight,
-  canScrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  canScrollY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
-})));
+console.log(
+  await appWindow.evaluate(() => ({
+    innerWidth: window.innerWidth,
+    innerHeight: window.innerHeight,
+    clientWidth: document.documentElement.clientWidth,
+    clientHeight: document.documentElement.clientHeight,
+    scrollWidth: document.documentElement.scrollWidth,
+    scrollHeight: document.documentElement.scrollHeight,
+    canScrollX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+    canScrollY: document.documentElement.scrollHeight > document.documentElement.clientHeight,
+  })),
+);
 ```
 
 Augment the numeric check with `getBoundingClientRect()` checks for the required visible regions in your specific UI when clipping is a realistic failure mode; document-level metrics alone are not sufficient for fixed shells.

@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | CENSUS shows marketing/blog/docs pages authored by non-developers | Structured content needs a CMS, not hard-coded MDX |
-| Phase 4 — EXECUTE | Building the content layer | Pick the CMS, wire schemas, set up webhooks + preview |
-| Phase 8 — ROLLOUT | First content publish to prod | Verify webhook → revalidate → CDN cache purge chain |
-| Phase 13 — RETROSPECTIVE | After any "stale content" incident | Tighten webhook latency, add fallback revalidation |
+| Phase                    | Trigger                                                           | Why                                                   |
+| ------------------------ | ----------------------------------------------------------------- | ----------------------------------------------------- |
+| Phase 2 — AUDIT          | CENSUS shows marketing/blog/docs pages authored by non-developers | Structured content needs a CMS, not hard-coded MDX    |
+| Phase 4 — EXECUTE        | Building the content layer                                        | Pick the CMS, wire schemas, set up webhooks + preview |
+| Phase 8 — ROLLOUT        | First content publish to prod                                     | Verify webhook → revalidate → CDN cache purge chain   |
+| Phase 13 — RETROSPECTIVE | After any "stale content" incident                                | Tighten webhook latency, add fallback revalidation    |
 
 **Do NOT use this sub-skill for:** a developer-only docs site (use plain MDX + git), an admin panel backed by your own DB (build a CRUD UI, don't reach for a CMS), or a CMS migration (that's a data-migration project; call `migration-runner` and `backup-strategy` first).
 
@@ -153,24 +153,26 @@ Q: Is CMS HTML sanitized before render?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Published content doesn't appear on site | Webhook didn't fire or revalidate failed | Check webhook delivery logs in CMS dashboard; re-fire manually; add a fallback cron job that revalidates every 15 min |
-| Draft content visible to public | Preview cookie leaked via CDN cache | Set `Cache-Control: private, no-store` on preview responses; verify CDN bypasses cache when preview cookie present |
-| Stale content after webhook fires | CDN edge cache not purged | Send a cache-busting header on revalidate; or use Next.js `revalidatePath` / `revalidateTag` |
-| Image optimization slow / expensive | Origin serving full-size images, no CDN | Route images through the CMS image service or Cloudinary; never serve raw uploads from origin |
-| XSS via rich-text field | CMS HTML rendered without sanitization | Install `DOMPurify` (client) or `sanitize-html` (server); never `dangerouslySetInnerHTML` raw CMS content |
-| Author can't preview draft | Preview secret mismatched or expired | Rotate secret; verify the `/api/preview` route reads the same env var as the CMS webhook config |
-| CMS rate limit on rebuild | Webhook fires per field save, not per publish | Debounce: ignore revalidate calls within 5s of each other; or configure CMS to fire only on `publish` events |
-| Schema drift between CMS and code | Editor added a field; code doesn't read it | Generate types from CMS schema (Sanity codegen, Contentful CLI); fail CI on type mismatch |
-| Payload/Strapi self-hosted CMS goes down | Process crashed or DB unreachable | Health-check the CMS in uptime monitor; route fail traffic to a static fallback; never block reads on the CMS (use CDN-cached responses) |
+| Symptom                                  | Cause                                         | Recovery                                                                                                                                 |
+| ---------------------------------------- | --------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Published content doesn't appear on site | Webhook didn't fire or revalidate failed      | Check webhook delivery logs in CMS dashboard; re-fire manually; add a fallback cron job that revalidates every 15 min                    |
+| Draft content visible to public          | Preview cookie leaked via CDN cache           | Set `Cache-Control: private, no-store` on preview responses; verify CDN bypasses cache when preview cookie present                       |
+| Stale content after webhook fires        | CDN edge cache not purged                     | Send a cache-busting header on revalidate; or use Next.js `revalidatePath` / `revalidateTag`                                             |
+| Image optimization slow / expensive      | Origin serving full-size images, no CDN       | Route images through the CMS image service or Cloudinary; never serve raw uploads from origin                                            |
+| XSS via rich-text field                  | CMS HTML rendered without sanitization        | Install `DOMPurify` (client) or `sanitize-html` (server); never `dangerouslySetInnerHTML` raw CMS content                                |
+| Author can't preview draft               | Preview secret mismatched or expired          | Rotate secret; verify the `/api/preview` route reads the same env var as the CMS webhook config                                          |
+| CMS rate limit on rebuild                | Webhook fires per field save, not per publish | Debounce: ignore revalidate calls within 5s of each other; or configure CMS to fire only on `publish` events                             |
+| Schema drift between CMS and code        | Editor added a field; code doesn't read it    | Generate types from CMS schema (Sanity codegen, Contentful CLI); fail CI on type mismatch                                                |
+| Payload/Strapi self-hosted CMS goes down | Process crashed or DB unreachable             | Health-check the CMS in uptime monitor; route fail traffic to a static fallback; never block reads on the CMS (use CDN-cached responses) |
 
 ## Self-Healing Loop
 
 Every plan, verify-chain, and verify-preview run writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - CMS chosen, webhook latency (publish → revalidate → CDN purge), preview success/failure, schema-drift detections.
 
 `meta-auditor` reads this in Phase 13. Patterns it acts on:
+
 - Webhook latency >30s consistently → `self-patch-generator` adds a fallback cron revalidator (defense in depth).
 - Schema drift appearing across projects → add `cms codegen` step to CI that fails on type mismatch.
 - XSS reports via CMS content → switch default rich-text renderer to sanitized output; never `dangerouslySetInnerHTML`.

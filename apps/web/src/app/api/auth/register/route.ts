@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { registerSchema } from "@/lib/validators/auth";
+import { registerSchema } from "@/lib/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { handleRouteError } from "@/lib/shared/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 
 export async function POST(request: Request) {
   try {

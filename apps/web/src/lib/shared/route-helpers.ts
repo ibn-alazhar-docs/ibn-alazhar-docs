@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { logger, generateRequestId } from "@/lib/logger";
-import { getErrorMessage, getErrorStatusCode } from "@/lib/errors";
-import { MAX_FOLDER_DEPTH } from "@/lib/validators/folder";
-import { ERROR_CODES } from "@/lib/constants";
+import { logger, generateRequestId } from "@/lib/shared/logger";
+import { getErrorMessage, getErrorStatusCode } from "@/lib/shared/errors";
+import { MAX_FOLDER_DEPTH } from "@/lib/shared/validators/folder";
+import { ERROR_CODES } from "@/lib/shared/constants";
 
 const ERROR_MESSAGES: Record<string, { code: string; message: string; status: number }> = {
   [ERROR_CODES.NOT_FOUND]: { code: ERROR_CODES.NOT_FOUND, message: "غير موجود", status: 404 },
@@ -30,6 +30,11 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
     code: ERROR_CODES.NOT_FOUND,
     message: "بعض العناصر غير موجودة",
     status: 404,
+  },
+  [ERROR_CODES.VALIDATION_ERROR]: {
+    code: ERROR_CODES.VALIDATION_ERROR,
+    message: "بيانات غير صحيحة",
+    status: 400,
   },
   [ERROR_CODES.PARENT_DELETED]: {
     code: ERROR_CODES.VALIDATION_ERROR,

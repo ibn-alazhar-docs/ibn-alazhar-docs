@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildFolderTree, type FlatFolder } from "@/lib/build-folder-tree";
+import { buildFolderTree, type FlatFolder } from "@/lib/shared/build-folder-tree";
 
 function makeFolder(overrides: Partial<FlatFolder> = {}): FlatFolder {
   return {

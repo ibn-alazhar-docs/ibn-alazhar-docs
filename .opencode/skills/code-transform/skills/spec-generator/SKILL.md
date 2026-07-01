@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 0 — SPEC GENERATION | Start of every new project | First phase, mandatory |
-| Phase 0 — SPEC GENERATION | Existing project without spec.md | Reverse-engineer from code + README + configs |
-| Phase 0 — SPEC GENERATION | Spec exists but stale (> 30 days old or behind code) | Update before proceeding |
-| Phase 13 — META-AUDIT | `meta-learning` routed a "wrong assumption" lesson | Spec had a false assumption; regenerate the affected sections |
+| Phase                     | Trigger                                              | Why                                                           |
+| ------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| Phase 0 — SPEC GENERATION | Start of every new project                           | First phase, mandatory                                        |
+| Phase 0 — SPEC GENERATION | Existing project without spec.md                     | Reverse-engineer from code + README + configs                 |
+| Phase 0 — SPEC GENERATION | Spec exists but stale (> 30 days old or behind code) | Update before proceeding                                      |
+| Phase 13 — META-AUDIT     | `meta-learning` routed a "wrong assumption" lesson   | Spec had a false assumption; regenerate the affected sections |
 
 **Do NOT use this sub-skill for:** implementing features (use Phase 6 EXECUTE), writing tests (use Phase 7 VERIFY), or one-off tasks (just do them, no spec needed). Specs are for projects, not tasks.
 
@@ -73,49 +73,60 @@ OUTPUT (stdout JSON):
 # [Project Name] — Specification
 
 ## Goals
+
 [1-3 sentences: what the system does, who uses it, why it exists]
 
 ## Stakeholders
+
 - [Role 1]: [what they care about]
 - [Role 2]: [what they care about]
 
 ## Requirements
 
 ### Functional Requirements
+
 - FR-1 (SP-1): [requirement, testable]
 - FR-2 (SP-2): [requirement, testable]
 
 ### Non-Functional Requirements
+
 - NFR-1 (SP-3): p95 latency < 200ms for all read endpoints
 - NFR-2 (SP-4): 99.9% availability (≤ 8.76h downtime/year)
 - NFR-3 (SP-5): All PII encrypted at rest (AES-256)
 
 ## Acceptance Criteria
+
 Each AC is testable, written in Given/When/Then format.
 
 ### SP-1: User login
+
 - AC-1.1: Given a registered user with valid credentials, When they POST /login with email + password, Then they receive a 200 with a JWT token
 - AC-1.2: Given an unregistered email, When they POST /login, Then they receive a 401 with error code INVALID_CREDENTIALS
 - AC-1.3: Given 5 failed login attempts, When the 6th attempt is made, Then the account is locked for 15 minutes
 
 ### SP-2: User registration
+
 - AC-2.1: ...
 
 ## Out of Scope
+
 - [Explicitly listed items the project will NOT do, to prevent scope creep]
 - Social login (Google/GitHub) — deferred to v2
 - Admin panel — deferred to v2
 
 ## Risks
+
 - [Risk 1]: [description] — mitigation: [plan]
 - [Risk 2]: [description] — mitigation: [plan]
 
 ## Dependencies
+
 - PostgreSQL 15+
 - Redis 7+
 - Stripe API
 
 ## Constraints
+
 - Must stay on Python 3.11 until 2026
 - PCI-DSS compliant (no card data in logs)
 ```
@@ -126,21 +137,26 @@ Each AC is testable, written in Given/When/Then format.
 # [Project Name] — Implementation Plan
 
 ## Phase 1: DISCOVERY
+
 - Task 1.1 (SP-1, SP-2): Analyze existing auth code — 2h
 - Task 1.2 (SP-3): Profile current API latency — 1h
 
 ## Phase 2: BLUEPRINT
+
 - Task 2.1 (SP-1, SP-2): Design new auth flow — 3h
 
 ## Phase 3: SAFETY
+
 - Task 3.1: Create baseline tag — 0.5h
 - Task 3.2: Set up test fixtures — 2h
 
 ## Phase 4-5: AUDIT + PRIORITIZE
-- Task 4.1 (SP-1): Audit existing auth against AC-1.* — 2h
+
+- Task 4.1 (SP-1): Audit existing auth against AC-1.\* — 2h
 - Task 5.1: Sequence tasks by dependency — 1h
 
 ## Phase 6: EXECUTE
+
 - Task 6.1 (SP-1, AC-1.1): Implement login endpoint — 3h
 - Task 6.2 (SP-1, AC-1.2): Invalid credentials handling — 1h
 - Task 6.3 (SP-1, AC-1.3): Rate limiting — 2h
@@ -155,13 +171,15 @@ Every phase is listed; phases that are `n/a` for this project are still listed w
 
 ```markdown
 ## Task 6.1: Implement login endpoint
-- **SP-N:** SP-1 (User login)  |  **AC:** AC-1.1  |  **Estimated:** 3h
+
+- **SP-N:** SP-1 (User login) | **AC:** AC-1.1 | **Estimated:** 3h
 - **Files:** src/auth/login.ts, src/auth/jwt.ts
 - **Acceptance:** POST /login returns 200 with JWT for valid credentials
 - **Depends on:** Task 3.2 (test fixtures)
 
 ## Task 6.2: Invalid credentials handling
-- **SP-N:** SP-1  |  **AC:** AC-1.2  |  **Estimated:** 1h
+
+- **SP-N:** SP-1 | **AC:** AC-1.2 | **Estimated:** 1h
 - **Files:** src/auth/login.ts
 - **Acceptance:** POST /login returns 401 INVALID_CREDENTIALS for unregistered email
 - **Depends on:** Task 6.1
@@ -251,23 +269,35 @@ Q: Is the spec approved (explicit user approval or autonomous-mode auto-approve)
 Every spec generation appends to `audit-trail.jsonl`:
 
 ```json
-{"ts": "...", "phase": "0", "action": "spec-generate", "project_id": "...", "sp_count": 14, "ac_count": 22, "task_count": 18, "origin": "user-intake", "quality_gates_passed": true, "iterations": 2}
+{
+  "ts": "...",
+  "phase": "0",
+  "action": "spec-generate",
+  "project_id": "...",
+  "sp_count": 14,
+  "ac_count": 22,
+  "task_count": 18,
+  "origin": "user-intake",
+  "quality_gates_passed": true,
+  "iterations": 2
+}
 ```
 
 `meta-auditor` checks:
+
 - Did any spec item get added retroactively in Phase 6/7? (spec was incomplete → lesson for spec-generator)
 - Did any task exceed 4 hours? (decomposition was insufficient → lesson for spec-generator)
 - Did the spec require > 3 iterations? (intake was unclear → lesson for spec-generator's intake questions)
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Quality gates fail after 3 iterations | Spec is fundamentally unclear | Halt, surface to user for clarification |
-| Reverse-engineered spec disagrees with README | Code drifted from docs | Trust code, flag disagreement, ask user which is correct |
-| Tasks exceed 4 hours | Decomposition insufficient | Auto-decompose: split into sub-tasks, each < 4h |
-| Plan has phases with no tasks | Phase genuinely n/a for this project | Mark `n/a` with one-line reason; do not omit |
-| Spec is approved but later found wrong | Wrong assumptions | `spec-sync` detects in Phase 6/7; route lesson to spec-generator |
+| Symptom                                       | Cause                                | Recovery                                                         |
+| --------------------------------------------- | ------------------------------------ | ---------------------------------------------------------------- |
+| Quality gates fail after 3 iterations         | Spec is fundamentally unclear        | Halt, surface to user for clarification                          |
+| Reverse-engineered spec disagrees with README | Code drifted from docs               | Trust code, flag disagreement, ask user which is correct         |
+| Tasks exceed 4 hours                          | Decomposition insufficient           | Auto-decompose: split into sub-tasks, each < 4h                  |
+| Plan has phases with no tasks                 | Phase genuinely n/a for this project | Mark `n/a` with one-line reason; do not omit                     |
+| Spec is approved but later found wrong        | Wrong assumptions                    | `spec-sync` detects in Phase 6/7; route lesson to spec-generator |
 
 ## Tools
 

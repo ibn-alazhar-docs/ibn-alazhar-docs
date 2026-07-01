@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 14 — SELF-UPGRADE | `meta-learning` routed a `missing_sub_skill` lesson to `queue.sub-skill-generator.jsonl` | The skill improvised a capability it doesn't have |
-| Phase 1 — DISCOVERY | Project type completely unknown, no sub-skill matches in routing table | May need a new sub-skill to cover this domain |
-| User explicit request | "Create a sub-skill for X" | Direct capability request |
-| `research-crawler` returns a novel domain with no existing sub-skill | Phase 14 | Research confirms the gap is real |
+| Phase                                                                | Trigger                                                                                  | Why                                               |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------- |
+| Phase 14 — SELF-UPGRADE                                              | `meta-learning` routed a `missing_sub_skill` lesson to `queue.sub-skill-generator.jsonl` | The skill improvised a capability it doesn't have |
+| Phase 1 — DISCOVERY                                                  | Project type completely unknown, no sub-skill matches in routing table                   | May need a new sub-skill to cover this domain     |
+| User explicit request                                                | "Create a sub-skill for X"                                                               | Direct capability request                         |
+| `research-crawler` returns a novel domain with no existing sub-skill | Phase 14                                                                                 | Research confirms the gap is real                 |
 
 **Do NOT use this sub-skill for:** refining existing rules (use `self-patch-generator`), updating knowledge (use `knowledge-base`), or one-off improvisation (just do the work, don't generalize). Sub-skills are created only for **recurring** capability gaps.
 
@@ -192,13 +192,13 @@ Every shipped sub-skill appends to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Draft fails validation | Insufficient examples, wrong structure | Write to `_drafts/`, log failures, defer |
-| New sub-skill overlaps > 50% with existing | Domain was too narrow | Merge into existing sub-skill (patch, not new) |
-| Experimental sub-skill never invoked in 3 projects | Routing description wrong | Rewrite description, re-flag experimental for 3 more projects |
-| Experimental sub-skill caused friction in project N | Sub-skill content wrong | Revise (treat as a patch), or retire if unfixable |
-| Two sub-skill-generator runs collide on same name | Concurrency | Serialize by lesson_id; second run gets `_2` suffix or waits |
+| Symptom                                             | Cause                                  | Recovery                                                      |
+| --------------------------------------------------- | -------------------------------------- | ------------------------------------------------------------- |
+| Draft fails validation                              | Insufficient examples, wrong structure | Write to `_drafts/`, log failures, defer                      |
+| New sub-skill overlaps > 50% with existing          | Domain was too narrow                  | Merge into existing sub-skill (patch, not new)                |
+| Experimental sub-skill never invoked in 3 projects  | Routing description wrong              | Rewrite description, re-flag experimental for 3 more projects |
+| Experimental sub-skill caused friction in project N | Sub-skill content wrong                | Revise (treat as a patch), or retire if unfixable             |
+| Two sub-skill-generator runs collide on same name   | Concurrency                            | Serialize by lesson_id; second run gets `_2` suffix or waits  |
 
 ## Tools
 

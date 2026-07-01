@@ -15,14 +15,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc* ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/pipeline/package.json packages/pipeline/package.json
+COPY packages/database/package.json packages/database/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
-RUN corepack enable && pnpm install --frozen-lockfile
+RUN corepack enable && pnpm install --frozen-lockfile && pnpm rebuild
 
-RUN pnpm rebuild
-
-COPY prisma ./prisma
-RUN npx prisma generate
+COPY packages/database ./packages/database
+RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 COPY . .
 
@@ -46,8 +45,8 @@ RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 nextjs
 
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/apps/web/src/lib/auth.ts ./apps/web/src/lib/auth.ts
+COPY --from=builder /app/packages/shared ./packages/shared
+COPY --from=builder /app/packages/database ./packages/database
 COPY --from=builder /app/workers ./workers
 
 USER nextjs

@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { withAuth } from "@/lib/auth-guards";
-import { handleRouteError } from "@/lib/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/rate-limit";
+import { withAuth } from "@/lib/backend/auth-guards";
+import { handleRouteError } from "@/lib/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { useCases } from "@/core/composition-root";
 import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
@@ -65,7 +65,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     }
 
     if (options?.destination === "drive") {
-      const { prisma } = await import("@/lib/prisma");
+      const { prisma } = await import("@/lib/backend/prisma");
       const account = await prisma.account.findFirst({
         where: { userId: session.user.id, provider: "google" },
       });

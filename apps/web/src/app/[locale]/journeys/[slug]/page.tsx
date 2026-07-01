@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { generatePageMetadata } from "@/lib/metadata";
-import { getJourney, getJourneys, getCategoryLabel } from "@/lib/content";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { getJourney, getJourneys, getCategoryLabel } from "@/lib/backend/content";
 import { Container } from "@/components/ui/container";
 
 interface JourneyDetailPageProps {

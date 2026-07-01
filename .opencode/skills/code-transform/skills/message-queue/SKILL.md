@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 5 (Performance) finds request handlers calling slow third-party APIs (email, PDF gen, image processing) synchronously | User latency coupled to third-party = cascading failures |
-| Phase 2 — AUDIT | Dimension 5 finds work that should be backgrounded (report generation, bulk imports, notifications) done in request handlers | User waits for work that doesn't need to block the response |
-| Phase 2 — AUDIT | Dimension 4 (Reliability) finds no retries on flaky operations | Network calls fail; without retry + DLQ, you lose data |
-| Phase 6 — EXECUTE | User says "add background jobs", "add queue", "add Kafka", "add BullMQ", "add SQS" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating brokers (RabbitMQ → Kafka, SQS → Redis Streams) | Full replace of producer + consumer layer |
-| Phase 9 — ACCEPTANCE | Enqueue a test job, verify consumer processes it, verify DLQ catches poison message, verify retry happens on transient failure | Async systems fail silently — must walk the full enqueue→process→retry→DLQ loop |
-| Phase 11 — ROLLOUT | Verify consumer lag is zero, DLQ is empty, monitoring alerts wired | Silent queue backup = data loss in disguise |
+| Phase                | Trigger                                                                                                                         | Why                                                                             |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 5 (Performance) finds request handlers calling slow third-party APIs (email, PDF gen, image processing) synchronously | User latency coupled to third-party = cascading failures                        |
+| Phase 2 — AUDIT      | Dimension 5 finds work that should be backgrounded (report generation, bulk imports, notifications) done in request handlers    | User waits for work that doesn't need to block the response                     |
+| Phase 2 — AUDIT      | Dimension 4 (Reliability) finds no retries on flaky operations                                                                  | Network calls fail; without retry + DLQ, you lose data                          |
+| Phase 6 — EXECUTE    | User says "add background jobs", "add queue", "add Kafka", "add BullMQ", "add SQS"                                              | This is the executing sub-skill                                                 |
+| Phase 6 — EXECUTE    | Migrating brokers (RabbitMQ → Kafka, SQS → Redis Streams)                                                                       | Full replace of producer + consumer layer                                       |
+| Phase 9 — ACCEPTANCE | Enqueue a test job, verify consumer processes it, verify DLQ catches poison message, verify retry happens on transient failure  | Async systems fail silently — must walk the full enqueue→process→retry→DLQ loop |
+| Phase 11 — ROLLOUT   | Verify consumer lag is zero, DLQ is empty, monitoring alerts wired                                                              | Silent queue backup = data loss in disguise                                     |
 
 **Do NOT use this sub-skill for:** real-time bidirectional communication (use `realtime-setup` — WebSocket/SSE), RPC between services (use gRPC / REST — queues are for async, not request/response), or batch ETL pipelines (use a workflow engine — Airflow / Dagster / Prefect — for DAG dependencies).
 
@@ -217,17 +217,17 @@ Q5: Consumer parallelism?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Consumer processes same message twice | At-least-once delivery redelivered after timeout but consumer was slow | Add idempotency check (dedup table on `message_id`); ensure processing < visibility timeout |
-| Queue lag growing unbounded | Consumer too slow, or consumer crashed | Scale consumer concurrency; check consumer logs; verify consumer is running |
-| DLQ filling up | Poison messages (always fail) or consumer bug | Inspect DLQ messages; fix consumer bug; replay DLQ after fix; investigate root cause of poison messages |
-| Messages lost after broker restart | Non-durable queue, or no persistence | Enable persistence (RabbitMQ: `durable: true`; Kafka: `acks: all`, `min.insync.replicas: 2`; Redis: AOF appendfsync everysec) |
-| Producer blocks for seconds | Synchronous publish waiting for consumer | Decouple: producer should only wait for broker ack, not consumer processing |
-| `Failed to acquire lock` on consumer | Race condition with multiple instances + non-atomic dedup | Use atomic `SETNX` for dedup keys (Redis) or `INSERT ... ON CONFLICT DO NOTHING` (Postgres) |
-| Consumer OOM on large message | Big payload (e.g. base64 image) in message body | Use claim pattern: store payload in S3, put only S3 key in message; consumer fetches from S3 |
-| Kafka rebalance storm | Consumers joining/leaving rapidly | Increase `session.timeout.ms`; use cooperative sticky assignor; investigate why consumers restart |
-| DLQ message can't be replayed (schema changed) | Original message payload no longer matches handler expectations | Version messages with `schema_version` field; have handler support N-1 versions |
+| Symptom                                        | Cause                                                                  | Recovery                                                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Consumer processes same message twice          | At-least-once delivery redelivered after timeout but consumer was slow | Add idempotency check (dedup table on `message_id`); ensure processing < visibility timeout                                   |
+| Queue lag growing unbounded                    | Consumer too slow, or consumer crashed                                 | Scale consumer concurrency; check consumer logs; verify consumer is running                                                   |
+| DLQ filling up                                 | Poison messages (always fail) or consumer bug                          | Inspect DLQ messages; fix consumer bug; replay DLQ after fix; investigate root cause of poison messages                       |
+| Messages lost after broker restart             | Non-durable queue, or no persistence                                   | Enable persistence (RabbitMQ: `durable: true`; Kafka: `acks: all`, `min.insync.replicas: 2`; Redis: AOF appendfsync everysec) |
+| Producer blocks for seconds                    | Synchronous publish waiting for consumer                               | Decouple: producer should only wait for broker ack, not consumer processing                                                   |
+| `Failed to acquire lock` on consumer           | Race condition with multiple instances + non-atomic dedup              | Use atomic `SETNX` for dedup keys (Redis) or `INSERT ... ON CONFLICT DO NOTHING` (Postgres)                                   |
+| Consumer OOM on large message                  | Big payload (e.g. base64 image) in message body                        | Use claim pattern: store payload in S3, put only S3 key in message; consumer fetches from S3                                  |
+| Kafka rebalance storm                          | Consumers joining/leaving rapidly                                      | Increase `session.timeout.ms`; use cooperative sticky assignor; investigate why consumers restart                             |
+| DLQ message can't be replayed (schema changed) | Original message payload no longer matches handler expectations        | Version messages with `schema_version` field; have handler support N-1 versions                                               |
 
 ## Self-Healing Loop
 

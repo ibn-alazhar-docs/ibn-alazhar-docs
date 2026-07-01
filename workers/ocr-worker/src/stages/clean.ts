@@ -8,7 +8,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import { updateDocStatus } from "../helpers";
-import { logger } from "../../../shared/logger";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerCleaningStage(config: PipelineConfig): void {
   createCleaningWorker(config, async (job: ProcessingJob) => {

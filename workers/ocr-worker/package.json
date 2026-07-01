@@ -7,7 +7,9 @@
     "start": "tsx --env-file=../../.env src/index.ts"
   },
   "dependencies": {
+    "@ibn-al-azhar-docs/database": "workspace:*",
     "@ibn-al-azhar-docs/pipeline": "workspace:*",
+    "@ibn-al-azhar-docs/shared": "workspace:*",
     "pdf-lib": "1.17.1",
     "tsx": "^4.0.0"
   },

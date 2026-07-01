@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -7,6 +8,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   poweredByHeader: false,
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
+      { protocol: "https", hostname: "*.ibnalazhardocs.workers.dev" },
+    ],
+  },
   experimental: {
     viewTransition: true,
   },
@@ -52,7 +59,7 @@ const nextConfig: NextConfig = {
               "default-src 'self'",
               `script-src 'self'${process.env.NODE_ENV === "development" ? " 'unsafe-inline' 'unsafe-eval'" : ""}`,
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' blob: data:",
+              "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com https://*.ibnalazhardocs.workers.dev",
               "font-src 'self' data:",
               `connect-src 'self' https:${process.env.NODE_ENV === "development" ? " http://localhost:*" : ""}`,
               "frame-ancestors 'none'",
@@ -75,4 +82,18 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+// Cloudflare Workers dev support — only import when running under wrangler
+try {
+  if (process.env.CLOUDFLARE_WORKERS) {
+    const mod = await import("@opennextjs/cloudflare");
+    mod.initOpenNextCloudflareForDev();
+  }
+} catch {
+  // Not in Cloudflare environment — skip
+}
+
+export default withSentryConfig(withNextIntl(nextConfig), {
+  silent: true,
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+});

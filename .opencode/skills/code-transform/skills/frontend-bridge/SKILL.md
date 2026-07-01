@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 6 — EXECUTE | Every UI commit (Visual Guard) | Catch slop before it lands |
-| Phase 9 — ACCEPTANCE | "Does this feel polished?" AC | Final taste gate |
-| Phase 4 — AUDIT | Dimension 13 (Visual Consistency) low score | Catalog slop to fix |
-| Bug report | "Looks AI-generated" | Audit + polish pass |
+| Phase                | Trigger                                     | Why                        |
+| -------------------- | ------------------------------------------- | -------------------------- |
+| Phase 6 — EXECUTE    | Every UI commit (Visual Guard)              | Catch slop before it lands |
+| Phase 9 — ACCEPTANCE | "Does this feel polished?" AC               | Final taste gate           |
+| Phase 4 — AUDIT      | Dimension 13 (Visual Consistency) low score | Catalog slop to fix        |
+| Bug report           | "Looks AI-generated"                        | Audit + polish pass        |
 
-**Do NOT use this sub-skill for:** running browsers (use `browser-launcher`), automated a11y scans (use `accessibility-auditor`), or color contrast math (use `accessibility`). This sub-skill is the *taste reviewer* — the human-in-loop design lead, automated.
+**Do NOT use this sub-skill for:** running browsers (use `browser-launcher`), automated a11y scans (use `accessibility-auditor`), or color contrast math (use `accessibility`). This sub-skill is the _taste reviewer_ — the human-in-loop design lead, automated.
 
 ## What It Does
 
@@ -89,83 +89,94 @@ python3 scripts/frontend_agent.py bridge --url http://localhost:3000 --strictnes
 
 ## AI-Slop Checklist (12 patterns)
 
-| # | Pattern | Detection | Fix |
-|---|---------|-----------|-----|
-| 1 | Generic Tailwind defaults only | All colors are `gray-500`, `blue-600` | Introduce brand tokens |
-| 2 | No dark mode | `.dark` counterparts missing | Add per `css-styling` |
-| 3 | No loading state | Component renders empty during fetch | Add `<Skeleton>` (shadcn/ui) |
-| 4 | No empty state | "0 results" shows nothing | Add EmptyState component |
-| 5 | No error state | Catch block returns null | Render `<ErrorState>` with retry |
-| 6 | No animations | Layout jumps on state change | Add `transition` 150-250ms ease-out |
-| 7 | No keyboard support | Interactive `<div onClick>` | Replace with `<button>`/`<a>` (route to `accessibility`) |
-| 8 | Inconsistent button styles | 4 button variants across app | Consolidate to `<Button variant>` map |
-| 9 | No hover/active states | Buttons only change cursor | Add `:hover` (subtle bg shift) + `:active` (scale 0.98) |
-| 10 | No focus rings | `:focus` outline removed | `:focus-visible` ring 2px brand-500 |
-| 11 | Spinner for everything | Lists show spinner, not skeleton | Use skeleton matching final layout |
-| 12 | Pure black/white | `#000` bg, `#fff` text | Switch to `#0a0a0a` / `#fafafa` tokens |
+| #   | Pattern                        | Detection                             | Fix                                                      |
+| --- | ------------------------------ | ------------------------------------- | -------------------------------------------------------- |
+| 1   | Generic Tailwind defaults only | All colors are `gray-500`, `blue-600` | Introduce brand tokens                                   |
+| 2   | No dark mode                   | `.dark` counterparts missing          | Add per `css-styling`                                    |
+| 3   | No loading state               | Component renders empty during fetch  | Add `<Skeleton>` (shadcn/ui)                             |
+| 4   | No empty state                 | "0 results" shows nothing             | Add EmptyState component                                 |
+| 5   | No error state                 | Catch block returns null              | Render `<ErrorState>` with retry                         |
+| 6   | No animations                  | Layout jumps on state change          | Add `transition` 150-250ms ease-out                      |
+| 7   | No keyboard support            | Interactive `<div onClick>`           | Replace with `<button>`/`<a>` (route to `accessibility`) |
+| 8   | Inconsistent button styles     | 4 button variants across app          | Consolidate to `<Button variant>` map                    |
+| 9   | No hover/active states         | Buttons only change cursor            | Add `:hover` (subtle bg shift) + `:active` (scale 0.98)  |
+| 10  | No focus rings                 | `:focus` outline removed              | `:focus-visible` ring 2px brand-500                      |
+| 11  | Spinner for everything         | Lists show spinner, not skeleton      | Use skeleton matching final layout                       |
+| 12  | Pure black/white               | `#000` bg, `#fff` text                | Switch to `#0a0a0a` / `#fafafa` tokens                   |
 
 Score: count of patterns present. 0 = polished; ≥4 = blocked.
 
 ## Polish Pass (auto-applied where safe)
 
 ### Spacing rhythm (8px grid)
+
 - All margins/paddings use `--space-1` (4px), `--space-2` (8px), `--space-4` (16px), `--space-6` (24px), `--space-8` (32px)
 - No `padding: 14px` magic numbers — route to `css-styling` to add a token
 
 ### Focus rings (visible)
+
 ```css
-:focus-visible { outline: 2px solid var(--color-brand-500); outline-offset: 2px; }
+:focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
 ```
+
 Never `outline: none` without a replacement ring.
 
 ### Transitions (150-250ms ease-out)
+
 - Buttons: `transition: background-color var(--motion-fast)` (150ms)
 - Modals: `transition: opacity var(--motion-normal), transform var(--motion-normal)` (250ms)
 - Page transitions: 200ms ease-out
 - Never transition `width`, `height`, `top`, `left` (use `transform`)
 
 ### Hover/active states
+
 - Hover: background shifts one shade, or text brightens
 - Active: `transform: scale(0.98)` — gives "press" feedback
 - Disabled: opacity 0.5, `cursor: not-allowed`, no hover
 
 ### Skeleton loaders (not spinners)
+
 - For lists/grids: skeleton matching final layout (shimmer animation)
 - For single values: spinner OK
 - shadcn/ui `<Skeleton className="h-4 w-full" />`
 
 ### Optimistic UI
+
 - Mutations update UI immediately, rollback on error
 - Delegates to `state-management` for the wiring
 
 ## Design System Reference
 
-| Token category | Values |
-|----------------|--------|
-| Spacing | 4 / 8 / 16 / 24 / 32 / 48 / 64 px |
-| Type scale | 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 48 px |
-| Radius | 4 (sm) / 8 (md) / 12 (lg) / full (pill) |
-| Color | bg / text / brand-500 / success / warning / error / info |
-| Motion | fast 150ms / normal 250ms / slow 400ms, all `ease-out` |
-| Shadow | sm / md / lg / xl (elevation levels) |
-| Z-index | dropdown 1000 / sticky 1100 / modal 1200 / toast 1300 |
+| Token category | Values                                                   |
+| -------------- | -------------------------------------------------------- |
+| Spacing        | 4 / 8 / 16 / 24 / 32 / 48 / 64 px                        |
+| Type scale     | 12 / 14 / 16 / 18 / 20 / 24 / 30 / 36 / 48 px            |
+| Radius         | 4 (sm) / 8 (md) / 12 (lg) / full (pill)                  |
+| Color          | bg / text / brand-500 / success / warning / error / info |
+| Motion         | fast 150ms / normal 250ms / slow 400ms, all `ease-out`   |
+| Shadow         | sm / md / lg / xl (elevation levels)                     |
+| Z-index        | dropdown 1000 / sticky 1100 / modal 1200 / toast 1300    |
 
 If a project lacks these, `frontend-bridge` calls `css-styling` to generate them from `web-design` palette output before any polish work.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Slop patterns keep recurring | No design system tokens | Call `css-styling` to install tokens first, then re-audit |
-| Polish pass changes layout | Token swap had wrong mapping | Revert, route to `css-styling` to fix token, re-apply |
-| Dark mode flashes white on load | Class applied post-hydration | Inline script in `<head>` (route to `css-styling`) |
-| Focus ring invisible in dark mode | Token not flipped | Add `--focus-ring: var(--color-brand-400)` in `.dark` |
-| Skeleton looks like nothing | Same color as bg | Use `bg-muted` for skeleton, `bg-muted/50` for shimmer |
-| Animation janky | Animating `width`/`top` | Switch to `transform: translate/scale` |
+| Symptom                           | Cause                        | Recovery                                                  |
+| --------------------------------- | ---------------------------- | --------------------------------------------------------- |
+| Slop patterns keep recurring      | No design system tokens      | Call `css-styling` to install tokens first, then re-audit |
+| Polish pass changes layout        | Token swap had wrong mapping | Revert, route to `css-styling` to fix token, re-apply     |
+| Dark mode flashes white on load   | Class applied post-hydration | Inline script in `<head>` (route to `css-styling`)        |
+| Focus ring invisible in dark mode | Token not flipped            | Add `--focus-ring: var(--color-brand-400)` in `.dark`     |
+| Skeleton looks like nothing       | Same color as bg             | Use `bg-muted` for skeleton, `bg-muted/50` for shimmer    |
+| Animation janky                   | Animating `width`/`top`      | Switch to `transform: translate/scale`                    |
 
 ## Self-Healing Loop
 
 When a slop pattern is detected:
+
 1. Identify the pattern (e.g. "no-loading-state" on `/dashboard`)
 2. Apply the safe mechanical fix (insert `<Skeleton>` wrapping the async block)
 3. Re-screenshot the route
@@ -205,5 +216,5 @@ When a slop pattern is detected:
 6. **Never use pure black or white.** `#0a0a0a` for text, `#fafafa` for background. Pure values cause eye strain and look harsh.
 7. **Never use a spinner for a list or grid.** Use a skeleton that matches the final layout's shape — it sets expectations and reduces perceived load time.
 8. **Always have a visible focus ring.** `:focus-visible` with 2px brand color outline, 2px offset. Never `outline: none` without a replacement.
-9. **Never consolidate to one button style blindly.** Consolidate to a *system* (variants: primary, secondary, ghost, destructive) — variety is fine if it's intentional.
+9. **Never consolidate to one button style blindly.** Consolidate to a _system_ (variants: primary, secondary, ghost, destructive) — variety is fine if it's intentional.
 10. **Always pair with `accessibility-auditor` after polish.** Polish can break a11y (animation without `prefers-reduced-motion`, focus ring removed). Re-audit after every polish pass.

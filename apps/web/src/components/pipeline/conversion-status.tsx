@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { STAGE_ORDER, normalizeStage, type Stage } from "@/lib/conversion-status-utils";
+import { STAGE_ORDER, normalizeStage, type Stage } from "@/lib/shared/conversion-status-utils";
 
 interface ConversionStatusProps {
   jobId: string;

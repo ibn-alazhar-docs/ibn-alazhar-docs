@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 9 (Documentation) finds: missing README, undocumented public API, no API reference, no ADRs | "How do I use this?" with no answer = blocked developers and users |
-| Phase 2 — AUDIT | Dimension 9 finds docs in wiki/Confluence that drifted from code | Docs outside the repo rot. Docs-as-code is the only sustainable pattern. |
-| Phase 6 — EXECUTE | User says "add API docs", "add Swagger", "add a docs site", "generate TypeDoc/Sphinx" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Scaffolding a new library or API — docs are part of the contract | Public API without docs = unusable API |
-| Phase 6 — EXECUTE | Migrating docs platforms (GitBook → Docusaurus, wiki → repo) | Full migration with redirects |
-| Phase 9 — ACCEPTANCE | Verify docs build in CI, verify API reference matches actual endpoints, verify examples run | Docs that don't build or don't match code are worse than no docs |
-| Phase 11 — ROLLOUT | Verify docs site deployed, version selector works, search indexes latest | Stale docs in prod = support burden |
+| Phase                | Trigger                                                                                               | Why                                                                      |
+| -------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Phase 2 — AUDIT      | Dimension 9 (Documentation) finds: missing README, undocumented public API, no API reference, no ADRs | "How do I use this?" with no answer = blocked developers and users       |
+| Phase 2 — AUDIT      | Dimension 9 finds docs in wiki/Confluence that drifted from code                                      | Docs outside the repo rot. Docs-as-code is the only sustainable pattern. |
+| Phase 6 — EXECUTE    | User says "add API docs", "add Swagger", "add a docs site", "generate TypeDoc/Sphinx"                 | This is the executing sub-skill                                          |
+| Phase 6 — EXECUTE    | Scaffolding a new library or API — docs are part of the contract                                      | Public API without docs = unusable API                                   |
+| Phase 6 — EXECUTE    | Migrating docs platforms (GitBook → Docusaurus, wiki → repo)                                          | Full migration with redirects                                            |
+| Phase 9 — ACCEPTANCE | Verify docs build in CI, verify API reference matches actual endpoints, verify examples run           | Docs that don't build or don't match code are worse than no docs         |
+| Phase 11 — ROLLOUT   | Verify docs site deployed, version selector works, search indexes latest                              | Stale docs in prod = support burden                                      |
 
 **Do NOT use this sub-skill for:** inline code comments (those are written by developers directly, not generated), architectural decision records written from scratch (use `writing-plans` for ADR templates — though this sub-skill links them), or user-facing marketing copy (that's content, not docs).
 
@@ -201,18 +201,18 @@ Q6: Search?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Docs build fails in CI | Broken Markdown, invalid OpenAPI, missing import | Run `docusaurus build` locally; fix errors; CI catches drift before deploy |
-| OpenAPI spec out of sync with code | Hand-written spec, not generated | Switch to code-annotation generation (FastAPI built-in, zod-to-openapi); regenerate on every build |
-| Broken links in docs | Renamed file, deleted endpoint, external URL moved | Run `lychee docs/**/*.md` in CI; fix or redirect |
-| Examples don't run | Copy-paste from old version, API changed | Add doctest/example-runner to CI; examples MUST execute |
-| Docs site shows old version | Build not triggered, or cache stale | Verify CI deploys on `main` push; clear CDN cache; verify `latest` redirect |
-| Search returns stale results | Algolia crawl not run | Trigger DocSearch crawl via Algolia dashboard; or switch to local lunr.js search |
-| Version selector missing versions | Docusaurus `versions.json` not updated | Run `docusaurus docs:version X.Y` on release; commit the snapshot |
-| TypeDoc output empty | TSDoc comments missing from source | Add TSDoc to all exported functions/classes; CI fails if public API undocumented |
-| CHANGELOG empty | Conventional commits not used | Adopt conventional commits; `semantic-release` generates CHANGELOG automatically |
-| ADRs scattered | No `docs/adr/` directory, no template | Create `docs/adr/` with template (from `writing-plans`); number ADRs sequentially |
+| Symptom                            | Cause                                              | Recovery                                                                                           |
+| ---------------------------------- | -------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| Docs build fails in CI             | Broken Markdown, invalid OpenAPI, missing import   | Run `docusaurus build` locally; fix errors; CI catches drift before deploy                         |
+| OpenAPI spec out of sync with code | Hand-written spec, not generated                   | Switch to code-annotation generation (FastAPI built-in, zod-to-openapi); regenerate on every build |
+| Broken links in docs               | Renamed file, deleted endpoint, external URL moved | Run `lychee docs/**/*.md` in CI; fix or redirect                                                   |
+| Examples don't run                 | Copy-paste from old version, API changed           | Add doctest/example-runner to CI; examples MUST execute                                            |
+| Docs site shows old version        | Build not triggered, or cache stale                | Verify CI deploys on `main` push; clear CDN cache; verify `latest` redirect                        |
+| Search returns stale results       | Algolia crawl not run                              | Trigger DocSearch crawl via Algolia dashboard; or switch to local lunr.js search                   |
+| Version selector missing versions  | Docusaurus `versions.json` not updated             | Run `docusaurus docs:version X.Y` on release; commit the snapshot                                  |
+| TypeDoc output empty               | TSDoc comments missing from source                 | Add TSDoc to all exported functions/classes; CI fails if public API undocumented                   |
+| CHANGELOG empty                    | Conventional commits not used                      | Adopt conventional commits; `semantic-release` generates CHANGELOG automatically                   |
+| ADRs scattered                     | No `docs/adr/` directory, no template              | Create `docs/adr/` with template (from `writing-plans`); number ADRs sequentially                  |
 
 ## Self-Healing Loop
 

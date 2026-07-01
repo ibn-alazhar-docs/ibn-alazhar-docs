@@ -3,6 +3,7 @@
 > This is the core engine that makes ANY model — even the cheapest, weakest — reason like a frontier model. Based on 25+ research papers including DeepSeek-R1 (Nature 2025), Reflexion (NeurIPS 2023), Multi-Agent Debate (MIT 2023), Tree-of-Thoughts (Princeton 2023), and Mixture-of-Agents (Together AI 2024). The key insight: **inference-time scaffolding closes the gap between cheap and frontier models.**
 
 ## Table of Contents
+
 1. [The Three Non-Negotiable Rules](#the-three-non-negotiable-rules)
 2. [The 11-Phase Dragon Protocol](#the-11-phase-dragon-protocol)
 3. [Sub-Agent Tournament](#sub-agent-tournament)
@@ -21,11 +22,13 @@
 These rules come from the research literature. Violating them **silently degrades** performance — even for strong models.
 
 ### Rule 1: NEVER self-correct without external signal
+
 **Source**: Huang et al., "LLMs Cannot Self-Correct Reasoning Yet" (ICLR 2024).
 
-Intrinsic self-correction (same model reviews its own output with no new information) **degrades accuracy**. GPT-4 gets *worse* when asked to self-critique without external feedback.
+Intrinsic self-correction (same model reviews its own output with no new information) **degrades accuracy**. GPT-4 gets _worse_ when asked to self-critique without external feedback.
 
 **Implication**: every critique step MUST ingest one of:
+
 - A test result (pass/fail)
 - A compiler error
 - A linter warning
@@ -35,11 +38,13 @@ Intrinsic self-correction (same model reviews its own output with no new informa
 **Never** ask "is this correct?" without running something external first.
 
 ### Rule 2: Verification earns the output
-**Source**: DeepSeek-R1 (Nature 2025). R1 didn't *tell* the model to verify — RL *made* verification pay off.
+
+**Source**: DeepSeek-R1 (Nature 2025). R1 didn't _tell_ the model to verify — RL _made_ verification pay off.
 
 Self-verification is a **terminal gate**, not optional. You may NOT produce final output until verification has passed. This is the behavior that RL rewards, so we force it promptingly.
 
 ### Rule 3: Scale scaffolding to weakness + difficulty
+
 **Source**: "Rethinking the Value of Multi-Agent Workflow" (arXiv:2601.12307).
 
 A single strong agent with strong prompts can match auto-discovered multi-agent workflows. Scaffolding helps **weak models disproportionately**; for strong models it's often redundant overhead.
@@ -71,11 +76,13 @@ This is the mandatory sequence for any non-trivial decision. Each phase has a sp
 **Question**: "How hard is this, and how weak am I?"
 
 Classify the task:
+
 - **Easy** (mechanical rename, simple extract, type-driven in typed language): shallow thinking. Plan→Execute→Verify. Skip DEBATE, EXPLORE, REFINE.
 - **Medium** (structural refactor, multi-file, some tests): standard thinking. Full 11 phases but 1 debate round, 1 refine iteration.
 - **Hard** (architecture redesign, legacy no-tests, critical path, concurrency): deep thinking. Full 11 phases, 2 debate rounds, 2 refine iterations, ToT exploration.
 
 Also consider model strength:
+
 - **Strong model** (Opus, GPT-4, Sonnet): reduce rounds by 1.
 - **Weak model** (Haiku, mini, small open-source): use maximum rounds. Weak models benefit most from scaffolding.
 
@@ -137,6 +144,7 @@ Approach C: [description]
 ```
 
 **Decision**:
+
 - If one approach scores ≥4 and others ≤2: proceed with the top one.
 - If two approaches score within 1 point: **keep both** for the DEBATE phase (GoT merge later).
 - If all score ≤2: the problem is harder than TRIAGE suggested. Re-escalate to deep thinking.
@@ -152,6 +160,7 @@ Approach C: [description]
 This is the **keystone** — it supplies the external feedback that self-critique lacks (Rule 1).
 
 **If sub-agent API available**: spawn 3 sub-agents, each with a different lens:
+
 ```
 Agent 1 (Correctness Lens):
   "You are a correctness-focused reviewer. For the proposed approach, find:
@@ -218,6 +227,7 @@ SYNTHESIS:
 Carry out the plan. Produce the diff / test / fix / document.
 
 **Rules** (from the refactor skill):
+
 - Output as **diff** (never whole-file rewrite)
 - **One transformation per commit**
 - Name the Fowler refactoring or improvement type
@@ -228,6 +238,7 @@ Carry out the plan. Produce the diff / test / fix / document.
 **Question**: "Does it pass the external verifier?"
 
 **This is the critical phase.** Run the **cheapest sufficient external verifier**:
+
 - Compiler / type-checker (mechanical refactors)
 - Test suite (structural refactors)
 - Linter (code quality)
@@ -293,15 +304,18 @@ For each unchecked box: **fix it now** or **justify why it's acceptable**.
 **Source**: Madaan et al., "Self-Refine" (2023). ~20% improvements when gated on external signal.
 
 **Iteration 1**:
+
 - Re-read the output.
 - Identify **one specific, actionable improvement** (not vague "make it better").
 - Apply the improvement.
 - Re-verify (Phase 7).
 
 **Iteration 2** (if budget allows and iteration 1 improved something):
+
 - Same process.
 
 **Stop conditions** (any one):
+
 - No improvement found → done.
 - Verification fails after refinement → revert the refinement.
 - 2 iterations completed → done (diminishing returns).
@@ -326,6 +340,7 @@ META-CHECK:
 ```
 
 **Meta-cognitive questions** (use any that apply):
+
 - "What assumption am I making that, if false, invalidates my plan?"
 - "What would an expert who disagrees say is the flaw here?"
 - "Am I solving the right problem, or am I solving the symptom?"
@@ -338,6 +353,7 @@ META-CHECK:
 **Question**: "Is the commit message accurate? Is the report complete?"
 
 Produce the final output:
+
 - **Commit message**: follows conventions (`refactor:`, `fix:`, `test:`, `perf:`, `security:`, `docs:`)
 - **Issue log**: any issues noticed but not fixed
 - **Progress update**: update PROGRESS.md
@@ -517,6 +533,7 @@ Each unchecked → fix or justify.
 **Source**: DeepSeek-R1's "aha moment" — emergent meta-cognition.
 
 **Questions that force deeper reasoning**:
+
 1. "What assumption am I making that, if false, invalidates my plan?"
 2. "What would an expert who disagrees say is the flaw here?"
 3. "Am I solving the right problem, or the symptom?"
@@ -536,11 +553,11 @@ Each unchecked → fix or justify.
 
 ### Decision Matrix
 
-| Task Difficulty | Strong Model | Weak Model |
-|----------------|--------------|------------|
-| **Easy** | Plan → Execute → Verify (skip 3-5, 8-10) | Plan → Execute → Verify → Critique (skip 3-5, 9-10) |
-| **Medium** | Plan → Explore → Execute → Verify → Critique (skip 4, 9-10) | FULL 11 phases, 1 debate round, 1 refine |
-| **Hard** | FULL 11 phases, 1 debate round, 1 refine | FULL 11 phases, 2 debate rounds, 2 refine, ToT |
+| Task Difficulty | Strong Model                                                | Weak Model                                          |
+| --------------- | ----------------------------------------------------------- | --------------------------------------------------- |
+| **Easy**        | Plan → Execute → Verify (skip 3-5, 8-10)                    | Plan → Execute → Verify → Critique (skip 3-5, 9-10) |
+| **Medium**      | Plan → Explore → Execute → Verify → Critique (skip 4, 9-10) | FULL 11 phases, 1 debate round, 1 refine            |
+| **Hard**        | FULL 11 phases, 1 debate round, 1 refine                    | FULL 11 phases, 2 debate rounds, 2 refine, ToT      |
 
 **Weak model + Hard task = maximum scaffolding**. This is where the Dragon Protocol shines — a weak model with full scaffolding can match a strong model without it.
 
@@ -548,19 +565,19 @@ Each unchecked → fix or justify.
 
 ## Research Evidence
 
-| Technique | Source | Key Result |
-|-----------|--------|------------|
-| Multi-Agent Debate | Du et al. MIT 2023 | 3 agents + 2 rounds improves reasoning |
-| Mixture-of-Agents | Together AI 2024 | Weak open models beat GPT-4o (65.1% vs 57.5%) |
-| Reflexion | Shinn et al. NeurIPS 2023 | GPT-3.5-class beats GPT-4 on HumanEval (91% vs 80%) |
-| Tree-of-Thought | Yao et al. Princeton 2023 | Game of 24: 4% → 74% (18× improvement) |
-| Graph-of-Thought | Besta et al. AAAI 2024 | Merging reasoning branches improves over ToT |
-| Plan-and-Solve | Wang et al. ACL 2023 | Reduces skipped steps vs zero-shot CoT |
-| Constitutional AI | Anthropic 2022 | Principle-anchored self-correction works |
-| DeepSeek-R1 | Nature 2025 | Pure RL elicits reasoning; "aha moment" |
-| Self-Refine | Madaan et al. 2023 | ~20% improvement with verifier-gated refinement |
-| LLMs Can't Self-Correct | Huang et al. ICLR 2024 | Self-critique WITHOUT external signal degrades |
-| Best-of-N / o1 | OpenAI 2024 | Test-time compute scaling law |
+| Technique               | Source                    | Key Result                                          |
+| ----------------------- | ------------------------- | --------------------------------------------------- |
+| Multi-Agent Debate      | Du et al. MIT 2023        | 3 agents + 2 rounds improves reasoning              |
+| Mixture-of-Agents       | Together AI 2024          | Weak open models beat GPT-4o (65.1% vs 57.5%)       |
+| Reflexion               | Shinn et al. NeurIPS 2023 | GPT-3.5-class beats GPT-4 on HumanEval (91% vs 80%) |
+| Tree-of-Thought         | Yao et al. Princeton 2023 | Game of 24: 4% → 74% (18× improvement)              |
+| Graph-of-Thought        | Besta et al. AAAI 2024    | Merging reasoning branches improves over ToT        |
+| Plan-and-Solve          | Wang et al. ACL 2023      | Reduces skipped steps vs zero-shot CoT              |
+| Constitutional AI       | Anthropic 2022            | Principle-anchored self-correction works            |
+| DeepSeek-R1             | Nature 2025               | Pure RL elicits reasoning; "aha moment"             |
+| Self-Refine             | Madaan et al. 2023        | ~20% improvement with verifier-gated refinement     |
+| LLMs Can't Self-Correct | Huang et al. ICLR 2024    | Self-critique WITHOUT external signal degrades      |
+| Best-of-N / o1          | OpenAI 2024               | Test-time compute scaling law                       |
 
 ---
 

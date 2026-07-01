@@ -1,7 +1,6 @@
 import { closeQueueConnections } from "@ibn-al-azhar-docs/pipeline";
-import { prisma } from "../../shared/prisma";
-import { startHealthServer } from "../../shared/health-server";
-import { logger } from "../../shared/logger";
+import { prisma } from "@ibn-al-azhar-docs/database";
+import { startHealthServer, logger } from "@ibn-al-azhar-docs/shared";
 
 import { registerExportHandler } from "./export-handler";
 

@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | CENSUS shows deps; `npm audit` / `pip-audit` finds vulns | Outdated/vulnerable deps are a Day-1 risk |
-| Phase 4 — EXECUTE | PR touches `package.json` / `requirements.txt` / `go.mod` / `Cargo.toml` | Verify the bump is safe before merge |
-| Phase 8 — ROLLOUT | Pre-prod gate | `npm audit --production` must be clean before deploy |
-| Phase 13 — RETROSPECTIVE | Monthly maintenance window | Sweep minors, queue majors for next sprint |
+| Phase                    | Trigger                                                                  | Why                                                  |
+| ------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Phase 2 — AUDIT          | CENSUS shows deps; `npm audit` / `pip-audit` finds vulns                 | Outdated/vulnerable deps are a Day-1 risk            |
+| Phase 4 — EXECUTE        | PR touches `package.json` / `requirements.txt` / `go.mod` / `Cargo.toml` | Verify the bump is safe before merge                 |
+| Phase 8 — ROLLOUT        | Pre-prod gate                                                            | `npm audit --production` must be clean before deploy |
+| Phase 13 — RETROSPECTIVE | Monthly maintenance window                                               | Sweep minors, queue majors for next sprint           |
 
 **Do NOT use this sub-skill for:** OS-level package updates (route to `os-patching`), container base image bumps (route to `containerize` then re-run this on the lockfile), or transitive-only updates that don't change the manifest (those are lockfile refreshes, handled by `lockfile-refresh` if present).
 
@@ -151,23 +151,25 @@ Q: Are there multiple major bumps in one PR?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `npm audit` shows vuln in transitive dep with no direct fix | Upstream hasn't released a fix | Use `overrides` (npm) / `constraints` (poetry) to force the fixed transitive version; file an issue upstream |
-| Major bump breaks 200 tests | Real breaking change | Do NOT force-pass tests; read migration guide; apply codemod if available; if not, revert and schedule as a dedicated sprint task |
-| Patch bump breaks a test | Vendor shipped a regression in a "patch" | Revert the bump; pin to previous version; file issue upstream; treat as minor until vendor fixes |
-| Lockfile drift after merge | Someone ran `npm install` without `--package-lock-only` | Re-run `npm install --package-lock-only` in CI; add a pre-commit hook to prevent manual lockfile edits |
-| `pip-audit` reports false positive (yanked, not vulnerable) | Audit DB stale or vuln disputed | Pin with `# nosec` comment + link to advisory dispute; re-scan weekly until resolved |
-| Renovate/Dependabot opens 50 PRs at once | Bot configured too aggressively | Group patches (Renovate `group:linters`), limit minor to one PR per week, disable major auto-PRs |
-| CI green but prod breaks after patch merge | Test coverage gap on the changed path | Add a regression test for the broken path; treat the gap as a P2 bug |
-| Lockfile conflicts on merge | Two PRs bumped the same dep | Rebase the later PR; let the bot re-resolve; never manually edit the lockfile to merge |
+| Symptom                                                     | Cause                                                   | Recovery                                                                                                                          |
+| ----------------------------------------------------------- | ------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `npm audit` shows vuln in transitive dep with no direct fix | Upstream hasn't released a fix                          | Use `overrides` (npm) / `constraints` (poetry) to force the fixed transitive version; file an issue upstream                      |
+| Major bump breaks 200 tests                                 | Real breaking change                                    | Do NOT force-pass tests; read migration guide; apply codemod if available; if not, revert and schedule as a dedicated sprint task |
+| Patch bump breaks a test                                    | Vendor shipped a regression in a "patch"                | Revert the bump; pin to previous version; file issue upstream; treat as minor until vendor fixes                                  |
+| Lockfile drift after merge                                  | Someone ran `npm install` without `--package-lock-only` | Re-run `npm install --package-lock-only` in CI; add a pre-commit hook to prevent manual lockfile edits                            |
+| `pip-audit` reports false positive (yanked, not vulnerable) | Audit DB stale or vuln disputed                         | Pin with `# nosec` comment + link to advisory dispute; re-scan weekly until resolved                                              |
+| Renovate/Dependabot opens 50 PRs at once                    | Bot configured too aggressively                         | Group patches (Renovate `group:linters`), limit minor to one PR per week, disable major auto-PRs                                  |
+| CI green but prod breaks after patch merge                  | Test coverage gap on the changed path                   | Add a regression test for the broken path; treat the gap as a P2 bug                                                              |
+| Lockfile conflicts on merge                                 | Two PRs bumped the same dep                             | Rebase the later PR; let the bot re-resolve; never manually edit the lockfile to merge                                            |
 
 ## Self-Healing Loop
 
 Every plan, apply, and verify run writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - Package, lane, before/after versions, CI result, whether merged, post-merge incidents within 7 days.
 
 `meta-auditor` reads this in Phase 13. Patterns it acts on:
+
 - Same package causing post-merge incidents ≥3 times → `self-patch-generator` adds a rule (e.g., "always run the migration guide check for `next` major bumps").
 - Patch lane repeatedly breaking tests for a specific vendor → demote that vendor's patches to minor lane (manual review).
 - Major bumps consistently needing >1 sprint → flag for the team to schedule upgrade sprints rather than ad-hoc.

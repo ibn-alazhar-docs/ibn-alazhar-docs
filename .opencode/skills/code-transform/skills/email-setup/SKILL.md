@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 4 (Security) finds `smtplib.SMTP` / `nodemailer` direct SMTP, hardcoded SMTP password, or no TLS | Direct SMTP in app code leaks credentials and bypasses provider deliverability infra |
-| Phase 2 — AUDIT | Dimension 9 (Observability) finds email sent with no bounce handling | Bounces silently pile up; sender reputation degrades |
-| Phase 6 — EXECUTE | User says "add email", "add password reset", "add welcome email", "add SendGrid/SES/Resend" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating providers (SendGrid → Resend, SES → Postmark) | Full replace of integration layer, keep templates |
-| Phase 9 — ACCEPTANCE | Send a test transactional email, verify webhook delivery, verify SPF/DKIM pass | Email is async — must walk the full send → deliver → bounce loop |
-| Phase 11 — ROLLOUT | Verify DNS records live, verify provider API key in env, verify webhook endpoint registered | Misconfigured DNS = email goes to spam |
+| Phase                | Trigger                                                                                                    | Why                                                                                  |
+| -------------------- | ---------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
+| Phase 2 — AUDIT      | Dimension 4 (Security) finds `smtplib.SMTP` / `nodemailer` direct SMTP, hardcoded SMTP password, or no TLS | Direct SMTP in app code leaks credentials and bypasses provider deliverability infra |
+| Phase 2 — AUDIT      | Dimension 9 (Observability) finds email sent with no bounce handling                                       | Bounces silently pile up; sender reputation degrades                                 |
+| Phase 6 — EXECUTE    | User says "add email", "add password reset", "add welcome email", "add SendGrid/SES/Resend"                | This is the executing sub-skill                                                      |
+| Phase 6 — EXECUTE    | Migrating providers (SendGrid → Resend, SES → Postmark)                                                    | Full replace of integration layer, keep templates                                    |
+| Phase 9 — ACCEPTANCE | Send a test transactional email, verify webhook delivery, verify SPF/DKIM pass                             | Email is async — must walk the full send → deliver → bounce loop                     |
+| Phase 11 — ROLLOUT   | Verify DNS records live, verify provider API key in env, verify webhook endpoint registered                | Misconfigured DNS = email goes to spam                                               |
 
 **Do NOT use this sub-skill for:** marketing campaigns (use a dedicated ESP — Mailchimp, Customer.io — and never send marketing without explicit consent), inbox / IMAP receive (use a service like Postmark Inbound or Nylas), or SMS (use `twilio-setup`-equivalent). This sub-skill is **transactional only**.
 
@@ -168,17 +168,17 @@ Q5: IP warm-up needed?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Email lands in spam | SPF/DKIM/DMARC not configured or misaligned | Run `python3 scripts/email_agent.py verify-dns`; fix records; wait for DNS TTL; re-test with `mail-tester.com` |
-| `550 5.7.1 SPF check failed` | SPF record missing or wrong `include:` | Add provider's `include:` to SPF TXT; verify with `dig TXT mail.example.com` |
-| Bounce webhook never fires | Webhook not registered in provider dashboard, OR signature verification rejecting events | Register endpoint in provider UI; verify route uses raw body (Express: `express.raw({type:'application/json'})` before `express.json()`) |
-| Same user keeps getting emailed despite bounce | Suppression list not checked before send | Add pre-send check: `if user.email_status in ('bounced','complained'): skip`. Cross-reference provider suppression API |
-| `List-Unsubscribe` missing | Headers not set on message | Add `List-Unsubscribe: <mailto:unsub@example.com>, <https://example.com/unsub?id=...>` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers |
-| Password reset email delayed > 30s | Sent synchronously in request handler | Push to background queue (BullMQ / Celery / SQS); user-facing request returns immediately |
-| `429 Too Many Requests` from provider | Burst exceeds rate limit | Add client-side rate limit + exponential backoff; consider provider's higher tier |
-| DKIM signature invalid after domain change | DKIM key rotated but old CNAME still cached | Update DKIM CNAME, wait for TTL, re-verify with provider dashboard |
-| Complaint rate > 0.1% | Users marking as spam — content or frequency problem | Halt sends, review content, reduce frequency, audit opt-in flow (single opt-in = high complaint rate) |
+| Symptom                                        | Cause                                                                                    | Recovery                                                                                                                                               |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Email lands in spam                            | SPF/DKIM/DMARC not configured or misaligned                                              | Run `python3 scripts/email_agent.py verify-dns`; fix records; wait for DNS TTL; re-test with `mail-tester.com`                                         |
+| `550 5.7.1 SPF check failed`                   | SPF record missing or wrong `include:`                                                   | Add provider's `include:` to SPF TXT; verify with `dig TXT mail.example.com`                                                                           |
+| Bounce webhook never fires                     | Webhook not registered in provider dashboard, OR signature verification rejecting events | Register endpoint in provider UI; verify route uses raw body (Express: `express.raw({type:'application/json'})` before `express.json()`)               |
+| Same user keeps getting emailed despite bounce | Suppression list not checked before send                                                 | Add pre-send check: `if user.email_status in ('bounced','complained'): skip`. Cross-reference provider suppression API                                 |
+| `List-Unsubscribe` missing                     | Headers not set on message                                                               | Add `List-Unsubscribe: <mailto:unsub@example.com>, <https://example.com/unsub?id=...>` and `List-Unsubscribe-Post: List-Unsubscribe=One-Click` headers |
+| Password reset email delayed > 30s             | Sent synchronously in request handler                                                    | Push to background queue (BullMQ / Celery / SQS); user-facing request returns immediately                                                              |
+| `429 Too Many Requests` from provider          | Burst exceeds rate limit                                                                 | Add client-side rate limit + exponential backoff; consider provider's higher tier                                                                      |
+| DKIM signature invalid after domain change     | DKIM key rotated but old CNAME still cached                                              | Update DKIM CNAME, wait for TTL, re-verify with provider dashboard                                                                                     |
+| Complaint rate > 0.1%                          | Users marking as spam — content or frequency problem                                     | Halt sends, review content, reduce frequency, audit opt-in flow (single opt-in = high complaint rate)                                                  |
 
 ## Self-Healing Loop
 

@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 4 — Visual baseline audit | "What does the app look like on mobile?" |
-| Phase 6 — CSS/layout change | "I changed the grid template" — re-validate all viewports |
-| Phase 9 — Acceptance testing | Every spec AC that mentions "mobile" or "responsive" |
-| Bug report | "User reports layout breaks on iPad" — repro + fix |
-| Pre-deploy smoke | Quick 4-viewport sweep on staging URL |
+| Trigger                         | Example                                                   |
+| ------------------------------- | --------------------------------------------------------- |
+| Phase 4 — Visual baseline audit | "What does the app look like on mobile?"                  |
+| Phase 6 — CSS/layout change     | "I changed the grid template" — re-validate all viewports |
+| Phase 9 — Acceptance testing    | Every spec AC that mentions "mobile" or "responsive"      |
+| Bug report                      | "User reports layout breaks on iPad" — repro + fix        |
+| Pre-deploy smoke                | Quick 4-viewport sweep on staging URL                     |
 
 **Do NOT use this for:** cross-browser functional testing (use `flow-simulator` with `--browser` flag), performance audits (use `lighthouse-scanner`), accessibility scans (use `accessibility-auditor`). This sub-skill is specifically for **layout integrity across viewports**.
 
@@ -42,18 +42,18 @@ metadata:
 
 For each (URL, viewport), the validator checks:
 
-| Check | What it tests | Severity |
-|-------|---------------|----------|
-| **Horizontal overflow** | `document.documentElement.scrollWidth > window.innerWidth` | Critical — content cut off |
-| **Vertical overflow > 3x viewport** | Page height > 3× viewport height (likely infinite scroll bug) | High |
-| **Element collision** | Two visible elements overlap by > 10% area | Critical |
-| **Text truncation** | Element has `text-overflow: ellipsis` AND title attribute empty | Medium — text inaccessible |
-| **Tiny tap targets** | Clickable element < 44×44 px (Apple HIG minimum) | High (also a11y issue) |
-| **Fixed element off-screen** | `position: fixed` element with bounding rect outside viewport | Critical |
-| **Image without aspect-ratio** | `<img>` without `aspect-ratio` CSS causes layout shift | Medium |
-| **Font size < 12px** | Body text smaller than 12px (unreadable on most displays) | Medium |
-| **Z-index > 9999** | Stacking context abuse | Low (code smell) |
-| **Console errors** | Any `pageerror` event | High |
+| Check                               | What it tests                                                   | Severity                   |
+| ----------------------------------- | --------------------------------------------------------------- | -------------------------- |
+| **Horizontal overflow**             | `document.documentElement.scrollWidth > window.innerWidth`      | Critical — content cut off |
+| **Vertical overflow > 3x viewport** | Page height > 3× viewport height (likely infinite scroll bug)   | High                       |
+| **Element collision**               | Two visible elements overlap by > 10% area                      | Critical                   |
+| **Text truncation**                 | Element has `text-overflow: ellipsis` AND title attribute empty | Medium — text inaccessible |
+| **Tiny tap targets**                | Clickable element < 44×44 px (Apple HIG minimum)                | High (also a11y issue)     |
+| **Fixed element off-screen**        | `position: fixed` element with bounding rect outside viewport   | Critical                   |
+| **Image without aspect-ratio**      | `<img>` without `aspect-ratio` CSS causes layout shift          | Medium                     |
+| **Font size < 12px**                | Body text smaller than 12px (unreadable on most displays)       | Medium                     |
+| **Z-index > 9999**                  | Stacking context abuse                                          | Low (code smell)           |
+| **Console errors**                  | Any `pageerror` event                                           | High                       |
 
 ## Integration Contract
 
@@ -96,16 +96,16 @@ OUTPUT (JSON to stdout):
 
 ## Standard Viewport Presets
 
-| Label | Size | Device reference |
-|-------|------|------------------|
-| `mobile-small` | 360×640 | Old Android (Galaxy S5) |
-| `mobile` | 375×812 | iPhone 12/13/14 |
-| `mobile-large` | 414×896 | iPhone 11 Pro Max |
-| `tablet` | 768×1024 | iPad portrait |
-| `tablet-landscape` | 1024×768 | iPad landscape |
-| `desktop` | 1280×720 | Standard laptop |
-| `desktop-large` | 1440×900 | MacBook Pro 14" |
-| `wide` | 1920×1080 | Desktop monitor |
+| Label              | Size      | Device reference        |
+| ------------------ | --------- | ----------------------- |
+| `mobile-small`     | 360×640   | Old Android (Galaxy S5) |
+| `mobile`           | 375×812   | iPhone 12/13/14         |
+| `mobile-large`     | 414×896   | iPhone 11 Pro Max       |
+| `tablet`           | 768×1024  | iPad portrait           |
+| `tablet-landscape` | 1024×768  | iPad landscape          |
+| `desktop`          | 1280×720  | Standard laptop         |
+| `desktop-large`    | 1440×900  | MacBook Pro 14"         |
+| `wide`             | 1920×1080 | Desktop monitor         |
 
 Default sweep: `mobile,tablet,desktop,wide` (4 viewports, fast).
 
@@ -119,6 +119,7 @@ python3 scripts/browser_agent.py responsive --url http://localhost:3000 --browse
 ```
 
 Cross-browser catches:
+
 - `-webkit-` prefix missing (Safari/webkit)
 - Firefox-specific flexbox bugs
 - Chromium-only CSS features (`backdrop-filter` on old Firefox)
@@ -174,18 +175,19 @@ python3 scripts/browser_agent.py responsive --url http://localhost:3000 --no-tap
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Horizontal overflow at mobile | Element with fixed width (e.g. `width: 1024px`) | Find element via `document.elementsFromPoint(innerWidth-1, 10)`, report to `frontend-bridge` |
-| Layout looks fine in Chromium, breaks in Firefox | `-webkit-` prefix or Chromium-only CSS | Add standard property, fall back to `frontend-bridge` |
-| Layout shifts after fonts load | No `font-display: swap` or `size-adjust` | Route to `frontend-bridge` (add `font-display: optional`) |
-| Tap target too small on mobile | Icon button < 44×44 | Route to `frontend-bridge` (add padding or hit-area) |
-| Text truncates with no tooltip | `text-overflow: ellipsis` without `title` attr | Route to `frontend-bridge` (add `title` or expand-on-click) |
-| Page height > 3x viewport | Infinite scroll loop or stuck loader | Capture DOM, route to `debug-entry` |
+| Symptom                                          | Cause                                           | Recovery                                                                                     |
+| ------------------------------------------------ | ----------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Horizontal overflow at mobile                    | Element with fixed width (e.g. `width: 1024px`) | Find element via `document.elementsFromPoint(innerWidth-1, 10)`, report to `frontend-bridge` |
+| Layout looks fine in Chromium, breaks in Firefox | `-webkit-` prefix or Chromium-only CSS          | Add standard property, fall back to `frontend-bridge`                                        |
+| Layout shifts after fonts load                   | No `font-display: swap` or `size-adjust`        | Route to `frontend-bridge` (add `font-display: optional`)                                    |
+| Tap target too small on mobile                   | Icon button < 44×44                             | Route to `frontend-bridge` (add padding or hit-area)                                         |
+| Text truncates with no tooltip                   | `text-overflow: ellipsis` without `title` attr  | Route to `frontend-bridge` (add `title` or expand-on-click)                                  |
+| Page height > 3x viewport                        | Infinite scroll loop or stuck loader            | Capture DOM, route to `debug-entry`                                                          |
 
 ## Self-Healing Loop
 
 When a layout check fails:
+
 1. Capture full DOM snapshot of the failing viewport
 2. Identify the offending element (e.g. the one causing overflow)
 3. Suggest a CSS fix (e.g. `max-width: 100%` on the offending element)
@@ -203,11 +205,11 @@ When a layout check fails:
 
 ## Phase 4 vs Phase 6 vs Phase 9 Behavior
 
-| Phase | Viewports | Browsers | Behavior |
-|-------|-----------|----------|----------|
-| Phase 4 (audit baseline) | 4 (mobile, tablet, desktop, wide) | chromium | Record baseline; no fail-fast |
-| Phase 6 (visual guard) | 4 (same as Phase 4) | chromium | Compare against Phase 4 baseline; fail-fast on regression |
-| Phase 9 (acceptance) | 8 (full sweep) | chromium+firefox+webkit | Full coverage; fail-fast on any critical |
+| Phase                    | Viewports                         | Browsers                | Behavior                                                  |
+| ------------------------ | --------------------------------- | ----------------------- | --------------------------------------------------------- |
+| Phase 4 (audit baseline) | 4 (mobile, tablet, desktop, wide) | chromium                | Record baseline; no fail-fast                             |
+| Phase 6 (visual guard)   | 4 (same as Phase 4)               | chromium                | Compare against Phase 4 baseline; fail-fast on regression |
+| Phase 9 (acceptance)     | 8 (full sweep)                    | chromium+firefox+webkit | Full coverage; fail-fast on any critical                  |
 
 ## Tools
 

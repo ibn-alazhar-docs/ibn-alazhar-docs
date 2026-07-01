@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import type { FolderNode } from "@/lib/build-folder-tree";
+import type { FolderNode } from "@/lib/shared/build-folder-tree";
 
 interface FolderItemProps {
   folder: FolderNode;

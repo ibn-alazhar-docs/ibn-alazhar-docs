@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 9 (Frontend Architecture) flags inconsistent styling | Pick one architecture, consolidate |
-| Phase 6 — EXECUTE | Every UI commit (Visual Guard) | Diff before/after CSS bundle |
-| Phase 9 — ACCEPTANCE | "Dark mode works", "Mobile looks right" | Prove styling across themes + viewports |
-| Phase 11 — ROLLOUT | Lighthouse CSS coverage check | Critical CSS inlined, unused CSS < 10% |
+| Phase                | Trigger                                                        | Why                                     |
+| -------------------- | -------------------------------------------------------------- | --------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 9 (Frontend Architecture) flags inconsistent styling | Pick one architecture, consolidate      |
+| Phase 6 — EXECUTE    | Every UI commit (Visual Guard)                                 | Diff before/after CSS bundle            |
+| Phase 9 — ACCEPTANCE | "Dark mode works", "Mobile looks right"                        | Prove styling across themes + viewports |
+| Phase 11 — ROLLOUT   | Lighthouse CSS coverage check                                  | Critical CSS inlined, unused CSS < 10%  |
 
-**Do NOT use this sub-skill for:** taste/aesthetic decisions (use `frontend-bridge`), visual hierarchy (use `web-design`), or running browsers (use `browser-launcher`). This sub-skill picks the *system* and enforces the *rules*.
+**Do NOT use this sub-skill for:** taste/aesthetic decisions (use `frontend-bridge`), visual hierarchy (use `web-design`), or running browsers (use `browser-launcher`). This sub-skill picks the _system_ and enforces the _rules_.
 
 ## What It Does
 
@@ -108,14 +108,20 @@ Q: Is this a new project (no styling installed)?
 ## Patterns
 
 ### Design tokens (single source of truth)
+
 ```css
 :root {
-  --color-bg: #fafafa;        /* never #fff */
-  --color-text: #0a0a0a;      /* never #000 */
+  --color-bg: #fafafa; /* never #fff */
+  --color-text: #0a0a0a; /* never #000 */
   --color-brand-500: #6366f1;
-  --space-1: 0.25rem;  --space-2: 0.5rem;  --space-4: 1rem;
-  --space-6: 1.5rem;   --space-8: 2rem;
-  --radius-sm: 4px; --radius-md: 8px; --radius-lg: 12px;
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.05);
   --motion-fast: 150ms ease-out;
   --motion-normal: 250ms ease-out;
@@ -126,19 +132,23 @@ Q: Is this a new project (no styling installed)?
   --color-brand-500: #818cf8;
 }
 ```
+
 Tailwind config: `colors: { brand: 'var(--color-brand-500)' }` — utilities like `bg-brand-500` resolve to the token, which flips automatically in dark mode.
 
 ### Dark mode
+
 - `prefers-color-scheme` for OS default
 - `.dark` class on `<html>` for explicit toggle (persist in `localStorage`, apply before paint to avoid FOUC)
 - All colors via tokens → dark mode "just works" when tokens flip
 
 ### Responsive
+
 - Tailwind breakpoints: `sm 640 / md 768 / lg 1024 / xl 1280 / 2xl 1536`
 - Container queries (`@container`) for component-level responsiveness (cards in a sidebar vs main grid)
 - Never use fixed `px` widths for layout — use `max-w-*` + `flex`/`grid`
 
 ### Performance
+
 - **Purge**: Tailwind `content: ['./src/**/*.{ts,tsx}']` — drops bundle from ~3MB to ~15KB
 - **Critical CSS**: inline above-the-fold CSS via `critters` (Next.js built-in) or `beastcss`
 - **Fonts**: `font-display: swap`, preload `woff2`, subset to latin + latin-ext
@@ -146,18 +156,19 @@ Tailwind config: `colors: { brand: 'var(--color-brand-500)' }` — utilities lik
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Tailwind classes not generated | `content` glob wrong | Point at actual source files, rebuild |
-| Dark mode flashes white on load | Class applied after hydration | Inline script in `<head>` reads `localStorage` before paint |
-| `!important` everywhere | Specificity wars | Refactor to tokens + single source of truth; ban `!important` via Stylelint |
-| CSS-in-JS bloats RSC bundle | styled-components in server components | Migrate to CSS Modules or Tailwind |
-| 200KB+ CSS bundle | No purge / `content` includes node_modules | Tighten `content` glob, re-run `tailwind --purge` |
-| FOIT (invisible text) | `font-display: block` or missing | Set `font-display: swap`, preload `woff2` |
+| Symptom                         | Cause                                      | Recovery                                                                    |
+| ------------------------------- | ------------------------------------------ | --------------------------------------------------------------------------- |
+| Tailwind classes not generated  | `content` glob wrong                       | Point at actual source files, rebuild                                       |
+| Dark mode flashes white on load | Class applied after hydration              | Inline script in `<head>` reads `localStorage` before paint                 |
+| `!important` everywhere         | Specificity wars                           | Refactor to tokens + single source of truth; ban `!important` via Stylelint |
+| CSS-in-JS bloats RSC bundle     | styled-components in server components     | Migrate to CSS Modules or Tailwind                                          |
+| 200KB+ CSS bundle               | No purge / `content` includes node_modules | Tighten `content` glob, re-run `tailwind --purge`                           |
+| FOIT (invisible text)           | `font-display: block` or missing           | Set `font-display: swap`, preload `woff2`                                   |
 
 ## Self-Healing Loop
 
 When a CSS violation is found:
+
 1. Identify the rule (`no-important`, `no-magic-color`, `no-inline-style`, `use-token`)
 2. Apply the mechanical fix (replace `#6366f1` with `var(--color-brand-500)`, replace `style={{color:'red'}}` with `className="text-error"`)
 3. Re-lint the file

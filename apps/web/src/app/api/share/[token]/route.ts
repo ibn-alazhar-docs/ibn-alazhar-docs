@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { checkRateLimit, rateLimitResponse } from "@/lib/rate-limit";
-import { validateShareAccess } from "@/lib/share-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { validateShareAccess } from "@/lib/backend/share-helpers";
 import { repos } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/route-helpers";
+import { handleRouteError } from "@/lib/shared/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {

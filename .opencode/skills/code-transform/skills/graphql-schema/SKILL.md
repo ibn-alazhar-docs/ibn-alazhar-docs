@@ -58,13 +58,13 @@ type User {
 
 ### Nullability Rules
 
-| Pattern | Meaning |
-|---------|---------|
-| String | Nullable - may be null |
-| String! | Non-null - always has value |
-| [String] | Nullable list, nullable items |
-| [String!] | Nullable list, non-null items |
-| [String]! | Non-null list, nullable items |
+| Pattern    | Meaning                       |
+| ---------- | ----------------------------- |
+| String     | Nullable - may be null        |
+| String!    | Non-null - always has value   |
+| [String]   | Nullable list, nullable items |
+| [String!]  | Nullable list, non-null items |
+| [String]!  | Non-null list, nullable items |
 | [String!]! | Non-null list, non-null items |
 
 **Best Practice:** Use **[Type!]!** for lists - empty list over null, no null items.

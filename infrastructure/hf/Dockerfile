@@ -25,6 +25,8 @@ RUN corepack enable
 COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc* ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/pipeline/package.json packages/pipeline/package.json
+COPY packages/shared/package.json packages/shared/package.json
+COPY packages/database/package.json packages/database/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
 
@@ -33,8 +35,8 @@ RUN pnpm install --frozen-lockfile
 RUN pnpm rebuild
 
 # Copy Prisma schema and generate client
-COPY prisma ./prisma
-RUN npx prisma generate
+COPY packages/database/prisma ./packages/database/prisma
+RUN npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Copy source code
 COPY packages ./packages
@@ -50,8 +52,9 @@ RUN NODE_ENV=production npx next build
 # ============================================
 FROM node:22-slim
 
-# HF Spaces requires UID 1000
-RUN groupadd -g 1000 user && useradd -m -u 1000 -g user user
+# HF Spaces requires UID 1000 — handle if node base already has it
+RUN (id -u user &>/dev/null || (groupadd -g 1000 user && useradd -m -u 1000 -g user user)) && \
+    mkdir -p /home/user && chown user:user /home/user
 
 # Runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -98,20 +101,25 @@ WORKDIR /app
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
-COPY --from=builder /app/prisma ./prisma
+
+# Prisma — copy schema for runtime migrations + generated client
+COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
+COPY --from=builder /app/packages/database/node_modules/.prisma ./packages/database/node_modules/.prisma
+COPY --from=builder /app/packages/database/node_modules/@prisma ./packages/database/node_modules/@prisma
 
 # bcryptjs (Next.js standalone tracing misses it in pnpm layout)
 COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/bcryptjs
 
 # Copy pipeline (raw TypeScript — no build step)
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
+COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/node_modules ./node_modules
 
 # Copy workers
 COPY --from=builder /app/workers ./workers
 
 # Copy entrypoint (works from root when deployed to HF)
-COPY entrypoint.sh /entrypoint.sh
+COPY infrastructure/hf/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Fix permissions for Next.js cache
@@ -125,7 +133,7 @@ ENV HOSTNAME="0.0.0.0"
 
 # HF Spaces health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
-    CMD wget --no-verbose --tries=1 --spider http://localhost:7860/api/health || exit 1
+    CMD wget --no-verbose --tries=1 --spider http://localhost:7860/api/health/ready || exit 1
 
 USER user
 

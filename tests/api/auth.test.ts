@@ -125,10 +125,10 @@ describe("Auth API - /api/auth/register", () => {
       expect(response.status).toBe(409);
 
       const data = await response.json();
-      expect(data.error.code).toBe("EMAIL_EXISTS");
+      expect(data.error.code).toBe("CONFLICT");
     });
 
-    it("should reactivate account if email belongs to a deleted user", async () => {
+    it("should return conflict for deleted user (no auto-reactivation)", async () => {
       // Create user and mark as deleted
       const deletedUser = await createTestUser();
       createdUserIds.push(deletedUser.id);
@@ -147,17 +147,10 @@ describe("Auth API - /api/auth/register", () => {
       });
 
       const response = await POST(request);
-      expect(response.status).toBe(201);
+      expect(response.status).toBe(409);
 
       const data = await response.json();
-      expect(data.message).toBe("تم إعادة تنشيط الحساب بنجاح");
-      expect(data.userId).toBe(deletedUser.id);
-
-      // Verify user is no longer deleted
-      const updatedUser = await prisma.user.findUnique({
-        where: { id: deletedUser.id },
-      });
-      expect(updatedUser?.deletedAt).toBeNull();
+      expect(data.error.code).toBe("CONFLICT");
     });
   });
 });

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { UserUseCases } from "@/core/use-cases/user.use-cases";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
-import { NotFoundError, ValidationError } from "@/lib/errors";
+import { NotFoundError, ValidationError } from "@/lib/shared/errors";
 
 function makeUser(overrides: Record<string, unknown> = {}) {
   return {

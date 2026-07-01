@@ -124,3 +124,13 @@ export interface CreateUserInput {
   role?: Role;
   locale?: string;
 }
+
+export interface AuthSession {
+  user: {
+    id: string;
+    name: string | null;
+    email: string;
+    image: string | null;
+    role: string;
+  };
+}

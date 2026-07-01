@@ -1,5 +1,5 @@
 import type { ExportProfileConfig, ExportProfile } from "./types";
-import { CONTENT_LIMITS } from "../constants";
+import { CONTENT_LIMITS } from "@/lib/shared/constants";
 
 export function getContentType(format: string): string {
   switch (format) {

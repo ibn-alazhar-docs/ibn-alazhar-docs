@@ -14,12 +14,12 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | CENSUS lists a database, object store, or secrets manager | Confirm a recovery path exists before changing anything |
-| Phase 7 — OBSERVABILITY | Always, after first prod deploy | Backups ARE observability — they tell you what you can survive |
-| Phase 8 — ROLLOUT | Migrations that change schema or move data | Snapshot BEFORE the migration, document the restore path |
-| Phase 13 — RETROSPECTIVE | Monthly restore drill | Prove the backups still restore |
+| Phase                    | Trigger                                                   | Why                                                            |
+| ------------------------ | --------------------------------------------------------- | -------------------------------------------------------------- |
+| Phase 2 — AUDIT          | CENSUS lists a database, object store, or secrets manager | Confirm a recovery path exists before changing anything        |
+| Phase 7 — OBSERVABILITY  | Always, after first prod deploy                           | Backups ARE observability — they tell you what you can survive |
+| Phase 8 — ROLLOUT        | Migrations that change schema or move data                | Snapshot BEFORE the migration, document the restore path       |
+| Phase 13 — RETROSPECTIVE | Monthly restore drill                                     | Prove the backups still restore                                |
 
 **Do NOT use this sub-skill for:** application-level soft-delete / trash bins (product feature, not DR), or replicated hot-standbys (HA, not backup — they replicate `DROP TABLE users;` instantly). Backups must be point-in-time and immutable.
 
@@ -140,33 +140,35 @@ Q: Has a restore been performed in the last 31 days?
 
 Default retention (override per store in `BACKUP_MATRIX.md`):
 
-| Tier | Count | Storage | Purpose |
-|------|-------|---------|---------|
-| Daily | 7 | Hot (S3 Standard) | Quick recovery from yesterday's fat-finger |
-| Weekly | 4 | Warm (S3 Standard-IA) | Recovery from a bug that took a week to notice |
-| Monthly | 12 | Cold (S3 Glacier Instant) | Compliance, audit, long-running data corruption |
-| Yearly | 7 | Cold (S3 Glacier Deep Archive) | Long-horizon regulatory retention |
+| Tier    | Count | Storage                        | Purpose                                         |
+| ------- | ----- | ------------------------------ | ----------------------------------------------- |
+| Daily   | 7     | Hot (S3 Standard)              | Quick recovery from yesterday's fat-finger      |
+| Weekly  | 4     | Warm (S3 Standard-IA)          | Recovery from a bug that took a week to notice  |
+| Monthly | 12    | Cold (S3 Glacier Instant)      | Compliance, audit, long-running data corruption |
+| Yearly  | 7     | Cold (S3 Glacier Deep Archive) | Long-horizon regulatory retention               |
 
 Lifecycle rule enforces this automatically — old tiers expire on schedule. Object-lock prevents deletion before the window expires, even by root.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| `pg_dump: FATAL: remaining connection slots are reserved` | Backup job saturates the connection pool | Use a `pg_dump` replica with `hot_standby=on`, or set `max_connections` higher on the replica |
-| WAL archive to S3 stalled for >1h | Network blip or IAM rotation | Re-run `pgbackrest archive-push`, verify IAM role, alert PagerDuty if >2h |
-| Restore drill fails: `FATAL: data directory is not empty` | Target dir left dirty from last drill | `rm -rf /var/lib/postgresql/restore/*` and re-run; add cleanup step to drill script |
-| Restore drill: schema mismatch | Backup taken from a newer DB version than restore target | Pin restore target to the same major version as production; document version-drift policy |
-| S3 CRR lagging >15 min | Bucket size grew past auto-scaling threshold | Open AWS support ticket, switch to S3 Batch Replication for backlog |
-| `vault: permission denied` reading secret version | Token expired between backup runs | Use vault's `approle` auth with periodic token renewal, not static token |
-| Encrypted backup can't be decrypted | KMS key was rotated, old key disabled | NEVER disable old KMS keys — schedule them for deletion only after all backups using them expire (≥ retention) |
+| Symptom                                                   | Cause                                                    | Recovery                                                                                                       |
+| --------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `pg_dump: FATAL: remaining connection slots are reserved` | Backup job saturates the connection pool                 | Use a `pg_dump` replica with `hot_standby=on`, or set `max_connections` higher on the replica                  |
+| WAL archive to S3 stalled for >1h                         | Network blip or IAM rotation                             | Re-run `pgbackrest archive-push`, verify IAM role, alert PagerDuty if >2h                                      |
+| Restore drill fails: `FATAL: data directory is not empty` | Target dir left dirty from last drill                    | `rm -rf /var/lib/postgresql/restore/*` and re-run; add cleanup step to drill script                            |
+| Restore drill: schema mismatch                            | Backup taken from a newer DB version than restore target | Pin restore target to the same major version as production; document version-drift policy                      |
+| S3 CRR lagging >15 min                                    | Bucket size grew past auto-scaling threshold             | Open AWS support ticket, switch to S3 Batch Replication for backlog                                            |
+| `vault: permission denied` reading secret version         | Token expired between backup runs                        | Use vault's `approle` auth with periodic token renewal, not static token                                       |
+| Encrypted backup can't be decrypted                       | KMS key was rotated, old key disabled                    | NEVER disable old KMS keys — schedule them for deletion only after all backups using them expire (≥ retention) |
 
 ## Self-Healing Loop
 
 Every backup run, verify, and drill writes a structured record to `OMNIPROJECT_SELF_IMPROVEMENT.md`:
+
 - Store name, mechanism, success/failure, duration, bytes backed up, error class if any.
 
 `meta-auditor` reads this in Phase 13. Patterns it acts on:
+
 - Same error class appearing ≥3 times across projects → `self-patch-generator` produces a rule (e.g., "always set `--no-owner --no-privileges` on `pg_dump` to avoid restore failures").
 - Restore drill consistently slower than RTO → flag store as needing a faster mechanism (e.g., snapshot-based restore instead of logical dump).
 - Backup size growing >20% week-over-week with no traffic change → flag possible log bloat or orphaned data.

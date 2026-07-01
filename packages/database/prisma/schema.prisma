@@ -140,6 +140,7 @@ model Document {
   @@index([userId, status])
   @@index([userId, createdAt])
   @@index([userId, deletedAt])
+  @@index([userId, deletedAt, createdAt])
   @@index([deletedAt])
   @@index([status, createdAt])
   @@map("documents")

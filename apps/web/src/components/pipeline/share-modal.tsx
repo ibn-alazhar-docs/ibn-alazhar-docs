@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
 import { Link as LinkIcon, Trash2, Globe, Clock } from "lucide-react";
-import { UI_TIMING } from "@/lib/constants";
+import { UI_TIMING } from "@/lib/shared/constants";
 
 interface ShareModalProps {
   documentId: string;

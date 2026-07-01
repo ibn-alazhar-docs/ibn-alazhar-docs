@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import type { JourneyEntry } from "@/lib/content";
+import type { JourneyEntry } from "@/lib/backend/content";
 
 interface JourneyContextProps {
   journeys: JourneyEntry[];

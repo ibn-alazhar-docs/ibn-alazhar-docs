@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 
 interface ExportModalProps {
   documentId: string;
@@ -41,7 +42,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
       const jobId = data.jobId;
 
       if (destination === "drive") {
-        alert(t("successDrive"));
+        toast.success(t("successDrive"));
         onClose();
       } else {
         window.location.href = `/api/export/${jobId}/${format}`;
@@ -49,7 +50,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t("error");
-      alert(msg === "Export failed" ? t("error") : msg);
+      toast.error(msg === "Export failed" ? t("error") : msg);
     } finally {
       setLoading(false);
     }

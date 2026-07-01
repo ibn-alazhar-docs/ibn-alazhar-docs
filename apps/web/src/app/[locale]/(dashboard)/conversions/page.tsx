@@ -8,7 +8,7 @@ import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
-import { PAGINATION } from "@/lib/constants";
+import { PAGINATION } from "@/lib/shared/constants";
 import { ConversionStatus } from "@/components/pipeline/conversion-status";
 
 interface ConversionJob {

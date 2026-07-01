@@ -11,8 +11,10 @@
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.4.2",
+    "@ibn-al-azhar-docs/database": "workspace:*",
     "@ibn-al-azhar-docs/pipeline": "workspace:*",
     "@ibn-al-azhar-docs/shared": "workspace:*",
+    "@sentry/nextjs": "10.62.0",
     "bcryptjs": "3.0.3",
     "ioredis": "^5.4.1",
     "jszip": "3.10.1",
@@ -33,6 +35,7 @@
     "rehype-slug": "6.0.0",
     "remark-breaks": "4.0.0",
     "remark-gfm": "4.0.1",
+    "sonner": "2.0.7",
     "zod": "4.4.3"
   },
   "devDependencies": {

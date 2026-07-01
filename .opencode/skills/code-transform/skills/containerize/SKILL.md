@@ -24,12 +24,14 @@ docker ps --filter "name=<project-name>" --format "table {{.Names}}\t{{.Status}}
 ```
 
 **Expected output:**
+
 ```
 NAMES                  STATUS          PORTS
 <project-name>-dev-1   Up X minutes    0.0.0.0:3000->3000/tcp
 ```
 
 **If container is NOT running:**
+
 ```bash
 # Navigate to project root first
 cd /path/to/your/project
@@ -42,6 +44,7 @@ docker ps --filter "name=<project-name>"
 ```
 
 **If container shows "Exited":**
+
 ```bash
 # Check why it exited
 docker logs <project-name>-dev-1 --tail 20
@@ -112,15 +115,15 @@ docker exec -it <project-name>-dev-1 <command>
 
 ## When to Use Docker exec
 
-| Operation | Use docker exec? | Reason |
-|-----------|------------------|--------|
-| `npm install` | ✅ Yes | Packages install in container |
-| `npm run dev` | ❌ No | Already running via docker-compose |
-| `npm test` | ✅ Yes | Tests run in container environment |
-| `npm run build` | ✅ Yes | Build happens in container |
-| `git` commands | ❌ No | Git runs on host (manages files) |
-| File editing | ❌ No | Volume mount syncs automatically |
-| Database migrations | ✅ Yes | Uses container's Node environment |
+| Operation           | Use docker exec? | Reason                             |
+| ------------------- | ---------------- | ---------------------------------- |
+| `npm install`       | ✅ Yes           | Packages install in container      |
+| `npm run dev`       | ❌ No            | Already running via docker-compose |
+| `npm test`          | ✅ Yes           | Tests run in container environment |
+| `npm run build`     | ✅ Yes           | Build happens in container         |
+| `git` commands      | ❌ No            | Git runs on host (manages files)   |
+| File editing        | ❌ No            | Volume mount syncs automatically   |
+| Database migrations | ✅ Yes           | Uses container's Node environment  |
 
 ## Container Architecture
 
@@ -154,11 +157,12 @@ The `docker-compose.yml` mounts the project directory into the container:
 
 ```yaml
 volumes:
-  - .:/app                           # Source code (synced)
-  - /app/node_modules                # Dependencies (container-only)
+  - .:/app # Source code (synced)
+  - /app/node_modules # Dependencies (container-only)
 ```
 
 **What this means:**
+
 - Source code changes on host are immediately visible in container
 - `node_modules/` in container is separate from any on host
 - Hot reload works automatically with most frameworks
@@ -210,18 +214,19 @@ docker-compose --profile dev restart dev
 
 After installing this skill, update the placeholders for your project:
 
-| Setting | Example Value |
-|---------|---------------|
-| Container name | `my-app-dev-1` |
-| Port | 3000 (or your app's port) |
-| Node version | 20 (Alpine) |
-| Dev command | `npm run dev -- --host 0.0.0.0` |
+| Setting        | Example Value                   |
+| -------------- | ------------------------------- |
+| Container name | `my-app-dev-1`                  |
+| Port           | 3000 (or your app's port)       |
+| Node version   | 20 (Alpine)                     |
+| Dev command    | `npm run dev -- --host 0.0.0.0` |
 
 ### Environment Variables
 
 Required env vars are loaded from `.env` file via docker-compose.
 
 If a command needs a specific env var:
+
 ```bash
 docker exec -it -e MY_VAR=value <project-name>-dev-1 <command>
 ```
@@ -238,15 +243,15 @@ docker exec -it -e MY_VAR=value <project-name>-dev-1 <command>
 
 When Claude Code needs to:
 
-| Task | Action |
-|------|--------|
+| Task               | Action                                                   |
+| ------------------ | -------------------------------------------------------- |
 | Install dependency | `docker exec -it <project-name>-dev-1 npm install <pkg>` |
-| Run tests | `docker exec -it <project-name>-dev-1 npm test` |
-| Check types | `docker exec -it <project-name>-dev-1 npm run typecheck` |
-| Build project | `docker exec -it <project-name>-dev-1 npm run build` |
-| Start dev server | Container already runs it via docker-compose |
-| Edit files | Edit directly (volume mount syncs) |
-| Git operations | Run on host (not in container) |
+| Run tests          | `docker exec -it <project-name>-dev-1 npm test`          |
+| Check types        | `docker exec -it <project-name>-dev-1 npm run typecheck` |
+| Build project      | `docker exec -it <project-name>-dev-1 npm run build`     |
+| Start dev server   | Container already runs it via docker-compose             |
+| Edit files         | Edit directly (volume mount syncs)                       |
+| Git operations     | Run on host (not in container)                           |
 
 ## Sample docker-compose.yml
 

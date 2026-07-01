@@ -9,7 +9,7 @@ import { Readable } from "node:stream";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
-import { NotFoundError } from "@/lib/errors";
+import { NotFoundError } from "@/lib/shared/errors";
 
 export class UploadDocumentUseCase {
   constructor(

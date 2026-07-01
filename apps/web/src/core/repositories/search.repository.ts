@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { SUGGESTION_LIMITS } from "@/lib/constants";
+import { SUGGESTION_LIMITS } from "@/lib/shared/constants";
 import type {
   ISearchRepository,
   SearchQueryParams,

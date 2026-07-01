@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import { FolderItem } from "./folder-item";
 import { CreateFolderDialog } from "./create-folder-dialog";
 import { MoveDialog } from "./move-dialog";
@@ -24,17 +25,25 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   async function handleCreate(name: string): Promise<void> {
-    await createFolder(name, createParentId);
-    setShowCreateDialog(false);
-    setCreateParentId(null);
+    try {
+      await createFolder(name, createParentId);
+      toast.success("تم إنشاء المجلد بنجاح");
+      setShowCreateDialog(false);
+      setCreateParentId(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل إنشاء المجلد");
+    }
   }
 
   async function handleDelete(folderId: string) {
     try {
       await deleteFolder(folderId);
+      toast.success("تم حذف المجلد بنجاح");
       if (selectedFolderId === folderId) {
         onSelectFolder(null);
       }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل حذف المجلد");
     } finally {
       setDeleteConfirmId(null);
     }
@@ -42,9 +51,14 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
 
   async function handleMoveSubmit(newParentId: string | null) {
     if (!movingFolderId) return;
-    await moveFolder(movingFolderId, newParentId);
-    setShowMoveDialog(false);
-    setMovingFolderId(null);
+    try {
+      await moveFolder(movingFolderId, newParentId);
+      toast.success("تم نقل المجلد بنجاح");
+      setShowMoveDialog(false);
+      setMovingFolderId(null);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "فشل نقل المجلد");
+    }
   }
 
   if (loading) {

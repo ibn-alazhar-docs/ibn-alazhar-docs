@@ -1,5 +1,5 @@
 import type { Redis } from "ioredis";
-import { logger } from "@/lib/logger";
+import { logger } from "@/lib/shared/logger";
 
 let redisClient: Redis | null = null;
 let redisFailed = false;
@@ -23,6 +23,8 @@ export async function getRedisClient(): Promise<Redis | null> {
           maxRetriesPerRequest: 1,
           lazyConnect: true,
           connectTimeout: 2000,
+          // WHY: Upstash Redis uses rediss:// URLs which require TLS.
+          tls: url.startsWith("rediss://") ? {} : undefined,
         });
       } else {
         redisClient = new IORedisClass({

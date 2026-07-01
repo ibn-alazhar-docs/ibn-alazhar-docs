@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { BRAND_NAME } from "./brand";
-import { SITE_URL } from "./constants";
+import { SITE_URL } from "@/lib/shared/constants";
 
 export const siteName = BRAND_NAME.en;
 export const siteNameAr = BRAND_NAME.ar;

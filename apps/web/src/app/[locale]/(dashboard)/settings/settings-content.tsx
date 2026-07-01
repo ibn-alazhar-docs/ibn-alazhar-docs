@@ -8,7 +8,7 @@ import { Container } from "@/components/ui/container";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
-import { UI_TIMING } from "@/lib/constants";
+import { UI_TIMING } from "@/lib/shared/constants";
 import { Text } from "@/components/ui/text";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";

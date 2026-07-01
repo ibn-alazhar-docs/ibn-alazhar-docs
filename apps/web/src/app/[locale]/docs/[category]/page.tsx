@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { generatePageMetadata } from "@/lib/metadata";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
 import {
   getCategoryLabel,
   getCategoryDescription,
@@ -8,7 +8,7 @@ import {
   getCategoryThemes,
   getCategoryTotalReadingTime,
   getContentCollection,
-} from "@/lib/content";
+} from "@/lib/backend/content";
 import { Container } from "@/components/ui/container";
 
 interface CategoryPageProps {

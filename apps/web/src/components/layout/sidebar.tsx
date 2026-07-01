@@ -1,7 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { cn } from "@/lib/cn";
+import { cn } from "@/lib/frontend/cn";
 import { NavLink } from "./nav-link";
 
 interface SidebarProps {

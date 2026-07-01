@@ -23,7 +23,7 @@ export interface SplitResult {
 export async function splitPdfPages(fileBuffer: Buffer, dpi: number = 300): Promise<SplitResult> {
   const tempDir = await mkdtemp(join(tmpdir(), "pdf-split-"));
   const pdfPath = join(tempDir, "input.pdf");
-  const scriptPath = join(dirname(fileURLToPath(import.meta.url)), "split-pdf.py");
+  const scriptPath = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "split-pdf.py");
 
   try {
     await writeFile(pdfPath, fileBuffer);

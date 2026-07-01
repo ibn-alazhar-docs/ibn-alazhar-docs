@@ -2,20 +2,17 @@ import {
   loadConfig,
   createExportWorker,
   downloadFile,
-  uploadBuffer,
   generateMarkdown,
   generateTxt,
   generateJson,
   recordFailedJob,
   categorizeFailure,
-  getDriveClient,
-  ensureDriveFolder,
-  uploadToDrive,
+  uploadExportBuffer,
   type ExportRequest,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
-import { prisma } from "../../shared/prisma";
-import { logger } from "../../shared/logger";
+import { prisma } from "@ibn-al-azhar-docs/database";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 const config = loadConfig();
 
@@ -85,25 +82,15 @@ export function registerExportHandler(): void {
         });
       }
 
-      if (account && account.access_token && account.refresh_token) {
-        const drive = getDriveClient(
-          account.access_token,
-          account.refresh_token,
-          process.env.GOOGLE_CLIENT_ID || "",
-          process.env.GOOGLE_CLIENT_SECRET || "",
-        );
-        const folderId = await ensureDriveFolder(drive);
-        const fileId = await uploadToDrive(
-          drive,
-          `export.${req.format}`,
-          contentType,
-          outputBuffer,
-          folderId,
-        );
-        outputKey = `gdrive://${fileId}`;
-      } else {
-        await uploadBuffer(config, outputKey, outputBuffer, contentType);
-      }
+      outputKey = await uploadExportBuffer(
+        config,
+        req.userId,
+        outputBuffer,
+        `export.${req.format}`,
+        contentType,
+        account,
+        req.options?.destination === "drive",
+      );
 
       const doc = await prisma.document.findUnique({ where: { id: req.jobId } });
       if (doc) {

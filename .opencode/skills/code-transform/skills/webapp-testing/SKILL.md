@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 11 (Test Coverage) | Map existing tests against pyramid |
-| Phase 6 — EXECUTE | Any commit (Test Guard) | Run affected slice, gate on regressions |
-| Phase 9 — ACCEPTANCE | Critical user flows | Playwright E2E proves the flow works |
-| Phase 11 — ROLLOUT | Pre-deploy smoke | Run smoke E2E against staging |
+| Phase                | Trigger                      | Why                                     |
+| -------------------- | ---------------------------- | --------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 11 (Test Coverage) | Map existing tests against pyramid      |
+| Phase 6 — EXECUTE    | Any commit (Test Guard)      | Run affected slice, gate on regressions |
+| Phase 9 — ACCEPTANCE | Critical user flows          | Playwright E2E proves the flow works    |
+| Phase 11 — ROLLOUT   | Pre-deploy smoke             | Run smoke E2E against staging           |
 
-**Do NOT use this sub-skill for:** performance/load testing (use `performance-profiling`), accessibility audits (use `accessibility-auditor`), or visual diffing infrastructure (use `visual-diff`). This sub-skill owns the *test strategy and tooling*.
+**Do NOT use this sub-skill for:** performance/load testing (use `performance-profiling`), accessibility audits (use `accessibility-auditor`), or visual diffing infrastructure (use `visual-diff`). This sub-skill owns the _test strategy and tooling_.
 
 ## What It Does
 
@@ -118,65 +118,75 @@ Q: Is the test flaky?
 ## Patterns
 
 ### Test behavior, not implementation
+
 ```tsx
 // ❌ implementation detail
 expect(setLoadingMock).toHaveBeenCalledTimes(2);
 expect(state.isLoading).toBe(true);
 
 // ✅ behavior
-const button = screen.getByRole('button', { name: /save/i });
+const button = screen.getByRole("button", { name: /save/i });
 await user.click(button);
 expect(await screen.findByText(/saved/i)).toBeInTheDocument();
 ```
 
 ### Role/label selectors (accessibility-aligned)
+
 ```tsx
 // ❌ fragile
-screen.getByTestId('submit-btn');
-screen.getByClassName('btn-primary');
+screen.getByTestId("submit-btn");
+screen.getByClassName("btn-primary");
 
 // ✅ accessible + stable
-screen.getByRole('button', { name: /submit/i });
+screen.getByRole("button", { name: /submit/i });
 screen.getByLabelText(/email address/i);
 screen.getByText(/welcome back/i);
 ```
+
 Bonus: if you can't select by role/label, your component isn't accessible — fix the component.
 
 ### MSW for API mocking
+
 ```ts
 // handlers.ts
-import { http, HttpResponse } from 'msw';
+import { http, HttpResponse } from "msw";
 
 export const handlers = [
-  http.get('/api/user', () => HttpResponse.json({ id: 1, name: 'Ada' })),
-  http.post('/api/login', async ({ request }) => {
+  http.get("/api/user", () => HttpResponse.json({ id: 1, name: "Ada" })),
+  http.post("/api/login", async ({ request }) => {
     const { email } = await request.json();
-    if (email === 'taken@example.com') return HttpResponse.json({ error: 'exists' }, { status: 409 });
+    if (email === "taken@example.com")
+      return HttpResponse.json({ error: "exists" }, { status: 409 });
     return HttpResponse.json({ ok: true });
   }),
 ];
 ```
 
 ### Wait strategies (no setTimeout)
+
 ```tsx
 // ❌ flaky
-setTimeout(() => expect(screen.getByText('saved')).toBeInTheDocument(), 500);
+setTimeout(() => expect(screen.getByText("saved")).toBeInTheDocument(), 500);
 
 // ✅ waits up to 1000ms (default)
-expect(await screen.findByText('saved')).toBeInTheDocument();
+expect(await screen.findByText("saved")).toBeInTheDocument();
 
 // ✅ explicit wait for non-DOM conditions
-await waitFor(() => expect(mockFn).toHaveBeenCalledWith('arg'));
+await waitFor(() => expect(mockFn).toHaveBeenCalledWith("arg"));
 ```
 
 ### E2E critical flow
+
 ```ts
-test('user can checkout', async ({ page }) => {
-  await page.goto('/');
-  await page.getByRole('link', { name: /shop/i }).click();
-  await page.getByRole('button', { name: /add to cart/i }).first().click();
-  await page.getByRole('link', { name: /cart/i }).click();
-  await page.getByRole('button', { name: /checkout/i }).click();
+test("user can checkout", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: /shop/i }).click();
+  await page
+    .getByRole("button", { name: /add to cart/i })
+    .first()
+    .click();
+  await page.getByRole("link", { name: /cart/i }).click();
+  await page.getByRole("button", { name: /checkout/i }).click();
   await expect(page).toHaveURL(/checkout/);
   await expect(page.getByText(/order confirmed/i)).toBeVisible({ timeout: 10_000 });
 });
@@ -184,30 +194,31 @@ test('user can checkout', async ({ page }) => {
 
 ## Pyramid & CI Strategy
 
-| Layer | % of tests | Tool | Runs on | Budget |
-|-------|-----------|------|---------|--------|
-| Unit | 70% | Vitest | every PR | < 60s total |
-| Integration | 20% | Testing Library + jsdom | every PR | < 3min total |
-| E2E | 10% | Playwright | deploy + nightly | < 15min total |
-| Visual | as needed | Playwright screenshots | PR (changed routes) | < 5min added |
+| Layer       | % of tests | Tool                    | Runs on             | Budget        |
+| ----------- | ---------- | ----------------------- | ------------------- | ------------- |
+| Unit        | 70%        | Vitest                  | every PR            | < 60s total   |
+| Integration | 20%        | Testing Library + jsdom | every PR            | < 3min total  |
+| E2E         | 10%        | Playwright              | deploy + nightly    | < 15min total |
+| Visual      | as needed  | Playwright screenshots  | PR (changed routes) | < 5min added  |
 
 Inverted pyramid (mostly E2E, no unit) = slow CI, flaky tests, expensive to maintain. Flag and rebalance.
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Test flaky in CI only | Real timers / network / animation | Use `vi.useFakeTimers`, MSW, `prefers-reduced-motion` |
-| `getByRole` throws "multiple elements" | Ambiguous selector | Pass `{ name: /specific text/i }` to disambiguate |
-| E2E times out on slow CI | 30s default too low | Bump to 60s, or use `waitFor` with shorter timeout |
-| Coverage gate fails | New code untested | Generate unit tests via `--action generate-unit` |
-| MSW handler missing | New API route added | Run `--action audit`, add handler to `handlers.ts` |
-| Visual regression false positive | Anti-aliased fonts / timestamps | Set Playwright `threshold: 0.2`, mask dynamic regions |
-| Test passes locally, fails in CI | Environment drift | Run in same Docker image; pin Node version |
+| Symptom                                | Cause                             | Recovery                                              |
+| -------------------------------------- | --------------------------------- | ----------------------------------------------------- |
+| Test flaky in CI only                  | Real timers / network / animation | Use `vi.useFakeTimers`, MSW, `prefers-reduced-motion` |
+| `getByRole` throws "multiple elements" | Ambiguous selector                | Pass `{ name: /specific text/i }` to disambiguate     |
+| E2E times out on slow CI               | 30s default too low               | Bump to 60s, or use `waitFor` with shorter timeout    |
+| Coverage gate fails                    | New code untested                 | Generate unit tests via `--action generate-unit`      |
+| MSW handler missing                    | New API route added               | Run `--action audit`, add handler to `handlers.ts`    |
+| Visual regression false positive       | Anti-aliased fonts / timestamps   | Set Playwright `threshold: 0.2`, mask dynamic regions |
+| Test passes locally, fails in CI       | Environment drift                 | Run in same Docker image; pin Node version            |
 
 ## Self-Healing Loop
 
 When a test violation is found:
+
 1. Identify the rule (`no-settimeout`, `testid-overuse`, `missing-msw-handler`, `implementation-detail`)
 2. Apply the mechanical fix (swap `setTimeout` for `findBy`, replace `getByTestId` with `getByRole`)
 3. Re-run the test, confirm pass

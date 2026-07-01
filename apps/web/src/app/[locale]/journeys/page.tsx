@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { generatePageMetadata } from "@/lib/metadata";
-import { getJourneys } from "@/lib/content";
+import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { getJourneys } from "@/lib/backend/content";
 import { Container } from "@/components/ui/container";
 import { JourneyCard } from "@/components/discovery/journey-card";
 

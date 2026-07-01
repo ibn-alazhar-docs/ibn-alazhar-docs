@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { AppError, NotFoundError } from "@/lib/errors";
-import { ERROR_CODES } from "@/lib/constants";
+import { AppError, NotFoundError } from "@/lib/shared/errors";
+import { ERROR_CODES } from "@/lib/shared/constants";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 
 export class ProfileUseCases {

@@ -26,17 +26,26 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# ── Step 2: Run database migrations ────────────────────────────────
+# ── Step 2: Run database migrations (with retry for Neon cold start) ──
 echo "[2/5] Running database migrations..."
 cd /app
-npx prisma migrate deploy 2>&1 || {
-    echo "[2/5] Migration warning (may be already applied)"
-}
+for attempt in 1 2 3 4 5; do
+    if npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma 2>&1; then
+        echo "[2/5] Migrations applied ✓"
+        break
+    fi
+    if [ "$attempt" = "5" ]; then
+        echo "[2/5] Migrations failed after 5 attempts — continuing anyway"
+    else
+        echo "[2/5] Migration attempt $attempt failed — retrying in ${attempt}s..."
+        sleep "$attempt"
+    fi
+done
 
 # Seed if seed file exists
-if [ -f prisma/seed.ts ]; then
+if [ -f packages/database/prisma/seed.ts ]; then
     echo "[2/5] Running database seed..."
-    npx prisma db seed 2>&1 || echo "[2/5] Seed skipped (may already exist)"
+    npx prisma db seed --schema=packages/database/prisma/schema.prisma 2>&1 || echo "[2/5] Seed skipped (may already exist)"
 fi
 echo "[2/5] Database ready ✓"
 

@@ -231,19 +231,19 @@ metadata:
   name: cluster-apps
 spec:
   generators:
-  - cluster:
-      selector:
-        matchLabels:
-          environment: production
+    - cluster:
+        selector:
+          matchLabels:
+            environment: production
   template:
     metadata:
-      name: '{{name}}-myapp'
+      name: "{{name}}-myapp"
     spec:
       source:
         repoURL: https://github.com/org/apps
         path: myapp
       destination:
-        server: '{{server}}'
+        server: "{{server}}"
 ```
 
 **→ Template**: [assets/applicationsets/cluster-generator.yaml](assets/applicationsets/cluster-generator.yaml)
@@ -289,15 +289,16 @@ flux bootstrap github --context staging-cluster --path clusters/staging
 
 ### Decision Matrix
 
-| Solution | Complexity | Best For | 2025 Trend |
-|----------|-----------|----------|------------|
-| **SOPS + age** | Medium | Git-centric, flexible | ↗️ Preferred |
-| **External Secrets Operator** | Medium | Cloud-native, dynamic | ↗️ Growing |
-| **Sealed Secrets** | Low | Simple, GitOps-first | → Stable |
+| Solution                      | Complexity | Best For              | 2025 Trend   |
+| ----------------------------- | ---------- | --------------------- | ------------ |
+| **SOPS + age**                | Medium     | Git-centric, flexible | ↗️ Preferred |
+| **External Secrets Operator** | Medium     | Cloud-native, dynamic | ↗️ Growing   |
+| **Sealed Secrets**            | Low        | Simple, GitOps-first  | → Stable     |
 
 ### Option 1: SOPS + age (Recommended 2025)
 
 **Setup**:
+
 ```bash
 # Generate age key
 age-keygen -o key.txt
@@ -347,6 +348,7 @@ python3 scripts/secret_audit.py /path/to/repo
 ### Argo Rollouts (with ArgoCD)
 
 **Canary Deployment**:
+
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Rollout
@@ -356,11 +358,11 @@ spec:
   strategy:
     canary:
       steps:
-      - setWeight: 20
-      - pause: {duration: 2m}
-      - setWeight: 50
-      - pause: {duration: 2m}
-      - setWeight: 100
+        - setWeight: 20
+        - pause: { duration: 2m }
+        - setWeight: 50
+        - pause: { duration: 2m }
+        - setWeight: 100
 ```
 
 **→ Template**: [assets/progressive-delivery/argo-rollouts-canary.yaml](assets/progressive-delivery/argo-rollouts-canary.yaml)
@@ -368,6 +370,7 @@ spec:
 ### Flagger (with Flux)
 
 **Canary with Metrics Analysis**:
+
 ```yaml
 apiVersion: flagger.app/v1beta1
 kind: Canary
@@ -380,9 +383,9 @@ spec:
     maxWeight: 50
     stepWeight: 10
     metrics:
-    - name: request-success-rate
-      thresholdRange:
-        min: 99
+      - name: request-success-rate
+        thresholdRange:
+          min: 99
 ```
 
 **→ Reference**: [references/progressive_delivery.md](references/progressive_delivery.md)
@@ -394,6 +397,7 @@ spec:
 ### Common Issues
 
 **ArgoCD OutOfSync**:
+
 ```bash
 # Check differences
 argocd app diff my-app
@@ -407,6 +411,7 @@ argocd app get my-app
 ```
 
 **Flux Not Reconciling**:
+
 ```bash
 # Check resources
 flux get all
@@ -420,6 +425,7 @@ flux reconcile kustomization my-app
 ```
 
 **Detect Drift**:
+
 ```bash
 # ArgoCD drift detection
 argocd app diff my-app

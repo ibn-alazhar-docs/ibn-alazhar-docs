@@ -9,41 +9,45 @@ allowed-tools: Read Grep Glob
 Apply these security standards when writing or reviewing code.
 
 **Reference files** (load on demand):
+
 - [`reference/languages.md`](reference/languages.md) — per-language security quirks with unsafe/safe examples for 20+ languages.
 - [`reference/owasp-report.md`](reference/owasp-report.md) — comprehensive deep-dive on every OWASP 2025–2026 standard.
 
 ## Quick Reference: OWASP Top 10:2025
 
-| # | Vulnerability | Key Prevention |
-|---|---------------|----------------|
-| A01 | Broken Access Control | Deny by default, enforce server-side, verify ownership |
-| A02 | Security Misconfiguration | Harden configs, disable defaults, minimize features |
-| A03 | Software Supply Chain Failures | Lock versions, verify integrity, audit dependencies |
-| A04 | Cryptographic Failures | TLS 1.2+, AES-256-GCM, Argon2/bcrypt for passwords |
-| A05 | Injection | Parameterized queries, input validation, safe APIs |
-| A06 | Insecure Design | Threat model, rate limit, design security controls |
-| A07 | Authentication Failures | MFA, check breached passwords, secure sessions |
-| A08 | Software or Data Integrity Failures | Sign packages, SRI for CDN, safe serialization |
-| A09 | Security Logging and Alerting Failures | Log security events, structured format, alerting |
-| A10 | Mishandling of Exceptional Conditions | Fail-closed, hide internals, log with context |
+| #   | Vulnerability                          | Key Prevention                                         |
+| --- | -------------------------------------- | ------------------------------------------------------ |
+| A01 | Broken Access Control                  | Deny by default, enforce server-side, verify ownership |
+| A02 | Security Misconfiguration              | Harden configs, disable defaults, minimize features    |
+| A03 | Software Supply Chain Failures         | Lock versions, verify integrity, audit dependencies    |
+| A04 | Cryptographic Failures                 | TLS 1.2+, AES-256-GCM, Argon2/bcrypt for passwords     |
+| A05 | Injection                              | Parameterized queries, input validation, safe APIs     |
+| A06 | Insecure Design                        | Threat model, rate limit, design security controls     |
+| A07 | Authentication Failures                | MFA, check breached passwords, secure sessions         |
+| A08 | Software or Data Integrity Failures    | Sign packages, SRI for CDN, safe serialization         |
+| A09 | Security Logging and Alerting Failures | Log security events, structured format, alerting       |
+| A10 | Mishandling of Exceptional Conditions  | Fail-closed, hide internals, log with context          |
 
 ## Security Code Review Checklist
 
 When reviewing code, check for these issues:
 
 ### Input Handling
+
 - [ ] All user input validated server-side
 - [ ] Using parameterized queries (not string concatenation)
 - [ ] Input length limits enforced
 - [ ] Allowlist validation preferred over denylist
 
 ### Authentication & Sessions
+
 - [ ] Passwords hashed with Argon2/bcrypt (not MD5/SHA1)
 - [ ] Session tokens have sufficient entropy (128+ bits)
 - [ ] Sessions invalidated on logout
 - [ ] MFA available for sensitive operations
 
 ### Access Control
+
 - [ ] Check for framework-level auth middleware (e.g., Next.js middleware.ts, proxy.ts, Express middleware) before flagging missing per-route auth
 - [ ] Authorization checked on every request
 - [ ] Using object references user cannot manipulate
@@ -51,12 +55,14 @@ When reviewing code, check for these issues:
 - [ ] Privilege escalation paths reviewed
 
 ### Data Protection
+
 - [ ] Sensitive data encrypted at rest
 - [ ] TLS for all data in transit
 - [ ] No sensitive data in URLs/logs
 - [ ] Secrets in environment/vault (not code)
 
 ### Error Handling
+
 - [ ] No stack traces exposed to users
 - [ ] Fail-closed on errors (deny, not allow)
 - [ ] All exceptions logged with context
@@ -65,6 +71,7 @@ When reviewing code, check for these issues:
 ## Secure Code Patterns
 
 ### SQL Injection Prevention
+
 ```python
 # UNSAFE
 cursor.execute(f"SELECT * FROM users WHERE id = {user_id}")
@@ -74,6 +81,7 @@ cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
 ```
 
 ### Command Injection Prevention
+
 ```python
 # UNSAFE
 os.system(f"convert {filename} output.png")
@@ -83,6 +91,7 @@ subprocess.run(["convert", filename, "output.png"], shell=False)
 ```
 
 ### Password Storage
+
 ```python
 # UNSAFE
 hashlib.md5(password.encode()).hexdigest()
@@ -93,6 +102,7 @@ PasswordHasher().hash(password)
 ```
 
 ### Access Control
+
 ```python
 # UNSAFE - No authorization check
 @app.route('/api/user/<user_id>')
@@ -109,6 +119,7 @@ def get_user(user_id):
 ```
 
 ### Error Handling
+
 ```python
 # UNSAFE - Exposes internals
 @app.errorhandler(Exception)
@@ -124,6 +135,7 @@ def handle_error(e):
 ```
 
 ### Fail-Closed Pattern
+
 ```python
 # UNSAFE - Fail-open
 def check_permission(user, resource):
@@ -145,18 +157,18 @@ def check_permission(user, resource):
 
 When building or reviewing AI agent systems, check for:
 
-| Risk | Description | Mitigation |
-|------|-------------|------------|
-| ASI01: Agent Goal Hijacking | Prompt injection alters agent objectives | Input sanitization, goal boundaries, behavioral monitoring |
-| ASI02: Tool Misuse | Tools used in unintended ways | Least privilege, fine-grained permissions, validate I/O |
-| ASI03: Identity & Privilege Abuse | Delegated trust, inherited credentials, role chain exploits | Short-lived scoped tokens, identity verification |
-| ASI04: Agentic Supply Chain Vulnerabilities | Compromised plugins/MCP servers | Verify signatures, sandbox, allowlist plugins |
-| ASI05: Unexpected Code Execution | Unsafe code generation/execution | Sandbox execution, static analysis, human approval |
-| ASI06: Memory & Context Poisoning | Corrupted RAG/context data | Validate stored content, segment by trust level |
-| ASI07: Insecure Inter-Agent Comms | Spoofing/intercepting agent-to-agent messages | Authenticate, encrypt, verify message integrity |
-| ASI08: Cascading Failures | Errors propagate across systems | Circuit breakers, graceful degradation, isolation |
-| ASI09: Human-Agent Trust Exploitation | Over-trust in agents leveraged to manipulate users | Label AI content, user education, verification steps |
-| ASI10: Rogue Agents | Compromised agents acting maliciously | Behavior monitoring, kill switches, anomaly detection |
+| Risk                                        | Description                                                 | Mitigation                                                 |
+| ------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------- |
+| ASI01: Agent Goal Hijacking                 | Prompt injection alters agent objectives                    | Input sanitization, goal boundaries, behavioral monitoring |
+| ASI02: Tool Misuse                          | Tools used in unintended ways                               | Least privilege, fine-grained permissions, validate I/O    |
+| ASI03: Identity & Privilege Abuse           | Delegated trust, inherited credentials, role chain exploits | Short-lived scoped tokens, identity verification           |
+| ASI04: Agentic Supply Chain Vulnerabilities | Compromised plugins/MCP servers                             | Verify signatures, sandbox, allowlist plugins              |
+| ASI05: Unexpected Code Execution            | Unsafe code generation/execution                            | Sandbox execution, static analysis, human approval         |
+| ASI06: Memory & Context Poisoning           | Corrupted RAG/context data                                  | Validate stored content, segment by trust level            |
+| ASI07: Insecure Inter-Agent Comms           | Spoofing/intercepting agent-to-agent messages               | Authenticate, encrypt, verify message integrity            |
+| ASI08: Cascading Failures                   | Errors propagate across systems                             | Circuit breakers, graceful degradation, isolation          |
+| ASI09: Human-Agent Trust Exploitation       | Over-trust in agents leveraged to manipulate users          | Label AI content, user education, verification steps       |
+| ASI10: Rogue Agents                         | Compromised agents acting maliciously                       | Behavior monitoring, kill switches, anomaly detection      |
 
 ### Agent Security Checklist
 
@@ -175,18 +187,18 @@ When building or reviewing AI agent systems, check for:
 
 When building or reviewing applications that call LLMs (chatbots, RAG, copilots, agents), check for:
 
-| # | Risk | Key Mitigation |
-|---|------|----------------|
-| LLM01 | Prompt Injection | Separate trusted instructions from untrusted data, filter outputs, isolate privileges between user/tool/system context |
-| LLM02 | Sensitive Information Disclosure | Sanitize training/RAG data, strip PII from context, restrict what the model can retrieve per user |
-| LLM03 | Supply Chain | Verify model provenance and signatures, vet third-party model hubs, lock model + adapter versions |
-| LLM04 | Data and Model Poisoning | Validate training/fine-tuning sources, anomaly-detect on data ingestion, hold-out integrity tests |
-| LLM05 | Improper Output Handling | Treat all LLM output as untrusted input — validate, escape, or sandbox before passing downstream (SQL, shell, HTML, code, tool calls) |
-| LLM06 | Excessive Agency | Minimize tools and permissions, require human approval for destructive actions, scope credentials per task |
-| LLM07 | System Prompt Leakage | Never put secrets, keys, or auth logic in the system prompt; assume the prompt is extractable |
-| LLM08 | Vector and Embedding Weaknesses | Tenant-isolate vector stores, access-control on retrieval, sign or hash chunks against indirect prompt injection |
-| LLM09 | Misinformation | Cite sources, surface confidence, require grounding for high-stakes answers, disclose AI provenance |
-| LLM10 | Unbounded Consumption | Rate-limit per user/key, cap tokens and tool calls per request, monitor cost, set hard timeouts |
+| #     | Risk                             | Key Mitigation                                                                                                                        |
+| ----- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM01 | Prompt Injection                 | Separate trusted instructions from untrusted data, filter outputs, isolate privileges between user/tool/system context                |
+| LLM02 | Sensitive Information Disclosure | Sanitize training/RAG data, strip PII from context, restrict what the model can retrieve per user                                     |
+| LLM03 | Supply Chain                     | Verify model provenance and signatures, vet third-party model hubs, lock model + adapter versions                                     |
+| LLM04 | Data and Model Poisoning         | Validate training/fine-tuning sources, anomaly-detect on data ingestion, hold-out integrity tests                                     |
+| LLM05 | Improper Output Handling         | Treat all LLM output as untrusted input — validate, escape, or sandbox before passing downstream (SQL, shell, HTML, code, tool calls) |
+| LLM06 | Excessive Agency                 | Minimize tools and permissions, require human approval for destructive actions, scope credentials per task                            |
+| LLM07 | System Prompt Leakage            | Never put secrets, keys, or auth logic in the system prompt; assume the prompt is extractable                                         |
+| LLM08 | Vector and Embedding Weaknesses  | Tenant-isolate vector stores, access-control on retrieval, sign or hash chunks against indirect prompt injection                      |
+| LLM09 | Misinformation                   | Cite sources, surface confidence, require grounding for high-stakes answers, disclose AI provenance                                   |
+| LLM10 | Unbounded Consumption            | Rate-limit per user/key, cap tokens and tool calls per request, monitor cost, set hard timeouts                                       |
 
 ### LLM Application Security Checklist
 
@@ -202,6 +214,7 @@ When building or reviewing applications that call LLMs (chatbots, RAG, copilots,
 - [ ] Model, embedding model, and adapter versions pinned and verifiable
 
 ### Prompt Injection Prevention (LLM01)
+
 ```python
 # UNSAFE - user input concatenated into instructions
 prompt = f"You are a support agent. Answer this: {user_input}"
@@ -216,6 +229,7 @@ prompt = f"{SYSTEM}\n<user_data>{user_input}</user_data>"
 ```
 
 ### Improper Output Handling (LLM05)
+
 ```python
 # UNSAFE - LLM output handed straight to a sink that executes or renders it
 sql = llm.complete("Write a query for: " + user_request)
@@ -228,6 +242,7 @@ db.execute(query, params)
 ```
 
 ### Excessive Agency (LLM06)
+
 ```python
 # UNSAFE - broad tool surface, admin creds, no approval gate
 agent = Agent(tools=ALL_TOOLS, credentials=admin_token)
@@ -241,6 +256,7 @@ agent = Agent(
 ```
 
 ### Unbounded Consumption (LLM10)
+
 ```python
 # UNSAFE - no limits; one user can exhaust quota or wallet
 @app.post("/chat")
@@ -259,6 +275,7 @@ def chat(msg: str, user: User):
 ## ASVS 5.0 Key Requirements
 
 ### Level 1 (All Applications)
+
 - Passwords minimum 12 characters
 - Check against breached password lists
 - Rate limiting on authentication
@@ -266,6 +283,7 @@ def chat(msg: str, user: User):
 - HTTPS everywhere
 
 ### Level 2 (Sensitive Data)
+
 - All L1 requirements plus:
 - MFA for sensitive operations
 - Cryptographic key management
@@ -273,6 +291,7 @@ def chat(msg: str, user: User):
 - Input validation on all parameters
 
 ### Level 3 (Critical Systems)
+
 - All L1/L2 requirements plus:
 - Hardware security modules for keys
 - Threat modeling documentation
@@ -308,6 +327,7 @@ When reviewing any language, think like a senior security researcher:
 ## When to Apply This Skill
 
 Use this skill when:
+
 - Writing authentication or authorization code
 - Handling user input or external data
 - Implementing cryptography or password storage

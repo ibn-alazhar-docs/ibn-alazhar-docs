@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { LocaleToggle } from "@/components/locale/locale-toggle";
-import { BRAND_NAME } from "@/lib/brand";
+import { BRAND_NAME } from "@/lib/frontend/brand";
 
 interface PublicHeaderProps {
   locale: string;

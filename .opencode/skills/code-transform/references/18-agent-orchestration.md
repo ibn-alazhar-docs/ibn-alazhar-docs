@@ -3,6 +3,7 @@
 > Read this when the project is large enough that a single pass can't cover everything. Spawn sub-agents for different dimensions, then synthesize their findings. This is how you "flip everything in the project."
 
 ## Table of Contents
+
 1. [When to Orchestrate Agents](#when-to-orchestrate-agents)
 2. [The Orchestration Pattern](#the-orchestration-pattern)
 3. [Agent Roles](#agent-roles)
@@ -14,12 +15,14 @@
 ## When to Orchestrate Agents
 
 **Use agent orchestration when**:
+
 - The codebase has >10 files (one agent can't hold it all in context)
 - Multiple dimensions need auditing (architecture + security + testing + performance)
 - The user said "make everything perfect" (needs comprehensive coverage)
 - You have access to a Task tool that can spawn sub-agents
 
 **Don't orchestrate when**:
+
 - The codebase is <5 files (one pass is sufficient)
 - Only one dimension needs auditing
 - You don't have sub-agent capability (work sequentially instead)
@@ -73,6 +76,7 @@
 Each agent has a specific scope. They don't overlap. They don't edit code — they only audit and report.
 
 ### Agent 1: Architecture Auditor
+
 ```
 Task: Audit the architecture of this codebase.
 Scope: services/, repositories/, controllers/, models/, domain/
@@ -87,6 +91,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 2: Security Auditor
+
 ```
 Task: Audit security of this codebase.
 Scope: auth/, controllers/, middleware/, config/, all files with SQL/inputs
@@ -102,6 +107,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 3: Database Auditor
+
 ```
 Task: Audit database design and queries.
 Scope: migrations/, schema files, repositories/, ORM models
@@ -117,6 +123,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 4: Testing Auditor
+
 ```
 Task: Audit test coverage and quality.
 Scope: tests/, test config
@@ -131,6 +138,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 5: Performance Auditor
+
 ```
 Task: Audit performance.
 Scope: hot-path files, queries, frontend bundle, loops
@@ -147,6 +155,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 6: UI/UX Auditor
+
 ```
 Task: Audit frontend code organization and accessibility.
 Scope: frontend/, components/, styles/, design tokens
@@ -162,6 +171,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 7: Code Quality Auditor
+
 ```
 Task: Audit code quality.
 Scope: ALL source files (one at a time)
@@ -178,6 +188,7 @@ Do NOT edit code. Report only.
 ```
 
 ### Agent 8: DevOps Auditor
+
 ```
 Task: Audit DevOps infrastructure.
 Scope: .github/, Dockerfile, docker-compose, terraform/, Makefile
@@ -199,16 +210,21 @@ Do NOT edit code. Report only.
 After all agents report, the orchestrator synthesizes:
 
 ### Step 1: Merge Findings
+
 Collect all findings from all agents into a single list. Deduplicate (the same issue may be found by multiple agents).
 
 ### Step 2: Cross-Reference
+
 Look for findings that interact:
+
 - An architecture violation (service doing DB access) + a security issue (SQL injection in that DB access) = compound risk
 - A missing test + a complex function = high regression risk
 - A performance hotspot + high churn = bug predictor
 
 ### Step 3: Prioritize
+
 Apply the priority matrix:
+
 - P0 (Critical + Low effort) = fix immediately
 - P1 (Critical + High effort) = next session
 - P2 (High + Low effort) = quick win
@@ -216,34 +232,41 @@ Apply the priority matrix:
 - P4-P5 = backlog
 
 ### Step 4: Generate BLUEPRINT.md
+
 Write the prioritized plan with:
+
 - Session-by-session breakdown
 - Dependencies between transformations
 - Verification strategy per transformation
 - Risk assessment per transformation
 
 ### Step 5: Assign to Execution Agents (optional)
+
 For execution, spawn agents per batch:
+
 - Agent A: fix all P0 security issues
 - Agent B: fix all P0 architecture issues
 - Agent C: fix all P2 quick wins
-Each execution agent follows the 5-pass protocol + verification loop.
+  Each execution agent follows the 5-pass protocol + verification loop.
 
 ---
 
 ## Parallel vs Sequential
 
 ### Parallel (preferred for audit)
+
 Spawn all audit agents simultaneously. Each is independent. Collect results when all complete.
 
 **When**: Phase 1 (AUDIT). All dimensions are independent.
 
 ### Sequential (required for execution)
+
 Execute transformations one at a time. Each depends on the previous (baseline shifts after each commit).
 
 **When**: Phase 3 (EXECUTE). Transformations must be sequential (one per commit).
 
 ### Mixed (for large projects)
+
 - Phase 1 (AUDIT): parallel — spawn 8 agents, collect 8 reports
 - Phase 2 (PRIORITIZE): sequential — one orchestrator merges and prioritizes
 - Phase 3 (EXECUTE): sequential — one agent at a time, with verification between each

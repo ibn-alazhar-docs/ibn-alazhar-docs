@@ -33,6 +33,7 @@ Every service should monitor: **Latency** (p50/p95/p99), **Traffic** (req/s), **
 **RED Method** (request-driven): Rate, Errors, Duration | **USE Method** (infrastructure): Utilization, Saturation, Errors
 
 **Quick Start - Web Application Example**:
+
 ```promql
 # Rate (requests/sec)
 sum(rate(http_requests_total[5m]))
@@ -81,6 +82,7 @@ aws cloudwatch get-metric-statistics \
 Every log entry should include: timestamp (ISO 8601), log level, message, service name, request ID (for tracing).
 
 **Example structured log (JSON)**:
+
 ```json
 {
   "timestamp": "2024-10-28T14:32:15Z",
@@ -127,11 +129,11 @@ python3 scripts/log_analyzer.py application.log --show-traces
 
 ### Alert Severity Levels
 
-| Severity | Response Time | Example |
-|----------|--------------|---------|
-| **Critical** | Page immediately | Service down, SLO violation |
-| **Warning** | Ticket, review in hours | Elevated error rate, resource warning |
-| **Info** | Log for awareness | Deployment completed, scaling event |
+| Severity     | Response Time           | Example                               |
+| ------------ | ----------------------- | ------------------------------------- |
+| **Critical** | Page immediately        | Service down, SLO violation           |
+| **Warning**  | Ticket, review in hours | Elevated error rate, resource warning |
+| **Info**     | Log for awareness       | Deployment completed, scaling event   |
 
 ### Multi-Window Burn Rate Alerting
 
@@ -176,6 +178,7 @@ python3 scripts/alert_quality_checker.py /path/to/prometheus/rules/
 Production-ready alert rule templates:
 
 **→ Templates**:
+
 - [assets/templates/prometheus-alerts/webapp-alerts.yml](assets/templates/prometheus-alerts/webapp-alerts.yml) - Web application alerts
 - [assets/templates/prometheus-alerts/kubernetes-alerts.yml](assets/templates/prometheus-alerts/kubernetes-alerts.yml) - Kubernetes alerts
 
@@ -240,12 +243,12 @@ SLI (measurement), SLO (target), Error Budget (allowed failure = 100% - SLO). Se
 
 ### Common SLO Targets
 
-| Availability | Downtime/Month | Use Case |
-|--------------|----------------|----------|
-| **99%** | 7.2 hours | Internal tools |
-| **99.9%** | 43.2 minutes | Standard production |
-| **99.95%** | 21.6 minutes | Critical services |
-| **99.99%** | 4.3 minutes | High availability |
+| Availability | Downtime/Month | Use Case            |
+| ------------ | -------------- | ------------------- |
+| **99%**      | 7.2 hours      | Internal tools      |
+| **99.9%**    | 43.2 minutes   | Standard production |
+| **99.95%**   | 21.6 minutes   | Critical services   |
+| **99.99%**   | 4.3 minutes    | High availability   |
 
 ### SLO Calculator
 
@@ -281,6 +284,7 @@ python3 scripts/slo_calculator.py burn-rate \
 ### When to Use Tracing
 
 Use distributed tracing when you need to:
+
 - Debug performance issues across services
 - Understand request flow through microservices
 - Identify bottlenecks in distributed systems
@@ -289,6 +293,7 @@ Use distributed tracing when you need to:
 ### OpenTelemetry Implementation
 
 **Python example**:
+
 ```python
 from opentelemetry import trace
 
@@ -316,6 +321,7 @@ def process_order(order_id):
 - **Production**: 1-10% (or error-based sampling)
 
 **Error-based sampling** (always sample errors, 1% of successes):
+
 ```python
 class ErrorSampler(Sampler):
     def should_sample(self, parent_context, trace_id, name, **kwargs):
@@ -380,13 +386,13 @@ Migration to open-source stack (Prometheus + Grafana, Loki, Tempo/Jaeger, Alertm
 
 ## 8. Tool Selection & Comparison
 
-| Solution | Monthly Cost (100 hosts) | Best For |
-|----------|-------------------------|----------|
-| Prometheus + Loki + Tempo | $1,500 | Kubernetes, budget-conscious, ops-capable teams |
-| Grafana Cloud | $3,000 | Open-source stack, low ops overhead |
-| Datadog | $8,000 | Ease of use, full observability out of the box |
-| ELK Stack | $4,000 | Heavy log analysis, powerful search |
-| CloudWatch | $2,000 | Single AWS provider, simple needs |
+| Solution                  | Monthly Cost (100 hosts) | Best For                                        |
+| ------------------------- | ------------------------ | ----------------------------------------------- |
+| Prometheus + Loki + Tempo | $1,500                   | Kubernetes, budget-conscious, ops-capable teams |
+| Grafana Cloud             | $3,000                   | Open-source stack, low ops overhead             |
+| Datadog                   | $8,000                   | Ease of use, full observability out of the box  |
+| ELK Stack                 | $4,000                   | Heavy log analysis, powerful search             |
+| CloudWatch                | $2,000                   | Single AWS provider, simple needs               |
 
 **Deep dive**: `references/tool_comparison.md` — full comparison of metrics, logging, tracing, and full-stack platforms
 
@@ -460,4 +466,3 @@ See `references/quick_commands.md` for Kubernetes, Elasticsearch, Loki, and Clou
 **References**: `metrics_design.md` | `alerting_best_practices.md` | `logging_guide.md` | `tracing_guide.md` | `slo_sla_guide.md` | `tool_comparison.md` | `datadog_migration.md` | `dql_promql_translation.md`
 
 **Templates**: `prometheus-alerts/webapp-alerts.yml` | `prometheus-alerts/kubernetes-alerts.yml` | `otel-config/collector-config.yaml` | `runbooks/incident-runbook-template.md`
-

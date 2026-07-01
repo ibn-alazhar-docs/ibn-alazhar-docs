@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 6 — Visual Guard | "I refactored the LoginForm" → diff before/after |
-| Phase 9 — Acceptance | Compare against design spec / Figma reference |
-| Phase 11 — Pre-deploy | Diff staging vs production screenshots |
+| Trigger                     | Example                                                      |
+| --------------------------- | ------------------------------------------------------------ |
+| Phase 6 — Visual Guard      | "I refactored the LoginForm" → diff before/after             |
+| Phase 9 — Acceptance        | Compare against design spec / Figma reference                |
+| Phase 11 — Pre-deploy       | Diff staging vs production screenshots                       |
 | Phase 13 — Self-improvement | "Were visual diffs too noisy this run? Tighten sensitivity." |
-| Bug report | "Looks broken on Chrome" → diff Chrome vs Firefox render |
+| Bug report                  | "Looks broken on Chrome" → diff Chrome vs Firefox render     |
 
 **Do NOT use this for:** taking screenshots (use `screenshot-capture`), a11y audits (use `accessibility-auditor`), responsive sweeps (use `responsive-validator`). This sub-skill compares **two existing images** — it does not capture them.
 
@@ -73,14 +73,15 @@ OUTPUT (JSON to stdout):
 
 ## Diff Algorithms (when to use which)
 
-| Algorithm | Best for | Speed | Sensitivity |
-|-----------|----------|-------|-------------|
-| **Pixelmatch** (default) | Most cases — fast, catches everything | ~50ms per image | High (per-pixel) |
-| **SSIM** | Layout shifts where pixel diff is misleading (e.g. text reflow) | ~200ms per image | Medium (structural) |
-| **pHash** | "Did the page totally change?" triage | ~10ms per image | Low (perceptual hash) |
-| **Combined** (Pixelmatch + SSIM) | Production acceptance | ~250ms per image | Highest (catches both pixel and structural) |
+| Algorithm                        | Best for                                                        | Speed            | Sensitivity                                 |
+| -------------------------------- | --------------------------------------------------------------- | ---------------- | ------------------------------------------- |
+| **Pixelmatch** (default)         | Most cases — fast, catches everything                           | ~50ms per image  | High (per-pixel)                            |
+| **SSIM**                         | Layout shifts where pixel diff is misleading (e.g. text reflow) | ~200ms per image | Medium (structural)                         |
+| **pHash**                        | "Did the page totally change?" triage                           | ~10ms per image  | Low (perceptual hash)                       |
+| **Combined** (Pixelmatch + SSIM) | Production acceptance                                           | ~250ms per image | Highest (catches both pixel and structural) |
 
 Default to Pixelmatch. Switch to SSIM when:
+
 - Pixel diff is > 5% but the page looks identical to a human (likely anti-aliasing or font rendering)
 - You're testing a redesign where you expect color changes but want to catch layout shifts
 
@@ -88,11 +89,11 @@ Default to Pixelmatch. Switch to SSIM when:
 
 The hardest part of visual diffing is setting tolerance — too strict, every run fails on anti-aliasing noise; too loose, real bugs slip through.
 
-| Tolerance knob | Default | When to tighten | When to loosen |
-|----------------|---------|------------------|----------------|
-| `tolerance` (pixel %) | 0.001 (0.1%) | After 3+ false positives in a row → 0.0005 | If legit changes are flagged → 0.005 |
-| `color-tolerance` (ΔE) | 2.0 | For dark-mode testing → 1.0 | For non-color-critical apps → 5.0 |
-| `min-region-size` | 100 px² | For icon-sized UI → 25 px² | For dashboard with many small widgets → 400 px² |
+| Tolerance knob         | Default      | When to tighten                            | When to loosen                                  |
+| ---------------------- | ------------ | ------------------------------------------ | ----------------------------------------------- |
+| `tolerance` (pixel %)  | 0.001 (0.1%) | After 3+ false positives in a row → 0.0005 | If legit changes are flagged → 0.005            |
+| `color-tolerance` (ΔE) | 2.0          | For dark-mode testing → 1.0                | For non-color-critical apps → 5.0               |
+| `min-region-size`      | 100 px²      | For icon-sized UI → 25 px²                 | For dashboard with many small widgets → 400 px² |
 
 **Auto-tune mode** (set `--auto-tune`): the validator learns from past runs. If a baseline+current pair gets 5+ "false positive" reports from the user/meta-auditor, it bumps tolerance for that specific route automatically. Logged in `OMNIPROJECT_SELF_IMPROVEMENT.md`.
 
@@ -135,6 +136,7 @@ python3 scripts/browser_agent.py diff \
 ## Baseline Management
 
 Baselines live in `/screenshots/baselines/<route>/<viewport>.png`. Naming convention:
+
 ```
 screenshots/baselines/
   login/
@@ -148,6 +150,7 @@ screenshots/baselines/
 ```
 
 Operations:
+
 ```bash
 # Capture baseline (Phase 4 or first Phase 6 run)
 python3 scripts/browser_agent.py baseline --route /login --viewports mobile,desktop
@@ -163,29 +166,30 @@ python3 scripts/browser_agent.py baseline-remove --route /old-page
 
 ## Common Diff Patterns & Their Meanings
 
-| Pattern in diff image | Likely cause | Action |
-|------------------------|--------------|--------|
-| Single small region, text-shaped | Text content changed | Check if intentional (data) or regression (hardcoded) |
-| Full-width stripe at top/bottom | Header/footer height changed | Likely a CSS regression — check padding |
-| Scattered single pixels | Anti-aliasing noise | Below threshold — ignore |
-| Large region, color-only | Theme color changed | Check if intentional (dark mode toggle?) |
-| Shifted region (same shape, different position) | Layout shift | Real regression — find the CSS change |
-| Missing element region (transparent in current) | Element not rendered | Critical — check console errors |
-| Added element region (transparent in baseline) | New element appeared | Check if intentional feature |
+| Pattern in diff image                           | Likely cause                 | Action                                                |
+| ----------------------------------------------- | ---------------------------- | ----------------------------------------------------- |
+| Single small region, text-shaped                | Text content changed         | Check if intentional (data) or regression (hardcoded) |
+| Full-width stripe at top/bottom                 | Header/footer height changed | Likely a CSS regression — check padding               |
+| Scattered single pixels                         | Anti-aliasing noise          | Below threshold — ignore                              |
+| Large region, color-only                        | Theme color changed          | Check if intentional (dark mode toggle?)              |
+| Shifted region (same shape, different position) | Layout shift                 | Real regression — find the CSS change                 |
+| Missing element region (transparent in current) | Element not rendered         | Critical — check console errors                       |
+| Added element region (transparent in baseline)  | New element appeared         | Check if intentional feature                          |
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| 100% diff (every pixel changed) | Images are different sizes after resize | Check viewport consistency — same viewport for both? |
-| Diff image is all red but page looks identical | Anti-aliasing or sub-pixel rendering | Switch to SSIM, or increase color-tolerance |
-| Diff image shows nothing but `diff_percentage` is high | Ignore regions covering the changes | Re-examine ignore-regions — too aggressive? |
-| Baseline not found | First run on this route | Auto-capture baseline, mark as "new" (not a regression) |
-| `FileNotFoundError` on current.png | Screenshot capture failed | Route to `screenshot-capture` first |
+| Symptom                                                | Cause                                   | Recovery                                                |
+| ------------------------------------------------------ | --------------------------------------- | ------------------------------------------------------- |
+| 100% diff (every pixel changed)                        | Images are different sizes after resize | Check viewport consistency — same viewport for both?    |
+| Diff image is all red but page looks identical         | Anti-aliasing or sub-pixel rendering    | Switch to SSIM, or increase color-tolerance             |
+| Diff image shows nothing but `diff_percentage` is high | Ignore regions covering the changes     | Re-examine ignore-regions — too aggressive?             |
+| Baseline not found                                     | First run on this route                 | Auto-capture baseline, mark as "new" (not a regression) |
+| `FileNotFoundError` on current.png                     | Screenshot capture failed               | Route to `screenshot-capture` first                     |
 
 ## Self-Healing Loop
 
 When diff FAILS:
+
 1. Identify diff regions (bounding boxes)
 2. For each region, classify the cause (text change? color change? layout shift? missing element?)
 3. If text change → check if data-driven (acceptable) or hardcoded (regression)
@@ -206,6 +210,7 @@ When diff FAILS:
 ## Phase 6 Visual Guard (the main use case)
 
 After every UI commit in Phase 6:
+
 ```
 1. Identify routes affected by the change (via git diff)
 2. For each route + viewport pair:

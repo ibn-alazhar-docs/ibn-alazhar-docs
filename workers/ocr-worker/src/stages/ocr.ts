@@ -11,7 +11,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import { generateSearchablePdf, updateDocStatus } from "../helpers";
-import { logger } from "../../../shared/logger";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerOcrStage(config: PipelineConfig): void {
   createOcrWorker(config, async (job: ProcessingJob) => {

@@ -3,6 +3,7 @@
 > Read this during Dimension 1 (Architecture) of the AUDIT phase. Check layering, dependency direction, DDD compliance, and boundary design.
 
 ## Table of Contents
+
 1. [Audit Checklist](#audit-checklist)
 2. [Layer Violation Detection](#layer-violation-detection)
 3. [DDD Compliance](#ddd-compliance)
@@ -56,26 +57,32 @@ INNER layers MUST NOT import OUTER layers.
 ### How to Check
 
 1. **For each service file**: grep for I/O imports.
+
    ```bash
    git grep -n "import sqlite3\|import requests\|from flask\|require('express')" -- "services/**"
    ```
+
    Any match = violation.
 
 2. **For each model/entity file**: grep for service/controller/repository imports.
+
    ```bash
    git grep -n "from.*service\|from.*controller\|from.*repository" -- "models/**"
    ```
+
    Any match = violation.
 
 3. **For each controller file**: grep for direct DB calls.
+
    ```bash
    git grep -n "db\.execute\|db\.query\|SELECT\|INSERT\|UPDATE\|DELETE" -- "controllers/**"
    ```
+
    Any match = mixed concerns.
 
 4. **Use the layer_violation_detector.py script**:
    ```bash
-   python3 scripts/layer_violation_detector.py . 
+   python3 scripts/layer_violation_detector.py .
    ```
 
 ---
@@ -87,11 +94,13 @@ INNER layers MUST NOT import OUTER layers.
 **Check**: Does the codebase have one "User" model used everywhere, or different User models for different contexts (auth, billing, profile)?
 
 **BAD** (one model for everything):
+
 ```
 models/user.py  →  used by auth, billing, profile, admin, notifications
 ```
 
 **GOOD** (bounded contexts):
+
 ```
 auth/context/user.py       →  User(id, email, password_hash)
 billing/context/user.py    →  User(id, payment_method, balance)
@@ -103,6 +112,7 @@ profile/context/user.py    →  User(id, name, bio, avatar)
 **Check**: Are there consistency boundaries? Is there one aggregate modified per transaction?
 
 **BAD** (modifying multiple aggregates in one transaction):
+
 ```python
 def place_order(order):
     user_repo.save(user)          # modifying User aggregate
@@ -112,6 +122,7 @@ def place_order(order):
 ```
 
 **GOOD** (one aggregate per transaction, use events for the rest):
+
 ```python
 def place_order(order):
     order_repo.save(order)  # only Order aggregate
@@ -123,11 +134,13 @@ def place_order(order):
 **Check**: Are domain concepts modeled as value objects (immutable, always valid)?
 
 **BAD** (primitives):
+
 ```python
 def charge(amount: float, currency: str): ...
 ```
 
 **GOOD** (value objects):
+
 ```python
 def charge(amount: Money): ...  # Money(amount, currency) — always valid
 ```
@@ -137,6 +150,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 ## Common Architecture Smells
 
 ### AS1. Anemic Domain Model
+
 **Definition**: Domain models are just data bags with no behavior. All logic lives in services.
 
 **Detection**: models/ directory has only data classes (fields, getters, setters). Services/ directory has all the logic.
@@ -144,6 +158,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 **Fix**: Move business rules into the domain model. `Order.cancel()` instead of `OrderService.cancel(order)`.
 
 ### AS2. God Service
+
 **Definition**: One service doing everything (CRUD + notifications + reports + payments).
 
 **Detection**: Service file >300 lines or >10 public methods.
@@ -151,6 +166,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 **Fix**: Split by responsibility. `UserService`, `NotificationService`, `ReportService`, `PaymentService`.
 
 ### AS3. Leaky Repository
+
 **Definition**: Repository returns DB rows/ORM objects instead of domain models.
 
 **Detection**: Repository methods return `Row`, `dict`, or ORM model objects. Callers access `.column_name` or `["column_name"]`.
@@ -158,6 +174,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 **Fix**: Repository should hydrate to domain models at the boundary. Return `User` not `UserRow`.
 
 ### AS4. Shared Database Anti-Pattern
+
 **Definition**: Multiple services read/write the same database tables.
 
 **Detection**: Multiple services import the same repository or ORM models.
@@ -165,6 +182,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 **Fix**: Each service owns its database. Communication via API contracts or events.
 
 ### AS5. Circular Dependencies
+
 **Definition**: A imports B, B imports A (or longer cycles).
 
 **Detection**: Run dependency analysis (`madge --circular .` for JS, `pydeps --show-cycles` for Python).
@@ -176,6 +194,7 @@ def charge(amount: Money): ...  # Money(amount, currency) — always valid
 ## Architecture Improvement Recipes
 
 ### AIR1. Extract Layer (Service → Repository)
+
 **When**: service does DB access directly.
 
 ```python
@@ -203,6 +222,7 @@ class OrderService:
 ```
 
 ### AIR2. Introduce Bounded Context
+
 **When**: one User model used across auth, billing, profile.
 
 ```
@@ -216,6 +236,7 @@ profile/models/user.py  (User: id, name, bio, avatar)
 ```
 
 ### AIR3. Enrich Anemic Domain Model
+
 **When**: domain models are just data; all logic in services.
 
 ```python

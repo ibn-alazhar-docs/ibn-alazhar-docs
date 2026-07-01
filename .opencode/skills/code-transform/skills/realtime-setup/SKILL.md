@@ -14,15 +14,15 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 2 — AUDIT | Dimension 5 finds `setInterval(fetch, 2000)` polling for state that should be pushed | Polling wastes bandwidth and adds latency; push is the right pattern for live data |
-| Phase 2 — AUDIT | Dimension 5 finds a WebSocket with no reconnect logic | Connection drops are inevitable; without reconnect, the app goes silent |
-| Phase 2 — AUDIT | Dimension 4 (Security) finds a WebSocket with no auth on handshake | Unauthenticated WebSocket = anyone can listen / inject |
-| Phase 6 — EXECUTE | User says "add real-time", "add chat", "add live notifications", "add collaborative editing", "add live dashboard" | This is the executing sub-skill |
-| Phase 6 — EXECUTE | Migrating transports (long polling → WebSocket, WebSocket → SSE for one-way) | Full replace of client + server transport layer |
-| Phase 9 — ACCEPTANCE | Open a connection, verify auth, simulate drop + reconnect, verify heartbeat works | Real-time fails silently — must walk the full connect→auth→message→drop→reconnect loop |
-| Phase 11 — ROLLOUT | Verify sticky session cookie set, Redis pub/sub wired, connection limits documented | Multi-server real-time without Redis pub/sub = messages lost when client is on a different server |
+| Phase                | Trigger                                                                                                            | Why                                                                                               |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| Phase 2 — AUDIT      | Dimension 5 finds `setInterval(fetch, 2000)` polling for state that should be pushed                               | Polling wastes bandwidth and adds latency; push is the right pattern for live data                |
+| Phase 2 — AUDIT      | Dimension 5 finds a WebSocket with no reconnect logic                                                              | Connection drops are inevitable; without reconnect, the app goes silent                           |
+| Phase 2 — AUDIT      | Dimension 4 (Security) finds a WebSocket with no auth on handshake                                                 | Unauthenticated WebSocket = anyone can listen / inject                                            |
+| Phase 6 — EXECUTE    | User says "add real-time", "add chat", "add live notifications", "add collaborative editing", "add live dashboard" | This is the executing sub-skill                                                                   |
+| Phase 6 — EXECUTE    | Migrating transports (long polling → WebSocket, WebSocket → SSE for one-way)                                       | Full replace of client + server transport layer                                                   |
+| Phase 9 — ACCEPTANCE | Open a connection, verify auth, simulate drop + reconnect, verify heartbeat works                                  | Real-time fails silently — must walk the full connect→auth→message→drop→reconnect loop            |
+| Phase 11 — ROLLOUT   | Verify sticky session cookie set, Redis pub/sub wired, connection limits documented                                | Multi-server real-time without Redis pub/sub = messages lost when client is on a different server |
 
 **Do NOT use this sub-skill for:** mobile push notifications (use FCM/APNs — async, not real-time), video streaming (use HLS/DASH — different protocol), or batch data sync (use polling or webhook — real-time is overkill). This sub-skill is for **interactive** real-time only.
 
@@ -216,18 +216,18 @@ Q6: Connection limits?
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Messages lost when client on server B | No Redis pub/sub fanout | Add Redis pub/sub; each server subscribes to channels for its connections |
-| Client goes silent after 30s | Connection dropped, no reconnect | Client implements exponential backoff reconnect: 1s, 2s, 4s, ..., 30s max + jitter |
-| Server OOM from slow consumer | Backpressure not handled | Track per-connection send buffer; if > 1MB, pause or close; never block on slow client |
-| Connection drops every 30s | Heartbeat ping/pong misconfigured | Server pings every 30s; client must pong within 60s; no pong = dead = close |
-| Sticky session not working | LB not routing by cookie, or cookie not set | Verify LB config (ALB: stickiness.enabled=true); verify cookie `Set-Cookie` on response |
-| Auth bypass on WebSocket | No validation on handshake | Validate token in `Connection: Upgrade` handler; reject before WS upgrade completes |
-| 100% CPU after 5k connections | Per-connection goroutine/thread overhead | Use async I/O (uvicorn, Node cluster); tune `uvloop` (Python) / libuv (Node) |
-| Reconnect storm after server restart | All clients reconnect simultaneously | Add jitter to backoff (±20%); add random initial delay (0-5s) |
-| SSE blocked by corporate proxy | Proxy buffers `text/event-stream` | Set `X-Accel-Buffering: no` (Nginx); use WebSocket as fallback |
-| WebRTC fails through NAT | No TURN server | Deploy coturn; configure `iceServers` with TURN credentials |
+| Symptom                               | Cause                                       | Recovery                                                                                |
+| ------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Messages lost when client on server B | No Redis pub/sub fanout                     | Add Redis pub/sub; each server subscribes to channels for its connections               |
+| Client goes silent after 30s          | Connection dropped, no reconnect            | Client implements exponential backoff reconnect: 1s, 2s, 4s, ..., 30s max + jitter      |
+| Server OOM from slow consumer         | Backpressure not handled                    | Track per-connection send buffer; if > 1MB, pause or close; never block on slow client  |
+| Connection drops every 30s            | Heartbeat ping/pong misconfigured           | Server pings every 30s; client must pong within 60s; no pong = dead = close             |
+| Sticky session not working            | LB not routing by cookie, or cookie not set | Verify LB config (ALB: stickiness.enabled=true); verify cookie `Set-Cookie` on response |
+| Auth bypass on WebSocket              | No validation on handshake                  | Validate token in `Connection: Upgrade` handler; reject before WS upgrade completes     |
+| 100% CPU after 5k connections         | Per-connection goroutine/thread overhead    | Use async I/O (uvicorn, Node cluster); tune `uvloop` (Python) / libuv (Node)            |
+| Reconnect storm after server restart  | All clients reconnect simultaneously        | Add jitter to backoff (±20%); add random initial delay (0-5s)                           |
+| SSE blocked by corporate proxy        | Proxy buffers `text/event-stream`           | Set `X-Accel-Buffering: no` (Nginx); use WebSocket as fallback                          |
+| WebRTC fails through NAT              | No TURN server                              | Deploy coturn; configure `iceServers` with TURN credentials                             |
 
 ## Self-Healing Loop
 

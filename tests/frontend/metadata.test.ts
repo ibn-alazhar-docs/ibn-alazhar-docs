@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { siteName, siteNameAr, getLocaleUrl, generatePageMetadata } from "@/lib/metadata";
+import { siteName, siteNameAr, getLocaleUrl, generatePageMetadata } from "@/lib/frontend/metadata";
 
 const siteUrl = "https://ibnalazhar-docs.vercel.app";
 

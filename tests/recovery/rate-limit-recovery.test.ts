@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { checkRateLimit, cleanupExpiredEntries } from "@/lib/rate-limit";
+import { checkRateLimit, cleanupExpiredEntries } from "@/lib/backend/rate-limit";
 
 function makeRequest(ip: string): Request {
   return new Request("http://localhost/api/test", {

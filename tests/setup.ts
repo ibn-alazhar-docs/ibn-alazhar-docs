@@ -1,6 +1,6 @@
 import { vi } from "vitest";
 
-vi.mock("@/lib/auth", () => ({
+vi.mock("@/lib/backend/auth", () => ({
   auth: vi.fn(),
 }));
 

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { requireAuth } from "@/lib/auth-guards";
+import { requireAuth } from "@/lib/backend/auth-guards";
 import { SettingsContent } from "./settings-content";
 import { PageTransition } from "@/components/ui/page-transition";
-import { DURATIONS } from "@/lib/constants";
+import { DURATIONS } from "@/lib/shared/constants";
 
 interface SettingsPageProps {
   params: Promise<{ locale: string }>;

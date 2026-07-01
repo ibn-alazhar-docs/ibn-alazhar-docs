@@ -10,7 +10,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatus, parsePageRange } from "../helpers";
-import { logger } from "../../../shared/logger";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerSplittingStage(config: PipelineConfig): void {
   createSplittingWorker(config, async (job: ProcessingJob) => {

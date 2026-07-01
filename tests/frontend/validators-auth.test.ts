@@ -4,7 +4,7 @@ import {
   registerSchema,
   profileUpdateSchema,
   adminUserUpdateSchema,
-} from "@/lib/validators/auth";
+} from "@/lib/shared/validators/auth";
 
 describe("loginSchema", () => {
   it("valid input passes", () => {

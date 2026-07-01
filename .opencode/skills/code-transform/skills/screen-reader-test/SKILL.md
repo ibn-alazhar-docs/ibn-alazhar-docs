@@ -357,12 +357,7 @@ Reading Controls (swipe up then right):
 
 ```html
 <!-- Accessible modal structure -->
-<div
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="dialog-title"
-  aria-describedby="dialog-desc"
->
+<div role="dialog" aria-modal="true" aria-labelledby="dialog-title" aria-describedby="dialog-desc">
   <h2 id="dialog-title">Confirm Delete</h2>
   <p id="dialog-desc">This action cannot be undone.</p>
   <button>Cancel</button>
@@ -443,27 +438,15 @@ function trapFocus(e) {
 
 ```html
 <div role="tablist" aria-label="Product information">
-  <button role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1">
-    Description
-  </button>
-  <button
-    role="tab"
-    id="tab-2"
-    aria-selected="false"
-    aria-controls="panel-2"
-    tabindex="-1"
-  >
+  <button role="tab" id="tab-1" aria-selected="true" aria-controls="panel-1">Description</button>
+  <button role="tab" id="tab-2" aria-selected="false" aria-controls="panel-2" tabindex="-1">
     Reviews
   </button>
 </div>
 
-<div role="tabpanel" id="panel-1" aria-labelledby="tab-1">
-  Product description content...
-</div>
+<div role="tabpanel" id="panel-1" aria-labelledby="tab-1">Product description content...</div>
 
-<div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
-  Reviews content...
-</div>
+<div role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>Reviews content...</div>
 ```
 
 ```javascript

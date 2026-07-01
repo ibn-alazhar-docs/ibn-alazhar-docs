@@ -14,14 +14,14 @@ metadata:
 
 ## When to Use
 
-| Phase | Trigger | Why |
-|-------|---------|-----|
-| Phase 4 — AUDIT | Dimension 9 flags "Redux for everything" | Split server state out |
-| Phase 6 — EXECUTE | Any commit touching store / hooks / data fetching | Re-run related flows |
-| Phase 9 — ACCEPTANCE | "Cart updates instantly" AC | Prove optimistic update + rollback works |
-| Bug report | "Stale data after mutation" | Likely React Query cache key mismatch |
+| Phase                | Trigger                                           | Why                                      |
+| -------------------- | ------------------------------------------------- | ---------------------------------------- |
+| Phase 4 — AUDIT      | Dimension 9 flags "Redux for everything"          | Split server state out                   |
+| Phase 6 — EXECUTE    | Any commit touching store / hooks / data fetching | Re-run related flows                     |
+| Phase 9 — ACCEPTANCE | "Cart updates instantly" AC                       | Prove optimistic update + rollback works |
+| Bug report           | "Stale data after mutation"                       | Likely React Query cache key mismatch    |
 
-**Do NOT use this sub-skill for:** form field state (use `form-validation`), UI state local to one component (use `useState`), or styling tokens (use `css-styling`). This sub-skill owns *cross-component state architecture*.
+**Do NOT use this sub-skill for:** form field state (use `form-validation`), UI state local to one component (use `useState`), or styling tokens (use `css-styling`). This sub-skill owns _cross-component state architecture_.
 
 ## What It Does
 
@@ -114,9 +114,10 @@ Q: Is this state from a state machine (multi-step wizard, onboarding)?
 ## Patterns
 
 ### Separate server from client
+
 ```ts
 // ✅ Server state — React Query
-const { data: user } = useQuery({ queryKey: ['user', userId], queryFn: () => api.getUser(userId) });
+const { data: user } = useQuery({ queryKey: ["user", userId], queryFn: () => api.getUser(userId) });
 
 // ✅ Client state — Zustand
 const useCart = create<Cart>((set) => ({
@@ -129,24 +130,26 @@ const [sort, setSort] = useSearchParams();
 ```
 
 ### Optimistic update + rollback
+
 ```ts
 const useUpdateProfile = () => {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: api.updateProfile,
     onMutate: async (newProfile) => {
-      await qc.cancelQueries({ queryKey: ['user'] });
-      const prev = qc.getQueryData(['user']);
-      qc.setQueryData(['user'], newProfile);     // optimistic
-      return { prev };                             // context for rollback
+      await qc.cancelQueries({ queryKey: ["user"] });
+      const prev = qc.getQueryData(["user"]);
+      qc.setQueryData(["user"], newProfile); // optimistic
+      return { prev }; // context for rollback
     },
-    onError: (_e, _v, ctx) => qc.setQueryData(['user'], ctx?.prev),  // rollback
-    onSettled: () => qc.invalidateQueries({ queryKey: ['user'] }),    // re-fetch truth
+    onError: (_e, _v, ctx) => qc.setQueryData(["user"], ctx?.prev), // rollback
+    onSettled: () => qc.invalidateQueries({ queryKey: ["user"] }), // re-fetch truth
   });
 };
 ```
 
 ### Selectors for derived state
+
 ```ts
 // ✅ Zustand selector — only re-renders when count changes
 const count = useCart((s) => s.items.length);
@@ -161,6 +164,7 @@ const total = items.reduce(...);
 ```
 
 ### Normalization (for collections)
+
 ```ts
 // RTK Query normalizedCache OR manual:
 // { entities: { [id]: Item }, ids: string[] }
@@ -169,18 +173,19 @@ const total = items.reduce(...);
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| Stale data after mutation | Cache key mismatch | Use `qc.invalidateQueries({ queryKey: ['user'] })` in `onSettled` |
-| Re-render storm | Selecting whole store: `useStore((s) => s)` | Select narrow slice: `useStore((s) => s.items.length)` |
-| Cart empties on refresh | Cart in Redux (lost on reload) | Persist via `zustand/middleware persist` OR move to server |
-| Optimistic update stuck | No rollback on error | Add `onError` with context rollback |
-| Mutations fire twice (React 18 StrictMode) | Side effects in reducer | Move to `useEffect` / mutation callback |
-| Race condition (switch user, see old user's data) | No query cancellation | `await qc.cancelQueries(...)` in `onMutate` |
+| Symptom                                           | Cause                                       | Recovery                                                          |
+| ------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------- |
+| Stale data after mutation                         | Cache key mismatch                          | Use `qc.invalidateQueries({ queryKey: ['user'] })` in `onSettled` |
+| Re-render storm                                   | Selecting whole store: `useStore((s) => s)` | Select narrow slice: `useStore((s) => s.items.length)`            |
+| Cart empties on refresh                           | Cart in Redux (lost on reload)              | Persist via `zustand/middleware persist` OR move to server        |
+| Optimistic update stuck                           | No rollback on error                        | Add `onError` with context rollback                               |
+| Mutations fire twice (React 18 StrictMode)        | Side effects in reducer                     | Move to `useEffect` / mutation callback                           |
+| Race condition (switch user, see old user's data) | No query cancellation                       | `await qc.cancelQueries(...)` in `onMutate`                       |
 
 ## Self-Healing Loop
 
 When a state violation is found:
+
 1. Identify the rule (`no-server-in-redux`, `use-selector`, `optimistic-rollback`, `normalize-collections`)
 2. Apply the mechanical fix (extract selector, add rollback, migrate slice to `useQuery`)
 3. Re-run the related Playwright flow (delegated to `webapp-testing`)

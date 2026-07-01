@@ -1,8 +1,9 @@
-import { NotFoundError, ConflictError, ValidationError } from "@/lib/errors";
-import { MAX_TAGS_PER_USER } from "@/lib/validators/tag";
-import { ownedWhere, type AuthSession } from "@/lib/auth-guards";
+import { NotFoundError, ConflictError, ValidationError } from "@/lib/shared/errors";
+import { MAX_TAGS_PER_USER } from "@/lib/shared/validators/tag";
+import { ownedWhere } from "@/core/authorization";
+import type { AuthSession } from "@/domain/types";
 import { isAdminRole } from "@/domain/auth";
-import { DEFAULT_TAG_COLOR, LIMITS } from "@/lib/constants";
+import { DEFAULT_TAG_COLOR, LIMITS } from "@/lib/shared/constants";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
 

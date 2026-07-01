@@ -14,13 +14,13 @@ metadata:
 
 ## When to Use
 
-| Trigger | Example |
-|---------|---------|
-| Phase 4 — Audit baseline | "What's our a11y debt?" |
-| Phase 6 — A11y Guard | "I added a new form" → re-audit affected routes |
-| Phase 9 — Acceptance | Every AC that mentions "accessible" or "WCAG" |
-| Phase 11 — Pre-deploy | Final a11y gate before production |
-| Bug report | "User can't tab past the modal" → repro + fix |
+| Trigger                  | Example                                         |
+| ------------------------ | ----------------------------------------------- |
+| Phase 4 — Audit baseline | "What's our a11y debt?"                         |
+| Phase 6 — A11y Guard     | "I added a new form" → re-audit affected routes |
+| Phase 9 — Acceptance     | Every AC that mentions "accessible" or "WCAG"   |
+| Phase 11 — Pre-deploy    | Final a11y gate before production               |
+| Bug report               | "User can't tab past the modal" → repro + fix   |
 
 **Do NOT use this for:** performance audits (use `lighthouse-scanner`), visual diffing (use `visual-diff`), layout validation (use `responsive-validator`). This sub-skill is specifically for **WCAG / WAI-ARIA compliance**.
 
@@ -92,24 +92,24 @@ OUTPUT (JSON to stdout):
 
 The auditor checks all WCAG 2.2 AA success criteria that can be programmatically tested:
 
-| WCAG criterion | What's checked | Tool |
-|----------------|----------------|------|
-| 1.1.1 Non-text Content | All `<img>` have `alt` (or `role="presentation"`) | axe |
-| 1.3.1 Info and Relationships | Form fields have labels, headings hierarchical | axe |
-| 1.4.3 Contrast (Minimum) | Text contrast ≥ 4.5:1 (or 3:1 for large text) | axe + Lighthouse |
-| 1.4.4 Resize Text | Page works at 200% zoom | Lighthouse + manual |
-| 1.4.10 Reflow | No horizontal scroll at 320px width | axe + responsive-validator |
-| 1.4.11 Non-text Contrast | UI components ≥ 3:1 contrast | axe |
-| 2.1.1 Keyboard | All interactions work with keyboard | manual sim |
-| 2.1.2 No Keyboard Trap | Focus can leave any component | manual sim |
-| 2.4.1 Bypass Blocks | Skip link present and functional | axe |
-| 2.4.3 Focus Order | Tab order matches visual order | manual sim |
-| 2.4.4 Link Purpose | Links have discernible text | axe |
-| 2.4.6 Headings and Labels | Headings descriptive, not empty | axe |
-| 2.4.7 Focus Visible | Focus indicator visible | axe + manual sim |
-| 3.3.2 Labels or Instructions | Form fields have instructions | axe |
-| 4.1.2 Name, Role, Value | All UI elements have accessible name | axe |
-| 4.1.3 Status Messages | Status updates announced via `role="status"` | axe |
+| WCAG criterion               | What's checked                                    | Tool                       |
+| ---------------------------- | ------------------------------------------------- | -------------------------- |
+| 1.1.1 Non-text Content       | All `<img>` have `alt` (or `role="presentation"`) | axe                        |
+| 1.3.1 Info and Relationships | Form fields have labels, headings hierarchical    | axe                        |
+| 1.4.3 Contrast (Minimum)     | Text contrast ≥ 4.5:1 (or 3:1 for large text)     | axe + Lighthouse           |
+| 1.4.4 Resize Text            | Page works at 200% zoom                           | Lighthouse + manual        |
+| 1.4.10 Reflow                | No horizontal scroll at 320px width               | axe + responsive-validator |
+| 1.4.11 Non-text Contrast     | UI components ≥ 3:1 contrast                      | axe                        |
+| 2.1.1 Keyboard               | All interactions work with keyboard               | manual sim                 |
+| 2.1.2 No Keyboard Trap       | Focus can leave any component                     | manual sim                 |
+| 2.4.1 Bypass Blocks          | Skip link present and functional                  | axe                        |
+| 2.4.3 Focus Order            | Tab order matches visual order                    | manual sim                 |
+| 2.4.4 Link Purpose           | Links have discernible text                       | axe                        |
+| 2.4.6 Headings and Labels    | Headings descriptive, not empty                   | axe                        |
+| 2.4.7 Focus Visible          | Focus indicator visible                           | axe + manual sim           |
+| 3.3.2 Labels or Instructions | Form fields have instructions                     | axe                        |
+| 4.1.2 Name, Role, Value      | All UI elements have accessible name              | axe                        |
+| 4.1.3 Status Messages        | Status updates announced via `role="status"`      | axe                        |
 
 Criteria that can't be tested programmatically (e.g. 3.1.5 Reading Level) are flagged as "manual review needed" in the report.
 
@@ -117,16 +117,16 @@ Criteria that can't be tested programmatically (e.g. 3.1.5 Reading Level) are fl
 
 The auditor can auto-apply fixes for common, low-risk issues:
 
-| Issue | Auto-Fix |
-|-------|----------|
-| `<img>` missing `alt` | Add `alt=""` (decorative) IF image is in a button with text; otherwise flag for manual review |
-| `<button>` with icon only (no text) | Add `aria-label` derived from context (e.g. "Close" for `.close-button`) |
-| `<input>` without `<label>` | Add `aria-label` derived from `placeholder` or surrounding text |
-| Heading order skipped (h1 → h3) | Renumber to h1 → h2 → h3 |
-| `lang` attribute missing on `<html>` | Add `lang="en"` (or detected locale) |
-| Missing skip link | Add `<a href="#main" class="skip-link">Skip to main content</a>` at top of body |
-| Color contrast too low (simple case) | Adjust text color to nearest passing color (preserve hue) |
-| Form field without `autocomplete` | Add `autocomplete` based on field name (email, password, name, etc.) |
+| Issue                                | Auto-Fix                                                                                      |
+| ------------------------------------ | --------------------------------------------------------------------------------------------- |
+| `<img>` missing `alt`                | Add `alt=""` (decorative) IF image is in a button with text; otherwise flag for manual review |
+| `<button>` with icon only (no text)  | Add `aria-label` derived from context (e.g. "Close" for `.close-button`)                      |
+| `<input>` without `<label>`          | Add `aria-label` derived from `placeholder` or surrounding text                               |
+| Heading order skipped (h1 → h3)      | Renumber to h1 → h2 → h3                                                                      |
+| `lang` attribute missing on `<html>` | Add `lang="en"` (or detected locale)                                                          |
+| Missing skip link                    | Add `<a href="#main" class="skip-link">Skip to main content</a>` at top of body               |
+| Color contrast too low (simple case) | Adjust text color to nearest passing color (preserve hue)                                     |
+| Form field without `autocomplete`    | Add `autocomplete` based on field name (email, password, name, etc.)                          |
 
 Auto-fixes are applied via `frontend-bridge`, committed with `fix(a11y):` prefix. Each auto-fix includes a before/after screenshot for review.
 
@@ -137,6 +137,7 @@ Auto-fixes are applied via `frontend-bridge`, committed with `fix(a11y):` prefix
 Beyond axe-core, the auditor simulates user interactions to catch issues automated rules miss:
 
 ### Keyboard-Only Navigation Test
+
 1. Reload page
 2. Press Tab repeatedly
 3. For each focus change:
@@ -148,7 +149,9 @@ Beyond axe-core, the auditor simulates user interactions to catch issues automat
 5. Record full focus path as a list of element selectors
 
 ### Screen Reader Semantics Check
+
 Without running an actual screen reader (slow), the auditor checks:
+
 - Every interactive element has an accessible name (via `aria-label`, `aria-labelledby`, or text content)
 - Headings are properly nested (h1 → h2 → h3, no skips)
 - Landmarks exist (`<main>`, `<nav>`, `<header>`, `<footer>`, `<aside>`)
@@ -158,10 +161,13 @@ Without running an actual screen reader (slow), the auditor checks:
 - Dynamic content updates use `aria-live` regions
 
 ### High Contrast Mode
+
 Force `forced-colors: active` and re-screenshot. Elements that disappear in high contrast (e.g. borders-only buttons with no background) are flagged.
 
 ### 200% Zoom Test
+
 Set browser zoom to 200% (or viewport to half-size + deviceScaleFactor 2). Check:
+
 - No horizontal scrollbar appears
 - Text remains readable
 - No elements overlap
@@ -188,16 +194,17 @@ python3 scripts/browser_agent.py a11y --url http://localhost:3000 --report /scre
 
 ## Violation Severity & Action
 
-| Severity | Examples | Action |
-|----------|----------|--------|
+| Severity     | Examples                                                         | Action                                                              |
+| ------------ | ---------------------------------------------------------------- | ------------------------------------------------------------------- |
 | **Critical** | Modal not keyboard-trapped, button with no name, focus invisible | BLOCKS commit. Auto-fix if possible, else route to frontend-bridge. |
-| **Serious** | Contrast < 4.5:1, missing form label, missing `lang` | Route to frontend-bridge. Auto-fix where safe. |
-| **Moderate** | Heading skip, missing skip-link, no `aria-live` on status | Batch fix in Phase 6. |
-| **Minor** | Best-practice issues (e.g. heading used for styling only) | Log, fix opportunistically. |
+| **Serious**  | Contrast < 4.5:1, missing form label, missing `lang`             | Route to frontend-bridge. Auto-fix where safe.                      |
+| **Moderate** | Heading skip, missing skip-link, no `aria-live` on status        | Batch fix in Phase 6.                                               |
+| **Minor**    | Best-practice issues (e.g. heading used for styling only)        | Log, fix opportunistically.                                         |
 
 ## Self-Healing Loop
 
 When a Critical/Serious violation is found:
+
 1. Check if auto-fixable (consult Auto-Fix Rules table)
 2. If yes: apply fix via `frontend-bridge`, re-audit, confirm violation resolved
 3. If no: capture detailed diagnostics (HTML, screenshot, selector) → route to `frontend-bridge` with specific guidance
@@ -206,16 +213,17 @@ When a Critical/Serious violation is found:
 
 ## Phase-Specific Behavior
 
-| Phase | Engines | Manual sim | Auto-fix | Fail-on |
-|-------|---------|------------|----------|---------|
-| Phase 4 (baseline) | axe | keyboard only | off | none (record baseline) |
-| Phase 6 (guard) | axe | none | on | critical |
-| Phase 9 (acceptance) | axe + lighthouse | all | off | serious |
-| Phase 11 (pre-deploy) | axe + lighthouse | all | off | critical |
+| Phase                 | Engines          | Manual sim    | Auto-fix | Fail-on                |
+| --------------------- | ---------------- | ------------- | -------- | ---------------------- |
+| Phase 4 (baseline)    | axe              | keyboard only | off      | none (record baseline) |
+| Phase 6 (guard)       | axe              | none          | on       | critical               |
+| Phase 9 (acceptance)  | axe + lighthouse | all           | off      | serious                |
+| Phase 11 (pre-deploy) | axe + lighthouse | all           | off      | critical               |
 
 ## Reports
 
 The HTML report (generated when `--report` is passed) includes:
+
 - Summary card: pass/fail per route
 - Per-violation: rule, severity, element, HTML snippet, screenshot, suggested fix
 - Keyboard flow visualization (focus path through the page)
@@ -225,13 +233,13 @@ The HTML report (generated when `--report` is passed) includes:
 
 ## Failure Modes & Recovery
 
-| Symptom | Cause | Recovery |
-|---------|-------|----------|
-| axe-core injection fails | CSP blocks inline scripts | Use Lighthouse only, flag CSP issue for Phase 4 audit |
-| Lighthouse returns 0 score | Page didn't load | Check `live-preview` started the app |
-| False positive on contrast | Background is gradient (axe uses average color) | Manually verify, add `// axe-disable` comment if needed |
-| Keyboard test "stuck" on element | Real keyboard trap | Critical bug — route to `frontend-bridge` immediately |
-| Auto-fix broke the page | Bad fix (e.g. added `aria-label` with wrong text) | Revert fix, route to manual review |
+| Symptom                          | Cause                                             | Recovery                                                |
+| -------------------------------- | ------------------------------------------------- | ------------------------------------------------------- |
+| axe-core injection fails         | CSP blocks inline scripts                         | Use Lighthouse only, flag CSP issue for Phase 4 audit   |
+| Lighthouse returns 0 score       | Page didn't load                                  | Check `live-preview` started the app                    |
+| False positive on contrast       | Background is gradient (axe uses average color)   | Manually verify, add `// axe-disable` comment if needed |
+| Keyboard test "stuck" on element | Real keyboard trap                                | Critical bug — route to `frontend-bridge` immediately   |
+| Auto-fix broke the page          | Bad fix (e.g. added `aria-label` with wrong text) | Revert fix, route to manual review                      |
 
 ## Tools
 

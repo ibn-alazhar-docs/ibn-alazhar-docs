@@ -4,7 +4,7 @@ import {
   renameFolderSchema,
   moveFolderSchema,
   MAX_FOLDER_DEPTH,
-} from "@/lib/validators/folder";
+} from "@/lib/shared/validators/folder";
 
 describe("MAX_FOLDER_DEPTH", () => {
   it("is 5", () => {
