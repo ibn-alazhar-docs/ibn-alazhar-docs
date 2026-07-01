@@ -6,6 +6,11 @@ export function ownedWhere(
   session: AuthSession,
   userIdField = "userId",
 ): Record<string, unknown> {
-  if (isAdminRole(session.user.role)) return baseWhere;
-  return { ...baseWhere, [userIdField]: session.user.id };
+  const where = isAdminRole(session.user.role)
+    ? { ...baseWhere }
+    : { ...baseWhere, [userIdField]: session.user.id };
+  if (!("deletedAt" in where)) {
+    where.deletedAt = null;
+  }
+  return where;
 }

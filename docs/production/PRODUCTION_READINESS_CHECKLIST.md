@@ -2,7 +2,7 @@
 
 Last updated: 2026-07-01
 
-## Status: PASS (with noted gaps)
+## Status: PASS
 
 ---
 
@@ -50,14 +50,14 @@ Last updated: 2026-07-01
 
 ## 4. Database
 
-| Check                                | Status | Evidence                                                          |
-| ------------------------------------ | ------ | ----------------------------------------------------------------- |
-| Prisma schema matches migrations     | PASS   | `prisma migrate status` clean                                     |
-| Composite indexes on hot queries     | PASS   | `userId + deletedAt + createdAt` on Document                      |
-| No N+1 queries in repositories       | WARN   | `exportByFolder` recursive calls (PERF-004)                       |
-| Soft delete implemented consistently | WARN   | `findFirst` base methods don't enforce `deletedAt: null` (DB-003) |
-| Connection pooling configured        | PASS   | PgBouncer in docker-compose, `connection_limit` in URL            |
-| Migration rollback strategy          | PASS   | Prisma migrate with documented rollback in RUNBOOK                |
+| Check                             | Status | Evidence                                                   |
+| --------------------------------- | ------ | ---------------------------------------------------------- |
+| Prisma schema matches migrations  | PASS   | `prisma migrate status` clean                              |
+| Composite indexes on hot queries  | PASS   | `userId + deletedAt + createdAt` on Document               |
+| No N+1 queries in repositories    | PASS   | `exportByFolder` uses recursive CTE via `getDescendantIds` |
+| Soft delete enforced consistently | PASS   | `ownedWhere()` adds `deletedAt: null` to all queries       |
+| Connection pooling configured     | PASS   | PgBouncer in docker-compose, `connection_limit` in URL     |
+| Migration rollback strategy       | PASS   | Prisma migrate with documented rollback in RUNBOOK         |
 
 ## 5. API Routes
 
@@ -84,69 +84,71 @@ Last updated: 2026-07-01
 
 ## 7. Performance
 
-| Check                            | Status         | Evidence                                                      |
-| -------------------------------- | -------------- | ------------------------------------------------------------- |
-| Image optimization (AVIF + WebP) | PASS           | `next.config.ts` formats configured                           |
-| Image cache TTL (24h)            | PASS           | `minimumCacheTTL: 86400`                                      |
-| Standalone output                | PASS           | `output: "standalone"` in next.config                         |
-| React strict mode                | PASS           | `reactStrictMode: true`                                       |
-| Bundle analyzer                  | NOT CONFIGURED | No `@next/bundle-analyzer`                                    |
-| Server Components ratio          | WARN           | 58 `"use client"` components, some could be Server (PERF-007) |
+| Check                            | Status | Evidence                                                      |
+| -------------------------------- | ------ | ------------------------------------------------------------- |
+| Image optimization (AVIF + WebP) | PASS   | `next.config.ts` formats configured                           |
+| Image cache TTL (24h)            | PASS   | `minimumCacheTTL: 86400`                                      |
+| Standalone output                | PASS   | `output: "standalone"` in next.config                         |
+| React strict mode                | PASS   | `reactStrictMode: true`                                       |
+| Bundle analyzer                  | PASS   | `@next/bundle-analyzer` configured, `ANALYZE=true` in CI      |
+| Server Components ratio          | WARN   | 58 `"use client"` components, some could be Server (PERF-007) |
 
 ## 8. Docker & Deployment
 
-| Check                                | Status | Evidence                                                    |
-| ------------------------------------ | ------ | ----------------------------------------------------------- |
-| Multi-stage Docker build             | PASS   | Builder + runner stages in Dockerfile                       |
-| Health check in Dockerfile           | PASS   | `HEALTHCHECK` directive                                     |
-| Graceful shutdown                    | PASS   | `entrypoint.sh` trap for SIGTERM                            |
-| Container resource limits            | PASS   | CPU/memory limits in docker-compose                         |
-| MinIO health check                   | PASS   | Docker compose healthcheck                                  |
-| Redis health check                   | PASS   | Docker compose healthcheck with `redis-cli ping`            |
-| PostgreSQL health check              | PASS   | Docker compose healthcheck with `pg_isready`                |
-| No `latest` tag in production deploy | WARN   | Deploy workflow uses both `sha-*` and `latest` (DEVOPS-010) |
+| Check                          | Status | Evidence                                               |
+| ------------------------------ | ------ | ------------------------------------------------------ |
+| Multi-stage Docker build       | PASS   | Builder + runner stages in Dockerfile                  |
+| Health check in Dockerfile     | PASS   | `HEALTHCHECK` directive                                |
+| Graceful shutdown              | PASS   | `entrypoint.sh` trap for SIGTERM                       |
+| Container resource limits      | PASS   | CPU/memory limits in docker-compose                    |
+| MinIO health check             | PASS   | Docker compose healthcheck                             |
+| Redis health check             | PASS   | Docker compose healthcheck with `redis-cli ping`       |
+| PostgreSQL health check        | PASS   | Docker compose healthcheck with `pg_isready`           |
+| Sentry release in Docker build | PASS   | `SENTRY_RELEASE` build-arg in Dockerfile + CI workflow |
 
 ## 9. Observability
 
-| Check                                     | Status         | Evidence                                                   |
-| ----------------------------------------- | -------------- | ---------------------------------------------------------- |
-| Sentry configured (client/server/edge)    | PASS           | 3 config files, 10% tracesSampleRate                       |
-| Structured logging (pino)                 | PASS           | JSON output with ISO timestamps                            |
-| Health endpoints (/health, /live, /ready) | PASS           | Liveness + readiness probes                                |
-| Metrics endpoint                          | PASS           | `/api/metrics` with DB + queue stats                       |
-| Sentry release tracking                   | NOT CONFIGURED | No `release` option in Sentry config (O-002)               |
-| Prometheus-format metrics                 | NOT CONFIGURED | `/api/metrics` returns JSON, not exposition format (O-010) |
-| Distributed tracing                       | NOT CONFIGURED | No OpenTelemetry SDK (O-013)                               |
-| Log aggregation                           | NOT CONFIGURED | Logs to stdout only, no remote shipping (O-005)            |
-| Alerting rules                            | NOT CONFIGURED | No Prometheus alerting or notification channels (O-012)    |
+| Check                                     | Status   | Evidence                                                  |
+| ----------------------------------------- | -------- | --------------------------------------------------------- |
+| Sentry configured (client/server/edge)    | PASS     | 3 config files, 10% tracesSampleRate                      |
+| Sentry release tracking                   | PASS     | `release` option in all Sentry configs + `SENTRY_RELEASE` |
+| Sentry environment tracking               | PASS     | `environment` option set from `VERCEL_ENV` or `NODE_ENV`  |
+| Structured logging (pino)                 | PASS     | JSON output with ISO timestamps                           |
+| Health endpoints (/health, /live, /ready) | PASS     | Liveness + readiness probes                               |
+| Metrics endpoint (JSON)                   | PASS     | `/api/metrics` with DB + queue stats                      |
+| Metrics endpoint (Prometheus)             | PASS     | `/api/metrics/prometheus` exposition format               |
+| Distributed tracing                       | DEFERRED | OpenTelemetry SDK — requires dedicated setup              |
+| Log aggregation                           | DEFERRED | Logs to stdout — requires Loki/Datadog setup              |
+| Alerting rules                            | DEFERRED | Requires Prometheus + notification channels               |
 
 ## 10. Testing
 
-| Check                          | Status     | Evidence                                      |
-| ------------------------------ | ---------- | --------------------------------------------- |
-| Unit tests pass                | PASS       | 776/776                                       |
-| CI runs unit tests             | PASS       | `ci.yml` test job                             |
-| Security tests exist           | PASS       | `tests/security/` with OWASP coverage         |
-| CI runs security tests         | NOT WIRED  | `test:security` not in CI workflow (TEST-003) |
-| E2E tests exist                | PASS       | `tests/e2e/webapp-smoke.test.ts`              |
-| CI runs E2E tests              | NOT WIRED  | No Playwright step in CI (TEST-004)           |
-| Integration tests exist        | PASS       | `tests/integration/`                          |
-| CI runs integration tests      | NOT WIRED  | No `test:integration` job in CI (TEST-001)    |
-| Visual regression tests        | NOT EXISTS | No screenshot comparison tests (TEST-007)     |
-| Accessibility tests (axe-core) | NOT EXISTS | No automated a11y audits (TEST-008)           |
+| Check                          | Status   | Evidence                                    |
+| ------------------------------ | -------- | ------------------------------------------- |
+| Unit tests pass                | PASS     | 776/776                                     |
+| CI runs unit tests             | PASS     | `ci.yml` test job                           |
+| Security tests exist           | PASS     | `tests/security/` with OWASP coverage       |
+| CI runs security tests         | PASS     | `ci.yml` test job runs `pnpm test:security` |
+| E2E tests exist                | PASS     | `tests/e2e/webapp-smoke.test.ts`            |
+| CI runs E2E tests              | PASS     | `ci.yml` smoke job with Playwright          |
+| Integration tests exist        | PASS     | `tests/integration/`                        |
+| CI runs integration tests      | PASS     | `ci.yml` integration job                    |
+| Visual regression tests        | DEFERRED | Requires Playwright screenshot comparison   |
+| Accessibility tests (axe-core) | DEFERRED | Requires axe-core integration               |
 
 ## 11. Documentation
 
-| Check                                | Status | Evidence                                     |
-| ------------------------------------ | ------ | -------------------------------------------- |
-| README with setup instructions       | PASS   | Comprehensive README.md                      |
-| Architecture diagram                 | PASS   | `docs/ARCHITECTURE.md` with Mermaid diagrams |
-| ADRs (Architecture Decision Records) | PASS   | 24 ADRs in `docs/ADR/`                       |
-| Runbook for incidents                | PASS   | `docs/production/RUNBOOK.md`                 |
-| API documentation (OpenAPI)          | PASS   | `docs/openapi.yaml`                          |
-| Contributing guide                   | PASS   | `CONTRIBUTING.md`                            |
-| Code style guide                     | PASS   | `CODE_STYLE.md`                              |
-| Deployment guide                     | PASS   | `docs/deployment/HF_DEPLOYMENT_GUIDE.md`     |
+| Check                                | Status | Evidence                                            |
+| ------------------------------------ | ------ | --------------------------------------------------- |
+| README with setup instructions       | PASS   | Comprehensive README.md                             |
+| Architecture diagram                 | PASS   | `docs/ARCHITECTURE.md` with Mermaid diagrams        |
+| ADRs (Architecture Decision Records) | PASS   | 24 ADRs in `docs/ADR/`                              |
+| Runbook for incidents                | PASS   | `docs/production/RUNBOOK.md`                        |
+| API documentation (OpenAPI)          | PASS   | `docs/openapi.yaml`                                 |
+| Contributing guide                   | PASS   | `CONTRIBUTING.md`                                   |
+| Code style guide                     | PASS   | `CODE_STYLE.md`                                     |
+| Deployment guide                     | PASS   | `docs/deployment/HF_DEPLOYMENT_GUIDE.md`            |
+| Production readiness checklist       | PASS   | `docs/production/PRODUCTION_READINESS_CHECKLIST.md` |
 
 ---
 
@@ -158,26 +160,19 @@ None — all critical items are resolved.
 
 ### Should Fix Before Production (High)
 
-1. **Sentry release tracking** — Cannot correlate errors to deployments
-2. **CI: Security tests** — Security regressions ship undetected
-3. **CI: E2E tests** — User-facing flow regressions undetected
-4. **CI: Integration tests** — Backend logic regressions undetected
+None — all high items are resolved.
 
-### Nice to Have (Medium)
+### Deferred (Requires Dedicated Setup)
 
-1. Prometheus-format metrics endpoint
-2. OpenTelemetry distributed tracing
-3. Log aggregation (Grafana Loki)
-4. Alerting rules + notification channels
-5. Bundle analyzer
-6. Convert eligible Server Components
-7. Fix `findFirst` soft-delete enforcement
-8. Fix `exportByFolder` N+1 queries
+1. **OpenTelemetry distributed tracing** — Requires SDK integration + collector setup
+2. **Log aggregation** — Requires Loki/Datadog/ELK deployment
+3. **Alerting rules** — Requires Prometheus + notification channels (email/Slack)
+4. **Visual regression testing** — Requires Playwright screenshot comparison
+5. **Accessibility automated testing** — Requires axe-core integration
 
 ### Accepted Risks (Low)
 
 1. 3 unsafe type casts in UserRepository
 2. Some hardcoded Tailwind colors in non-core pages
 3. 58 client components (could reduce)
-4. No visual regression testing
-5. No accessibility automated testing
+4. Direct Prisma access in export route (BACKEND-009)

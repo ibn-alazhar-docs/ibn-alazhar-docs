@@ -228,9 +228,9 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate
         name: Prisma generate
-      - run: npx next build
+      - run: ANALYZE=true npx next build
         working-directory: apps/web
-        name: Next.js build
+        name: Next.js build with bundle analysis
       - name: Check bundle size
         working-directory: apps/web
         run: |
@@ -313,6 +313,8 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
+          build-args: |
+            SENTRY_RELEASE=${{ github.sha }}
           tags: |
             ghcr.io/${{ github.repository }}/web:latest
             ghcr.io/${{ github.repository }}/web:${{ github.sha }}

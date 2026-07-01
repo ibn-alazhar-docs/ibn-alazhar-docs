@@ -203,9 +203,8 @@ export class ExportUseCases {
     const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
-    const { generateMarkdown, generateTxt, generateJson } = await import(
-      "@ibn-al-azhar-docs/pipeline"
-    );
+    const { generateMarkdown, generateTxt, generateJson } =
+      await import("@ibn-al-azhar-docs/pipeline");
     const cleaned = generateMarkdown(rawText, { pageCount: pipeline.pageCount });
 
     let outputBuffer: Buffer;
@@ -356,20 +355,11 @@ export class ExportUseCases {
     const folder = await this.folderRepository.findFirst(ownedWhere({ id: folderId }, session));
     if (!folder) throw new NotFoundError("Folder not found");
 
-    const folderIds: string[] = [folderId];
+    let folderIds: string[] = [folderId];
 
     if (options.recursive) {
-      const collectChildFolderIds = async (parentId: string): Promise<void> => {
-        const children = await this.folderRepository.findMany({
-          where: ownedWhere({ parentId }, session),
-          select: { id: true },
-        });
-        for (const child of children) {
-          folderIds.push(child.id);
-          await collectChildFolderIds(child.id);
-        }
-      };
-      await collectChildFolderIds(folderId);
+      const descendantIds = await this.folderRepository.getDescendantIds(folderId, session.user.id);
+      folderIds = [...folderIds, ...descendantIds];
     }
 
     const documents = await this.documentRepository.findMany({
