@@ -124,7 +124,7 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 | Command                 | Suite            | Tests | Notes                                |
 | ----------------------- | ---------------- | ----- | ------------------------------------ |
-| `pnpm test`             | Unit             | 783   | `tests/backend/` + `tests/frontend/` |
+| `pnpm test`             | Unit             | 776   | `tests/backend/` + `tests/frontend/` |
 | `pnpm test:integration` | Integration      | —     | Requires running DB                  |
 | `pnpm test:security`    | Security         | 213+  | OWASP coverage                       |
 | `pnpm test:pentest`     | Penetration      | —     | Requires running DB                  |
