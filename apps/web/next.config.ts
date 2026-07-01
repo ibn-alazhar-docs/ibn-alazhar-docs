@@ -83,13 +83,14 @@ const nextConfig: NextConfig = {
 };
 
 // Cloudflare Workers dev support — only import when running under wrangler
-try {
-  if (process.env.CLOUDFLARE_WORKERS) {
-    const mod = await import("@opennextjs/cloudflare");
-    mod.initOpenNextCloudflareForDev();
-  }
-} catch {
-  // Not in Cloudflare environment — skip
+if (process.env.CLOUDFLARE_WORKERS) {
+  import("@opennextjs/cloudflare")
+    .then((mod) => {
+      mod.initOpenNextCloudflareForDev();
+    })
+    .catch(() => {
+      // Not in Cloudflare environment or failed to load — skip
+    });
 }
 
 export default withSentryConfig(withNextIntl(nextConfig), {
