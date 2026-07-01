@@ -35,6 +35,18 @@ export const PATCH = withAuth(async (request, { session, params }) => {
       session.user.id,
       validation.data,
     );
+
+    await auditLog({
+      userId: session.user.id,
+      action: AUDIT_ACTIONS.DOCUMENT_UPDATE,
+      entity: "document",
+      entityId: id,
+      metadata: { fields: Object.keys(validation.data) },
+      ipAddress:
+        request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
+      userAgent: request.headers.get("user-agent") ?? undefined,
+    });
+
     return NextResponse.json({ document: updated });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/PATCH", "حدث خطأ داخلي");

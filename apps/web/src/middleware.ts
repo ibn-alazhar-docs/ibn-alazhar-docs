@@ -40,8 +40,8 @@ export async function middleware(request: NextRequest) {
   // Generate request ID for tracing
   const requestId = request.headers.get("x-request-id") || generateRequestId();
 
-  // Skip static/internal Next.js paths
-  if (pathname.startsWith("/_next") || pathname.includes(".")) {
+  // Skip static/internal Next.js paths (only skip actual file extensions, not dots in paths)
+  if (pathname.startsWith("/_next") || /\.[a-zA-Z0-9]{2,5}$/.test(pathname)) {
     return NextResponse.next();
   }
 
@@ -121,6 +121,10 @@ export async function middleware(request: NextRequest) {
     } else {
       response.headers.set("Cache-Control", "private, no-store");
     }
+    // Security headers for API routes
+    response.headers.set("X-Content-Type-Options", "nosniff");
+    response.headers.set("X-Frame-Options", "DENY");
+    response.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
     return response;
   }
 

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/backend/auth-guards";
 import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { useCases } from "@/core/composition-root";
 
 const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
@@ -11,7 +11,7 @@ const CUID_REGEX = /^c[a-z0-9]{23,29}$/i;
 
 export const POST = withAuth(async (request, { session }) => {
   try {
-    const rateLimitResult = await checkRateLimit("/api/upload", request);
+    const rateLimitResult = await checkUserRateLimit("documents:create", session.user.id);
     if (!rateLimitResult.allowed) {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
