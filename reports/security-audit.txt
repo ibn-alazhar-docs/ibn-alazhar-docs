@@ -1,0 +1,59 @@
+================================================================================
+ SECURITY AUDIT — Ibn Al-Azhar Docs
+ Date: 2026-07-04
+ Tool: pnpm audit v10.33.4
+================================================================================
+
+VULNERABILITIES FOUND: 3
+Severity: 1 low | 2 moderate | 0 high | 0 critical
+
+────────────────────────────────────────────────────────────────────────────────
+1. [MODERATE] PostCSS XSS via Unescaped </style> in CSS Stringify Output
+────────────────────────────────────────────────────────────────────────────────
+Package:       postcss
+Affected:      <8.5.10
+Fixed:         >=8.5.10
+Path:          apps/web → next → postcss
+CVE:           GHSA-qx2v-qp2m-jg93
+Status:        ⚠ CANNOT AUTO-FIX — Transitive dep from next@16.2.9
+               next bundles its own postcss@8.4.31 internally.
+               Direct devDependency postcss is already at 8.5.10 (patched).
+               Will be resolved when Next.js updates their postcss dep.
+Mitigation:    LOW RISK — postcss runs at build time, not in the browser.
+
+────────────────────────────────────────────────────────────────────────────────
+2. [MODERATE] OpenTelemetry Core: Unbounded Memory in W3C Baggage Propagation
+────────────────────────────────────────────────────────────────────────────────
+Package:       @opentelemetry/core
+Affected:      <2.8.0
+Fixed:         >=2.8.0
+Path:          apps/web → @apitrail/core → @opentelemetry/sdk-trace-base → @opentelemetry/core
+CVE:           GHSA-8988-4f7v-96qf
+Status:        ⚠ CANNOT AUTO-FIX — Transitive dep from @apitrail/core@0.1.0-alpha.3
+               @apitrail/core pins @opentelemetry/sdk-trace-base@1.30.1.
+               Only affects dev-time API tracing, not production.
+Mitigation:    LOW RISK — Only used when APITRAIL_ENABLED=true in development.
+
+────────────────────────────────────────────────────────────────────────────────
+3. [LOW] esbuild Arbitrary File Read on Windows Dev Server
+────────────────────────────────────────────────────────────────────────────────
+Package:       esbuild
+Affected:      >=0.27.3 <0.28.1
+Fixed:         >=0.28.1
+Path:          root → vitest → vite → esbuild
+CVE:           GHSA-g7r4-m6w7-qqqr
+Status:        ✅ LIKELY PATCHED — Lockfile shows esbuild@0.28.1 (patched version)
+               Audit may report stale resolution.
+Mitigation:    N/A — This is a Windows-only issue. Project runs on Linux.
+
+================================================================================
+ SUMMARY
+================================================================================
+- 3 vulnerabilities identified: all low-to-moderate severity
+- 0 vulnerabilities directly exploitable in production
+- 2 vulnerabilities are transitive (next, @apitrail/core) — await upstream fixes
+- 1 vulnerability is Windows-only, lockfile already uses patched version
+- Security headers: CSP, CSRF, rate limiting, X-Frame-Options all active
+- HSTS: Currently disabled for testing (will be re-enabled)
+- CSP: Contains unsafe-inline/unsafe-eval (required for Next.js compatibility)
+================================================================================

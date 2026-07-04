@@ -99,6 +99,6 @@ Check `.opencode/context/active-phase.md` for the canonical current phase and sc
 - **Phase-locked**: Check `.opencode/context/active-phase.md` — do not implement outside current phase scope.
 - **Arabic-first / RTL-first**: UI defaults to Arabic. Use logical CSS (`ms-`/`me-` not `ml-`/`mr-`).
 - **Brand**: Green `#16A34A` (NOT `#10B981`), Gold `#CA8A04`, Gray `#1F2937`, Font Cairo.
-- **Code style**: `interface` over `type` for objects. Named exports only (except Next.js pages/layouts). Never use `any`. See CODE_STYLE.md.
+- **Code style**: `interface` over `type` for objects. Named exports only (except Next.js pages/layouts). Never use `any`. See [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md).
 - **`.opencode/` is the runtime OS**: Read `AI_OPERATING_RULES.md` and `SESSION_RULES.md` for mandatory agent rules.
-- **Other instruction files** (loaded by `opencode.json`): `CODE_STYLE.md`, `SECURITY.md`, `CONTRIBUTING.md`, `governance/*.md`.
+- **Other instruction files** (loaded by `opencode.json`): [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md), [`docs/governance/SECURITY_POLICY.md`](SECURITY_POLICY.md), `CONTRIBUTING.md`, `governance/*.md`.

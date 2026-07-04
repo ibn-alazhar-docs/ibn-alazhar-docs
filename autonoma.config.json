@@ -1,0 +1,46 @@
+{
+  "$schema": "https://raw.githubusercontent.com/autonoma-ai/autonoma/main/config.schema.json",
+  "name": "ibn-al-azhar-docs",
+  "baseUrl": "http://localhost:3000",
+  "browser": {
+    "type": "chromium",
+    "headless": true,
+    "viewport": {
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "tests": [
+    {
+      "name": "homepage-loads",
+      "description": "Verify homepage loads and displays Arabic content",
+      "url": "/",
+      "assertions": [
+        { "type": "element_exists", "selector": "h1" },
+        { "type": "text_contains", "selector": "body", "text": "أحمد" }
+      ]
+    },
+    {
+      "name": "documents-page",
+      "description": "Documents page loads and shows document list",
+      "url": "/documents",
+      "assertions": [{ "type": "element_exists", "selector": "[data-testid='documents-list']" }]
+    },
+    {
+      "name": "tags-management",
+      "description": "Tags page loads with tag management",
+      "url": "/tags",
+      "assertions": [{ "type": "element_exists", "selector": "h1" }]
+    },
+    {
+      "name": "dashboard-stats",
+      "description": "Dashboard shows statistics",
+      "url": "/dashboard",
+      "assertions": [{ "type": "element_exists", "selector": "h1" }]
+    }
+  ],
+  "ci": {
+    "failOnMissing": true,
+    "timeout": 60
+  }
+}

@@ -49,7 +49,7 @@ Welcome! We are excited that you are interested in contributing to **Ibn Al-Azha
 
 - **Branching:** Create a new branch for your feature or bugfix using the convention `feat/your-feature-name` or `fix/your-fix-name`.
 - **Commit Messages:** Follow [Conventional Commits](https://www.conventionalcommits.org/) — use `feat:`, `fix:`, `chore:`, `docs:`, `refactor:`, `test:` prefixes.
-- **Code Style:** Ensure your code adheres to our guidelines outlined in `CODE_STYLE.md`.
+- **Code Style:** Ensure your code adheres to our guidelines outlined in [`docs/reference/CODE_STYLE_GUIDE.md`](docs/reference/CODE_STYLE_GUIDE.md).
 - **Testing:** We use Vitest and Playwright. Tests require running infrastructure — start it with `./ibn.sh dev-infra` first, then run `pnpm test`.
 - **CI/CD:** Before pushing, always run `pnpm ci:all` locally to ensure Linting, Typechecking, and Tests pass cleanly.
 
