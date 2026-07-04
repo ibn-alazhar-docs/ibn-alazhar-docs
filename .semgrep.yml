@@ -1,0 +1,57 @@
+rules:
+  - id: no-eval
+    pattern: eval(...)
+    message: "Use of eval() is forbidden for security reasons"
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: ["CWE-95"]
+
+  - id: no-inner-html
+    pattern: |
+      $EL.innerHTML = $EXPR
+    message: "Direct innerHTML assignment risks XSS. Use textContent or a sanitization library."
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: ["CWE-79"]
+
+  - id: no-hardcoded-secrets
+    pattern-regex: "(?i)(password|secret|api_key|apikey|token)\\s*[=:]\\s*['\"][^'\"]{8,}['\"]"
+    message: "Possible hardcoded secret detected"
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: ["CWE-798"]
+
+  - id: no-sql-injection
+    pattern-regex: "\\$queryRaw\\$?.*\\+.*"
+    message: "Potential SQL injection via string concatenation in raw query"
+    languages: [typescript, javascript]
+    severity: ERROR
+    metadata:
+      cwe: ["CWE-89"]
+
+  - id: nextjs-no-raw-fetch
+    pattern-regex: "fetch\\(.*req\\.url"
+    message: "Avoid fetching user-controlled URLs server-side (SSRF risk)"
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      cwe: ["CWE-918"]
+
+  - id: no-console-log
+    pattern: console.log(...)
+    message: "console.log should not be committed to production code"
+    languages: [typescript, javascript]
+    severity: INFO
+    metadata:
+      category: best-practice
+
+  - id: no-process-exit
+    pattern: process.exit(...)
+    message: "Avoid process.exit() — throw an error instead"
+    languages: [typescript, javascript]
+    severity: WARNING
+    metadata:
+      category: best-practice

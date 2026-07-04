@@ -1,0 +1,51 @@
+{
+  "generatedAt": "2026-07-03T07:00:00Z",
+  "project": "Ibn Al-Azhar Docs",
+  "summary": "Codebase analysis via dependency-cruiser + manual census",
+  "sourceCensus": {
+    "typescriptFiles": 271,
+    "apiRoutes": 64,
+    "components": 64,
+    "useCases": 18,
+    "repositories": 12,
+    "domainInterfaces": 14,
+    "prismaModels": 16
+  },
+  "testCensus": {
+    "unitTests": 90,
+    "e2eTests": 8,
+    "apiIntegrationTests": 11,
+    "totalTestFiles": 109
+  },
+  "dependencyGraph": {
+    "totalEdges": 67,
+    "violations": 0,
+    "circularDependencies": 0,
+    "compositionRootImports": 31,
+    "monorepoPackages": 6
+  },
+  "architecture": {
+    "pattern": "Clean Architecture (DI via composition-root)",
+    "layers": [
+      "app/api/ (route handlers — thin)",
+      "core/use-cases/ (business logic)",
+      "core/repositories/ (Prisma implementations)",
+      "domain/ (types + interfaces)",
+      "lib/ (auth, validation, errors, storage)"
+    ],
+    "boundaries": {
+      "packagesDoNotImportApps": true,
+      "packagesDoNotImportWorkers": true,
+      "noCircularDeps": true
+    }
+  },
+  "securityHeaders": {
+    "csp": true,
+    "hsts": true,
+    "xFrameOptions": true,
+    "xContentTypeOptions": true,
+    "referrerPolicy": true,
+    "permissionsPolicy": true
+  },
+  "dependencyCruiserReport": "/tmp/depcruise-report.json"
+}
