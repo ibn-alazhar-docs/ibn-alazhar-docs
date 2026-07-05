@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DocumentCrudUseCases } from "@/core/use-cases/document-crud.use-cases";
+import { DocumentCrudUseCases } from "@/core/services/document-crud.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import { NotFoundError, AppError } from "@/lib/shared/errors";

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ConversionUseCases } from "@/core/use-cases/conversion.use-cases";
+import { ConversionUseCases } from "@/core/services/conversion.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
 import { NotFoundError } from "@/lib/shared/errors";
