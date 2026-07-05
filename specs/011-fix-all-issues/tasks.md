@@ -161,21 +161,21 @@
 - **Acceptance:** All pages have Arabic titles and descriptions
 - **Verify:** `grep -r "generateMetadata" apps/web/src/app --include="page.tsx" | wc -l` → matches page count
 
-## [ ] Task 9.1: Add CSP header
+## [X] Task 9.1: Add CSP header
 
 - **SP-N:** SP-9 (Security) | **AC:** AC-9.1 | **Estimated:** 0.5h
 - **Files:** apps/web/next.config.ts
 - **Acceptance:** Content-Security-Policy header configured
 - **Verify:** `grep -i "content-security-policy" apps/web/next.config.ts` → found
 
-## [ ] Task 10.1: Fix RTL content-flow classes
+## [X] Task 10.1: Fix RTL content-flow classes
 
 - **SP-N:** SP-5 (RTL compliance) | **AC:** AC-5.1 | **Estimated:** 1h
 - **Files:** Files with physical classes affecting content flow
 - **Acceptance:** Content-flow classes use logical equivalents
 - **Verify:** Spot-check key pages in RTL mode
 
-## [ ] Task 10.2: Document acceptable positioning uses
+## [X] Task 10.2: Document acceptable positioning uses
 
 - **SP-N:** SP-5 | **AC:** AC-5.2 | **Estimated:** 0.5h
 - **Files:** N/A (documentation)
