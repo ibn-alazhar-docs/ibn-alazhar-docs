@@ -40,11 +40,7 @@ export function Features() {
   const items = t.raw("items") as FeatureItem[];
 
   return (
-    <section
-      className="border-t border-[var(--border-subtle)] relative"
-      aria-labelledby="features-title"
-    >
-      {/* Decorative gradient blob */}
+    <section className="border-t border-border-subtle relative" aria-labelledby="features-title">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_70%)] opacity-[0.03] blur-[80px] pointer-events-none -z-10" />
 
       <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
@@ -56,7 +52,7 @@ export function Features() {
         >
           <span
             id="features-title"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--badge-bg)] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--text-tertiary)] uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-tertiary uppercase"
           >
             {t("title")}
           </span>
@@ -73,20 +69,19 @@ export function Features() {
             <motion.article
               variants={cardVariants}
               key={item.title}
-              className="glass group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] hover:border-[var(--gold)] sm:p-10 overflow-hidden"
+              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-10 overflow-hidden"
             >
-              {/* Subtle hover glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-[var(--gold)] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03]" />
+              <div className="absolute inset-0 bg-gradient-to-br from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--badge-bg)] border border-[var(--border-line)] text-[var(--gold)] transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-[var(--gold-bg)]">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/5 border border-gold/10 text-gold transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-gold/10">
                 <IconSlot index={index} className="h-6 w-6 fill-current" />
               </div>
 
-              <h3 className="heading-display-sm mt-2 text-xl font-bold text-[var(--text-primary)]">
+              <h3 className="heading-display-sm mt-2 text-xl font-bold text-primary-color">
                 {item.title}
               </h3>
 
-              <p className="max-w-lg text-sm leading-relaxed text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-300">
+              <p className="max-w-lg text-sm leading-relaxed text-secondary group-hover:text-primary-color transition-colors duration-300">
                 {item.description}
               </p>
             </motion.article>

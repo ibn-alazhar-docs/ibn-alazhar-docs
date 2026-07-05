@@ -5,7 +5,6 @@ button,
 }
 /* trigger rebuild */
 @import "./brand.css";
-@import "./motion.css";
 @import "./reading.css";
 @import "./discovery.css";
 @import "./landing.css";
@@ -104,18 +103,6 @@ button,
     box-shadow: var(--glass-shadow);
   }
 
-  .glass-strong {
-    background: linear-gradient(
-      135deg,
-      color-mix(in srgb, var(--glass-bg) 120%, var(--surface)),
-      var(--glass-bg)
-    );
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid var(--glass-border);
-    box-shadow: var(--glass-shadow);
-  }
-
   .glass-header {
     background: linear-gradient(
       180deg,
@@ -126,11 +113,19 @@ button,
     -webkit-backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--glass-border);
   }
+}
 
-  .text-gradient {
-    background: linear-gradient(135deg, hsl(142 76% 36%), hsl(41 96% 40%));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

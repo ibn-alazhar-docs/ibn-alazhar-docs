@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "motion/react";
-import { Link as LinkIcon, Trash2, Globe, Clock } from "lucide-react";
+import { LinkIcon, TrashIcon, GlobeIcon, ClockIcon } from "@/components/ui/icons";
 import { UI_TIMING } from "@/lib/shared/constants";
 
 interface ShareModalProps {
@@ -133,7 +133,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
             {/* Header */}
             <div className="border-b border-line px-6 py-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success-bg)] text-[var(--success)]">
-                <Globe className="h-5 w-5" />
+                <GlobeIcon className="h-5 w-5" />
               </div>
               <h3 className="text-lg font-semibold text-primary-color">{t("title")}</h3>
             </div>
@@ -182,7 +182,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                       disabled={loading}
                       className="flex items-center gap-2 text-sm font-medium text-[var(--danger)] hover:text-[var(--danger)]/80 disabled:opacity-50 transition-colors"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <TrashIcon className="h-4 w-4" />
                       {t("revokeLink")}
                     </button>
                   </div>
@@ -191,7 +191,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                 <div className="space-y-6">
                   <div>
                     <label className="mb-2 flex items-center gap-2 text-sm font-medium text-muted-color">
-                      <Clock className="h-4 w-4" />
+                      <ClockIcon className="h-4 w-4" />
                       {t("expiration")}
                     </label>
                     <div className="grid grid-cols-3 gap-3">

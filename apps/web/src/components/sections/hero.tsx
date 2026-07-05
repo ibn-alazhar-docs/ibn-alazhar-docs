@@ -3,7 +3,7 @@
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import * as motion from "motion/react-client";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 
 function GeometricStar({ className = "" }: { className?: string }) {
   return (
@@ -18,15 +18,22 @@ function GeometricStar({ className = "" }: { className?: string }) {
       <polygon
         points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
         stroke="currentColor"
-        strokeWidth="1"
+        strokeWidth="0.8"
         fill="none"
       />
       <polygon
         points="50,15 58,35 80,35 63,50 69,72 50,58 31,72 37,50 20,35 42,35"
         stroke="currentColor"
-        strokeWidth="0.5"
+        strokeWidth="0.4"
         fill="none"
-        opacity="0.5"
+        opacity="0.4"
+      />
+      <polygon
+        points="50,25 54,38 68,38 57,47 61,60 50,52 39,60 43,47 32,38 46,38"
+        stroke="currentColor"
+        strokeWidth="0.3"
+        fill="none"
+        opacity="0.25"
       />
     </motion.svg>
   );
@@ -68,17 +75,17 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate min-h-[90dvh] overflow-hidden pt-28 sm:pt-32">
+    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-28 sm:pt-32">
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <motion.div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--gold)_0%,_transparent_60%)] opacity-[0.06]"
-          animate={{ scale: [1, 1.05, 1], opacity: [0.06, 0.08, 0.06] }}
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--gold)_0%,_transparent_55%)] opacity-[0.05]"
+          animate={{ scale: [1, 1.05, 1], opacity: [0.05, 0.07, 0.05] }}
           transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
         />
         <motion.div
-          className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--btn-primary-bg)_0%,_transparent_60%)] opacity-[0.05]"
-          animate={{ scale: [1, 1.08, 1], opacity: [0.05, 0.07, 0.05] }}
+          className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--btn-primary-bg)_0%,_transparent_55%)] opacity-[0.04]"
+          animate={{ scale: [1, 1.08, 1], opacity: [0.04, 0.06, 0.04] }}
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
@@ -127,7 +134,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
             <svg
               viewBox="0 0 100 100"
               fill="none"
-              className="geometric-star h-4 w-4"
+              className="geometric-star h-5 w-5"
               aria-hidden="true"
             >
               <polygon
@@ -135,6 +142,13 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
                 stroke="currentColor"
                 strokeWidth="0.8"
                 fill="none"
+              />
+              <polygon
+                points="50,15 58,35 80,35 63,50 69,72 50,58 31,72 37,50 20,35 42,35"
+                stroke="currentColor"
+                strokeWidth="0.4"
+                fill="none"
+                opacity="0.4"
               />
             </svg>
           </motion.div>
@@ -155,7 +169,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
                 >
                   {t("dashboardCTA")}
                   <span aria-hidden="true" className="flex items-center">
-                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                    {isRtl ? <ArrowLeftIcon size={16} /> : <ArrowRightIcon size={16} />}
                   </span>
                 </Link>
               </motion.div>
@@ -167,7 +181,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
                 >
                   {cta || t("cta")}
                   <span aria-hidden="true" className="flex items-center">
-                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                    {isRtl ? <ArrowLeftIcon size={16} /> : <ArrowRightIcon size={16} />}
                   </span>
                 </Link>
               </motion.div>

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { validateShareAccess } from "@/lib/backend/share-helpers";
-import { repos } from "@/core/composition-root";
+import { repos, useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/shared/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
@@ -13,7 +12,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
     const { token } = await params;
 
-    const result = await validateShareAccess(token, {
+    const result = await useCases.shareAccess.execute(token, {
       id: true,
       title: true,
       description: true,

@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
-import { Bookmark, BookmarkCheck } from "lucide-react";
+import { BookmarkCheckIcon, BookmarkIcon } from "@/components/ui/icons";
 import { useToggleBookmark } from "@/lib/frontend/hooks/use-queries";
 
 interface BookmarkButtonProps {
@@ -23,7 +23,7 @@ export function BookmarkButton({
 
   const handleToggle = () => {
     toggleBookmark.mutate(documentId, {
-      onSuccess: (data) => onToggle?.(data.bookmarked),
+      onSuccess: (data: { bookmarked: boolean }) => onToggle?.(data.bookmarked),
     });
   };
 
@@ -40,7 +40,11 @@ export function BookmarkButton({
       title={isBookmarked ? t("removeBookmark") : t("addBookmark")}
       aria-label={isBookmarked ? t("removeBookmark") : t("addBookmark")}
     >
-      {isBookmarked ? <BookmarkCheck className="h-5 w-5" /> : <Bookmark className="h-5 w-5" />}
+      {isBookmarked ? (
+        <BookmarkCheckIcon className="h-5 w-5" />
+      ) : (
+        <BookmarkIcon className="h-5 w-5" />
+      )}
     </motion.button>
   );
 }

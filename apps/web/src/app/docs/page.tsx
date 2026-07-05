@@ -22,7 +22,7 @@ export default function DocsPage() {
   }, [containerId]);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950">
+    <div className="min-h-screen bg-page">
       <div id={containerId} />
     </div>
   );

@@ -1,28 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BRAND_NAME } from "@/lib/frontend/brand";
-
-function GeometricStar({ className = "" }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 100 100" fill="none" className={className} aria-hidden="true">
-      <polygon
-        points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
-        stroke="currentColor"
-        strokeWidth="1"
-        fill="none"
-      />
-      <polygon
-        points="50,15 58,35 80,35 63,50 69,72 50,58 31,72 37,50 20,35 42,35"
-        stroke="currentColor"
-        strokeWidth="0.5"
-        fill="none"
-        opacity="0.5"
-      />
-    </svg>
-  );
-}
+import { GeometricStar } from "@/components/ui/geometric-star";
 
 interface PublicFooterProps {
   locale: string;
@@ -47,7 +29,14 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
               href="/"
               className="flex items-center gap-3 text-sm font-bold tracking-tight text-primary-color no-underline"
             >
-              <img src="/logo.png" alt={brand} className="h-9 w-auto" />
+              <Image
+                src="/logo.png"
+                alt={brand}
+                width={36}
+                height={36}
+                className="h-9 w-auto"
+                priority
+              />
               <span className="heading-display-sm text-sm">{brand}</span>
             </Link>
             <p className="mt-2 text-xs text-very-muted">{tagline || t("tagline")}</p>

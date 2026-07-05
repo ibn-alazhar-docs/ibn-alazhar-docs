@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { motion } from "motion/react";
 import { useFileUpload } from "@/hooks/use-file-upload";
+import { FileTextIcon } from "@/components/ui/icons";
 
 const VisualRangeSelector = dynamic(
   () => import("./visual-range-selector").then((mod) => mod.VisualRangeSelector),
@@ -62,7 +63,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         whileHover={{
           scale: 1.01,
           borderColor: "var(--success)",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          boxShadow: "0 4px 20px var(--shadow-color, rgba(0,0,0,0.05))",
         }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 0, y: 10 }}
@@ -99,19 +100,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         ) : (
           <div className="space-y-2">
             <div className="mb-2 text-muted-color">
-              <svg
-                className="w-10 h-10 mx-auto"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={1.5}
-                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                />
-              </svg>
+              <FileTextIcon className="mx-auto h-10 w-10" />
             </div>
             <div className="text-lg font-medium text-muted-color">{t("dragDrop")}</div>
             <div className="text-sm text-very-muted">{t("formats")}</div>
@@ -138,7 +127,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
       )}
 
       <motion.button
-        whileHover={{ scale: 1.01, boxShadow: "0 4px 14px 0 rgba(22, 163, 74, 0.39)" }}
+        whileHover={{ scale: 1.01, boxShadow: "var(--btn-shadow)" }}
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={!file || uploading}

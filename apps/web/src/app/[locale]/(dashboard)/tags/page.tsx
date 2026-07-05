@@ -8,6 +8,7 @@ import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
+import { TagIcon } from "@/components/ui/icons";
 import { TAG_COLORS } from "@/lib/shared/validators/tag";
 import type { TagWithCount } from "@/components/tags/types";
 
@@ -204,6 +205,7 @@ export default function TagsPage() {
                       }`}
                       style={{ backgroundColor: color }}
                       onClick={() => setNewTagColor(color)}
+                      aria-label={color}
                     />
                   ))}
                 </div>
@@ -230,7 +232,13 @@ export default function TagsPage() {
             {loading ? (
               <div className="text-center py-8 text-very-muted">{tCommon("loading")}</div>
             ) : tags.length === 0 ? (
-              <div className="text-center py-8 text-very-muted">{t("empty")}</div>
+              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
+                  <TagIcon className="h-8 w-8" />
+                </div>
+                <Heading level={3}>{t("empty")}</Heading>
+                <Text className="mt-2 text-muted-color">{t("createButton")}</Text>
+              </div>
             ) : (
               <div className="bg-card rounded-xl border border-line overflow-x-auto">
                 <table className="w-full min-w-[640px]">
@@ -268,6 +276,7 @@ export default function TagsPage() {
                                   }`}
                                   style={{ backgroundColor: color }}
                                   onClick={() => setEditColor(color)}
+                                  aria-label={color}
                                 />
                               ))}
                             </div>

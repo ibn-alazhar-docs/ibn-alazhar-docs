@@ -237,7 +237,8 @@ function createModelProxy(tableName: string) {
       if (relName === "tags" && tableName === "document") {
         const tagDocs = findMany("tagDocument", { documentId: result.id });
         const innerInclude = (relOpts as Record<string, unknown>).include as
-          Record<string, unknown> | undefined;
+          | Record<string, unknown>
+          | undefined;
         result.tags = tagDocs.map((td) => {
           const enriched = { ...td };
           if (innerInclude?.tag) {
@@ -266,7 +267,8 @@ function createModelProxy(tableName: string) {
         if (result.documentId) {
           const doc = findUnique("document", { id: result.documentId });
           const select = (relOpts as Record<string, unknown>).select as
-            Record<string, unknown> | undefined;
+            | Record<string, unknown>
+            | undefined;
           if (select && typeof select === "object") {
             // Only include selected fields
             const picked: Record<string, unknown> = {};

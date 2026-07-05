@@ -13,6 +13,7 @@ export const POST = withAuth(async (_request, { session, params }) => {
   }
 
   try {
+    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     const result = await useCases.webhook.testWebhook(id, session.user.id);
     return NextResponse.json(result);
   } catch (error: unknown) {

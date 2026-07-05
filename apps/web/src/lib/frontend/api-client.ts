@@ -1,14 +1,14 @@
 "use client";
 
 /**
- * API Client مركزي — Ibn Al-Azhar Docs
- * يوفر error handling موحد وauth headers تلقائي
+ * API Client — Ibn Al-Azhar Docs
+ * Centralized error handling + automatic auth headers
  */
 
-interface RequestOptions extends Omit<RequestInit, "method" | "body"> {
-  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
-  body?: unknown;
+interface RequestOptions {
+  headers?: Record<string, string>;
   params?: Record<string, string>;
+  signal?: AbortSignal;
 }
 
 interface ApiError {
@@ -49,7 +49,6 @@ async function handleResponse<T>(response: Response): Promise<T> {
     });
   }
 
-  // 204 No Content
   if (response.status === 204) {
     return undefined as T;
   }
@@ -57,8 +56,12 @@ async function handleResponse<T>(response: Response): Promise<T> {
   return response.json();
 }
 
+function buildHeaders(contentType: string, extra?: Record<string, string>): Record<string, string> {
+  return { "Content-Type": contentType, ...extra };
+}
+
 /**
- * طلب API مركزي
+ * Centralized API client
  * @example
  * const data = await apiClient.get<Tag[]>("/api/tags");
  * const doc = await apiClient.post<Document>("/api/documents", { title: "..." });
@@ -66,73 +69,53 @@ async function handleResponse<T>(response: Response): Promise<T> {
 export const apiClient = {
   async get<T>(path: string, options?: RequestOptions): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const { params: _params, ...fetchOptions } = options ?? {};
     const response = await fetch(url, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      ...fetchOptions,
+      headers: buildHeaders("application/json", options?.headers),
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },
 
   async post<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const { params: _params, ...fetchOptions } = options ?? {};
     const response = await fetch(url, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      ...fetchOptions,
+      headers: buildHeaders("application/json", options?.headers),
+      body: body != null ? JSON.stringify(body) : undefined,
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },
 
   async put<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const { params: _params, ...fetchOptions } = options ?? {};
     const response = await fetch(url, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      ...fetchOptions,
+      headers: buildHeaders("application/json", options?.headers),
+      body: body != null ? JSON.stringify(body) : undefined,
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },
 
   async patch<T>(path: string, body?: unknown, options?: RequestOptions): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const { params: _params, ...fetchOptions } = options ?? {};
     const response = await fetch(url, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      body: body ? JSON.stringify(body) : undefined,
-      ...fetchOptions,
+      headers: buildHeaders("application/json", options?.headers),
+      body: body != null ? JSON.stringify(body) : undefined,
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },
 
   async delete<T>(path: string, options?: RequestOptions): Promise<T> {
     const url = buildUrl(path, options?.params);
-    const { params: _params, ...fetchOptions } = options ?? {};
     const response = await fetch(url, {
       method: "DELETE",
-      headers: {
-        "Content-Type": "application/json",
-        ...fetchOptions.headers,
-      },
-      ...fetchOptions,
+      headers: buildHeaders("application/json", options?.headers),
+      signal: options?.signal,
     });
     return handleResponse<T>(response);
   },

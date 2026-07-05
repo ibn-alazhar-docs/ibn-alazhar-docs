@@ -6,8 +6,7 @@ import {
   sanitizeTitle,
   getContentType,
 } from "@/lib/backend/export/profiles";
-import { validateShareAccess } from "@/lib/backend/share-helpers";
-import { repos } from "@/core/composition-root";
+import { repos, useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/shared/route-helpers";
 
 export async function GET(
@@ -29,7 +28,7 @@ export async function GET(
       );
     }
 
-    const result = await validateShareAccess(token);
+    const result = await useCases.shareAccess.execute(token);
     if ("error" in result) {
       return NextResponse.json(
         { error: { code: result.status === 410 ? "EXPIRED" : "NOT_FOUND", message: result.error } },

@@ -103,17 +103,13 @@
     color: var(--text-primary);
   }
 
-  .landing-header {
-    background-color: color-mix(in srgb, var(--page-bg) 85%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border-bottom-color: var(--border-subtle);
-  }
-
   .landing-btn-primary {
     background-color: var(--btn-primary-bg);
     color: var(--btn-primary-text);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .landing-btn-primary:hover {
     opacity: 0.92;
@@ -124,41 +120,34 @@
     transform: translateY(0);
   }
 
-  .landing-btn-ghost {
-    background-color: transparent;
-    color: var(--text-primary);
-    border: 1px solid var(--btn-ghost-border);
-    transition: all 0.2s ease;
-  }
-  .landing-btn-ghost:hover {
-    background-color: var(--hover-bg);
-    border-color: var(--text-primary);
-  }
-
-  .landing-section-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background-color: var(--badge-bg);
-    border: 1px solid var(--border-subtle);
-    padding: 0.375rem 1rem;
-    font-size: 0.6875rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    color: var(--text-secondary);
-    text-transform: uppercase;
-  }
-
-  .landing-card {
+  /* Manuscript-inspired card */
+  .card-manuscript {
     background-color: var(--card-bg);
     border: 1px solid var(--border-line);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border-radius: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
-  .landing-card:hover {
-    border-color: var(--text-tertiary);
-    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.05);
-    transform: translateY(-2px);
+  .card-manuscript::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--gold), var(--btn-primary-bg));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .card-manuscript:hover::before {
+    opacity: 1;
+  }
+  .card-manuscript:hover {
+    border-color: var(--gold-border);
+    box-shadow: 0 8px 24px rgba(202, 138, 4, 0.08);
   }
 
   /* Signature — Islamic geometric pattern */
@@ -166,25 +155,33 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: 1.25rem;
     width: 100%;
-    padding: 0.5rem 0;
+    padding: 1rem 0;
   }
   .geometric-divider::before,
   .geometric-divider::after {
     content: "";
     flex: 1;
     height: 1px;
-    background: var(--border-subtle);
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
   }
   .geometric-star {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2rem;
+    height: 2rem;
     color: var(--gold);
-    opacity: 0.5;
+    animation: star-spin 30s linear infinite;
+  }
+  @keyframes star-spin {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
   }
 
   /* Display heading treatment */
@@ -208,7 +205,10 @@
     background: var(--card-bg);
     border: 1px solid var(--border-line);
     border-radius: 1rem;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
   .stat-card-premium:hover {
     border-color: var(--btn-primary-bg);

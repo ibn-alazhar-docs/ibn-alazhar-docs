@@ -3,25 +3,6 @@
    تجربة القراءة — الأنماط والبصريات
    ============================================ */
 
-/* --- Reading Container Width --- */
-.reading-container {
-  max-width: 42rem;
-  margin-inline: auto;
-  padding-inline: 1rem;
-}
-
-@media (min-width: 640px) {
-  .reading-container {
-    padding-inline: 1.5rem;
-  }
-}
-
-@media (min-width: 1024px) {
-  .reading-container {
-    max-width: 48rem;
-  }
-}
-
 /* --- Prose Typography --- */
 .reading-prose {
   font-family: var(--font-family-cairo);
@@ -229,7 +210,7 @@ html[dir="rtl"] .reading-prose blockquote {
   padding: 1.125rem 1.25rem;
   border-radius: 0.75rem;
   background: var(--color-neutral-900);
-  color: #e5e7eb;
+  color: var(--text-primary);
   font-size: 0.8125rem;
   line-height: 1.7;
   overflow-x: auto;
@@ -341,42 +322,6 @@ html[dir="rtl"] .reading-prose blockquote {
   margin-bottom: 2rem;
 }
 
-/* --- Callouts --- */
-.callout {
-  margin: 1.5rem 0;
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem;
-  border-inline-start: 3px solid;
-  font-size: 0.9375rem;
-  line-height: 1.7;
-}
-
-.callout-info {
-  background: linear-gradient(135deg, var(--color-info-50), white);
-  border-color: var(--color-info-400);
-  color: var(--color-info-800);
-}
-
-.callout-warning {
-  background: linear-gradient(135deg, var(--color-warning-50), white);
-  border-color: var(--color-warning-400);
-  color: var(--color-warning-800);
-}
-
-.callout-success {
-  background: linear-gradient(135deg, var(--color-success-50), white);
-  border-color: var(--color-success-400);
-  color: var(--color-success-800);
-}
-
-.callout p {
-  margin-bottom: 0;
-}
-
-.callout p + p {
-  margin-top: 0.75rem;
-}
-
 /* --- Reading Progress --- */
 .reading-progress {
   position: fixed;
@@ -448,15 +393,6 @@ html[dir="rtl"] .reading-prose blockquote {
   font-weight: 500;
 }
 
-.toc-item-h2 .toc-link {
-  font-weight: 500;
-}
-
-.toc-item-h3 .toc-link {
-  padding-inline-start: 1.75rem;
-  font-size: 0.8125rem;
-}
-
 /* --- Breadcrumbs --- */
 .breadcrumbs {
   display: flex;
@@ -517,13 +453,16 @@ html[dir="rtl"] .reading-prose blockquote {
   border-radius: 0.75rem;
   border: 1px solid var(--color-neutral-100);
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
 .doc-nav-link:hover {
   border-color: var(--color-primary-200);
   background: var(--color-primary-50);
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.06);
+  box-shadow: 0 2px 8px var(--shadow-color, rgba(22, 163, 74, 0.06));
 }
 
 .doc-nav-link:focus-visible {

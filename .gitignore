@@ -71,3 +71,6 @@ opencode.json
 *.epub
 
 testsprite_tests/tmp/config.json
+
+# repowise API keys (local)
+.repowise/.env

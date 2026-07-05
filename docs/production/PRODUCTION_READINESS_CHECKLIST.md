@@ -138,17 +138,17 @@ Last updated: 2026-07-01
 
 ## 11. Documentation
 
-| Check                                | Status | Evidence                                            |
-| ------------------------------------ | ------ | --------------------------------------------------- |
-| README with setup instructions       | PASS   | Comprehensive README.md                             |
-| Architecture diagram                 | PASS   | `docs/ARCHITECTURE.md` with Mermaid diagrams        |
-| ADRs (Architecture Decision Records) | PASS   | 24 ADRs in `docs/ADR/`                              |
-| Runbook for incidents                | PASS   | `docs/production/RUNBOOK.md`                        |
-| API documentation (OpenAPI)          | PASS   | `docs/openapi.yaml`                                 |
-| Contributing guide                   | PASS   | `CONTRIBUTING.md`                                   |
-| Code style guide                     | PASS   | [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md)                          |
-| Deployment guide                     | PASS   | `docs/deployment/HF_DEPLOYMENT_GUIDE.md`            |
-| Production readiness checklist       | PASS   | `docs/production/PRODUCTION_READINESS_CHECKLIST.md` |
+| Check                                | Status | Evidence                                                                 |
+| ------------------------------------ | ------ | ------------------------------------------------------------------------ |
+| README with setup instructions       | PASS   | Comprehensive README.md                                                  |
+| Architecture diagram                 | PASS   | `docs/ARCHITECTURE.md` with Mermaid diagrams                             |
+| ADRs (Architecture Decision Records) | PASS   | 24 ADRs in `docs/ADR/`                                                   |
+| Runbook for incidents                | PASS   | `docs/production/RUNBOOK.md`                                             |
+| API documentation (OpenAPI)          | PASS   | `docs/openapi.yaml`                                                      |
+| Contributing guide                   | PASS   | `CONTRIBUTING.md`                                                        |
+| Code style guide                     | PASS   | [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md) |
+| Deployment guide                     | PASS   | `docs/deployment/HF_DEPLOYMENT_GUIDE.md`                                 |
+| Production readiness checklist       | PASS   | `docs/production/PRODUCTION_READINESS_CHECKLIST.md`                      |
 
 ---
 

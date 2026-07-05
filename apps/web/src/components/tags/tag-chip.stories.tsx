@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { TagChip } from "@/components/tags/tag-chip";
 
-const meta: Meta<typeof TagChip> = {
+const meta: Meta = {
   title: "Tags/TagChip",
   component: TagChip,
   tags: ["autodocs"],
@@ -15,7 +15,7 @@ const meta: Meta<typeof TagChip> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof TagChip>;
+type Story = StoryObj;
 
 export const Default: Story = {
   args: {

@@ -14,6 +14,7 @@ import { MoveDialog } from "@/components/folders/move-dialog";
 import { TagFilterSidebar } from "@/components/tags/tag-filter-sidebar";
 import { ActiveJobs } from "@/components/files/active-jobs";
 import { DocumentTable } from "@/components/files/document-table";
+import { FolderIcon } from "@/components/ui/icons";
 import { useFilesManager } from "@/hooks/use-files-manager";
 
 export default function FilesPage() {
@@ -169,22 +170,9 @@ export default function FilesPage() {
 
                 {/* Empty State */}
                 {fm.activeJobs.length === 0 && !fm.loadingDocs && fm.documents.length === 0 && (
-                  <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line bg-card py-20 px-6 text-center shadow-sm transition-all duration-300">
-                    <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-[var(--success-bg)] text-[var(--success)] shadow-sm">
-                      <svg
-                        className="h-10 w-10"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={1.5}
-                          d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-                        />
-                      </svg>
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 px-6 text-center shadow-sm transition-all duration-300">
+                    <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/5 text-gold shadow-sm">
+                      <FolderIcon className="h-10 w-10" />
                     </div>
                     <Heading level={3} className="mb-3 text-primary-color">
                       {tDocs("empty")}
