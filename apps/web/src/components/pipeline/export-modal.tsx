@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { toast } from "sonner";
+import { ExportIcon } from "@/components/ui/icons";
 
 interface ExportModalProps {
   documentId: string;
@@ -73,19 +74,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         {/* Header */}
         <div className="border-b border-line bg-badge/50 px-6 py-4">
           <h3 className="text-xl font-bold text-primary-color flex items-center gap-2">
-            <svg
-              className="w-5 h-5 text-[var(--success)]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
-              />
-            </svg>
+            <ExportIcon className="w-5 h-5 text-[var(--success)]" />
             {t("title")}
           </h3>
         </div>
@@ -211,7 +200,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
             type="button"
             onClick={handleExport}
             disabled={loading}
-            className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all bg-[var(--success)] hover:bg-[#15803d] disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20"
+            className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all bg-[var(--success)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20"
           >
             {loading ? (
               <>

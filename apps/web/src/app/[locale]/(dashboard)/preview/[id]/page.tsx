@@ -8,7 +8,7 @@ import { PreviewToolbar } from "@/components/pipeline/preview-toolbar";
 import { PreviewView } from "@/components/pipeline/preview-view";
 import { ExportModal } from "@/components/pipeline/export-modal";
 import { ShareModal } from "@/components/pipeline/share-modal";
-import { Share2 } from "lucide-react";
+import { ShareIcon } from "@/components/ui/icons";
 
 interface JobInfo {
   fileName: string;
@@ -103,7 +103,7 @@ export default function PreviewPage() {
               onClick={() => setIsShareModalOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-badge border border-line text-primary-color rounded-md hover:bg-line transition-colors"
             >
-              <Share2 className="h-3.5 w-3.5" />
+              <ShareIcon className="h-3.5 w-3.5" />
               {tShareModal("title")}
             </button>
             <button

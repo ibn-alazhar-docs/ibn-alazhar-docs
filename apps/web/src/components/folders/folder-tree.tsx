@@ -8,6 +8,7 @@ import { CreateFolderDialog } from "./create-folder-dialog";
 import { MoveDialog } from "./move-dialog";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { useFolders } from "./use-folders";
+import { FolderIcon } from "@/components/ui/icons";
 
 interface FolderTreeProps {
   selectedFolderId: string | null;
@@ -97,20 +98,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         onClick={() => onSelectFolder(null)}
       >
         <span className="text-lg">
-          <svg
-            aria-hidden="true"
-            className="h-5 w-5 text-muted-color"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-            />
-          </svg>
+          <FolderIcon className="h-5 w-5 text-muted-color" />
         </span>
         <span className="text-sm font-medium">{t("allFiles")}</span>
       </button>
@@ -136,20 +124,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
       ) : (
         <div className="py-8 text-center">
           <div className="mb-2 text-muted-color">
-            <svg
-              aria-hidden="true"
-              className="mx-auto h-10 w-10"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-              />
-            </svg>
+            <FolderIcon className="mx-auto h-10 w-10" />
           </div>
           <p className="text-sm text-muted-color">{t("empty")}</p>
           <button

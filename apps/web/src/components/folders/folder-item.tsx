@@ -114,6 +114,7 @@ export function FolderItem({
           <button
             type="button"
             className="min-h-11 min-w-11 flex items-center justify-center text-very-muted hover:text-muted-color rounded"
+            aria-label={tCommon("settings")}
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);

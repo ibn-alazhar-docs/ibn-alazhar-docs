@@ -17,7 +17,7 @@ interface WelcomeEmailProps {
 }
 
 export const WelcomeEmail = ({
-  username = "المستخدم",
+  username: _username = "المستخدم",
   loginUrl = "https://ibnalazhar-docs.vercel.app/ar/login",
   appName = "Ibn Al-Azhar Docs",
 }: WelcomeEmailProps) => (

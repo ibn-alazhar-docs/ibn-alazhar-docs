@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/backend/prisma";
 
 import { UserRepository } from "./repositories/user.repository";
+import { AccountRepository } from "./repositories/account.repository";
 import { DocumentRepository } from "./repositories/document.repository";
 import { FolderRepository } from "./repositories/folder.repository";
 import { TagRepository } from "./repositories/tag.repository";
@@ -10,23 +11,26 @@ import { ShareRepository } from "./repositories/share.repository";
 import { SearchRepository } from "./repositories/search.repository";
 import { MinioStorageRepository } from "./repositories/storage.repository";
 
-import { RegistrationUseCases } from "./use-cases/registration.use-cases";
-import { ProfileUseCases } from "./use-cases/profile.use-cases";
-import { UserUseCases } from "./use-cases/user.use-cases";
-import { TagUseCases } from "./use-cases/tag.use-cases";
-import { ConversionUseCases } from "./use-cases/conversion.use-cases";
-import { ExportUseCases } from "./use-cases/export.use-cases";
-import { ExportDocumentUseCase } from "./use-cases/export-document.use-case";
-import { FolderUseCases } from "./use-cases/folder.use-cases";
-import { SearchUseCases } from "./use-cases/search.use-cases";
-import { DocumentCrudUseCases } from "./use-cases/document-crud.use-cases";
-import { DocumentMoveUseCases } from "./use-cases/document-move.use-cases";
-import { DocumentTagUseCases } from "./use-cases/document-tag.use-cases";
-import { DocumentShareUseCases } from "./use-cases/document-share.use-cases";
-import { UploadDocumentUseCase } from "./use-cases/upload-document.use-case";
+import { RegistrationUseCases } from "./services/registration.use-cases";
+import { ProfileUseCases } from "./services/profile.use-cases";
+import { UserUseCases } from "./services/user.use-cases";
+import { TagUseCases } from "./services/tag.use-cases";
+import { ConversionUseCases } from "./services/conversion.use-cases";
+import { ExportUseCases } from "./services/export.use-cases";
+import { ExportDocumentUseCase } from "./services/export-document.use-case";
+import { FolderUseCases } from "./services/folder.use-cases";
+import { SearchUseCases } from "./services/search.use-cases";
+import { DocumentCrudUseCases } from "./services/document-crud.use-cases";
+import { DocumentMoveUseCases } from "./services/document-move.use-cases";
+import { DocumentTagUseCases } from "./services/document-tag.use-cases";
+import { DocumentShareUseCases } from "./services/document-share.use-cases";
+import { UploadDocumentUseCase } from "./services/upload-document.use-case";
+import { ShareAccessUseCase } from "./services/share-access.use-case";
+import { DocumentDownloadUseCase } from "./services/document-download.use-case";
 
 // Repositories — all created from the single PrismaClient instance
 const userRepository = new UserRepository(prisma);
+const accountRepository = new AccountRepository();
 const documentRepository = new DocumentRepository(prisma);
 const folderRepository = new FolderRepository(prisma);
 const tagRepository = new TagRepository(prisma);
@@ -38,6 +42,7 @@ const storageRepository = new MinioStorageRepository();
 
 export const repos = {
   user: userRepository,
+  account: accountRepository,
   document: documentRepository,
   folder: folderRepository,
   tag: tagRepository,
@@ -49,6 +54,9 @@ export const repos = {
 } as const;
 
 // Use-cases
+const shareAccessUseCase = new ShareAccessUseCase(shareRepository);
+const documentDownloadUseCase = new DocumentDownloadUseCase(accountRepository);
+
 export const useCases = {
   registration: new RegistrationUseCases(userRepository),
   profile: new ProfileUseCases(userRepository),
@@ -63,7 +71,11 @@ export const useCases = {
     conversionJobRepository,
     storageRepository,
   ),
-  exportDocument: new ExportDocumentUseCase(documentRepository, storageRepository),
+  exportDocument: new ExportDocumentUseCase(
+    documentRepository,
+    storageRepository,
+    documentDownloadUseCase,
+  ),
   folder: new FolderUseCases(folderRepository, tagRepository),
   search: new SearchUseCases(searchRepository),
   documentCrud: new DocumentCrudUseCases(documentRepository, folderRepository),
@@ -75,4 +87,6 @@ export const useCases = {
     folderRepository,
     storageRepository,
   ),
+  shareAccess: shareAccessUseCase,
+  documentDownload: documentDownloadUseCase,
 } as const;

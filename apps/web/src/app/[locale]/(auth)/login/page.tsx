@@ -27,8 +27,7 @@ export default async function LoginPage(props: LoginPageProps) {
 
   return (
     <div className="text-center">
-      <div className="mx-auto mb-6 h-1 w-12 rounded-full bg-gold" />
-      <Link href="/" className="inline-block mb-8">
+      <Link href="/" className="inline-block mb-6">
         <Image
           src="/logo.png"
           alt={tApp("name")}
@@ -38,14 +37,15 @@ export default async function LoginPage(props: LoginPageProps) {
           priority
         />
       </Link>
-      <h2 className="text-lg font-bold tracking-[0.02em] text-primary-color sm:text-xl">
+      <div className="gold-divider mx-auto mb-6" />
+      <h2 className="heading-display text-xl font-bold tracking-[0.02em] text-primary-color sm:text-2xl">
         {t("loginTitle")}
       </h2>
-      <p className="mt-2 text-xs text-muted-color">
+      <p className="mt-2 text-sm text-muted-color">
         {t("noAccount")}{" "}
         <Link
           href="/register"
-          className="font-semibold text-primary-color underline underline-offset-4 decoration-1 decoration-primary-color/20 hover:decoration-primary-color/50"
+          className="font-semibold text-gold underline underline-offset-4 decoration-1 decoration-gold/20 hover:decoration-gold/50 transition-colors"
         >
           {t("signUp")}
         </Link>

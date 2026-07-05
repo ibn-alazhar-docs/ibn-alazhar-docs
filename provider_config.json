@@ -1,0 +1,7 @@
+{
+  "keys": {
+    "gemini": "AQ.Ab8RN6KbJFOUc4VX-bRM8b2nTfAH26eSzVcKFDZ1T8CU0BEn6w"
+  },
+  "active_provider": "gemini",
+  "active_model": "gemini-3.1-flash-lite-preview"
+}

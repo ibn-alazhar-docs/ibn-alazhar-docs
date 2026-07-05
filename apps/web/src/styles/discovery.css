@@ -79,7 +79,10 @@
   border: 1px solid var(--border-line);
   background: var(--card-bg);
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .category-card:hover {
   border-color: var(--success);
@@ -142,7 +145,10 @@
   border: 1px solid var(--border-line);
   background: var(--card-bg);
   text-decoration: none;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  transition:
+    border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
 }
@@ -478,7 +484,9 @@ html[dir="rtl"] .journey-step::before {
   border: 1px solid var(--border-line);
   background: var(--card-bg);
   text-decoration: none;
-  transition: all 0.15s;
+  transition:
+    border-color 0.15s,
+    background-color 0.15s;
   margin-bottom: 0.5rem;
 }
 .doc-card:last-child {
@@ -529,7 +537,9 @@ html[dir="rtl"] .journey-step::before {
   border: 1px solid var(--border-line);
   background: var(--card-bg);
   text-decoration: none;
-  transition: all 0.15s;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
 }
 .recent-doc-card:hover {
   border-color: var(--success);

@@ -8,7 +8,7 @@ import { Section } from "@/components/ui/section";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { BookmarkButton } from "@/components/documents/bookmark-button";
-import { FileText, Bookmark } from "lucide-react";
+import { FileTextIcon, BookmarkIcon } from "@/components/ui/icons";
 
 interface BookmarkItem {
   id: string;
@@ -78,9 +78,9 @@ export function BookmarksContent() {
           )}
 
           {!loading && bookmarks.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line py-20 text-center">
-              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[var(--warning-bg)] text-[var(--warning)]">
-                <Bookmark className="h-8 w-8" />
+            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
+                <BookmarkIcon className="h-8 w-8" />
               </div>
               <Heading level={3}>لا توجد مستندات مفضلة</Heading>
               <Text className="mt-2 text-muted-color">
@@ -98,7 +98,7 @@ export function BookmarksContent() {
                 >
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--info-bg)] text-[var(--info)]">
-                      <FileText className="h-5 w-5" />
+                      <FileTextIcon className="h-5 w-5" />
                     </div>
                     <div>
                       <a

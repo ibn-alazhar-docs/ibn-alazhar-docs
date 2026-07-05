@@ -1,19 +1,31 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 interface GlobalErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
 }
 
+const LOCALE_MAP: Record<string, { lang: string; dir: "rtl" | "ltr" }> = {
+  ar: { lang: "ar", dir: "rtl" },
+  en: { lang: "en", dir: "ltr" },
+};
+
+const DEFAULT_LOCALE: { lang: string; dir: "rtl" | "ltr" } = { lang: "ar", dir: "rtl" };
+
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
+  const pathname = usePathname();
+  const locale = pathname.split("/")[1] ?? "ar";
+  const resolved = LOCALE_MAP[locale] ?? DEFAULT_LOCALE;
+
   useEffect(() => {
     console.error("[GlobalError]", error);
   }, [error]);
 
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={resolved.lang} dir={resolved.dir}>
       <body>
         <div className="flex min-h-screen items-center justify-center bg-page">
           <div className="text-center max-w-md mx-auto p-8">

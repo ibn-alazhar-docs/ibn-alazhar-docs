@@ -45,7 +45,7 @@ export function KnowledgeAreas() {
 
   return (
     <section
-      className="border-t border-[var(--border-subtle)] relative"
+      className="border-t border-border-subtle relative"
       aria-labelledby="how-it-works-title"
     >
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--btn-primary-bg)_0%,_transparent_60%)] opacity-[0.03] blur-[100px] pointer-events-none -z-10" />
@@ -59,7 +59,7 @@ export function KnowledgeAreas() {
         >
           <h2
             id="how-it-works-title"
-            className="inline-flex items-center gap-2 rounded-full border border-[var(--border-subtle)] bg-[var(--badge-bg)] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--text-tertiary)] uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-tertiary uppercase"
           >
             {t("title")}
           </h2>
@@ -76,19 +76,19 @@ export function KnowledgeAreas() {
             <motion.article
               variants={itemVariants}
               key={item.title}
-              className="glass group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.12)] hover:border-[var(--btn-primary-bg)] sm:p-10"
+              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-10"
             >
-              <div className="absolute inset-0 bg-gradient-to-tr from-[var(--btn-primary-bg)] to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03]" />
+              <div className="absolute inset-0 bg-gradient-to-tr from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[var(--badge-bg)] border border-[var(--border-line)] text-[var(--btn-primary-bg)] transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-opacity-20">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/5 border border-gold/10 text-gold transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
                 <IconSlot index={index} className="h-6 w-6 fill-current" />
               </div>
 
-              <h3 className="heading-display-sm mt-2 text-lg font-bold text-[var(--text-primary)]">
+              <h3 className="heading-display-sm mt-2 text-lg font-bold text-primary-color">
                 {item.title}
               </h3>
 
-              <p className="text-sm leading-relaxed text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors duration-300">
+              <p className="text-sm leading-relaxed text-secondary group-hover:text-primary-color transition-colors duration-300">
                 {item.description}
               </p>
             </motion.article>

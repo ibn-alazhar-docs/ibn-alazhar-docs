@@ -98,7 +98,7 @@ IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this
         const result = await model.generateContent(parts);
         const text = result.response.text();
 
-        const pageTexts = text.split("===PAGE_BREAK===").map((t) => t.trim());
+        const pageTexts = text.split("===PAGE_BREAK===").map((t: string) => t.trim());
 
         for (let j = 0; j < batchGetters.length; j++) {
           const pageNum = i + j + 1;

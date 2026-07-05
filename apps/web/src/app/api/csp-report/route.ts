@@ -21,6 +21,7 @@ export async function POST(request: NextRequest) {
     };
 
     // Log to stdout for collection by log aggregator
+    // eslint-disable-next-line no-console
     console.log(JSON.stringify({ level: "warn", msg: "CSP_VIOLATION", ...violation }));
 
     return NextResponse.json({ status: "ok" });

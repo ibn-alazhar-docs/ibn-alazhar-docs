@@ -13,6 +13,7 @@ export async function register() {
 
   // Only activate in production or when explicitly enabled
   if (process.env.NODE_ENV !== "production" && process.env.NEXT_OTEL_VERBOSE !== "1") {
+    // eslint-disable-next-line no-console
     console.log("[instrumentation] OTel disabled (dev mode). Set NEXT_OTEL_VERBOSE=1 to enable.");
     return;
   }
@@ -22,8 +23,10 @@ export async function register() {
       serviceName: "ibn-al-azhar-docs",
       instrumentations: [],
     });
+    // eslint-disable-next-line no-console
     console.log("[instrumentation] OpenTelemetry tracing registered");
   } catch (err) {
+    // eslint-disable-next-line no-console
     console.error("[instrumentation] Failed to register OTel:", err);
   }
 }

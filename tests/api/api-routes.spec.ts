@@ -68,7 +68,9 @@ test.describe("API Routes — Public Endpoints", () => {
       // Should return JSON or text
       const contentType = response.headers()["content-type"] || "";
       expect(
-        contentType.includes("json") || contentType.includes("text") || contentType.includes("plain"),
+        contentType.includes("json") ||
+          contentType.includes("text") ||
+          contentType.includes("plain"),
       ).toBeTruthy();
     });
   }
@@ -76,7 +78,9 @@ test.describe("API Routes — Public Endpoints", () => {
 
 test.describe("API Routes — Protected Endpoints (no auth)", () => {
   for (const endpoint of PROTECTED_GET_ENDPOINTS) {
-    test(`${endpoint.name} (${endpoint.path}) should reject unauthenticated`, async ({ request }) => {
+    test(`${endpoint.name} (${endpoint.path}) should reject unauthenticated`, async ({
+      request,
+    }) => {
       const response = await request.get(`${BASE_URL}${endpoint.path}`);
       // Should return 401 or redirect (302/307)
       expect([401, 302, 307, 403]).toContain(response.status());

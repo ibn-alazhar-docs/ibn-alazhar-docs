@@ -25,8 +25,6 @@ export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
   const pathname = usePathname();
   const hydrated = useHydrated();
 
-  // For root path (/dashboard which might map to /), check if it matches exact.
-  // pathname returns the un-prefixed path (e.g. /dashboard)
   const isActive = hydrated
     ? href === "/" || href === ""
       ? pathname === "/" || pathname === ""
@@ -44,9 +42,9 @@ export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
       href={href}
       onClick={handleClick}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold tracking-[0.04em] transition-all",
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-xs font-semibold tracking-[0.04em] transition-all duration-200",
         isActive
-          ? "bg-active text-primary-color"
+          ? "bg-gold/10 text-gold border-s-2 border-gold"
           : "text-muted-color hover:bg-hover hover:text-primary-color",
       )}
       aria-current={isActive ? "page" : undefined}

@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { GeometricStar } from "@/components/ui/geometric-star";
 import * as motion from "motion/react-client";
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
 
 export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const t = useTranslations("section.cta");
@@ -61,7 +61,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 >
                   {t("dashboardCTA")}
                   <span aria-hidden="true" className="flex items-center">
-                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                    {isRtl ? <ArrowLeftIcon size={16} /> : <ArrowRightIcon size={16} />}
                   </span>
                 </Link>
               </motion.div>
@@ -77,7 +77,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
                 >
                   {t("button")}
                   <span aria-hidden="true" className="flex items-center">
-                    {isRtl ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
+                    {isRtl ? <ArrowLeftIcon size={16} /> : <ArrowRightIcon size={16} />}
                   </span>
                 </Link>
               </motion.div>

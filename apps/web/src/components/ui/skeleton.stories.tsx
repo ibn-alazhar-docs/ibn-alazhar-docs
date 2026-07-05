@@ -1,14 +1,14 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import { Skeleton, SkeletonText, SkeletonCard, SkeletonTable } from "@/components/ui/skeleton";
 
-const meta: Meta<typeof Skeleton> = {
+const meta: Meta = {
   title: "UI/Skeleton",
   component: Skeleton,
   tags: ["autodocs"],
 };
 
 export default meta;
-type Story = StoryObj<typeof Skeleton>;
+type Story = StoryObj;
 
 export const Default: Story = {
   args: { className: "h-4 w-48" },

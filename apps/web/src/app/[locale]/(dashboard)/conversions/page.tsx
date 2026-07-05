@@ -227,8 +227,8 @@ export default function ConversionsPage() {
                     <tbody>
                       {jobs.map((job) => {
                         const style = STATUS_STYLE[job.status] ?? {
-                          bg: "bg-gray-100",
-                          text: "text-gray-700",
+                          bg: "bg-hover",
+                          text: "text-muted-color",
                         };
                         const isActive = job.status === "PENDING" || job.status === "PROCESSING";
                         return (

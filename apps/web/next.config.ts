@@ -106,7 +106,9 @@ export default withBundleAnalyzer(
       name: process.env.SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA || undefined,
     },
     widenClientFileUpload: true,
-    hideSourceMaps: true,
+    sourcemaps: {
+      deleteSourcemapsAfterUpload: true,
+    },
     disableLogger: true,
     automaticVercelMonitors: true,
   }),
