@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { ProfileUseCases } from "@/core/use-cases/profile.use-cases";
+import { ProfileUseCases } from "@/core/services/profile.use-cases";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 import { NotFoundError, AppError } from "@/lib/shared/errors";
 

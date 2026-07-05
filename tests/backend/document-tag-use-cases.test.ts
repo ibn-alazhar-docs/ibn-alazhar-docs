@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DocumentTagUseCases } from "@/core/use-cases/document-tag.use-cases";
+import { DocumentTagUseCases } from "@/core/services/document-tag.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
