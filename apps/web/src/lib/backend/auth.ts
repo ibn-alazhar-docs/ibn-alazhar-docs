@@ -60,6 +60,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // SECURITY (H1): must remain false. When true, a Google account whose
+      // email matches an existing (unverified) credentials account is
+      // auto-linked, enabling account takeover. With false, the adapter only
+      // links when the existing account's email is verified.
+      allowDangerousEmailAccountLinking: false,
       authorization: {
         params: {
           prompt: "consent",
@@ -173,6 +178,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      // SECURITY (H1): prevent OAuth account takeover.
+      // A Google sign-in must only link to an existing credentials account
+      // if that account's email has been verified. If the matching account
+      // exists but `emailVerified` is null, refuse to link so an attacker who
+      // controls a Google account with a victim's (unverified) email cannot
+      // gain access to the victim's credentials account. This matches the
+      // default NextAuth v5 linking semantics for
+      // `allowDangerousEmailAccountLinking: false` and adds an explicit,
+      // adapter-independent guard.
+      if (account?.provider === "google" && user.email) {
+        const email = user.email.toLowerCase();
+        const existing = await prisma.user.findUnique({
+          where: { email },
+          select: { emailVerified: true },
+        });
+        if (existing && existing.emailVerified === null) {
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;

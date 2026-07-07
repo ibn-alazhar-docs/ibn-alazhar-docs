@@ -35,9 +35,9 @@ export const POST = withAuth(async (request, { session }) => {
     return NextResponse.json({
       success: true,
       removedCount,
-      message: `تم إزالة الوسم من ${removedCount} مستند`,
+      message: `أُزيل الوسم من ${removedCount} مستند`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/bulk-untag", "فشلت عملية إزالة الوسم");
+    return handleRouteError(error, "documents/bulk-untag", "تعذرت إزالة الوسم");
   }
 });

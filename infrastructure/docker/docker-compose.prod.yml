@@ -1,0 +1,407 @@
+# =============================================================================
+# Ibn Al-Azhar Docs — PRODUCTION compose (self-hosted, global-ready)
+# =============================================================================
+# This file brings together every service required for a real production
+# deployment: the Next.js `web` app, the BullMQ `ocr-worker` and
+# `export-worker` consumers, Postgres, Redis, MinIO (S3-compatible object
+# storage), Caddy (reverse proxy / TLS), and the full monitoring stack
+# (Loki, Promtail, Prometheus, Alertmanager, Grafana).
+#
+# It is intentionally self-contained (no build-time `include` of the base
+# dev compose) so it can be copied to a container host and run on its own:
+#
+#     docker compose -f infrastructure/docker/docker-compose.prod.yml up -d
+#
+# -----------------------------------------------------------------------------
+# GLOBAL-SCALE LAUNCH NOTES
+# -----------------------------------------------------------------------------
+# (a) ACME / HTTPS: set DOMAIN and a real EMAIL below. On first run Caddy will
+#     obtain a Let's Encrypt certificate. For the DNS-01 challenge behind
+#     Cloudflare, add the Cloudflare module to the Caddy image and the
+#     CF_DNS_API_TOKEN env (see the commented block under `caddy`).
+#
+# (b) CDN / Edge TLS: put Cloudflare (or similar) in FRONT of this stack as a
+#     CDN. It should:
+#       - terminate TLS at the edge (Origin = Strict, with a Cloudflare Origin
+#         cert or `tls internal` on Caddy),
+#       - cache static assets (/_next/static, images, public/),
+#       - proxy dynamic requests (/, /api/*) to Caddy -> web.
+#     With Cloudflare in front you may keep Caddy internal and even drop the
+#     443 publication (see commented `ports` under `caddy`).
+#
+# (c) Object storage: this file ships MinIO for S3-compatible storage. For
+#     global scale, use Cloudflare R2 (or S3) instead: set the S3_* vars
+#     (S3_ENDPOINT, S3_REGION, S3_BUCKET, S3_ACCESS_KEY_ID,
+#     S3_SECRET_ACCESS_KEY) in your environment/.env and you can drop the
+#     `minio` service entirely — the app prefers S3_* over MINIO_*.
+#
+# (d) Workers MUST run here: ocr-worker and export-worker are BullMQ Node
+#     consumers (Docker containers). They CANNOT run on Cloudflare Workers
+#     (no long-lived process / no Redis connection model). Keep them on the
+#     container host.
+# =============================================================================
+
+name: ibn-al-azhar-docs-prod
+
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "5"
+
+x-security: &default-security
+  cap_drop:
+    - ALL
+  security_opt:
+    - no-new-privileges:true
+
+x-readonly: &readonly-service
+  read_only: true
+  tmpfs:
+    - /tmp
+    - /app/apps/web/.next/cache
+
+# Shared production environment. Values are pulled from the host environment
+# (.env / CI secrets). Use `:?` for anything that is mandatory.
+x-common-env: &common-env
+  NODE_ENV: production
+  NEXT_TELEMETRY_DISABLED: "1"
+  DATABASE_URL: ${DATABASE_URL:?DATABASE_URL must be set (Neon/postgres connection string)}
+  DATABASE_URL_DIRECT: ${DATABASE_URL_DIRECT:-${DATABASE_URL}}
+  REDIS_URL: ${REDIS_URL:?REDIS_URL must be set (Upstash/Redis connection string)}
+  S3_ENDPOINT: ${S3_ENDPOINT:?S3_ENDPOINT must be set (R2/S3 or http://minio:9000)}
+  S3_REGION: ${S3_REGION:-auto}
+  S3_BUCKET: ${S3_BUCKET:?S3_BUCKET must be set}
+  S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID:?S3_ACCESS_KEY_ID must be set}
+  S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY:?S3_SECRET_ACCESS_KEY must be set}
+
+services:
+  # ---------------------------------------------------------------------------
+  # Reverse proxy / TLS. See notes (a) and (b) above.
+  # ---------------------------------------------------------------------------
+  caddy:
+    image: caddy:2-alpine
+    # For Cloudflare DNS-01 challenge, use a build instead:
+    #   build:
+    #     context: .
+    #     dockerfile: Dockerfile.caddy   # FROM caddy:2-alpine + builder for caddy-dns/cloudflare
+    #     args:
+    #       - plugins=caddy-dns/cloudflare
+    ports:
+      - "${CADDY_HTTP_PORT:-80}:80"
+      - "${CADDY_HTTPS_PORT:-443}:443"
+      # If Cloudflare is in front and terminating TLS, comment the 443 line
+      # above and expose Caddy only on the internal network / localhost.
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN must be set (e.g. ibnalazhardocs.com)}
+      EMAIL: ${EMAIL:?EMAIL must be set (ACME registration email)}
+      # CF_DNS_API_TOKEN: ${CF_DNS_API_TOKEN}   # only with cloudflare caddy module
+    volumes:
+      - ./infrastructure/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    networks:
+      - frontend
+    depends_on:
+      web:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 128M
+
+  # ---------------------------------------------------------------------------
+  # Next.js web application. Scale horizontally behind Caddy.
+  # ---------------------------------------------------------------------------
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      <<: *common-env
+      AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set}
+      AUTH_TRUST_HOST: "true"
+      PROMETHEUS_BEARER_TOKEN: ${PROMETHEUS_BEARER_TOKEN:?PROMETHEUS_BEARER_TOKEN must be set (matches Prometheus scrape config)}
+      APP_URL: ${APP_URL:?APP_URL must be set (production site URL, e.g. https://ibnalazhardocs.com)}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?NEXT_PUBLIC_SITE_URL must be set (public site URL)}
+      SITE_URL: ${SITE_URL:-${NEXT_PUBLIC_SITE_URL}}
+      APP_NAME: Ibn Al-Azhar Docs
+    networks:
+      - backend
+      - frontend
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *default-logging
+    <<: [*default-security, *readonly-service]
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    deploy:
+      mode: replicated
+      replicas: ${WEB_REPLICAS:-2}
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # BullMQ OCR consumer. MUST run on the container host (see note d).
+  # ---------------------------------------------------------------------------
+  ocr-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: ocr-runner
+    environment:
+      <<: *common-env
+      OCR_PROVIDER: ${OCR_PROVIDER:-tesseract}
+    networks:
+      - backend
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *default-logging
+    <<: *default-security
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  # ---------------------------------------------------------------------------
+  # BullMQ export consumer. MUST run on the container host (see note d).
+  # ---------------------------------------------------------------------------
+  export-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.worker
+      target: export-runner
+    environment:
+      <<: *common-env
+    networks:
+      - backend
+    depends_on:
+      redis:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    restart: unless-stopped
+    logging: *default-logging
+    <<: *default-security
+    tmpfs:
+      - /tmp
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Postgres. For global scale prefer a managed instance (Neon) and set
+  # DATABASE_URL accordingly; you can then drop this service.
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5433}:5432"
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ibn_docs}
+      POSTGRES_USER: ${POSTGRES_USER:-ibn_docs}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ibn_docs}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512M
+
+  # ---------------------------------------------------------------------------
+  # Redis. For global scale prefer a managed instance (Upstash) and set
+  # REDIS_URL accordingly; you can then drop this service.
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "127.0.0.1:6379:6379"
+    command: redis-server --save 60 1 --requirepass ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
+    volumes:
+      - redisdata:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 256M
+
+  # ---------------------------------------------------------------------------
+  # MinIO (S3-compatible). For global scale use Cloudflare R2 / S3 via S3_*
+  # and drop this service.
+  # ---------------------------------------------------------------------------
+  minio:
+    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    ports:
+      - "127.0.0.1:9000:9000"
+      - "127.0.0.1:9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY:?MINIO_ACCESS_KEY must be set}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY:?MINIO_SECRET_KEY must be set}
+    command: server /data --console-address ":9001"
+    volumes:
+      - miniodata:/data
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+    restart: unless-stopped
+    logging: *default-logging
+    deploy:
+      resources:
+        limits:
+          cpus: "2.0"
+          memory: 1G
+
+  # ===========================================================================
+  # MONITORING STACK
+  # ===========================================================================
+  loki:
+    image: grafana/loki:3.4.2
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+      - loki-data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3100/ready || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+
+  promtail:
+    image: grafana/promtail:3.4.2
+    volumes:
+      - ./promtail-config.yml:/etc/promtail/config.yml
+      - /var/log:/var/log:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+
+  prometheus:
+    image: prom/prometheus:v3.4.1
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert-rules.yml:/etc/prometheus/alert-rules.yml
+      - prometheus-data:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=30d"
+      - "--web.enable-lifecycle"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
+    ports:
+      - "127.0.0.1:9093:9093"
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - alertmanager-data:/alertmanager
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--storage.path=/alertmanager"
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+
+  grafana:
+    image: grafana/grafana:12.0.1
+    ports:
+      - "127.0.0.1:3001:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:?GRAFANA_PASSWORD must be set}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./grafana-datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml
+    depends_on:
+      - loki
+      - prometheus
+    networks:
+      - backend
+    restart: unless-stopped
+    logging: *default-logging
+
+volumes:
+  pgdata:
+  redisdata:
+  miniodata:
+  caddydata:
+  caddyconfig:
+  loki-data:
+  prometheus-data:
+  alertmanager-data:
+  grafana-data:
+
+networks:
+  backend:
+    internal: true
+  frontend:

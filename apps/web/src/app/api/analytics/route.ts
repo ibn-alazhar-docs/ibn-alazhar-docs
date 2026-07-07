@@ -20,6 +20,6 @@ export const GET = withAuth(async (request, { session }) => {
       headers: { "Cache-Control": "private, max-age=60" },
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "analytics/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "analytics/GET", "حدث خطأ");
   }
 });

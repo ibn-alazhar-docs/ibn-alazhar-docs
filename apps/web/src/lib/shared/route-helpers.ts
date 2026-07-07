@@ -38,7 +38,7 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   },
   [ERROR_CODES.PARENT_DELETED]: {
     code: ERROR_CODES.VALIDATION_ERROR,
-    message: "لا يمكن استعادة المجلد لأن المجلد الأب محذوف. يرجى استعادة المجلد الأب أولاً.",
+    message: "لا يمكن استعادة المجلد لأن المجلد الأب محذوف. استعد المجلد الأب أولاً.",
     status: 400,
   },
   [ERROR_CODES.CIRCULAR_REFERENCE]: {
@@ -79,7 +79,7 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   },
   [ERROR_CODES.AUTH_ERROR]: {
     code: ERROR_CODES.AUTH_ERROR,
-    message: "يجب ربط حساب Google الخاص بك لرفع الملفات",
+    message: "يجب ربط حساب Google لرفع الملفات",
     status: 400,
   },
 };

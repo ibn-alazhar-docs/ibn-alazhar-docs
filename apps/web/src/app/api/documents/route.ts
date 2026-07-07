@@ -52,9 +52,9 @@ export const GET = withAuth(async (request, { session }) => {
           totalPages: Math.ceil(total / validated.limit),
         },
       },
-      { headers: { "Cache-Control": "private, max-age=10" } },
+      { headers: { "Cache-Control": "no-store, must-revalidate" } },
     );
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/GET", "حدث خطأ");
   }
 });

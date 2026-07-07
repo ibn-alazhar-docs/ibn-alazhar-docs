@@ -28,9 +28,7 @@ export const WelcomeEmail = ({
       <Container style={container}>
         <Section style={box}>
           <Heading style={heading}>مرحباً بك في {appName}! 🎉</Heading>
-          <Text style={paragraph}>
-            تم تأكيد حسابك بنجاح. أنت الآن جاهز لاستخدام جميع ميزات التطبيق.
-          </Text>
+          <Text style={paragraph}>أُكّد الحساب. أنت الآن جاهز لاستخدام جميع ميزات التطبيق.</Text>
           <Section style={featuresSection}>
             <Text style={featuresTitle}>ما يمكنك فعله الآن:</Text>
             <Text style={feature}>✓ رفع ومعالجة المستندات بالعربية</Text>
@@ -44,9 +42,7 @@ export const WelcomeEmail = ({
             </a>
           </Section>
           <Hr style={hr} />
-          <Text style={footer}>
-            هذا البريد الإلكتروني تم إرساله تلقائياً من {appName}. لا ترد على هذا البريد.
-          </Text>
+          <Text style={footer}>أُرسل هذا البريد تلقائياً من {appName}. لا ترد على هذا البريد.</Text>
         </Section>
       </Container>
     </Body>

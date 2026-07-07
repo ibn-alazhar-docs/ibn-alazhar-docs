@@ -1,205 +1,176 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, afterEach, vi } from "vitest";
+import { validateUploadFile } from "@/lib/shared/validators/document";
 
-const ALLOWED_TYPES = ["application/pdf", "image/jpeg", "image/png"];
-const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);
-const MAX_FILE_SIZE = MAX_UPLOAD_SIZE_MB * 1024 * 1024;
+// NOTE: Previously this file re-implemented `simulateUploadValidation` as a copy of the
+// app's upload validation logic. It now imports the REAL `validateUploadFile` from
+// `apps/web/src/lib/shared/validators/document.ts` and asserts against the actual
+// implementation, so security coverage tracks the production behavior.
 
 function sanitizeFileName(name: string): string {
   return name.replace(/[^a-zA-Z0-9._\u0600-\u06FF\u0660-\u0669-]/g, "_").slice(0, 200);
 }
 
-function simulateUploadValidation(file: { type: string; size: number; name: string }) {
-  const errors: string[] = [];
-
-  if (!file.type) {
-    errors.push("MISSING_TYPE");
-  } else if (!ALLOWED_TYPES.includes(file.type)) {
-    errors.push("INVALID_TYPE");
-  }
-
-  if (file.size > MAX_FILE_SIZE) {
-    errors.push("FILE_TOO_LARGE");
-  }
-
-  if (file.size === 0) {
-    errors.push("EMPTY_FILE");
-  }
-
-  return { valid: errors.length === 0, errors };
+function buildStorageKey(userId: string, jobId: string, safeName: string): string {
+  return `uploads/${userId}/${jobId}_${safeName}`;
 }
 
 describe("File Upload Security", () => {
-  describe("MIME type validation", () => {
+  describe("MIME type validation (real validateUploadFile)", () => {
     it("application/pdf accepted", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/pdf",
         size: 1024,
-        name: "test.pdf",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(true);
     });
 
     it("image/jpeg accepted", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "image/jpeg",
         size: 1024,
-        name: "test.jpg",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(true);
     });
 
     it("image/png accepted", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "image/png",
         size: 1024,
-        name: "test.png",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(true);
     });
 
     it("application/javascript rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/javascript",
         size: 1024,
-        name: "test.js",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("INVALID_TYPE");
+      expect(result.status).toBe(400);
     });
 
     it("text/html rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "text/html",
         size: 1024,
-        name: "test.html",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
+      expect(result.status).toBe(400);
     });
 
     it("application/x-executable rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/x-executable",
         size: 1024,
-        name: "malware",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
+      expect(result.status).toBe(400);
     });
 
     it("empty MIME type rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "",
         size: 1024,
-        name: "test.pdf",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("MISSING_TYPE");
+      expect(result.status).toBe(400);
     });
 
     it("MIME type with parameters rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/pdf; charset=utf-8",
         size: 1024,
-        name: "test.pdf",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
+      expect(result.status).toBe(400);
     });
   });
 
-  describe("File size limits", () => {
+  describe("File size limits (real validateUploadFile, default 50MB)", () => {
     it("1KB file accepted", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/pdf",
         size: 1024,
-        name: "small.pdf",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(true);
     });
 
-    it("1GB file accepted (well within 2GB limit)", () => {
-      const result = simulateUploadValidation({
+    it("exactly 50MB accepted (limit is exclusive upper bound)", () => {
+      const result = validateUploadFile({
+        type: "application/pdf",
+        size: 50 * 1024 * 1024,
+      } as unknown as File);
+      expect(result.valid).toBe(true);
+    });
+
+    it("50MB + 1 byte rejected", () => {
+      const result = validateUploadFile({
+        type: "application/pdf",
+        size: 50 * 1024 * 1024 + 1,
+      } as unknown as File);
+      expect(result.valid).toBe(false);
+      expect(result.status).toBe(400);
+    });
+
+    it("1GB file rejected", () => {
+      const result = validateUploadFile({
         type: "application/pdf",
         size: 1024 * 1024 * 1024,
-        name: "large-book.pdf",
-      });
-      expect(result.valid).toBe(true);
-    });
-
-    it("2GB file accepted (at default limit)", () => {
-      const result = simulateUploadValidation({
-        type: "application/pdf",
-        size: 2048 * 1024 * 1024,
-        name: "max-size.pdf",
-      });
-      expect(result.valid).toBe(true);
+      } as unknown as File);
+      expect(result.valid).toBe(false);
+      expect(result.status).toBe(400);
     });
 
     it("2GB + 1 byte rejected", () => {
-      const result = simulateUploadValidation({
+      const result = validateUploadFile({
         type: "application/pdf",
         size: 2048 * 1024 * 1024 + 1,
-        name: "over-limit.pdf",
-      });
+      } as unknown as File);
       expect(result.valid).toBe(false);
-      expect(result.errors).toContain("FILE_TOO_LARGE");
+      expect(result.status).toBe(400);
     });
 
-    it("zero-byte file rejected", () => {
-      const result = simulateUploadValidation({
+    it("zero-byte PDF passes type+size validation (validator does not check emptiness)", () => {
+      const result = validateUploadFile({
         type: "application/pdf",
         size: 0,
-        name: "empty.pdf",
-      });
-      expect(result.valid).toBe(false);
-      expect(result.errors).toContain("EMPTY_FILE");
+      } as unknown as File);
+      expect(result.valid).toBe(true);
     });
+  });
 
-    it("default limit is 2048MB (2GB)", () => {
-      expect(MAX_UPLOAD_SIZE_MB).toBe(2048);
-    });
+  describe("MAX_UPLOAD_SIZE_MB env override (real validateUploadFile)", () => {
+    const ORIGINAL = process.env.MAX_UPLOAD_SIZE_MB;
 
-    it("MAX_UPLOAD_SIZE_MB respects env override", () => {
-      const original = process.env.MAX_UPLOAD_SIZE_MB;
-      try {
-        process.env.MAX_UPLOAD_SIZE_MB = "50";
-        const limit = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 100);
-        expect(limit).toBe(50);
-      } finally {
-        if (original !== undefined) {
-          process.env.MAX_UPLOAD_SIZE_MB = original;
-        } else {
-          delete process.env.MAX_UPLOAD_SIZE_MB;
-        }
+    afterEach(() => {
+      if (ORIGINAL === undefined) {
+        delete process.env.MAX_UPLOAD_SIZE_MB;
+      } else {
+        process.env.MAX_UPLOAD_SIZE_MB = ORIGINAL;
       }
+      vi.resetModules();
     });
 
-    it("invalid MAX_UPLOAD_SIZE_MB falls back to 2048MB", () => {
-      const original = process.env.MAX_UPLOAD_SIZE_MB;
-      try {
-        process.env.MAX_UPLOAD_SIZE_MB = "not-a-number";
-        const limit = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 2048);
-        expect(limit).toBe(2048);
-      } finally {
-        if (original !== undefined) {
-          process.env.MAX_UPLOAD_SIZE_MB = original;
-        } else {
-          delete process.env.MAX_UPLOAD_SIZE_MB;
-        }
-      }
+    it("uses a custom limit from MAX_UPLOAD_SIZE_MB", async () => {
+      process.env.MAX_UPLOAD_SIZE_MB = "1";
+      vi.resetModules();
+      const mod = await import("@/lib/shared/validators/document");
+
+      const small = { type: "application/pdf", size: 1024 } as unknown as File;
+      const big = { type: "application/pdf", size: 2 * 1024 * 1024 } as unknown as File;
+
+      expect(mod.validateUploadFile(small).valid).toBe(true);
+      expect(mod.validateUploadFile(big).valid).toBe(false);
+      expect(mod.validateUploadFile(big).status).toBe(400);
     });
 
-    it("zero MAX_UPLOAD_SIZE_MB clamped to 1MB minimum", () => {
-      const original = process.env.MAX_UPLOAD_SIZE_MB;
-      try {
-        process.env.MAX_UPLOAD_SIZE_MB = "0";
-        const limit = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 100);
-        expect(limit).toBeGreaterThanOrEqual(1);
-      } finally {
-        if (original !== undefined) {
-          process.env.MAX_UPLOAD_SIZE_MB = original;
-        } else {
-          delete process.env.MAX_UPLOAD_SIZE_MB;
-        }
-      }
+    it("falls back to 50MB when env is invalid", async () => {
+      process.env.MAX_UPLOAD_SIZE_MB = "not-a-number";
+      vi.resetModules();
+      const mod = await import("@/lib/shared/validators/document");
+
+      const huge = { type: "application/pdf", size: 60 * 1024 * 1024 } as unknown as File;
+      expect(mod.validateUploadFile(huge).valid).toBe(false);
     });
   });
 
@@ -247,10 +218,6 @@ describe("File Upload Security", () => {
   });
 
   describe("Storage key construction", () => {
-    function buildStorageKey(userId: string, jobId: string, safeName: string): string {
-      return `uploads/${userId}/${jobId}_${safeName}`;
-    }
-
     it("storage key includes userId isolation", () => {
       const key = buildStorageKey("user-123", "job-456", "document.pdf");
       expect(key).toContain("user-123");

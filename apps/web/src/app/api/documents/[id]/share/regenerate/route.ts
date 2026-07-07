@@ -31,7 +31,7 @@ export const POST = withAuth(async (_request, { session, params }) => {
     return handleRouteError(
       error,
       "documents/[id]/share/regenerate/POST",
-      "حدث خطأ أثناء إعادة إنشاء الرابط",
+      "تعذر إعادة إنشاء الرابط",
     );
   }
 });

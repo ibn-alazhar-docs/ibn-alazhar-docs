@@ -16,13 +16,13 @@ describe("validatePdf — MIME type acceptance", () => {
   });
 
   it("accepts image/jpeg", () => {
-    const buf = Buffer.alloc(100, 0xff);
+    const buf = Buffer.from([0xff, 0xd8, 0xff, ...new Array(97).fill(0)]);
     const result = validatePdf(buf, "image/jpeg", 100);
     expect(result.valid).toBe(true);
   });
 
   it("accepts image/png", () => {
-    const buf = Buffer.alloc(100, 0x89);
+    const buf = Buffer.from([0x89, 0x50, 0x4e, 0x47, ...new Array(96).fill(0)]);
     const result = validatePdf(buf, "image/png", 100);
     expect(result.valid).toBe(true);
   });
@@ -54,13 +54,14 @@ describe("validatePdf — MIME type acceptance", () => {
 
 describe("validatePdf — file size", () => {
   it("accepts 0 bytes", () => {
-    const result = validatePdf(Buffer.alloc(0), "image/jpeg", 0);
+    const result = validatePdf(Buffer.from([0xff, 0xd8, 0xff]), "image/jpeg", 3);
     expect(result.valid).toBe(true);
   });
 
   it("accepts 1MB", () => {
     const size = 1 * 1024 * 1024;
-    const result = validatePdf(Buffer.alloc(100), "image/jpeg", size);
+    const buf = Buffer.from([0xff, 0xd8, 0xff, ...new Array(97).fill(0)]);
+    const result = validatePdf(buf, "image/jpeg", size);
     expect(result.valid).toBe(true);
   });
 
@@ -223,18 +224,22 @@ describe("validatePdf — error codes", () => {
 });
 
 describe("validatePdf — details shape", () => {
+  function jpegBuf(): Buffer {
+    return Buffer.from([0xff, 0xd8, 0xff, ...new Array(47).fill(0)]);
+  }
+
   it("always has mimeType in details", () => {
-    const result = validatePdf(Buffer.alloc(50), "image/jpeg", 50);
+    const result = validatePdf(jpegBuf(), "image/jpeg", 50);
     expect(result.details.mimeType).toBe("image/jpeg");
   });
 
   it("always has size in details", () => {
-    const result = validatePdf(Buffer.alloc(50), "image/jpeg", 12345);
+    const result = validatePdf(jpegBuf(), "image/jpeg", 12345);
     expect(result.details.size).toBe(12345);
   });
 
   it("always has hasValidHeader in details", () => {
-    const result = validatePdf(Buffer.alloc(50), "image/jpeg", 50);
+    const result = validatePdf(jpegBuf(), "image/jpeg", 50);
     expect(typeof result.details.hasValidHeader).toBe("boolean");
   });
 });

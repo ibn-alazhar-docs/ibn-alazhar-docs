@@ -75,6 +75,15 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
       DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public

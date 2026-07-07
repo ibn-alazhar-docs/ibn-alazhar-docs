@@ -25,6 +25,6 @@ export const GET = withAuth(async (request, { session }) => {
 
     return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "conversion/list", "فشل تحميل قائمة التحويلات");
+    return handleRouteError(error, "conversion/list", "تعذر تحميل قائمة التحويلات");
   }
 });

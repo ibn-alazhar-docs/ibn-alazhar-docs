@@ -39,6 +39,6 @@ export const POST = withAuth(async (request, { session }) => {
       message: `تم وسم ${taggedCount} مستند`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/bulk-tag/POST", "فشلت عملية الوسم");
+    return handleRouteError(error, "documents/bulk-tag/POST", "تعذر الوسم");
   }
 });

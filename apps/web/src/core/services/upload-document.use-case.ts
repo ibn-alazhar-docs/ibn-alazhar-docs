@@ -48,23 +48,33 @@ export class UploadDocumentUseCase {
     );
 
     const storageKey = this.storage.uploadKey(userId, jobId, safeName);
-    await this.storage.uploadFile(storageKey, tempPath, file.type);
 
-    await unlink(tempPath).catch(() => {});
+    try {
+      await this.storage.uploadFile(storageKey, tempPath, file.type);
+    } finally {
+      await unlink(tempPath).catch(() => {});
+    }
 
-    const document = await this.documentRepository.createDocument({
-      id: jobId,
-      userId: userId,
-      title: fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, ""),
-      fileName,
-      originalName: fileName,
-      mimeType: file.type,
-      fileSize: file.size,
-      storageKey: storageKey,
-      folderId: folderId || null,
-      status: "UPLOADED",
-      pageRange: pageRange || null,
-    });
+    let document;
+    try {
+      document = await this.documentRepository.createDocument({
+        id: jobId,
+        userId: userId,
+        title: fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, ""),
+        fileName,
+        originalName: fileName,
+        mimeType: file.type,
+        fileSize: file.size,
+        storageKey: storageKey,
+        folderId: folderId || null,
+        status: "UPLOADED",
+        pageRange: pageRange || null,
+      });
+    } catch (error) {
+      // If DB insert fails, cleanup the S3 object to prevent orphaned files
+      await this.storage.deleteFile(storageKey).catch(() => {});
+      throw error;
+    }
 
     const config = loadConfig();
     const job = {

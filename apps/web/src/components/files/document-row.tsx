@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 import { useState, memo } from "react";
 import { ShareModal } from "@/components/pipeline/share-modal";
 import { ShareIcon, EditIcon, SaveIcon, CancelIcon, DeleteIcon } from "./document-row-icons";
+import { Badge } from "@/components/ui/badge";
 
 interface DocumentRowActionsProps {
   doc: Doc;
@@ -14,9 +15,6 @@ interface DocumentRowActionsProps {
   onSaveEdit: (docId: string) => void;
   onCancelEdit: () => void;
   onDelete: (docId: string) => void;
-  deletingDocId: string | null;
-  onConfirmDelete: (docId: string) => void;
-  onCancelDelete: () => void;
   tCommon: { (key: string): string };
 }
 
@@ -27,14 +25,10 @@ function DocumentRowActions({
   onSaveEdit,
   onCancelEdit,
   onDelete,
-  deletingDocId,
-  onConfirmDelete,
-  onCancelDelete,
   tCommon,
 }: DocumentRowActionsProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const isEditing = editingDocId === doc.id;
-  const isDeleting = deletingDocId === doc.id;
 
   return (
     <td className="whitespace-nowrap px-3 py-2">
@@ -46,8 +40,8 @@ function DocumentRowActions({
             type="button"
             onClick={() => setIsShareModalOpen(true)}
             className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-            title="مشاركة"
-            aria-label="مشاركة"
+            title={tCommon("share")}
+            aria-label={tCommon("share")}
           >
             <ShareIcon />
           </motion.button>
@@ -91,47 +85,17 @@ function DocumentRowActions({
             </motion.button>
           </>
         )}
-        {isDeleting ? (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="flex items-center gap-1 rounded bg-[var(--danger-bg)] p-1"
-          >
-            <span className="px-1 text-[10px] font-bold uppercase text-[var(--danger)]">?</span>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={() => onConfirmDelete(doc.id)}
-              className="rounded bg-[var(--danger)] px-2 py-0.5 text-xs font-medium text-[var(--btn-primary-text)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-              aria-label={tCommon("confirm")}
-            >
-              {tCommon("confirm")}
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              type="button"
-              onClick={onCancelDelete}
-              className="px-2 py-0.5 text-xs font-medium text-[var(--danger)] transition-colors hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-              aria-label={tCommon("cancel")}
-            >
-              {tCommon("cancel")}
-            </motion.button>
-          </motion.div>
-        ) : (
-          <motion.button
-            whileHover={{ scale: 1.1, color: "var(--danger)" }}
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            onClick={() => onDelete(doc.id)}
-            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-            title={tCommon("delete")}
-            aria-label={tCommon("delete")}
-          >
-            <DeleteIcon />
-          </motion.button>
-        )}
+        <motion.button
+          whileHover={{ scale: 1.1, color: "var(--danger)" }}
+          whileTap={{ scale: 0.9 }}
+          type="button"
+          onClick={() => onDelete(doc.id)}
+          className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+          title={tCommon("delete")}
+          aria-label={tCommon("delete")}
+        >
+          <DeleteIcon />
+        </motion.button>
       </div>
       <ShareModal
         documentId={doc.id}
@@ -153,15 +117,11 @@ interface DocumentRowProps {
   onSaveEdit: (docId: string) => void;
   onCancelEdit: () => void;
   onDelete: (docId: string) => void;
-  deletingDocId: string | null;
-  onConfirmDelete: (docId: string) => void;
-  onCancelDelete: () => void;
   locale: string;
   tDocs: (key: string, opts?: Record<string, unknown>) => string;
   tCommon: { (key: string): string };
   formatFileSize: (bytes: number) => string;
   getStatusLabel: (status: string, t: (key: string) => string) => string;
-  getStatusColor: (status: string) => string;
 }
 
 export const DocumentRow = memo(function DocumentRow({
@@ -175,15 +135,11 @@ export const DocumentRow = memo(function DocumentRow({
   onSaveEdit,
   onCancelEdit,
   onDelete,
-  deletingDocId,
-  onConfirmDelete,
-  onCancelDelete,
   locale,
   tDocs,
   tCommon,
   formatFileSize,
   getStatusLabel,
-  getStatusColor,
 }: DocumentRowProps) {
   return (
     <motion.tr
@@ -191,14 +147,15 @@ export const DocumentRow = memo(function DocumentRow({
       animate={{ opacity: 1, y: 0 }}
       transition={{ type: "spring", stiffness: 400, damping: 30 }}
       className="border-b border-line hover:bg-badge transition-colors"
-      data-testid={`document-row-${doc.id}`}
+      data-testid="document-row"
+      data-document-id={doc.id}
     >
       <td className="px-3 py-2">
         <input
           type="checkbox"
           checked={isSelected}
           onChange={() => onToggleSelect(doc.id)}
-          aria-label={`تحديد المستند ${doc.title}`}
+          aria-label={tDocs("selectAria", { title: doc.title })}
           className="h-4 w-4 rounded border-[var(--input-border)] accent-[var(--success)]"
           data-testid="document-select"
         />
@@ -253,12 +210,24 @@ export const DocumentRow = memo(function DocumentRow({
         </div>
       </td>
       <td className="whitespace-nowrap px-3 py-2">
-        <span
-          className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${getStatusColor(doc.status)}`}
+        <Badge
+          variant={
+            doc.status === "COMPLETED"
+              ? "success"
+              : doc.status === "FAILED"
+                ? "destructive"
+                : doc.status === "UPLOADED"
+                  ? "warning"
+                  : doc.status.startsWith("OCR") ||
+                      doc.status === "SPLITTING" ||
+                      doc.status === "PROCESSING"
+                    ? "info"
+                    : "secondary"
+          }
           data-testid="document-status"
         >
           {getStatusLabel(doc.status, tDocs)}
-        </span>
+        </Badge>
       </td>
       <td className="whitespace-nowrap px-3 py-2 text-sm text-muted-color">
         {doc.pageCount ? tDocs("pagesCount", { count: doc.pageCount }) : "-"}
@@ -276,9 +245,6 @@ export const DocumentRow = memo(function DocumentRow({
         onSaveEdit={onSaveEdit}
         onCancelEdit={onCancelEdit}
         onDelete={onDelete}
-        deletingDocId={deletingDocId}
-        onConfirmDelete={onConfirmDelete}
-        onCancelDelete={onCancelDelete}
         tCommon={tCommon}
       />
     </motion.tr>

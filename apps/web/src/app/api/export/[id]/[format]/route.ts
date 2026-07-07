@@ -31,6 +31,7 @@ export const GET = withAuth(async (request, { session, params }) => {
       id,
       format,
       userId: session.user.id,
+      userRole: session.user.role,
     });
 
     return new Response(new Uint8Array(buffer), {
@@ -43,6 +44,6 @@ export const GET = withAuth(async (request, { session, params }) => {
       },
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "export/[id]/[format]/GET", "فشل التصدير");
+    return handleRouteError(error, "export/[id]/[format]/GET", "تعذر التصدير");
   }
 });

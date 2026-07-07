@@ -5,6 +5,7 @@ export interface IStorageRepository {
   downloadIfExists(key: string): Promise<Buffer | null>;
   uploadBuffer(key: string, buffer: Buffer, contentType: string): Promise<void>;
   uploadFile(key: string, filePath: string, contentType: string): Promise<void>;
+  deleteFile(key: string): Promise<void>;
   ensureBucket(): Promise<void>;
 
   ocrTextKey(documentId: string): string;

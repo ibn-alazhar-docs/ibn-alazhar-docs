@@ -23,10 +23,6 @@
   }
 }
 
-html[dir="rtl"] .reading-prose {
-  text-align: right;
-}
-
 /* Headings */
 .reading-prose h1 {
   font-size: 1.875rem;
@@ -87,7 +83,7 @@ html[dir="rtl"] .reading-prose {
 
 /* Heading anchors */
 .reading-prose .heading-anchor {
-  float: left;
+  float: inline-start;
   margin-inline-start: -1.5rem;
   padding-inline-end: 0.25rem;
   opacity: 0;
@@ -95,12 +91,6 @@ html[dir="rtl"] .reading-prose {
   text-decoration: none;
   color: var(--color-primary-400);
   font-size: 0.875em;
-}
-
-html[dir="rtl"] .reading-prose .heading-anchor {
-  float: right;
-  margin-inline-start: 0;
-  margin-inline-end: -1.5rem;
 }
 
 .reading-prose h2:hover .heading-anchor,
@@ -178,14 +168,13 @@ html[dir="rtl"] .reading-prose .heading-anchor {
     var(--color-gold-50),
     color-mix(in srgb, var(--color-gold-50) 80%, white)
   );
-  border-radius: 0 0.75rem 0.75rem 0;
+  border-start-start-radius: 0;
+  border-end-start-radius: 0;
+  border-start-end-radius: 0.75rem;
+  border-end-end-radius: 0.75rem;
   font-style: italic;
   color: var(--color-neutral-700);
   line-height: 1.8;
-}
-
-html[dir="rtl"] .reading-prose blockquote {
-  border-radius: 0.75rem 0 0 0.75rem;
 }
 
 .reading-prose blockquote p {

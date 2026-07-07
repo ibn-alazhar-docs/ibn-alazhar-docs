@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "repowise": {
+      "command": "repowise",
+      "args": [
+        "mcp",
+        "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs",
+        "--transport",
+        "stdio"
+      ],
+      "description": "repowise: codebase intelligence \u2014 docs, graph, git signals, dead code, decisions"
+    }
+  }
+}

@@ -20,7 +20,7 @@ export const POST = withAuth(async (_request, { session, params }) => {
   try {
     const restored = await useCases.folder.restoreFolder(id, session.user.id);
     return NextResponse.json({
-      message: "تم استعادة المجلد بنجاح",
+      message: "استُعيد المجلد",
       folder: restored,
     });
   } catch (error: unknown) {

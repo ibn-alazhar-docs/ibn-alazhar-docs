@@ -103,7 +103,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
         <div className="mb-6 flex items-center justify-between">
           <Heading level={3}>{t("ranges") || "Split Document"}</Heading>
           <div className="rounded-lg bg-[var(--badge-bg)] px-3 py-1 text-sm font-semibold text-primary-color">
-            إجمالي الصفحات: {numPages}
+            {t("totalPages")}: {numPages}
           </div>
         </div>
 
@@ -210,6 +210,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
           <button
             onClick={handleConfirm}
             className="w-full rounded-xl bg-btn-primary py-3 text-sm font-bold text-btn-primary-text shadow-sm transition-all hover:opacity-90"
+            data-testid="upload-button"
           >
             {t("uploadButton") || "Upload & Process"}
           </button>

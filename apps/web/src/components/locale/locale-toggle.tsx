@@ -1,42 +1,64 @@
 "use client";
 
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/navigation";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export function LocaleToggle() {
   const locale = useLocale();
+  const t = useTranslations("locale");
+  const tCommon = useTranslations("common");
   const pathname = usePathname();
   const router = useRouter();
 
   const [isPending, startTransition] = useTransition();
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const nextLocale = locale === "ar" ? "en" : "ar";
 
-  function switchLocale() {
-    if (typeof window !== "undefined" && "hasUnsavedChanges" in window) {
-      const confirmMsg =
-        locale === "ar"
-          ? "لديك ملف قيد المعالجة ولم يتم رفعه بعد. تغيير اللغة سيؤدي إلى إلغاء الملف. هل أنت متأكد؟"
-          : "You have an unuploaded file. Changing the language will discard it. Are you sure?";
-      if (!window.confirm(confirmMsg)) {
-        return;
-      }
-    }
-
+  function handleSwitch() {
     startTransition(() => {
       router.replace(pathname, { locale: nextLocale });
     });
   }
 
+  function switchLocale() {
+    if (
+      typeof window !== "undefined" &&
+      (window as unknown as Record<string, unknown>).hasUnsavedChanges === true
+    ) {
+      setShowConfirm(true);
+    } else {
+      handleSwitch();
+    }
+  }
+
   return (
-    <button
-      onClick={switchLocale}
-      disabled={isPending}
-      className="flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-muted-color transition-all hover:bg-hover hover:text-primary-color disabled:opacity-40"
-      aria-label={nextLocale === "ar" ? "التبديل إلى العربية" : "التبديل إلى الإنجليزية"}
-    >
-      {locale === "ar" ? "EN" : "AR"}
-    </button>
+    <>
+      <button
+        onClick={switchLocale}
+        disabled={isPending}
+        className="flex items-center justify-center rounded-lg px-2.5 py-1.5 text-xs font-semibold tracking-[0.06em] text-muted-color transition-all hover:bg-hover hover:text-primary-color disabled:opacity-40"
+        aria-label={t("toggle")}
+      >
+        {locale === "ar" ? "EN" : "AR"}
+      </button>
+
+      {showConfirm && (
+        <ConfirmDialog
+          title={t("switchTitle")}
+          message={t("switchMessage")}
+          confirmLabel={t("switchConfirm")}
+          cancelLabel={tCommon("cancel")}
+          variant="danger"
+          onConfirm={() => {
+            setShowConfirm(false);
+            handleSwitch();
+          }}
+          onCancel={() => setShowConfirm(false)}
+        />
+      )}
+    </>
   );
 }

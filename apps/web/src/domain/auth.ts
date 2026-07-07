@@ -9,3 +9,7 @@ export const ROLE = {
 export function isAdminRole(role: string): boolean {
   return role === ROLE.ADMIN;
 }
+
+export function canViewUsers(role: string): boolean {
+  return role === ROLE.ADMIN || role === ROLE.TEACHER;
+}

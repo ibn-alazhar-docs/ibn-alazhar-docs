@@ -18,8 +18,12 @@ export class DocumentShareUseCases {
   async createShareLink(documentId: string, userId: string, expirationStr: string | null) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
     if (!document) throw new NotFoundError();
-    if (document.status !== "COMPLETED")
-      throw new AppError("الملف جاهز للتصدير بعد", ERROR_CODES.NOT_READY, 409);
+    if (document.status === "FAILED") {
+      throw new AppError("الملف فشل في المعالجة ولا يمكن مشاركته", ERROR_CODES.NOT_READY, 409);
+    }
+    if (document.status !== "COMPLETED") {
+      throw new AppError("الملف غير جاهز للمشاركة بعد", ERROR_CODES.NOT_READY, 409);
+    }
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
     if (existing) return existing;

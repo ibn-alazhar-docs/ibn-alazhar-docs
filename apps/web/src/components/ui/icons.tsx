@@ -6,11 +6,9 @@ import {
   Check,
   Folder,
   FileText,
-  Eye,
   Settings,
   Search,
   X,
-  ChevronLeft,
   ChevronRight,
   User,
   Tag,
@@ -19,7 +17,6 @@ import {
   Edit,
   Menu,
   Home,
-  Info,
   LogOut,
   ArrowLeft,
   ArrowRight,
@@ -35,7 +32,10 @@ import {
   Share2,
   Clock,
   Globe,
-  Image as LucideImage,
+  ChevronDown,
+  ChevronLeft,
+  Info,
+  Loader2,
 } from "lucide-react";
 
 export interface IconProps {
@@ -64,9 +64,6 @@ export function FolderIcon({ className = "h-5 w-5", size }: IconProps) {
 export function FileTextIcon({ className = "h-5 w-5", size }: IconProps) {
   return <FileText className={className} size={size} />;
 }
-export function EyeIcon({ className = "h-5 w-5", size }: IconProps) {
-  return <Eye className={className} size={size} />;
-}
 export function GearIcon({ className = "h-5 w-5", size }: IconProps) {
   return <Settings className={className} size={size} />;
 }
@@ -75,9 +72,6 @@ export function SearchIcon({ className = "h-5 w-5", size }: IconProps) {
 }
 export function CloseIcon({ className = "h-5 w-5", size }: IconProps) {
   return <X className={className} size={size} />;
-}
-export function ChevronLeftIcon({ className = "h-5 w-5", size }: IconProps) {
-  return <ChevronLeft className={className} size={size} />;
 }
 export function ChevronRightIcon({ className = "h-5 w-5", size }: IconProps) {
   return <ChevronRight className={className} size={size} />;
@@ -100,9 +94,6 @@ export function MenuIcon({ className = "h-5 w-5", size }: IconProps) {
 export function HomeIcon({ className = "h-5 w-5", size }: IconProps) {
   return <Home className={className} size={size} />;
 }
-export function InfoIcon({ className = "h-5 w-5", size }: IconProps) {
-  return <Info className={className} size={size} />;
-}
 export function LogoutIcon({ className = "h-5 w-5", size }: IconProps) {
   return <LogOut className={className} size={size} />;
 }
@@ -120,9 +111,6 @@ export function RefreshIcon({ className = "h-5 w-5", size }: IconProps) {
 }
 export function BarChartIcon({ className = "h-5 w-5", size }: IconProps) {
   return <BarChart3 className={className} size={size} />;
-}
-export function ImageIcon({ className = "h-5 w-5", size }: IconProps) {
-  return <LucideImage className={className} size={size} />;
 }
 export function TagsIcon({ className = "h-5 w-5", size }: IconProps) {
   return <Tags className={className} size={size} />;
@@ -153,4 +141,16 @@ export function ClockIcon({ className = "h-5 w-5", size }: IconProps) {
 }
 export function GlobeIcon({ className = "h-5 w-5", size }: IconProps) {
   return <Globe className={className} size={size} />;
+}
+export function ChevronDownIcon({ className = "h-5 w-5", size }: IconProps) {
+  return <ChevronDown className={className} size={size} />;
+}
+export function ChevronLeftIcon({ className = "h-5 w-5", size }: IconProps) {
+  return <ChevronLeft className={className} size={size} />;
+}
+export function InfoIcon({ className = "h-5 w-5", size }: IconProps) {
+  return <Info className={className} size={size} />;
+}
+export function SpinnerIcon({ className = "h-5 w-5", size }: IconProps) {
+  return <Loader2 className={`animate-spin ${className}`} size={size} />;
 }

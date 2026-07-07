@@ -6,14 +6,14 @@ export class ShareRepository implements IShareRepository {
 
   async findShareLinkByDocumentId(documentId: string, userId: string) {
     return this.prisma.shareLink.findFirst({
-      where: { documentId, userId },
+      where: { documentId, userId, deletedAt: null },
       include: { document: { select: { title: true } } },
     });
   }
 
   async findShareLinkByToken(token: string, documentSelect?: Record<string, boolean>) {
-    return this.prisma.shareLink.findUnique({
-      where: { token },
+    return this.prisma.shareLink.findFirst({
+      where: { token, deletedAt: null },
       include: {
         document: {
           select: documentSelect ?? {
@@ -35,8 +35,10 @@ export class ShareRepository implements IShareRepository {
     userId: string;
     expiresAt: Date | null;
   }) {
-    return this.prisma.shareLink.create({
-      data,
+    return this.prisma.shareLink.upsert({
+      where: { documentId_userId: { documentId: data.documentId, userId: data.userId } },
+      create: data,
+      update: { token: data.token, expiresAt: data.expiresAt, deletedAt: null },
     });
   }
 
@@ -48,8 +50,9 @@ export class ShareRepository implements IShareRepository {
   }
 
   async deleteShareLinkByDocumentId(documentId: string, userId: string) {
-    return this.prisma.shareLink.deleteMany({
-      where: { documentId, userId },
+    return this.prisma.shareLink.updateMany({
+      where: { documentId, userId, deletedAt: null },
+      data: { deletedAt: new Date() },
     });
   }
 }

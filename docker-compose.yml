@@ -21,7 +21,13 @@ x-readonly: &readonly-service
 x-common-env: &common-env
   NODE_ENV: production
   NEXT_TELEMETRY_DISABLED: "1"
-  DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/ibn_docs?schema=public&connection_limit=25
+  # DIRECT Postgres URL. This is what the migration client (db-migrate) uses for
+  # `prisma migrate deploy`. Prisma `migrate`/`db push` MUST hit Postgres directly
+  # (NOT through PgBouncer) or it will fail in transaction pooling mode.
+  # Runtime services (web, ocr-worker, export-worker) OVERRIDE this below with the
+  # PgBouncer endpoint. Prisma pooled connections require `?pgbouncer=true`, but the
+  # migration client must never use that flag.
+  DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/ibn_docs?schema=public
   DATABASE_URL_DIRECT: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@postgres:5432/ibn_docs?schema=public
   REDIS_URL: redis://:${REDIS_PASSWORD:?REDIS_PASSWORD must be set}@redis:6379
   S3_ENDPOINT: http://minio:9000
@@ -130,7 +136,7 @@ services:
     image: redis:7-alpine
     ports:
       - "127.0.0.1:6379:6379"
-    command: redis-server /usr/local/etc/redis/redis.conf
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
     environment:
       REDISCLI_AUTH: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
       REDIS_PASSWORD: ${REDIS_PASSWORD:?REDIS_PASSWORD must be set}
@@ -216,9 +222,15 @@ services:
       - "127.0.0.1:3000:3000"
     environment:
       <<: *common-env
+      # Runtime query traffic goes through PgBouncer (PgBouncer:6432) for pooling.
+      # `?pgbouncer=true` tells Prisma this is a transaction-pooled connection.
+      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@pgbouncer:6432/ibn_docs?schema=public&pgbouncer=true
       AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET must be set}
       AUTH_TRUST_HOST: "true"
-      APP_URL: ${APP_URL:-http://localhost:3000}
+      PROMETHEUS_BEARER_TOKEN: ${PROMETHEUS_BEARER_TOKEN:?PROMETHEUS_BEARER_TOKEN must be set (matches Prometheus scrape config / infrastructure/monitoring)}
+      APP_URL: ${APP_URL:?APP_URL must be set (production site URL, e.g. https://ibnalazhardocs.com)}
+      NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:?NEXT_PUBLIC_SITE_URL must be set (public site URL, e.g. https://ibnalazhardocs.com)}
+      SITE_URL: ${SITE_URL:-${NEXT_PUBLIC_SITE_URL}}
       APP_NAME: Ibn Al-Azhar Docs
     networks:
       - backend
@@ -257,6 +269,9 @@ services:
       target: ocr-runner
     environment:
       <<: *common-env
+      # Runtime query traffic goes through PgBouncer (PgBouncer:6432) for pooling.
+      # `?pgbouncer=true` tells Prisma this is a transaction-pooled connection.
+      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@pgbouncer:6432/ibn_docs?schema=public&pgbouncer=true
       OCR_PROVIDER: tesseract
     networks:
       - backend
@@ -295,6 +310,9 @@ services:
       target: export-runner
     environment:
       <<: *common-env
+      # Runtime query traffic goes through PgBouncer (PgBouncer:6432) for pooling.
+      # `?pgbouncer=true` tells Prisma this is a transaction-pooled connection.
+      DATABASE_URL: postgresql://ibn_docs:${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set}@pgbouncer:6432/ibn_docs?schema=public&pgbouncer=true
     networks:
       - backend
     depends_on:

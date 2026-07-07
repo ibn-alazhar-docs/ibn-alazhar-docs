@@ -45,9 +45,9 @@ export const POST = withAuth(async (request, { session }) => {
     return NextResponse.json({
       success: true,
       affectedDocuments: result.affectedDocuments,
-      message: `تم دمج الوسم بنجاح. تم نقل ${result.affectedDocuments} مستند`,
+      message: `دُمج الوسم. تم نقل ${result.affectedDocuments} مستند`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/merge/POST", "فشل دمج الوسوم");
+    return handleRouteError(error, "tags/merge/POST", "تعذر دمج الوسوم");
   }
 });

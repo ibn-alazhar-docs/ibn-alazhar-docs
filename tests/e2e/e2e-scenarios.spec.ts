@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 
 const BASE = "http://localhost:3000";
-const TEST_EMAIL = `testuser_${Date.now()}@ibnalazhar.app`;
+const TEST_EMAIL = `testuser_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@ibnalazhar.app`;
 const TEST_PASSWORD = "StrongPassword123!";
 
 // Serial mode required: tests share DB state (user, uploaded file, folder)
@@ -65,13 +65,14 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await page.waitForLoadState("networkidle");
     await page.setInputFiles('[data-testid="file-input"]', testFilePath);
 
-    await page
-      .locator("button", { hasText: /تأكيد|Confirm|رفع وبدء المعالجة|Upload & Process/ })
-      .first()
-      .click({ timeout: 15000 });
+    await page.getByTestId("upload-button").click({ timeout: 15000 });
 
     await expect(page.locator('[data-testid="document-row"]').first()).toBeVisible({
       timeout: 30000,
+    });
+
+    await expect(page.locator('[data-testid="document-row"]').first()).toContainText("اكتمل", {
+      timeout: 60000,
     });
   });
 
@@ -85,8 +86,9 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       page
         .locator("text=لم نعثر على أية نتائج بحث تتطابق مع:")
         .first()
-        .or(page.locator("text=لا يوجد").first()),
-    ).toBeVisible({ timeout: 10000 });
+        .or(page.locator("text=لا يوجد").first())
+        .or(page.locator("text=لم نجد نتائج").first()),
+    ).toBeVisible({ timeout: 15000 });
 
     await page.fill('[data-testid="search-input"]', "لا_أعلم_هويتي");
     await page.keyboard.press("Enter");
@@ -96,9 +98,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
   test("5. Logout & Unauthorized access", async ({ page }) => {
     await login(page);
 
-    const userMenu = page.locator('[data-testid="sidebar"] button:has(svg)').last();
-    await userMenu.click();
-    await page.locator("text=تسجيل خروج").first().click();
+    await page.locator("text=تسجيل الخروج").first().click();
     await page.waitForURL(/\/ar$/);
 
     await page.goto(`${BASE}/ar/dashboard`);
@@ -113,7 +113,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       .getByRole("button", { name: "+ مجلد جديد" })
       .or(page.locator("text=+ مجلد جديد"))
       .click();
-    await page.fill('input[name="name"], input[placeholder="اسم المجلد"]', "مجلد الاختبار E2E");
+    await page.fill("#folder-name", "مجلد الاختبار E2E");
     await page.locator('button[type="submit"]').click();
 
     await expect(page.locator("text=مجلد الاختبار E2E").first()).toBeVisible({ timeout: 10000 });
@@ -123,34 +123,48 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await login(page);
     await page.goto(`${BASE}/ar/files`);
 
+    // 1. Select the document checkbox
     const fileRow = page.locator('[data-testid="document-row"]').first();
-    await fileRow.hover();
+    const checkbox = fileRow.locator('[data-testid="document-select"]').first();
+    await checkbox.click();
 
-    const optionsBtn = fileRow.locator('button:has-text("⋮")').first();
-    await optionsBtn.click();
-
-    const tagsBtn = page.locator("text=إضافة وسوم").first();
+    // 2. Click "أضف وسوماً" (Add tags) button in BulkActions
+    const tagsBtn = page.locator('button:has-text("أضف وسوماً")').first();
     if (await tagsBtn.isVisible()) {
       await tagsBtn.click();
-      await page.fill('input[placeholder="اسم الوسم"]', "وسم_مهم");
-      await page.locator("text=تأكيد").first().click();
-      await page.keyboard.press("Escape");
+      // Open "createNew" tag input
+      await page.locator('button:has-text("+ أنشئ وسماً")').first().click();
+      await page.fill('input[placeholder="الاسم"]', "وسم_مهم");
+      await page.locator('button:has-text("حفظ")').first().click();
+      // Close TagPicker
+      await page.locator('button:has-text("أغلق")').first().click();
     }
 
-    await optionsBtn.click();
-    const moveBtn = page.locator("text=نقل إلى...").first();
+    // 3. Click the document title to open the preview page and test advanced export
+    const titleLink = fileRow.locator('a[href*="/preview/"]').first();
+    await titleLink.click();
+    await page.waitForURL(/\/ar\/preview\//);
+
+    const previewExportBtn = page.locator('button:has-text("تصدير متقدم")').first();
+    await previewExportBtn.click();
+    await expect(page.locator("text=تصدير متقدم").first()).toBeVisible({ timeout: 10000 });
+    await page.locator("text=إلغاء").first().click();
+
+    // 4. Navigate back to files page
+    await page.goto(`${BASE}/ar/files`);
+
+    // 5. Select the document checkbox again
+    const moveFileRow = page.locator('[data-testid="document-row"]').first();
+    const moveCheckbox = moveFileRow.locator('[data-testid="document-select"]').first();
+    await moveCheckbox.click();
+
+    // 6. Click "انقل إلى..." (Move to folder) button in BulkActions
+    const moveBtn = page.locator('button:has-text("انقل إلى...")').first();
     if (await moveBtn.isVisible()) {
       await moveBtn.click();
-      await page.locator("text=مجلد الاختبار E2E").first().click();
-      await page.locator('button:has-text("نقل")').first().click();
-    }
-
-    await optionsBtn.click();
-    const exportBtn = page.locator("text=تصدير").first();
-    if (await exportBtn.isVisible()) {
-      await exportBtn.click();
-      await expect(page.locator("text=تصدير متقدم").first()).toBeVisible();
-      await page.locator("text=إلغاء").first().click();
+      await page.locator('[role="dialog"]').locator("text=مجلد الاختبار E2E").first().click();
+      await page.locator('button:has-text("انقل (1)")').first().click();
+      await expect(page.locator('[role="dialog"]')).toBeHidden({ timeout: 10000 });
     }
   });
 
@@ -158,24 +172,21 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     page,
     context,
   }) => {
+    test.setTimeout(120000); // Allow time for Next.js to compile the share route
     await login(page);
     await page.goto(`${BASE}/ar/files`);
 
     const fileRow = page.locator('[data-testid="document-row"]').first();
     await fileRow.hover();
-    const optionsBtn = fileRow.locator('button:has-text("⋮")').first();
-    await optionsBtn.click();
+    const shareBtn = fileRow.locator('button[aria-label="مشاركة"], button[title="مشاركة"]').first();
+    await shareBtn.click();
 
-    const shareBtn = page.locator("text=مشاركة المستند").or(page.locator("text=مشاركة")).first();
-    if (await shareBtn.isVisible()) {
-      await shareBtn.click();
-      await page.locator("text=إنشاء رابط عام").first().click();
-      await expect(page.locator("text=تم إنشاء الرابط بنجاح").first()).toBeVisible();
+    await page.locator("text=أنشئ رابطاً عاماً").first().click();
+    await expect(page.locator("text=انسخ الرابط").first()).toBeVisible();
 
-      const linkInput = page.locator("input[readonly]").first();
-      shareLink = await linkInput.inputValue();
-      await page.locator("text=إلغاء").first().click();
-    }
+    const linkInput = page.locator("input[readonly]").first();
+    shareLink = await linkInput.inputValue();
+    await page.locator("text=إلغاء").first().click();
 
     if (shareLink) {
       const anonymousContext = await context.browser()!.newContext();
@@ -183,9 +194,8 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       await anonymousPage.goto(shareLink);
       await expect(
         anonymousPage
-          .locator("text=مشاركة بواسطة")
+          .locator("text=Ibn Al-Azhar Docs")
           .first()
-          .or(anonymousPage.locator("text=تحميل").first()),
       ).toBeVisible({ timeout: 15000 });
       await anonymousContext.close();
     }

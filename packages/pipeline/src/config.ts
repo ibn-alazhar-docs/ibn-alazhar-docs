@@ -69,12 +69,29 @@ export function loadConfig(): PipelineConfig {
       language: process.env.OCR_LANGUAGE ?? "ar",
       maxRetries: Number(process.env.OCR_MAX_RETRIES ?? 3),
       provider: (process.env.OCR_PROVIDER as OcrEngineType) ?? "surya",
-      providers: (process.env.OCR_PROVIDERS?.split(",") as OcrEngineType[]) ?? [
-        "gemini",
-        "google",
-        "surya",
-        "tesseract",
-      ],
+      // DATA-RESIDENCY / GDPR: provider order is LOCAL-FIRST by default.
+      // Surya and Tesseract run entirely on-prem and never send document bytes off our
+      // servers. Cloud providers (Gemini, Google) upload pages to the vendor and are only
+      // used as an explicit fallback.
+      //   - OCR_PROVIDERS (comma-separated) fully overrides the order/set below, letting
+      //     operators explicitly opt into cloud.
+      //   - Otherwise cloud providers are excluded from the default set UNLESS
+      //     OCR_CLOUD_ENABLED=true is explicitly set. Cloud is OFF by default.
+      providers: (() => {
+        const explicit = process.env.OCR_PROVIDERS
+          ?.split(",")
+          .map((p) => p.trim())
+          .filter(Boolean) as OcrEngineType[] | undefined;
+        if (explicit && explicit.length > 0) return explicit;
+
+        const cloudEnabled = process.env.OCR_CLOUD_ENABLED === "true";
+        if (!cloudEnabled) {
+          // Local-only default: documents stay on-prem.
+          return ["surya", "tesseract"] as OcrEngineType[];
+        }
+        // Local-first with cloud as explicit fallback.
+        return ["surya", "tesseract", "gemini", "google"] as OcrEngineType[];
+      })(),
     },
     paths: {
       uploads: "uploads",

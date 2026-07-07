@@ -4,6 +4,26 @@ import { handleRouteError } from "@/lib/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { useCases } from "@/core/composition-root";
 import { uploadMetadataSchema, validateUploadFile } from "@/lib/shared/validators/document";
+import { DashboardService } from "@/lib/backend/services/dashboard.service";
+
+function validateRequest(file: File | null, folderId: string | null, pageRange: string | null) {
+  const fileValidation = validateUploadFile(file);
+  if (!fileValidation.valid) {
+    return { valid: false, error: fileValidation.error, status: fileValidation.status };
+  }
+
+  const metadataResult = uploadMetadataSchema.safeParse({ folderId, pageRange });
+  if (!metadataResult.success) {
+    const message = metadataResult.error.issues[0]?.message || "بيانات غير صحيحة";
+    return { valid: false, error: message, status: 400 };
+  }
+
+  if (!file) {
+    return { valid: false, error: "لم يُرفع أي ملف", status: 400 };
+  }
+
+  return { valid: true, data: { file, metadata: metadataResult.data } };
+}
 
 export const POST = withAuth(async (request, { session }) => {
   try {
@@ -17,44 +37,36 @@ export const POST = withAuth(async (request, { session }) => {
     const folderId = (formData.get("folderId") as string) || null;
     const pageRange = (formData.get("pageRange") as string) || null;
 
-    const fileValidation = validateUploadFile(file);
-    if (!fileValidation.valid) {
+    const validation = validateRequest(file, folderId, pageRange);
+    if (!validation.valid) {
       return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: fileValidation.error } },
-        { status: fileValidation.status },
-      );
-    }
-
-    const metadataResult = uploadMetadataSchema.safeParse({ folderId, pageRange });
-    if (!metadataResult.success) {
-      const message = metadataResult.error.issues[0]?.message || "بيانات غير صحيحة";
-      return NextResponse.json({ error: { code: "VALIDATION_ERROR", message } }, { status: 400 });
-    }
-
-    if (!file) {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "لم يتم رفع أي ملف" } },
-        { status: 400 },
+        { error: { code: "VALIDATION_ERROR", message: validation.error } },
+        { status: validation.status },
       );
     }
 
     const document = await useCases.uploadDocument.execute({
-      file,
-      folderId: metadataResult.data.folderId ?? null,
+      file: validation.data!.file,
+      folderId: validation.data!.metadata.folderId ?? null,
       userId: session.user.id,
-      pageRange: metadataResult.data.pageRange ?? null,
+      pageRange: validation.data!.metadata.pageRange ?? null,
     });
 
-    return NextResponse.json({
-      success: true,
-      jobId: document.id,
-      documentId: document.id,
-      fileName: document.originalName,
-      fileSize: Number(document.fileSize),
-      status: "pending",
-      message: "تم رفع الملف بنجاح وبدء المعالجة",
-    });
+    await DashboardService.trackUpload(document.id).catch(() => {});
+
+    return NextResponse.json(
+      {
+        success: true,
+        jobId: document.id,
+        documentId: document.id,
+        fileName: document.originalName,
+        fileSize: Number(document.fileSize),
+        status: "pending",
+        message: "رُفع الملف وبدأت المعالجة",
+      },
+      { status: 201 },
+    );
   } catch (error: unknown) {
-    return handleRouteError(error, "upload", "فشل رفع الملف");
+    return handleRouteError(error, "upload", "تعذر رفع الملف");
   }
 });

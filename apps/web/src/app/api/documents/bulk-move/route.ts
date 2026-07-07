@@ -44,6 +44,6 @@ export const POST = withAuth(async (request, { session }) => {
       message: `تم نقل ${moved} مستند${moved > 1 ? "ات" : ""}`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/bulk-move/POST", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/bulk-move/POST", "حدث خطأ");
   }
 });

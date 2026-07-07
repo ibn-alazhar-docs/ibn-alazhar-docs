@@ -1,6 +1,7 @@
 "use client";
 
 import { FolderIcon, FileTextIcon } from "@/components/ui/icons";
+import { useTranslations } from "next-intl";
 
 interface Suggestion {
   text: string;
@@ -23,13 +24,14 @@ export function SuggestionList({
   onSelect,
   onHover,
 }: SuggestionListProps) {
+  const t = useTranslations("search");
   return (
     <div
       className="absolute top-full mt-1 w-full bg-card rounded-lg shadow-lg border border-line py-1 z-10"
       role="listbox"
-      aria-label="Search suggestions"
+      aria-label={t("suggestionsLabel")}
     >
-      {loading && <div className="px-4 py-2 text-sm text-muted-color">...جاري البحث</div>}
+      {loading && <div className="px-4 py-2 text-sm text-muted-color">{t("searching")}</div>}
       {suggestions.map((s, i) => (
         <button
           key={`${s.type}-${s.text}`}

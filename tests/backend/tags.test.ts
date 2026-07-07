@@ -6,6 +6,15 @@ vi.mock("@/lib/backend/auth", () => ({
   auth: vi.fn(),
 }));
 
+vi.mock("@/lib/backend/rate-limit", () => ({
+  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
+  checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
+  rateLimitResponse: vi.fn().mockImplementation((retryAfterMs) => ({
+    status: 429,
+    json: () => Promise.resolve({ error: { code: "RATE_LIMITED", message: "Too many requests" } }),
+  })),
+}));
+
 vi.mock("next/server", () => ({
   NextResponse: {
     json: vi.fn((data: unknown, init?: { status?: number }) => ({
@@ -387,7 +396,7 @@ describe("DELETE /api/tags/[id] — حذف وسم", () => {
 
     expect(response.status).toBe(200);
     expect(body.success).toBe(true);
-    expect(body.message).toContain("حذف");
+    expect(body.message).toContain("حُذف");
     expect(prisma.tagDocument.deleteMany).toHaveBeenCalledWith({
       where: { tagId: "tag-1" },
     });

@@ -5,13 +5,15 @@ import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { useTheme } from "@/components/theme/theme-provider";
 import { Container } from "@/components/ui/container";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { UI_TIMING } from "@/lib/shared/constants";
-import { Text } from "@/components/ui/text";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";
+import { SunIcon, MoonIcon } from "@/components/ui/icons";
 
 interface SettingsContentProps {
   user: {
@@ -88,173 +90,179 @@ export function SettingsContent({ user }: SettingsContentProps) {
   }
 
   const roleLabel = user.role === "ADMIN" ? t("admin") : t("user");
+  const isAdmin = user.role === "ADMIN";
 
   return (
     <Container>
-      <Section padding="md">
-        <Stack gap={6}>
-          <Heading level={2}>{tNav("settings")}</Heading>
-
-          {saved && (
-            <div className="rounded-xl bg-[var(--success-bg)] p-4 text-[var(--success)]">
-              {t("saved")}
-            </div>
-          )}
-
-          {error && (
-            <div className="rounded-xl bg-[var(--danger-bg)] p-4 text-[var(--danger)]">{error}</div>
-          )}
-
-          {/* Profile Section */}
-          <div className="rounded-xl border border-line bg-card p-6">
-            <Heading level={3}>{t("profile")}</Heading>
-            <Text color="muted" className="mt-1">
-              {t("profileDescription")}
-            </Text>
-
-            <div className="mt-4 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-primary-color">{t("name")}</label>
-                <input
-                  type="text"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="mt-1 block w-full rounded-lg border border-input-border bg-input px-4 py-2.5 text-sm text-primary-color focus:border-[var(--success)] focus:ring-2 focus:ring-[var(--success)]/20 focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-primary-color">{t("email")}</label>
-                <input
-                  type="email"
-                  value={user.email}
-                  disabled
-                  className="mt-1 block w-full rounded-lg border border-line bg-muted px-4 py-2.5 text-sm text-very-muted cursor-not-allowed"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-primary-color">{t("role")}</label>
-                <input
-                  type="text"
-                  value={roleLabel}
-                  disabled
-                  className="mt-1 block w-full rounded-lg border border-line bg-muted px-4 py-2.5 text-sm text-very-muted cursor-not-allowed"
-                />
-              </div>
-            </div>
+      <div className="py-8 space-y-6 max-w-2xl">
+        {/* Page Header */}
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+              {tNav("settings")}
+            </h1>
+            <p className="mt-1 text-sm text-[var(--text-secondary)]">{t("profileDescription")}</p>
           </div>
+          {isAdmin && (
+            <Badge variant="success" className="ms-auto shrink-0">
+              {t("admin")}
+            </Badge>
+          )}
+        </div>
 
-          {/* Language Section */}
-          <div className="rounded-xl border border-line bg-card p-6">
-            <Heading level={3}>{t("language")}</Heading>
-            <Text color="muted" className="mt-1">
-              {t("languageDescription")}
-            </Text>
+        {/* Success Alert */}
+        {saved && (
+          <div className="flex items-center gap-3 rounded-xl bg-[var(--success-bg)] border border-[var(--success-border)] p-4 text-[var(--success)] text-sm font-medium">
+            <span>✓</span>
+            {t("saved")}
+          </div>
+        )}
 
-            <div className="mt-4 flex gap-3">
-              <button
+        {/* Error Alert */}
+        {error && (
+          <div className="flex items-center gap-3 rounded-xl bg-[var(--danger-bg)] border border-[var(--danger-border)] p-4 text-[var(--danger)] text-sm font-medium">
+            <span>✕</span>
+            {error}
+          </div>
+        )}
+
+        {/* Profile Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("profile")}</CardTitle>
+            <CardDescription>{t("profileDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">{t("name")}</Label>
+              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="email">{t("email")}</Label>
+              <Input
+                id="email"
+                type="email"
+                value={user.email}
+                disabled
+                className="opacity-60 cursor-not-allowed"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="role">{t("role")}</Label>
+              <Input
+                id="role"
+                type="text"
+                value={roleLabel}
+                disabled
+                className="opacity-60 cursor-not-allowed"
+              />
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleSave} disabled={saving || name.trim() === (user.name || "")}>
+                {saving ? t("saving") : tCommon("save")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Language Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("language")}</CardTitle>
+            <CardDescription>{t("languageDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button
                 onClick={() => handleLanguageSwitch("ar")}
                 disabled={isPending || locale === "ar"}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
-                  locale === "ar"
-                    ? "bg-btn-primary text-btn-primary-text"
-                    : "border border-line bg-page text-primary-color hover:bg-hover"
-                } disabled:opacity-50`}
+                variant={locale === "ar" ? "default" : "outline"}
               >
                 {t("arabic")}
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => handleLanguageSwitch("en")}
                 disabled={isPending || locale === "en"}
-                className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
-                  locale === "en"
-                    ? "bg-btn-primary text-btn-primary-text"
-                    : "border border-line bg-page text-primary-color hover:bg-hover"
-                } disabled:opacity-50`}
+                variant={locale === "en" ? "default" : "outline"}
               >
                 {t("english")}
-              </button>
+              </Button>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Theme Section */}
-          <div className="rounded-xl border border-line bg-card p-6">
-            <Heading level={3}>{t("theme")}</Heading>
-            <Text color="muted" className="mt-1">
-              {t("themeDescription")}
-            </Text>
-
-            <div className="mt-4 flex gap-3">
-              {(["light", "dark"] as const).map((t_) => (
-                <button
-                  key={t_}
-                  onClick={() => {
-                    if (theme !== t_) toggleTheme();
-                  }}
-                  className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)] ${
-                    theme === t_
-                      ? "bg-btn-primary text-btn-primary-text"
-                      : "border border-line bg-page text-primary-color hover:bg-hover"
-                  }`}
-                >
-                  {t(t_)}
-                </button>
-              ))}
+        {/* Theme Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("theme")}</CardTitle>
+            <CardDescription>{t("themeDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  if (theme !== "light") toggleTheme();
+                }}
+                variant={theme === "light" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <SunIcon className="h-4 w-4" />
+                {t("light")}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (theme !== "dark") toggleTheme();
+                }}
+                variant={theme === "dark" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <MoonIcon className="h-4 w-4" />
+                {t("dark")}
+              </Button>
             </div>
-          </div>
+          </CardContent>
+        </Card>
 
-          {/* Danger Zone */}
-          <div className="rounded-xl border border-[var(--danger)]/20 bg-[var(--danger-bg)] p-6">
-            <Heading level={3} className="text-[var(--danger)]">
-              {t("dangerZone")}
-            </Heading>
-            <Text color="muted" className="mt-1">
-              {t("dangerZoneDescription")}
-            </Text>
-
+        {/* Danger Zone */}
+        <Card className="border-[var(--danger)]/30 bg-[var(--danger-bg)]">
+          <CardHeader>
+            <CardTitle className="text-[var(--danger)]">{t("dangerZone")}</CardTitle>
+            <CardDescription>{t("dangerZoneDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
             {!showDeleteConfirm ? (
-              <button
+              <Button
+                variant="destructive"
+                className="bg-transparent border border-[var(--danger)]/40 text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
                 onClick={() => setShowDeleteConfirm(true)}
-                className="mt-4 rounded-lg border border-[var(--danger)]/30 bg-card px-4 py-2 text-[var(--danger)] hover:bg-[var(--danger-bg)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
               >
                 {t("deleteAccount")}
-              </button>
+              </Button>
             ) : (
-              <div className="mt-4 flex items-center gap-3">
-                <Text color="muted" className="text-sm">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <p className="text-sm text-[var(--text-secondary)] flex-1">
                   {t("deleteAccountConfirm")}
-                </Text>
-                <button
-                  onClick={handleDeleteAccount}
-                  disabled={deleting}
-                  className="rounded-lg bg-[var(--danger)] px-4 py-2 text-sm font-medium text-white hover:opacity-90 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
-                >
-                  {deleting ? "..." : tCommon("confirm")}
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  disabled={deleting}
-                  className="rounded-lg border border-line bg-page px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-                >
-                  {tCommon("cancel")}
-                </button>
+                </p>
+                <div className="flex gap-2">
+                  <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
+                    {deleting ? t("deleting") : tCommon("confirm")}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowDeleteConfirm(false)}
+                    disabled={deleting}
+                  >
+                    {tCommon("cancel")}
+                  </Button>
+                </div>
               </div>
             )}
-          </div>
-
-          {/* Save Button */}
-          <div className="flex justify-end">
-            <button
-              onClick={handleSave}
-              disabled={saving || name.trim() === (user.name || "")}
-              className="rounded-lg bg-btn-primary px-6 py-2.5 text-sm font-medium text-btn-primary-text hover:opacity-90 transition-all disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
-            >
-              {saving ? "..." : tCommon("save")}
-            </button>
-          </div>
-        </Stack>
-      </Section>
+          </CardContent>
+        </Card>
+      </div>
     </Container>
   );
 }

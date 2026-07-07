@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "admin123";
+const PASSWORD = "password123";
 
 async function login(page: import("@playwright/test").Page) {
   const csrfResponse = await page.request.get(`${BASE}/api/auth/csrf`);

@@ -1,14 +1,14 @@
 @import "tailwindcss";
-button,
-[role="button"] {
-  cursor: pointer;
-}
-/* trigger rebuild */
 @import "./brand.css";
 @import "./reading.css";
 @import "./discovery.css";
 @import "./landing.css";
 @import "./view-transitions.css";
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
 
 @layer base {
   html {
@@ -19,10 +19,7 @@ button,
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
-  }
-
-  html[dir="rtl"] {
-    text-align: right;
+    text-align: start;
   }
 
   body {
@@ -41,13 +38,32 @@ button,
     border-radius: 4px;
   }
 
-  * {
-    margin-inline-start: 0;
-    margin-inline-end: 0;
-    padding-inline-start: 0;
-    padding-inline-end: 0;
-    border-inline-start: 0;
-    border-inline-end: 0;
+  /* Reset margins/padding to zero — browser defaults differ across engines.
+     Use longhands so Tailwind utilities (in @layer utilities) can override
+     without specificity wars. */
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  blockquote,
+  figure,
+  pre,
+  ul,
+  ol,
+  dl {
+    margin-block: 0;
+    margin-inline: 0;
+  }
+
+  /* Kill default padding on list elements used inside sidebar / nav */
+  ul,
+  ol {
+    padding-inline: 0;
+    list-style: none;
   }
 
   ::selection {
@@ -106,8 +122,8 @@ button,
   .glass-header {
     background: linear-gradient(
       180deg,
-      color-mix(in srgb, var(--surface) 95%, transparent),
-      color-mix(in srgb, var(--surface) 85%, transparent)
+      var(--surface),
+      color-mix(in srgb, var(--surface) 95%, transparent)
     );
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);

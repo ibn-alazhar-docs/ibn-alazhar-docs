@@ -19,7 +19,7 @@ export async function GET(): Promise<NextResponse> {
     workers: { ocr: "unknown", export: "unknown" },
   };
 
-  // Database check
+  // Probe primary database connectivity
   const dbStart = Date.now();
   try {
     await prisma.$queryRaw`SELECT 1`;
@@ -31,7 +31,7 @@ export async function GET(): Promise<NextResponse> {
     };
   }
 
-  // Memory check
+  // Probe system memory limits
   const mem = process.memoryUsage();
   const usedMB = Math.round(mem.rss / 1024 / 1024);
   checks.memory = {
@@ -40,7 +40,7 @@ export async function GET(): Promise<NextResponse> {
     limit: 512,
   };
 
-  // Overall status
+  // Aggregate service statuses
   const allOk = checks.database.status === "ok" && checks.memory.status === "ok";
   const anyError = checks.database.status === "error" || checks.memory.status === "error";
 

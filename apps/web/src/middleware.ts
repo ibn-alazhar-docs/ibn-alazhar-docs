@@ -7,6 +7,30 @@ import { generateRequestId } from "./lib/shared/logger";
 
 const handleI18nRouting = createMiddleware(routing);
 
+// CSRF double-submit cookie defense-in-depth
+const CSRF_COOKIE_NAME = "csrf_token";
+const CSRF_HEADER_NAME = "X-CSRF-Token";
+
+// Generate a 32-byte random hex token (edge-runtime safe via Web Crypto)
+function generateCsrfToken(): string {
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+// Ensure a csrf_token cookie is set once per session (if not already present).
+// NOT httpOnly so the SPA can read it and echo it as the X-CSRF-Token header.
+function ensureCsrfCookie(response: NextResponse, request: NextRequest): NextResponse {
+  if (request.cookies.has(CSRF_COOKIE_NAME)) return response;
+  response.cookies.set(CSRF_COOKIE_NAME, generateCsrfToken(), {
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: false,
+    path: "/",
+  });
+  return response;
+}
+
 // Routes that require authentication
 const protectedRoutes = [
   "/dashboard",
@@ -48,54 +72,72 @@ export async function middleware(request: NextRequest) {
   // Handle API routes: CSRF check + rate limiting, no i18n routing
   if (pathname.startsWith("/api")) {
     if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
-      const origin = request.headers.get("origin");
-      const referer = request.headers.get("referer");
-      if (origin) {
-        try {
-          const originUrl = new URL(origin);
-          const expectedHost = process.env.APP_URL
-            ? new URL(process.env.APP_URL).host
-            : request.nextUrl.host;
-          if (originUrl.host !== expectedHost) {
-            return NextResponse.json(
-              { error: { code: "CSRF_ERROR", message: "Forbidden: CSRF check failed" } },
-              { status: 403 },
-            );
-          }
-        } catch {
+      const csrfCookie = request.cookies.get(CSRF_COOKIE_NAME)?.value;
+      if (csrfCookie) {
+        // Double-submit cookie enforcement (defense-in-depth, stronger than Origin check)
+        const csrfHeader = request.headers.get(CSRF_HEADER_NAME);
+        if (!csrfHeader || csrfHeader !== csrfCookie) {
           return NextResponse.json(
-            { error: { code: "CSRF_ERROR", message: "Forbidden: Invalid origin header" } },
-            { status: 403 },
-          );
-        }
-      } else if (referer) {
-        try {
-          const refererUrl = new URL(referer);
-          const expectedHost = process.env.APP_URL
-            ? new URL(process.env.APP_URL).host
-            : request.nextUrl.host;
-          if (refererUrl.host !== expectedHost) {
-            return NextResponse.json(
-              { error: { code: "CSRF_ERROR", message: "Forbidden: CSRF check failed" } },
-              { status: 403 },
-            );
-          }
-        } catch {
-          return NextResponse.json(
-            { error: { code: "CSRF_ERROR", message: "Forbidden: Invalid referer header" } },
-            { status: 403 },
-          );
-        }
-      } else if (hasSessionCookie(request)) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "CSRF_ERROR",
-              message: "Forbidden: CSRF protection requires origin or referer header",
+            {
+              error: {
+                code: "CSRF_ERROR",
+                message: "Forbidden: CSRF token mismatch",
+              },
             },
-          },
-          { status: 403 },
-        );
+            { status: 403 },
+          );
+        }
+      } else {
+        // Legacy fallback: existing Origin/Referer check (cookie not yet issued)
+        const origin = request.headers.get("origin");
+        const referer = request.headers.get("referer");
+        if (origin) {
+          try {
+            const originUrl = new URL(origin);
+            const expectedHost = process.env.APP_URL
+              ? new URL(process.env.APP_URL).host
+              : request.nextUrl.host;
+            if (originUrl.host !== expectedHost) {
+              return NextResponse.json(
+                { error: { code: "CSRF_ERROR", message: "Forbidden: CSRF check failed" } },
+                { status: 403 },
+              );
+            }
+          } catch {
+            return NextResponse.json(
+              { error: { code: "CSRF_ERROR", message: "Forbidden: Invalid origin header" } },
+              { status: 403 },
+            );
+          }
+        } else if (referer) {
+          try {
+            const refererUrl = new URL(referer);
+            const expectedHost = process.env.APP_URL
+              ? new URL(process.env.APP_URL).host
+              : request.nextUrl.host;
+            if (refererUrl.host !== expectedHost) {
+              return NextResponse.json(
+                { error: { code: "CSRF_ERROR", message: "Forbidden: CSRF check failed" } },
+                { status: 403 },
+              );
+            }
+          } catch {
+            return NextResponse.json(
+              { error: { code: "CSRF_ERROR", message: "Forbidden: Invalid referer header" } },
+              { status: 403 },
+            );
+          }
+        } else if (hasSessionCookie(request)) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "CSRF_ERROR",
+                message: "Forbidden: CSRF protection requires origin or referer header",
+              },
+            },
+            { status: 403 },
+          );
+        }
       }
     }
 
@@ -116,7 +158,8 @@ export async function middleware(request: NextRequest) {
 
     // Default Cache-Control for API routes — private, no-store unless overridden by route
     const response = NextResponse.next();
-    if (request.method === "GET") {
+    if (request.method === "GET" && pathname !== "/api/csrf") {
+      ensureCsrfCookie(response, request);
       response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
     } else {
       response.headers.set("Cache-Control", "private, no-store");
@@ -159,6 +202,9 @@ export async function middleware(request: NextRequest) {
   const detectedLocale = locale || getLocaleFromRequest(request);
   response.headers.set("x-locale", detectedLocale);
   response.headers.set("x-request-id", requestId);
+
+  // Issue the CSRF cookie for the SPA (read client-side to echo as header)
+  ensureCsrfCookie(response, request);
 
   // Security headers
   const isDev = process.env.NODE_ENV === "development";

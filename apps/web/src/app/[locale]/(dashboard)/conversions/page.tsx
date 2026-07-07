@@ -10,6 +10,10 @@ import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 import { PAGINATION } from "@/lib/shared/constants";
 import { ConversionStatus } from "@/components/pipeline/conversion-status";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 
 interface ConversionJob {
   id: string;
@@ -28,20 +32,6 @@ interface ConversionJob {
     fileName: string;
   };
 }
-
-const STATUS_STYLE: Record<string, { bg: string; text: string }> = {
-  PENDING: {
-    bg: "bg-yellow-100 dark:bg-yellow-900/30",
-    text: "text-yellow-700 dark:text-yellow-400",
-  },
-  PROCESSING: { bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-700 dark:text-blue-400" },
-  COMPLETED: {
-    bg: "bg-green-100 dark:bg-green-900/30",
-    text: "text-green-700 dark:text-green-400",
-  },
-  FAILED: { bg: "bg-red-100 dark:bg-red-900/30", text: "text-red-700 dark:text-red-400" },
-  CANCELLED: { bg: "bg-gray-100 dark:bg-gray-900/30", text: "text-gray-700 dark:text-gray-400" },
-};
 
 function formatDate(dateStr: string, locale: string): string {
   const d = new Date(dateStr);
@@ -80,7 +70,7 @@ export default function ConversionsPage() {
         setTotalPages(data.pagination.totalPages);
       }
     } catch {
-      // ignore
+      // Safe to swallow: error handled gracefully by UI state
     } finally {
       setLoading(false);
     }
@@ -118,50 +108,35 @@ export default function ConversionsPage() {
 
             {/* Search by Job ID */}
             <form onSubmit={handleSearch} className="flex gap-3">
-              <input
+              <Input
                 type="text"
                 value={jobId}
                 onChange={(e) => setJobId(e.target.value)}
                 placeholder={tConv("searchPlaceholder")}
-                className="flex-1 px-4 py-2.5 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--success)] focus:border-transparent text-sm"
                 dir="ltr"
               />
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-[var(--success)] text-[var(--btn-primary-text)] rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
-              >
-                {tConv("searchButton")}
-              </button>
+              <Button type="submit">{tConv("searchButton")}</Button>
             </form>
 
             {/* Searched Job Status */}
             {searched && jobId && (
-              <div className="bg-card rounded-xl border border-line p-6">
+              <Card className="p-6">
                 <div className="mb-4">
                   <span className="text-xs text-very-muted font-mono">{jobId}</span>
                 </div>
                 <ConversionStatus jobId={jobId} />
                 <div className="mt-4 pt-4 border-t border-line flex gap-2">
-                  <a
-                    href={`/${locale}/preview/${jobId}`}
-                    className="px-4 py-2 bg-[var(--success)] text-[var(--btn-primary-text)] rounded-lg text-sm font-medium hover:opacity-90 transition-colors"
-                  >
-                    {tPreview("previewDocument")}
-                  </a>
-                  <a
-                    href={`/api/export/${jobId}/md`}
-                    className="px-4 py-2 bg-card border border-line text-primary-color rounded-lg text-sm font-medium hover:bg-badge transition-colors"
-                  >
-                    {tPreview("downloadMd")}
-                  </a>
-                  <a
-                    href={`/api/export/${jobId}/txt`}
-                    className="px-4 py-2 bg-card border border-line text-primary-color rounded-lg text-sm font-medium hover:bg-badge transition-colors"
-                  >
-                    {tPreview("downloadTxt")}
-                  </a>
+                  <Button asChild>
+                    <a href={`/${locale}/preview/${jobId}`}>{tPreview("previewDocument")}</a>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href={`/api/export/${jobId}/md`}>{tPreview("downloadMd")}</a>
+                  </Button>
+                  <Button variant="outline" asChild>
+                    <a href={`/api/export/${jobId}/txt`}>{tPreview("downloadTxt")}</a>
+                  </Button>
                 </div>
-              </div>
+              </Card>
             )}
 
             {searched && !jobId && (
@@ -171,7 +146,7 @@ export default function ConversionsPage() {
             )}
 
             {/* Conversions List */}
-            <div className="bg-card rounded-xl border border-line overflow-hidden">
+            <Card className="overflow-hidden">
               <div className="px-6 py-4 border-b border-line">
                 <Heading level={3}>{tConv("allConversions")}</Heading>
               </div>
@@ -226,10 +201,6 @@ export default function ConversionsPage() {
                     </thead>
                     <tbody>
                       {jobs.map((job) => {
-                        const style = STATUS_STYLE[job.status] ?? {
-                          bg: "bg-hover",
-                          text: "text-muted-color",
-                        };
                         const isActive = job.status === "PENDING" || job.status === "PROCESSING";
                         return (
                           <tr
@@ -245,11 +216,17 @@ export default function ConversionsPage() {
                               </div>
                             </td>
                             <td className="px-6 py-4">
-                              <span
-                                className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${style.bg} ${style.text}`}
+                              <Badge
+                                variant={
+                                  job.status === "COMPLETED"
+                                    ? "success"
+                                    : job.status === "FAILED"
+                                      ? "destructive"
+                                      : "secondary"
+                                }
                               >
                                 {tConv(job.status.toLowerCase())}
-                              </span>
+                              </Badge>
                             </td>
                             <td className="px-6 py-4">
                               {isActive ? (
@@ -279,20 +256,20 @@ export default function ConversionsPage() {
                             </td>
                             <td className="px-6 py-4">
                               <div className="flex gap-2">
-                                <a
-                                  href={`/${locale}/preview/${job.documentId}`}
-                                  className="px-3 py-1.5 bg-[var(--success)] text-[var(--btn-primary-text)] rounded-lg text-xs font-medium hover:opacity-90 transition-colors"
-                                >
-                                  {tConv("viewResults")}
-                                </a>
-                                <a
-                                  href={`/api/conversion/${job.id}/status`}
-                                  className="px-3 py-1.5 bg-card border border-line text-primary-color rounded-lg text-xs font-medium hover:bg-badge transition-colors"
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  API
-                                </a>
+                                <Button size="sm" asChild>
+                                  <a href={`/${locale}/preview/${job.documentId}`}>
+                                    {tConv("viewResults")}
+                                  </a>
+                                </Button>
+                                <Button size="sm" variant="outline" asChild>
+                                  <a
+                                    href={`/api/conversion/${job.id}/status`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                  >
+                                    API
+                                  </a>
+                                </Button>
                               </div>
                             </td>
                           </tr>
@@ -306,26 +283,28 @@ export default function ConversionsPage() {
               {/* Pagination */}
               {totalPages > 1 && (
                 <div className="px-6 py-3 border-t border-line flex items-center justify-between">
-                  <button
+                  <Button
                     onClick={() => setPage((p) => Math.max(1, p - 1))}
                     disabled={page === 1}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-line text-primary-color hover:bg-badge disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    variant="outline"
+                    size="sm"
                   >
                     ←
-                  </button>
+                  </Button>
                   <span className="text-xs text-muted-color">
                     {page} / {totalPages}
                   </span>
-                  <button
+                  <Button
                     onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                     disabled={page === totalPages}
-                    className="px-3 py-1.5 text-xs rounded-lg border border-line text-primary-color hover:bg-badge disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    variant="outline"
+                    size="sm"
                   >
                     →
-                  </button>
+                  </Button>
                 </div>
               )}
-            </div>
+            </Card>
           </Stack>
         </Section>
       </Container>

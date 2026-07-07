@@ -6,7 +6,7 @@ import {
   createTestTag,
   cleanupTestUsers,
 } from "./helpers/db";
-import { TagUseCases } from "../../apps/web/src/core/use-cases/tag.use-cases";
+import { TagUseCases } from "../../apps/web/src/core/services/tag.use-cases";
 import { TagRepository } from "../../apps/web/src/core/repositories/tag.repository";
 import { TagDocumentRepository } from "../../apps/web/src/core/repositories/tag-document.repository";
 import type { AuthSession } from "../../apps/web/src/lib/backend/auth-guards";

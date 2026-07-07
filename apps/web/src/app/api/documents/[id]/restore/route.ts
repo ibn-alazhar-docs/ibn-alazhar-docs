@@ -17,9 +17,9 @@ export const PATCH = withAuth(async (_request, { session, params }) => {
     return NextResponse.json({
       success: true,
       document: restored,
-      message: "تم استعادة المستند بنجاح",
+      message: "استُعيد المستند",
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/restore/PATCH", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/restore/PATCH", "حدث خطأ");
   }
 });

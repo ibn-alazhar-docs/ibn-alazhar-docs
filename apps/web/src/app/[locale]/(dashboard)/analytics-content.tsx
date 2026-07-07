@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useTranslations } from "next-intl";
 import {
   BarChartIcon,
   FileTextIcon,
@@ -9,6 +10,9 @@ import {
   TrendingUpIcon,
   RefreshIcon,
 } from "@/components/ui/icons";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface DocumentAnalytics {
   totalDocuments: number;
@@ -61,20 +65,24 @@ function BarChart({
   const max = maxVal ?? Math.max(...data.map((d) => d.value), 1);
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       {data.map((item) => (
         <div key={item.label} className="flex items-center gap-3">
-          <span className="text-xs text-muted-color w-20 truncate text-start">{item.label}</span>
-          <div className="flex-1 h-6 bg-hover rounded-full overflow-hidden">
+          <span className="text-xs text-[var(--text-secondary)] w-24 truncate text-start shrink-0">
+            {item.label}
+          </span>
+          <div className="flex-1 h-5 bg-[var(--hover-bg)] rounded-full overflow-hidden">
             <div
-              className="h-full rounded-full transition-all duration-500"
+              className="h-full rounded-full transition-all duration-700"
               style={{
                 width: `${(item.value / max) * 100}%`,
                 backgroundColor: item.color ?? "var(--success)",
               }}
             />
           </div>
-          <span className="text-xs font-medium text-primary-color w-12 text-end">{item.value}</span>
+          <span className="text-xs font-semibold text-[var(--text-primary)] w-8 text-end shrink-0">
+            {item.value}
+          </span>
         </div>
       ))}
     </div>
@@ -86,28 +94,71 @@ function StatCard({
   label,
   value,
   sub,
+  accentColor,
 }: {
   icon: React.ElementType;
   label: string;
   value: string | number;
   sub?: string;
+  accentColor?: string;
 }) {
   return (
-    <div className="bg-surface border border-line rounded-xl p-4">
-      <div className="flex items-center gap-2 mb-2">
-        <Icon className="h-4 w-4 text-primary-color" />
-        <span className="text-xs text-muted-color">{label}</span>
+    <div className="relative overflow-hidden rounded-xl border border-[var(--border-line)] bg-[var(--card-bg)] p-5 shadow-[var(--shadow-sm)]">
+      <div
+        className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl opacity-60"
+        style={{
+          background: accentColor
+            ? `linear-gradient(90deg, transparent, ${accentColor}, transparent)`
+            : undefined,
+        }}
+      />
+      <div className="flex items-center gap-2.5 mb-3">
+        <span
+          className="flex h-8 w-8 items-center justify-center rounded-lg"
+          style={{ background: "var(--badge-bg)" }}
+        >
+          <Icon className="h-4 w-4 text-[var(--success)]" />
+        </span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+          {label}
+        </span>
       </div>
-      <div className="text-2xl font-bold text-primary-color">{value}</div>
-      {sub && <div className="text-xs text-very-muted mt-1">{sub}</div>}
+      <div
+        className="text-2xl font-bold text-[var(--text-primary)]"
+        style={{ fontFamily: "var(--font-display)" }}
+      >
+        {value}
+      </div>
+      {sub && <div className="text-xs text-[var(--text-tertiary)] mt-1">{sub}</div>}
     </div>
   );
 }
 
+const statusColors: Record<string, string> = {
+  COMPLETED: "var(--success)",
+  UPLOADED: "var(--gold)",
+  PROCESSING: "var(--info)",
+  FAILED: "var(--danger)",
+};
+
+const statusVariants: Record<string, "success" | "warning" | "info" | "destructive"> = {
+  COMPLETED: "success",
+  UPLOADED: "warning",
+  PROCESSING: "info",
+  FAILED: "destructive",
+};
+
 export function AnalyticsContent() {
+  const t = useTranslations("analytics");
+  const tDocs = useTranslations("documents");
   const [data, setData] = useState<AnalyticsData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [days, setDays] = useState(30);
+
+  const getStatusLabel = (status: string): string => {
+    const label = tDocs(`status.${status}`);
+    return label.startsWith("status.") ? status : label;
+  };
 
   const fetchAnalytics = useCallback(async () => {
     setIsLoading(true);
@@ -128,12 +179,17 @@ export function AnalyticsContent() {
 
   if (isLoading && !data) {
     return (
-      <div className="p-6">
+      <div className="p-6 space-y-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-hover rounded w-48" />
+          <div className="h-8 bg-[var(--hover-bg)] rounded-lg w-48" />
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-24 bg-hover rounded-xl" />
+              <div key={i} className="h-28 bg-[var(--hover-bg)] rounded-xl" />
+            ))}
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-48 bg-[var(--hover-bg)] rounded-xl" />
             ))}
           </div>
         </div>
@@ -141,151 +197,178 @@ export function AnalyticsContent() {
     );
   }
 
-  const statusColors: Record<string, string> = {
-    COMPLETED: "var(--success)",
-    UPLOADED: "var(--gold)",
-    PROCESSING: "var(--info)",
-    FAILED: "var(--danger)",
-  };
-
-  const statusLabels: Record<string, string> = {
-    COMPLETED: "مكتمل",
-    UPLOADED: "مرفوع",
-    PROCESSING: "قيد المعالجة",
-    FAILED: "فشل",
-  };
-
   return (
     <div className="p-6 space-y-6">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-primary-color">التحليلات</h1>
-          <p className="text-sm text-muted-color mt-1">نظرة عامة على استخدام المنصة</p>
+          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
+            {t("title")}
+          </h1>
+          <p className="text-sm text-[var(--text-secondary)] mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="h-8 px-2 text-xs border border-line rounded-md bg-page text-primary-color"
+            className="h-9 px-3 text-xs border border-[var(--border-line)] rounded-lg bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--input-focus)]"
           >
-            <option value={7}>آخر 7 أيام</option>
-            <option value={30}>آخر 30 يوم</option>
-            <option value={90}>آخر 90 يوم</option>
+            <option value={7}>{t("period7")}</option>
+            <option value={30}>{t("period30")}</option>
+            <option value={90}>{t("period90")}</option>
           </select>
-          <button
-            type="button"
+          <Button
+            variant="outline"
+            size="sm"
             onClick={fetchAnalytics}
             disabled={isLoading}
-            className="h-8 px-2 text-xs font-medium rounded-md border border-line hover:bg-hover transition-colors disabled:opacity-50"
+            aria-label={t("refresh")}
           >
-            <RefreshIcon className={`h-3 w-3 ${isLoading ? "animate-spin" : ""}`} />
-          </button>
+            <RefreshIcon className={`h-3.5 w-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          </Button>
         </div>
       </div>
 
+      {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <StatCard
           icon={FileTextIcon}
-          label="المستندات"
+          label={t("stats.documents")}
           value={data?.documents.totalDocuments ?? 0}
           sub={formatBytes(data?.documents.totalSize ?? 0)}
+          accentColor="var(--info)"
         />
         <StatCard
           icon={TagsIcon}
-          label="الوسوم"
+          label={t("stats.tags")}
           value={data?.tags.totalTags ?? 0}
-          sub={`${data?.tags.unusedTags ?? 0} غير مستخدمة`}
+          sub={`${data?.tags.unusedTags ?? 0} ${t("stats.unused")}`}
+          accentColor="var(--gold)"
         />
         <StatCard
           icon={HardDriveIcon}
-          label="المساحة المستخدمة"
+          label={t("stats.storageUsed")}
           value={formatBytes(data?.documents.totalSize ?? 0)}
-          sub={`متوسط ${formatBytes(data?.storage.averageFileSize ?? 0)}`}
+          sub={`${t("stats.avg")} ${formatBytes(data?.storage.averageFileSize ?? 0)}`}
+          accentColor="var(--success)"
         />
         <StatCard
           icon={TrendingUpIcon}
-          label="الرفع هذا الأسبوع"
+          label={t("stats.uploadsThisWeek")}
           value={data?.documents.uploadsOverTime.slice(-7).reduce((s, d) => s + d.count, 0) ?? 0}
-          sub={`إجمالي ${days} يوم`}
+          sub={t("stats.totalDays", { days })}
+          accentColor="var(--danger)"
         />
       </div>
 
+      {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-surface border border-line rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <BarChartIcon className="h-4 w-4 text-primary-color" />
-            <h2 className="text-sm font-medium text-primary-color">حالة المستندات</h2>
-          </div>
-          <BarChart
-            data={(data?.documents.documentsByStatus ?? []).map((item) => ({
-              label: statusLabels[item.status] ?? item.status,
-              value: item.count,
-              color: statusColors[item.status] ?? "var(--icon-muted)",
-            }))}
-          />
-        </div>
-
-        <div className="bg-surface border border-line rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <FileTextIcon className="h-4 w-4 text-primary-color" />
-            <h2 className="text-sm font-medium text-primary-color">الرفعات اليومية</h2>
-          </div>
-          <div className="flex items-end gap-1 h-32">
-            {(data?.documents.uploadsOverTime ?? []).slice(-14).map((item) => {
-              const maxCount = Math.max(
-                ...(data?.documents.uploadsOverTime.map((d) => d.count) ?? [1]),
-                1,
-              );
-              const height = (item.count / maxCount) * 100;
-              return (
-                <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
-                  <div
-                    className="w-full bg-primary-color rounded-t transition-all duration-300"
-                    style={{ height: `${Math.max(height, 4)}%` }}
-                    title={`${item.date}: ${item.count}`}
-                  />
-                  <span className="text-[10px] text-very-muted">
-                    {new Date(item.date).getDate()}/{new Date(item.date).getMonth() + 1}
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="bg-surface border border-line rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <TagsIcon className="h-4 w-4 text-primary-color" />
-            <h2 className="text-sm font-medium text-primary-color">أكثر الوسوم استخداماً</h2>
-          </div>
-          <BarChart
-            data={(data?.tags.topTags ?? []).map((tag) => ({
-              label: tag.name,
-              value: tag.documentCount,
-              color: tag.color,
-            }))}
-          />
-        </div>
-
-        <div className="bg-surface border border-line rounded-xl p-4">
-          <div className="flex items-center gap-2 mb-4">
-            <HardDriveIcon className="h-4 w-4 text-primary-color" />
-            <h2 className="text-sm font-medium text-primary-color">أكبر المستندات</h2>
-          </div>
-          <div className="space-y-2">
-            {(data?.storage.largestDocuments ?? []).map((doc) => (
-              <div
-                key={doc.title}
-                className="flex items-center justify-between py-1.5 border-b border-line last:border-0"
-              >
-                <span className="text-xs text-primary-color truncate max-w-[200px]">
-                  {doc.title}
-                </span>
-                <span className="text-xs text-muted-color">{formatBytes(doc.fileSize)}</span>
+        {/* Document Status */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <BarChartIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              {t("charts.status")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart
+              data={(data?.documents.documentsByStatus ?? []).map((item) => ({
+                label: getStatusLabel(item.status),
+                value: item.count,
+                color: statusColors[item.status] ?? "var(--text-tertiary)",
+              }))}
+            />
+            {data?.documents.documentsByStatus && data.documents.documentsByStatus.length > 0 && (
+              <div className="mt-4 flex flex-wrap gap-2">
+                {data.documents.documentsByStatus.map((item) => (
+                  <Badge key={item.status} variant={statusVariants[item.status] ?? "secondary"}>
+                    {getStatusLabel(item.status)}: {item.count}
+                  </Badge>
+                ))}
               </div>
-            ))}
-          </div>
-        </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Daily Uploads Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <FileTextIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              {t("charts.dailyUploads")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-end gap-1 h-32">
+              {(data?.documents.uploadsOverTime ?? []).slice(-14).map((item) => {
+                const maxCount = Math.max(
+                  ...(data?.documents.uploadsOverTime.map((d) => d.count) ?? [1]),
+                  1,
+                );
+                const height = (item.count / maxCount) * 100;
+                return (
+                  <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
+                    <div
+                      className="w-full bg-[var(--success)] rounded-t-sm transition-all duration-500 hover:opacity-80"
+                      style={{ height: `${Math.max(height, 4)}%`, opacity: 0.75 }}
+                      title={`${item.date}: ${item.count}`}
+                    />
+                    <span className="text-[9px] text-[var(--text-tertiary)]">
+                      {new Date(item.date).getDate()}/{new Date(item.date).getMonth() + 1}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Top Tags */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <TagsIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              {t("charts.topTags")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BarChart
+              data={(data?.tags.topTags ?? []).map((tag) => ({
+                label: tag.name,
+                value: tag.documentCount,
+                color: tag.color,
+              }))}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Largest Documents */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <HardDriveIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              {t("charts.largestDocuments")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2.5">
+              {(data?.storage.largestDocuments ?? []).map((doc) => (
+                <div
+                  key={doc.title}
+                  className="flex items-center justify-between py-2 border-b border-[var(--border-line)] last:border-0"
+                >
+                  <span className="text-xs text-[var(--text-primary)] truncate max-w-[60%]">
+                    {doc.title}
+                  </span>
+                  <Badge variant="secondary" className="text-[10px]">
+                    {formatBytes(doc.fileSize)}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

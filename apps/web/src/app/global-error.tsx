@@ -33,7 +33,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
               ⚠
             </div>
             <h1 className="text-2xl font-bold text-primary-color mb-2">خطأ عام</h1>
-            <p className="text-muted-color mb-2">حدث خطأ غير متوقع</p>
+            <p className="text-muted-color mb-2">حدث خطأ</p>
             {error.digest && (
               <p className="text-xs text-muted-color/60 mb-6 font-mono"> digest: {error.digest}</p>
             )}

@@ -399,7 +399,7 @@ export class ExportUseCases {
     if (validDocs.length !== documentIds.length) {
       const foundIds = new Set(validDocs.map((d) => d.id));
       const missing = documentIds.filter((id) => !foundIds.has(id));
-      throw new NotFoundError(`لم يتم العثور على بعض المستندات: ${missing.join(", ")}`);
+      throw new NotFoundError(`لم يُعثر على بعض المستندات: ${missing.join(", ")}`);
     }
 
     if (options.format !== "zip") {

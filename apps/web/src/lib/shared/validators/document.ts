@@ -24,10 +24,10 @@ export function validateUploadFile(
   file: File | null,
 ): { valid: true } | { valid: false; error: string; status: number } {
   if (!file) {
-    return { valid: false, error: "لم يتم رفع أي ملف", status: 400 };
+    return { valid: false, error: "لم يُرفع أي ملف", status: 400 };
   }
   if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
-    return { valid: false, error: "نوع الملف غير مدعوم. يرجى رفع PDF أو JPG أو PNG", status: 400 };
+    return { valid: false, error: "نوع الملف غير مدعوم. ارفع PDF أو JPG أو PNG", status: 400 };
   }
   if (file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
     return {

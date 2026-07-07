@@ -67,26 +67,32 @@ export async function checkRedisRateLimit(
 
   try {
     const redisKey = `ratelimit:${key}`;
-    const p = redis.pipeline();
-    p.incr(redisKey);
-    p.ttl(redisKey);
-    const results = await p.exec();
+    const ttlSeconds = Math.ceil(windowMs / 1000);
 
-    if (results && results[0] && results[1]) {
-      const [errIncr, count] = results[0];
-      const [, ttl] = results[1];
+    // Atomic first-hit: create the counter AND its TTL in a single command
+    // (SET ... NX EX). This guarantees the key always has an expiry, eliminating
+    // the race where a crash between INCR and EXPIRE left a key with no TTL
+    // (permanently blocking the client).
+    const firstHit = await redis.set(redisKey, "1", "EX", ttlSeconds, "NX");
 
-      if (!errIncr && typeof count === "number") {
-        if (count === 1) {
-          await redis.expire(redisKey, Math.ceil(windowMs / 1000));
-        }
-        if (count > limit) {
-          const retryAfterMs = typeof ttl === "number" && ttl > 0 ? ttl * 1000 : windowMs;
-          return { allowed: false, retryAfterMs };
-        }
-        return { allowed: true };
+    let count: number;
+    if (firstHit === "OK") {
+      count = 1;
+    } else {
+      count = await redis.incr(redisKey);
+      // Safety net: ensure any pre-existing/orphaned key still gets a TTL, but
+      // only if one isn't already set (NX) so we never reset the sliding window.
+      if (count > 1) {
+        await redis.expire(redisKey, ttlSeconds, "NX");
       }
     }
+
+    if (count > limit) {
+      const ttl = await redis.ttl(redisKey);
+      const retryAfterMs = typeof ttl === "number" && ttl > 0 ? ttl * 1000 : windowMs;
+      return { allowed: false, retryAfterMs };
+    }
+    return { allowed: true };
   } catch (err) {
     logger.error(err, "Redis rate limit check failed, falling back to memory:");
   }

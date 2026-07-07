@@ -60,3 +60,29 @@ export const adminUserDeleteSchema = z
     userId: z.string().min(1, "معرف المستخدم مطلوب"),
   })
   .strip();
+
+export const forgotPasswordSchema = z
+  .object({
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+  })
+  .strip();
+
+export const resetPasswordSchema = z
+  .object({
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+    token: z.string().min(1, "رمز التحقق مطلوب"),
+    password: z
+      .string()
+      .min(1, "كلمة المرور مطلوبة")
+      .min(8, "يجب أن تكون كلمة المرور 8 أحرف على الأقل")
+      .max(128, "كلمة المرور طويلة جداً")
+      .regex(/[A-Z]/, "يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل")
+      .regex(/[a-z]/, "يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل")
+      .regex(/[0-9]/, "يجب أن تحتوي كلمة المرور على رقم واحد على الأقل"),
+    confirmPassword: z.string().min(1, "تأكيد كلمة المرور مطلوب"),
+  })
+  .strip()
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "كلمتا المرور غير متطابقتين",
+    path: ["confirmPassword"],
+  });

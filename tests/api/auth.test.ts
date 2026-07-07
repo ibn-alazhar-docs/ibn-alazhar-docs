@@ -108,7 +108,7 @@ describe("Auth API - /api/auth/register", () => {
       expect(data.error.code).toBe("VALIDATION_ERROR");
     });
 
-    it("should return conflict if email already exists", async () => {
+    it("should return a generic 200 and not reveal if email already exists", async () => {
       // Create a test user first
       const existingUser = await createTestUser();
       createdUserIds.push(existingUser.id);
@@ -122,13 +122,13 @@ describe("Auth API - /api/auth/register", () => {
       });
 
       const response = await POST(request);
-      expect(response.status).toBe(409);
+      expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.error.code).toBe("CONFLICT");
+      expect(data.message).toBeTruthy();
     });
 
-    it("should return conflict for deleted user (no auto-reactivation)", async () => {
+    it("should return a generic 200 for deleted user (no auto-reactivation leak)", async () => {
       // Create user and mark as deleted
       const deletedUser = await createTestUser();
       createdUserIds.push(deletedUser.id);
@@ -147,10 +147,10 @@ describe("Auth API - /api/auth/register", () => {
       });
 
       const response = await POST(request);
-      expect(response.status).toBe(409);
+      expect(response.status).toBe(200);
 
       const data = await response.json();
-      expect(data.error.code).toBe("CONFLICT");
+      expect(data.message).toBeTruthy();
     });
   });
 });

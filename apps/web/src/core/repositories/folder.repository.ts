@@ -46,9 +46,9 @@ export class FolderRepository implements IFolderRepository {
     });
   }
 
-  async update(id: string, userId: string, data: { name?: string; parentId?: string | null }) {
+  async update(id: string, _userId: string, data: { name?: string; parentId?: string | null }) {
     return this.prisma.folder.update({
-      where: { id, userId },
+      where: { id },
       data,
     });
   }
@@ -60,16 +60,16 @@ export class FolderRepository implements IFolderRepository {
     });
   }
 
-  async softDelete(id: string, userId: string) {
+  async softDelete(id: string, _userId: string) {
     return this.prisma.folder.update({
-      where: { id, userId },
+      where: { id },
       data: { deletedAt: new Date() },
     });
   }
 
-  async restore(id: string, userId: string) {
+  async restore(id: string, _userId: string) {
     return this.prisma.folder.update({
-      where: { id, userId },
+      where: { id },
       data: { deletedAt: null },
     });
   }

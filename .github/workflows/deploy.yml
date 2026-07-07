@@ -64,25 +64,59 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
+      - name: Install SSH key
+        uses: shimataro/setup-ssh-action@v2
         with:
-          version: 10
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          config: |
+            Host deploy
+              HostName ${{ secrets.DEPLOY_HOST }}
+              User ${{ secrets.DEPLOY_USER }}
+              Port ${{ secrets.DEPLOY_PORT || '22' }}
+              IdentityFile ~/.ssh/id_rsa
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-
-      - run: pnpm install --frozen-lockfile
-
-      - run: npx prisma generate
-        name: Prisma generate
-
-      - run: npx prisma migrate deploy
-        name: Prisma migrate deploy
-
-      - name: Deploy to production
+      - name: Deploy to production over SSH
         run: |
-          echo "Deploy ${{ github.sha }} to production"
-          # Pull and restart containers with the new image
-          # ssh $PROD_HOST "cd /app && docker compose pull && docker compose up -d"
+          set -euo pipefail
+
+          APP_DIR="${{ secrets.DEPLOY_APP_DIR || '/app' }}"
+          SERVICE="${{ secrets.DEPLOY_COMPOSE_SERVICE || 'web' }}"
+          HEALTH_URL="${{ secrets.DEPLOY_HEALTH_URL }}"
+          REGISTRY_TOKEN="${{ secrets.DEPLOY_REGISTRY_TOKEN }}"
+
+          ssh deploy bash -s <<EOF
+            set -euo pipefail
+
+            cd "\${APP_DIR}"
+
+            # Authenticate to the container registry so we can pull the new images.
+            if [ -n "\${REGISTRY_TOKEN}" ]; then
+              echo "\${REGISTRY_TOKEN}" | docker login ghcr.io -u "${{ secrets.DEPLOY_USER }}" --password-stdin
+            fi
+
+            # Pull the freshly built images.
+            docker compose pull
+
+            # Apply database migrations against the already-pulled image.
+            docker compose run --rm "\${SERVICE}" npx prisma migrate deploy
+
+            # Restart the stack with the new images.
+            docker compose up -d
+
+            # Wait for the health endpoint to report healthy.
+            if [ -n "\${HEALTH_URL}" ]; then
+              for i in \$(seq 1 30); do
+                if curl -fsS "\${HEALTH_URL}" > /dev/null 2>&1; then
+                  echo "Health check passed"
+                  exit 0
+                fi
+                sleep 3
+              done
+              echo "::error::Health check failed after deployment"
+              docker compose ps
+              exit 1
+            else
+              echo "DEPLOY_HEALTH_URL not set; skipping healthcheck"
+            fi
+          EOF

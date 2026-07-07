@@ -51,6 +51,6 @@ export const POST = withAuth(async (request, { session }) => {
         { status: error.statusCode },
       );
     }
-    return handleRouteError(error, "export/batch/POST", "فشل التصدير الجماعي");
+    return handleRouteError(error, "export/batch/POST", "تعذر التصدير الجماعي");
   }
 });

@@ -59,7 +59,7 @@ export function PreviewView({ jobId }: PreviewViewProps) {
           isCompleted = true; // Stop polling
           if (isMounted) setError(t("processingFailed"));
         } else {
-          // Still processing
+          // Job in progress, waiting for worker completion
           if (isMounted) setMarkdown(t("processing"));
         }
       } catch {

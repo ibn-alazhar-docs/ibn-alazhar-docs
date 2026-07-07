@@ -229,9 +229,9 @@ describe("loadConfig", () => {
       expect(c.ocr.provider).toBe("surya");
     });
 
-    it("providers defaults to [gemini, google, surya, tesseract]", () => {
+    it("providers defaults to [surya, tesseract]", () => {
       const c = loadConfig();
-      expect(c.ocr.providers).toEqual(["gemini", "google", "surya", "tesseract"]);
+      expect(c.ocr.providers).toEqual(["surya", "tesseract"]);
     });
 
     it("OCR_DPI overrides default", () => {

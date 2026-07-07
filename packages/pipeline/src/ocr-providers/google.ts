@@ -31,6 +31,10 @@ async function getDriveClient(config: PipelineConfig): Promise<drive_v3.Drive> {
   return driveClient!;
 }
 
+// CLOUD OCR (data-residency notice): every page is uploaded to Google Drive (drive.file
+// scope) for OCR and deleted immediately afterward. Because this sends document bytes to a
+// third-party vendor, this provider is NON-DEFAULT and only runs when explicitly enabled
+// (OCR_PROVIDERS includes "google" or OCR_CLOUD_ENABLED=true). It is never the default path.
 export class GoogleDriveOcrProvider implements OcrProvider {
   readonly name = "Google Drive OCR";
   readonly type = "google" as OcrEngineType;

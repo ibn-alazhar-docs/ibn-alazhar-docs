@@ -15,7 +15,7 @@ export default function LocaleError({ error, reset }: ErrorPageProps) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-4 p-8 text-center">
       <div className="rounded-lg border border-danger bg-danger/10 p-6">
-        <h2 className="mb-2 text-lg font-bold text-danger">حدث خطأ غير متوقع</h2>
+        <h2 className="mb-2 text-lg font-bold text-danger">حدث خطأ</h2>
         <p className="text-sm text-danger">{error.message || "حدث خطأ أثناء تحميل الصفحة"}</p>
         {error.digest && (
           <p className="mt-2 font-mono text-xs text-very-muted">Error ID: {error.digest}</p>

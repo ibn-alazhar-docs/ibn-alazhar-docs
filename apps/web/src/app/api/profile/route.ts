@@ -15,6 +15,11 @@ const deleteAccountSchema = z
 
 export const PATCH = withAuth(async (request, { session }) => {
   try {
+    const rateLimitResult = await checkUserRateLimit("account:update", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
+    }
+
     const body = await request.json();
     const validation = profileUpdateSchema.safeParse(body);
 
@@ -30,7 +35,7 @@ export const PATCH = withAuth(async (request, { session }) => {
 
     return NextResponse.json({ user });
   } catch (error: unknown) {
-    return handleRouteError(error, "profile", "فشل حفظ البيانات");
+    return handleRouteError(error, "profile", "تعذر حفظ البيانات");
   }
 });
 
@@ -61,6 +66,6 @@ export const DELETE = withAuth(async (request, { session }) => {
         { status: error.statusCode },
       );
     }
-    return handleRouteError(error, "profile", "فشل حذف الحساب");
+    return handleRouteError(error, "profile", "تعذر حذف الحساب");
   }
 });

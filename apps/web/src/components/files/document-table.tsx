@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { DocumentRow } from "./document-row";
 import { BulkActions } from "./bulk-actions";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 export interface Doc {
   id: string;
@@ -40,6 +41,7 @@ interface DocumentTableProps {
   showBulkTagPicker: boolean;
   onToggleBulkTagPicker: () => void;
   locale: string;
+  isDeleting: boolean;
 }
 
 function formatFileSize(bytes: number): string {
@@ -50,14 +52,6 @@ function formatFileSize(bytes: number): string {
 
 function getStatusLabel(status: string, t: (key: string) => string): string {
   return t(`status.${status}`) || status;
-}
-
-function getStatusColor(status: string): string {
-  if (status === "COMPLETED") return "bg-[var(--success-bg)] text-[var(--success)]";
-  if (status === "FAILED") return "bg-[var(--danger-bg)] text-[var(--danger)]";
-  if (status.startsWith("OCR") || status === "SPLITTING")
-    return "bg-[var(--info-bg)] text-[var(--info)]";
-  return "bg-[var(--badge-bg)] text-[var(--text-muted)]";
 }
 
 export function DocumentTable({
@@ -83,12 +77,16 @@ export function DocumentTable({
   showBulkTagPicker,
   onToggleBulkTagPicker,
   locale,
+  isDeleting,
 }: DocumentTableProps) {
   const tDocs = useTranslations("documents") as unknown as (
     key: string,
     opts?: Record<string, unknown>,
   ) => string;
   const tCommon = useTranslations("common") as unknown as (key: string) => string;
+  
+  // Find the document currently being deleted for its title in the confirm dialog
+  const deletingDoc = documents.find((d) => d.id === deletingDocId);
 
   return (
     <div>
@@ -111,13 +109,13 @@ export function DocumentTable({
       <div className="overflow-x-auto rounded-xl border border-line bg-card">
         <table className="min-w-[640px] w-full table-auto">
           <thead>
-            <tr className="sticky top-0 border-b border-line bg-card text-start">
+            <tr className="sticky top-0 z-10 border-b border-line bg-card text-start">
               <th className="w-10 px-3 py-3">
                 <input
                   type="checkbox"
                   checked={allSelected}
                   onChange={onToggleSelectAll}
-                  aria-label="تحديد جميع المستندات"
+                  aria-label={tCommon("selectAll")}
                   className="h-4 w-4 rounded border-[var(--input-border)] accent-[var(--success)]"
                 />
               </th>
@@ -153,20 +151,29 @@ export function DocumentTable({
                 onSaveEdit={onSaveEdit}
                 onCancelEdit={onCancelEdit}
                 onDelete={onDelete}
-                deletingDocId={deletingDocId}
-                onConfirmDelete={onConfirmDelete}
-                onCancelDelete={onCancelDelete}
                 locale={locale}
                 tDocs={tDocs}
                 tCommon={tCommon}
                 formatFileSize={formatFileSize}
                 getStatusLabel={getStatusLabel}
-                getStatusColor={getStatusColor}
               />
             ))}
           </tbody>
         </table>
       </div>
+
+      {deletingDocId && (
+        <ConfirmDialog
+          title={tDocs("deleteConfirmTitle")}
+          message={tDocs("deleteConfirmDesc", { name: deletingDoc?.title })}
+          confirmLabel={tCommon("delete")}
+          cancelLabel={tCommon("cancel")}
+          variant="danger"
+          isLoading={isDeleting}
+          onConfirm={() => deletingDocId && onConfirmDelete(deletingDocId)}
+          onCancel={onCancelDelete}
+        />
+      )}
     </div>
   );
 }

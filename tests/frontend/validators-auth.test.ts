@@ -4,6 +4,8 @@ import {
   registerSchema,
   profileUpdateSchema,
   adminUserUpdateSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 } from "@/lib/shared/validators/auth";
 
 describe("loginSchema", () => {
@@ -193,6 +195,96 @@ describe("adminUserUpdateSchema", () => {
 
   it("missing userId fails", () => {
     const result = adminUserUpdateSchema.safeParse({ role: "ADMIN" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("forgotPasswordSchema", () => {
+  it("valid email passes", () => {
+    const result = forgotPasswordSchema.safeParse({ email: "user@example.com" });
+    expect(result.success).toBe(true);
+  });
+
+  it("empty email fails", () => {
+    const result = forgotPasswordSchema.safeParse({ email: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("invalid email format fails", () => {
+    const result = forgotPasswordSchema.safeParse({ email: "not-email" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("resetPasswordSchema", () => {
+  const validInput = {
+    email: "user@example.com",
+    token: "valid-token-123",
+    password: "Password1",
+    confirmPassword: "Password1",
+  };
+
+  it("valid input passes", () => {
+    const result = resetPasswordSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+
+  it("empty email fails", () => {
+    const result = resetPasswordSchema.safeParse({ ...validInput, email: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("invalid email fails", () => {
+    const result = resetPasswordSchema.safeParse({ ...validInput, email: "not-email" });
+    expect(result.success).toBe(false);
+  });
+
+  it("empty token fails", () => {
+    const result = resetPasswordSchema.safeParse({ ...validInput, token: "" });
+    expect(result.success).toBe(false);
+  });
+
+  it("password without uppercase fails", () => {
+    const result = resetPasswordSchema.safeParse({
+      ...validInput,
+      password: "password1",
+      confirmPassword: "password1",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("password without lowercase fails", () => {
+    const result = resetPasswordSchema.safeParse({
+      ...validInput,
+      password: "PASSWORD1",
+      confirmPassword: "PASSWORD1",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("password without digit fails", () => {
+    const result = resetPasswordSchema.safeParse({
+      ...validInput,
+      password: "Password",
+      confirmPassword: "Password",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("password too short fails", () => {
+    const result = resetPasswordSchema.safeParse({
+      ...validInput,
+      password: "Pa1",
+      confirmPassword: "Pa1",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("mismatched confirmPassword fails", () => {
+    const result = resetPasswordSchema.safeParse({
+      ...validInput,
+      confirmPassword: "DifferentPassword1",
+    });
     expect(result.success).toBe(false);
   });
 });

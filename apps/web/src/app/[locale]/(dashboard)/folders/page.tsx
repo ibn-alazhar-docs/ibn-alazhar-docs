@@ -11,6 +11,8 @@ import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
 import { Text } from "@/components/ui/text";
 
+import { Card } from "@/components/ui/card";
+
 interface Breadcrumb {
   id: string;
   name: string;
@@ -57,9 +59,9 @@ export default function FoldersPage() {
             )}
 
             {/* Folder Tree */}
-            <div className="bg-card rounded-xl border border-line p-4">
+            <Card className="p-6">
               <FolderTree selectedFolderId={selectedFolderId} onSelectFolder={handleSelectFolder} />
-            </div>
+            </Card>
           </Stack>
         </Section>
       </Container>

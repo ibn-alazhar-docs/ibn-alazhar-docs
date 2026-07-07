@@ -24,12 +24,12 @@ export class FolderUseCases {
     return map;
   }
 
-  async getFolders(userId: string, role: string, parentId: string | null) {
+  async getFolders(userId: string, role: string, parentId?: string | null) {
     const admin = isAdminRole(role);
     return this.folderRepository.findMany(userId, {
       where: {
         ...(admin ? {} : { userId }),
-        parentId: parentId || null,
+        ...(parentId !== undefined ? { parentId: parentId || null } : {}),
         deletedAt: null,
       },
       orderBy: { order: "asc" },
@@ -132,7 +132,7 @@ export class FolderUseCases {
       const targetDepth = await this.folderRepository.getAncestorDepth(parentId, userId);
       const sourceMaxDepth = getDescendantMaxDepth(id, 0, await this.buildFolderMap(userId));
       if (targetDepth + 1 + sourceMaxDepth >= MAX_FOLDER_DEPTH) {
-        throw new AppError("تم الوصول للحد الأقصى من العمق", ERROR_CODES.MAX_DEPTH_REACHED, 400);
+        throw new AppError("وصلت للحد الأقصى للعمق", ERROR_CODES.MAX_DEPTH_REACHED, 400);
       }
     }
 

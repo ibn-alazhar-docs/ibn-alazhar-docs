@@ -49,6 +49,7 @@ export interface UseFilesManagerReturn {
   setEditTitle: (value: string) => void;
   setDeletingDocId: (docId: string | null) => void;
   handleBulkExport: () => Promise<void>;
+  isDeleting: boolean;
 }
 
 export function useFilesManager(): UseFilesManagerReturn {
@@ -66,6 +67,7 @@ export function useFilesManager(): UseFilesManagerReturn {
   const [deletingDocId, setDeletingDocId] = useState<string | null>(null);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [showBulkTagPicker, setShowBulkTagPicker] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const loadDocuments = useCallback(
     async (folderId: string | null) => {
@@ -78,7 +80,7 @@ export function useFilesManager(): UseFilesManagerReturn {
         if (selectedTagIds.length > 0) {
           selectedTagIds.forEach((id) => params.append("tagId", id));
         }
-        const res = await fetch(`/api/documents?${params}`);
+        const res = await fetch(`/api/documents?${params}`, { cache: "no-store" });
         if (res.ok) {
           const data = await res.json();
           setDocuments(data.documents);
@@ -116,10 +118,12 @@ export function useFilesManager(): UseFilesManagerReturn {
 
   function handleUploadStart(jobId: string, fileName: string) {
     setActiveJobs((prev) => [{ jobId, fileName }, ...prev]);
+    loadDocuments(selectedFolderId);
   }
 
   function handleMarkComplete(jobId: string) {
     setCompletedIds((prev) => [...prev, jobId]);
+    loadDocuments(selectedFolderId);
   }
 
   function handleFolderSelect(folderId: string | null) {
@@ -182,6 +186,7 @@ export function useFilesManager(): UseFilesManagerReturn {
   }
 
   async function confirmDelete(docId: string) {
+    setIsDeleting(true);
     try {
       const res = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
       if (res.ok) {
@@ -191,10 +196,14 @@ export function useFilesManager(): UseFilesManagerReturn {
           return next;
         });
         loadDocuments(selectedFolderId);
+      } else {
+        const body = await res.json().catch(() => null);
+        console.error("Delete failed:", res.status, body);
       }
-    } catch {
-      console.error("Failed to delete document");
+    } catch (err) {
+      console.error("Failed to delete document:", err);
     } finally {
+      setIsDeleting(false);
       setDeletingDocId(null);
     }
   }
@@ -255,7 +264,7 @@ export function useFilesManager(): UseFilesManagerReturn {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      alert("فشل التصدير");
+      alert("تعذر التصدير");
     }
   }
 
@@ -291,6 +300,7 @@ export function useFilesManager(): UseFilesManagerReturn {
     cancelEdit,
     cancelDelete,
     cancelSelection,
+    isDeleting,
     setShowMoveDialog,
     setSelectedTagIds,
     setShowBulkTagPicker,

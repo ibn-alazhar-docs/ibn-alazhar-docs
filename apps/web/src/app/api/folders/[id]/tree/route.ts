@@ -11,6 +11,6 @@ export const GET = withAuth(async (_request, { session, params }) => {
       headers: { "Cache-Control": "private, max-age=30" },
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/tree/GET", "فشل تحميل شجرة المجلدات");
+    return handleRouteError(error, "folders/[id]/tree/GET", "تعذر تحميل شجرة المجلدات");
   }
 });

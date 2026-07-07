@@ -1,12 +1,16 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useState, useEffect } from "react";
 import { Container } from "@/components/ui/container";
 import { PageTransition } from "@/components/ui/page-transition";
 import { Section } from "@/components/ui/section";
 import { Stack } from "@/components/ui/stack";
 import { Heading } from "@/components/ui/heading";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface User {
   id: string;
@@ -19,9 +23,12 @@ interface User {
 
 export default function UsersPage() {
   const t = useTranslations("users");
+  const tCommon = useTranslations("common");
+  const locale = useLocale();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
 
   async function loadUsers() {
     try {
@@ -31,12 +38,12 @@ export default function UsersPage() {
           setError(t("forbidden"));
           return;
         }
-        throw new Error("Failed to load");
+        throw new Error(t("loadError"));
       }
       const data = await res.json();
       setUsers(data.users);
     } catch {
-      setError("Failed to load users");
+      setError(t("loadError"));
     } finally {
       setLoading(false);
     }
@@ -54,25 +61,24 @@ export default function UsersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, role: newRole }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error(t("roleToggleError"));
       setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
     } catch {
-      setError(t("roleChanged"));
+      setError(t("roleToggleError"));
     }
   }
 
-  async function deleteUser(userId: string) {
-    if (!confirm(t("deleteConfirm"))) return;
+  async function performDelete(userId: string) {
     try {
       const res = await fetch("/api/users", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) throw new Error(t("deleteError"));
       setUsers((prev) => prev.filter((u) => u.id !== userId));
     } catch {
-      setError(t("userDeleted"));
+      setError(t("deleteError"));
     }
   }
 
@@ -114,22 +120,22 @@ export default function UsersPage() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-xl border border-line bg-card p-4">
+              <Card className="p-4">
                 <p className="text-xs text-very-muted uppercase tracking-wide">{t("total")}</p>
                 <p className="text-2xl font-bold text-primary-color mt-1">{users.length}</p>
-              </div>
-              <div className="rounded-xl border border-line bg-card p-4">
+              </Card>
+              <Card className="p-4">
                 <p className="text-xs text-very-muted uppercase tracking-wide">{t("admins")}</p>
                 <p className="text-2xl font-bold text-[var(--success)] mt-1">{admins}</p>
-              </div>
-              <div className="rounded-xl border border-line bg-card p-4">
+              </Card>
+              <Card className="p-4">
                 <p className="text-xs text-very-muted uppercase tracking-wide">{t("students")}</p>
                 <p className="text-2xl font-bold text-primary-color mt-1">{students}</p>
-              </div>
+              </Card>
             </div>
 
             {/* Users Table */}
-            <div className="rounded-xl border border-line bg-card overflow-hidden">
+            <Card className="overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -162,35 +168,32 @@ export default function UsersPage() {
                         </td>
                         <td className="px-4 py-3 text-muted-color">{user.email}</td>
                         <td className="px-4 py-3">
-                          <span
-                            className={`inline-block rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                              user.role === "ADMIN"
-                                ? "bg-[var(--success-bg)] text-[var(--success)]"
-                                : "bg-badge text-muted-color"
-                            }`}
-                          >
+                          <Badge variant={user.role === "ADMIN" ? "success" : "secondary"}>
                             {user.role}
-                          </span>
+                          </Badge>
                         </td>
                         <td className="px-4 py-3 text-very-muted">
-                          {new Date(user.createdAt).toLocaleDateString("ar-EG")}
+                          {new Date(user.createdAt).toLocaleDateString(
+                            locale === "ar" ? "ar-EG" : "en-US",
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <button
-                              type="button"
+                            <Button
+                              variant="outline"
+                              size="sm"
                               onClick={() => toggleRole(user.id, user.role)}
-                              className="text-xs text-muted-color hover:text-primary-color transition-colors"
                             >
                               {user.role === "ADMIN" ? t("removeAdmin") : t("makeAdmin")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => deleteUser(user.id)}
-                              className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80 transition-colors"
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="text-[var(--danger)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
+                              onClick={() => setDeletingUserId(user.id)}
                             >
                               {t("delete")}
-                            </button>
+                            </Button>
                           </div>
                         </td>
                       </tr>
@@ -198,7 +201,23 @@ export default function UsersPage() {
                   </tbody>
                 </table>
               </div>
-            </div>
+            </Card>
+            {deletingUserId && (
+              <ConfirmDialog
+                title={t("deleteConfirmTitle")}
+                message={t("deleteConfirm")}
+                confirmLabel={tCommon("delete")}
+                cancelLabel={tCommon("cancel")}
+                variant="danger"
+                onConfirm={() => {
+                  if (deletingUserId) {
+                    performDelete(deletingUserId);
+                    setDeletingUserId(null);
+                  }
+                }}
+                onCancel={() => setDeletingUserId(null)}
+              />
+            )}
           </Stack>
         </Section>
       </Container>

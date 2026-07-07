@@ -49,6 +49,6 @@ export const GET = withAuth(async (request, { session }) => {
 
     return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "search", "فشل البحث");
+    return handleRouteError(error, "search", "تعذر البحث");
   }
 });

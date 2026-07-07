@@ -14,52 +14,59 @@
     "users": "Users",
     "admin": "Admin",
     "signIn": "Sign in",
-    "signUp": "New account",
-    "mainNav": "Menu"
+    "signUp": "Create account",
+    "mainNav": "Menu",
+    "bookmarks": "Bookmarks"
   },
   "section": {
     "hero": {
       "eyebrow": "Ibn Al-Azhar Docs",
-      "title": "Your Documents, Intelligently Digitized",
-      "subtitle": "Upload your PDFs or images. We meticulously extract the text, refine the content, and deliver a perfectly formatted Word document—ready for your research.",
+      "title": "Academic Document Digitization for Al-Azhar Scholars",
+      "subtitle": "Upload historical manuscripts, academic papers, or PDFs. We extract, refine, and structure them into fully editable, formatted academic documents.",
       "cta": "Get Started",
       "dashboardCTA": "Go to Dashboard"
     },
     "knowledgeAreas": {
-      "title": "How It Works",
+      "title": "Academic Workflow Methodology",
       "items": [
-        { "title": "Upload", "description": "Simply drag and drop your PDFs, JPGs, or PNGs." },
         {
-          "title": "Process",
-          "description": "Experience highly precise OCR with automated content refinement."
+          "title": "Manuscript Upload",
+          "description": "Drag and drop your historical scans, books, or papers (PDF, JPG, PNG)."
         },
-        { "title": "Download", "description": "Export instantly to Word, Markdown, or plain text." }
+        {
+          "title": "Text Analysis & Refinement",
+          "description": "High-fidelity OCR with automated spelling and text cleaning built for Arabic vocabulary."
+        },
+        {
+          "title": "Structured Export",
+          "description": "Download instantly as fully formatted Word or Markdown files ready for citation."
+        }
       ]
     },
     "features": {
-      "title": "Why Choose Ibn Al-Azhar Docs",
+      "title": "Built for Serious Academic Research",
       "items": [
         {
-          "title": "Private",
-          "description": "Fully encrypted and secure. Your data never leaves your environment."
+          "title": "Secure Research",
+          "description": "End-to-end encryption. Your research manuscripts and documents remain entirely private."
         },
         {
-          "title": "Accurate",
-          "description": "State-of-the-art Arabic and English text recognition with exceptional precision."
+          "title": "Bespoke OCR",
+          "description": "High-fidelity bilingual character recognition optimized for complex Arabic and Latin typography."
         },
         {
-          "title": "Free",
-          "description": "Completely free for the academic community. No subscriptions required."
+          "title": "Open Access Initiative",
+          "description": "A non-profit, waqf-inspired academic platform supporting global research with no subscription barriers."
         },
         {
-          "title": "Word",
-          "description": "Receive seamlessly formatted Word documents, ready for immediate editing."
+          "title": "Preserved Layouts",
+          "description": "Get structured Word documents preserving layouts, ready for immediate citation and editing."
         }
       ]
     },
     "cta": {
-      "title": "Transform Your First Document",
-      "subtitle": "Upload any supported file and receive a polished Word document in seconds.",
+      "title": "Transform Your Documents Now",
+      "subtitle": "Upload any supported file and get a polished Word document in seconds.",
       "button": "Begin Processing",
       "dashboardCTA": "Go to Dashboard"
     }
@@ -100,7 +107,9 @@
     "of": "of",
     "result": "result",
     "results": "results",
-    "seconds": "seconds"
+    "seconds": "seconds",
+    "settings": "Settings",
+    "share": "Share"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -120,26 +129,42 @@
     "loginButton": "Sign in",
     "registerButton": "Create account",
     "loggingIn": "Signing in...",
-    "registering": "Creating...",
-    "passwordHint": "At least 8 characters — uppercase, lowercase, and a number",
-    "validationError": "Please verify your input details.",
-    "loginError": "Invalid email or password. Please try again.",
-    "registerError": "We could not create your account. Please try again later.",
-    "autoLoginError": "Account created successfully. Please sign in.",
-    "unexpectedError": "An unexpected error occurred. Please try again.",
+    "registering": "Creating account...",
+    "passwordHint": "At least 8 characters (uppercase, lowercase, number)",
+    "validationError": "Check your details.",
+    "loginError": "Sign in failed. Check your email and password.",
+    "registerError": "Account creation failed. Try again later.",
+    "autoLoginError": "Account created. Sign in now.",
+    "unexpectedError": "An error occurred. Try again.",
     "tagline": "Your documents, elevated for research.",
-    "continueWithGoogle": "Continue with Google"
+    "continueWithGoogle": "Continue with Google",
+    "forgotPasswordTitle": "Forgot password?",
+    "forgotPasswordButton": "Send reset link",
+    "forgotPasswordLink": "Forgot password?",
+    "forgotPasswordSuccess": "If the email is registered, you will receive a reset link.",
+    "forgotPasswordDescription": "Enter your email and we'll send you a reset link.",
+    "resetPasswordTitle": "Set new password",
+    "resetPasswordDescription": "Enter your email and choose a new password.",
+    "resetPasswordButton": "Save password",
+    "resetPasswordSuccess": "Password changed successfully. You can sign in now.",
+    "resetPasswordInvalid": "This reset link is invalid or expired. Request a new one.",
+    "backToLogin": "Back to sign in",
+    "confirmPasswordError": "Passwords do not match",
+    "emailRequired": "Email is required",
+    "nameRequired": "Name is required",
+    "passwordRequired": "Password is required",
+    "or": "or"
   },
   "pipeline": {
     "upload": {
-      "dragDrop": "Drag and drop a file here, or click to browse",
-      "formats": "PDF, JPG, PNG — Unlimited size",
+      "dragDrop": "Drag and drop files here, or click to browse",
+      "formats": "PDF, JPG, PNG",
       "uploading": "Uploading...",
       "uploadButton": "Upload & Process",
       "progress": "Processing...",
-      "errorInvalidType": "Unsupported file format. Please upload a PDF or image.",
-      "errorTooLarge": "The file exceeds the maximum allowed size.",
-      "errorUploadFailed": "An error occurred while uploading. Please try again."
+      "errorInvalidType": "Unsupported format. Upload a PDF or image.",
+      "errorTooLarge": "File exceeds the maximum size.",
+      "errorUploadFailed": "Upload failed. Try again."
     },
     "status": {
       "pending": "Queued",
@@ -157,13 +182,13 @@
       "notFound": "Document not found",
       "loadFailed": "Could not load preview",
       "previewNotFound": "Preview file not found",
-      "processingFailed": "Processing failed",
-      "processing": "Processing — give it a moment",
+      "processingFailed": "Processing failed. Try again.",
+      "processing": "Processing — wait a moment",
       "loadingPreview": "Loading preview...",
       "retry": "Try again",
       "noPreview": "No preview available",
       "documentProcessing": "Still processing",
-      "autoUpdate": "Preview updates automatically when done",
+      "autoUpdate": "Preview updates automatically",
       "previewAndExport": "Preview & export",
       "previewDocument": "Preview",
       "downloadMd": "Download .md",
@@ -178,19 +203,25 @@
       "medium": "Medium",
       "large": "Large",
       "watermark": "Watermark (Optional)",
-      "watermarkPlaceholder": "Enter watermark text...",
+      "watermarkPlaceholder": "Enter text...",
       "pageRange": "Page Range (Optional)",
-      "pageRangePlaceholder": "e.g. 1-5, 8, 11-13",
+      "pageRangePlaceholder": "e.g. 1-5, 8",
       "destination": "Destination",
-      "download": "Download",
+      "download": "Direct Download",
       "drive": "Google Drive",
       "cancel": "Cancel",
       "export": "Export",
       "exporting": "Exporting...",
-      "successDownload": "Export ready for download",
-      "successDrive": "Exported to Google Drive successfully",
+      "successDownload": "Export ready",
+      "successDrive": "Exported to Google Drive",
       "error": "Export failed",
-      "button": "Advanced Export"
+      "button": "Advanced Export",
+      "formatSearchablePdf": "Searchable PDF",
+      "formatPdf": "PDF",
+      "formatDocx": "Word (DOCX)",
+      "formatEpub": "EPUB",
+      "formatMd": "Markdown",
+      "formatTxt": "Plain Text (TXT)"
     }
   },
   "folders": {
@@ -199,30 +230,35 @@
     "createNew": "Create folder",
     "createButton": "+ New folder",
     "allFiles": "All files",
-    "empty": "No folders created yet.",
+    "empty": "You don't have any folders yet.",
     "nameLabel": "Folder name",
-    "namePlaceholder": "Folder name",
+    "namePlaceholder": "Name",
     "nameRequired": "Folder name is required",
     "nameTooLong": "Name is too long",
     "rename": "Rename",
     "moveTo": "Move to...",
     "moveTitle": "Move to folder",
-    "moveSelected": "{count} document selected",
+    "moveSelected": "1 document selected",
     "moveSelectedPlural": "{count} documents selected",
     "root": "No folder",
-    "noFolders": "Create a folder to organize your research and documents.",
+    "noFolders": "Create a folder to organize your documents.",
     "moveButton": "Move ({count})",
-    "deleteConfirm": "Delete this folder? Files inside will not be deleted.",
+    "deleteTitle": "Delete folder",
+    "deleteConfirm": "Delete folder? (Files inside won't be deleted)",
     "allFilesBreadcrumb": "All files",
     "loadError": "Failed to load folders",
     "createError": "Failed to create folder",
-    "renameError": "Failed to rename folder",
-    "deleteError": "Failed to delete folder"
+    "renameError": "Rename failed",
+    "deleteError": "Delete failed",
+    "collapse": "Collapse",
+    "expand": "Expand",
+    "createSuccess": "Folder created",
+    "moveSuccess": "Folder moved"
   },
   "documents": {
     "title": "Documents",
-    "uploadPrompt": "Upload PDFs or images to extract and digitize text seamlessly.",
-    "empty": "Your workspace is empty. Upload a document to begin processing.",
+    "uploadPrompt": "Upload PDFs or images to extract text.",
+    "empty": "Your workspace is empty. Upload your first document.",
     "recentDocuments": "Recent Documents",
     "viewAll": "View all",
     "activeJobs": "In progress",
@@ -247,7 +283,7 @@
       "UPLOADED": "Uploaded",
       "VALIDATING": "Validating",
       "SPLITTING": "Splitting",
-      "OCR_PROCESSING": "OCR",
+      "OCR_PROCESSING": "Reading",
       "CLEANING": "Cleaning",
       "GENERATING": "Generating",
       "COMPLETED": "Done",
@@ -258,12 +294,18 @@
     "cancelSelection": "Cancel selection",
     "pagesCount": "{count} pages",
     "pageCount": "page",
-    "addTags": "Add tags"
+    "addTags": "Add tags",
+    "exportSelected": "Export selected",
+    "deleteConfirmTitle": "Delete Document",
+    "deleteConfirmDesc": "Are you sure you want to permanently delete this document? This action cannot be undone.",
+    "totalPages": "Total pages",
+    "range": "Range",
+    "selectAria": "Select {title}"
   },
   "search": {
     "title": "Search",
-    "subtitle": "Instantly locate content across all your digitized documents.",
-    "placeholder": "Search documents...",
+    "subtitle": "Locate content across your digitized documents.",
+    "placeholder": "Search...",
     "searching": "Searching...",
     "searchButton": "Search",
     "typeLabel": "Search type",
@@ -273,25 +315,26 @@
       "content": "Content",
       "folder": "Folder"
     },
-    "noResults": "We couldn't find any results for",
+    "noResults": "No results found for",
     "matchTitle": "Title",
     "matchContent": "Content",
     "previous": "Previous",
     "next": "Next",
     "pageInfo": "{page} of {total}",
-    "error": "Search failed"
+    "error": "Search failed",
+    "suggestionsLabel": "Search suggestions"
   },
   "conversions": {
     "title": "Processing",
-    "subtitle": "Monitor the real-time progress of your document conversions.",
+    "subtitle": "Monitor your document processing in real-time.",
     "searchPlaceholder": "Job ID",
     "searchButton": "Search",
     "enterJobId": "Enter a Job ID",
-    "enterJobIdHint": "Enter a Job ID to check progress",
+    "enterJobIdHint": "To check progress",
     "previewAndExport": "Preview & export",
     "downloadMd": "Download .md",
     "downloadTxt": "Download .txt",
-    "allConversions": "All Conversions",
+    "allConversions": "All Jobs",
     "document": "Document",
     "status": "Status",
     "progress": "Progress",
@@ -299,7 +342,7 @@
     "actions": "Actions",
     "viewResults": "View Results",
     "noConversions": "No active processing jobs.",
-    "noConversionsHint": "Upload your first document to initiate the extraction process.",
+    "noConversionsHint": "Upload a document to start.",
     "loading": "Loading...",
     "pending": "Pending",
     "processing": "Processing",
@@ -330,8 +373,10 @@
     "dangerZoneDescription": "Irreversible actions",
     "deleteAccount": "Delete account",
     "deleteAccountConfirm": "Delete your account? Data cannot be recovered.",
-    "saved": "Saved",
-    "error": "Save failed"
+    "saved": "Changes saved",
+    "error": "Save failed",
+    "saving": "Saving...",
+    "deleting": "Deleting..."
   },
   "users": {
     "title": "Users",
@@ -342,16 +387,20 @@
     "createdAt": "Created",
     "actions": "Actions",
     "makeAdmin": "Promote to admin",
-    "removeAdmin": "Remove admin role",
+    "removeAdmin": "Remove admin",
     "delete": "Delete",
     "deleteConfirm": "Delete this user?",
+    "deleteConfirmTitle": "Delete User",
     "noUsers": "No users found",
     "total": "Total users",
     "admins": "Admins",
     "students": "Students",
     "roleChanged": "Role updated",
     "userDeleted": "User deleted",
-    "forbidden": "Access denied"
+    "forbidden": "Access denied",
+    "loadError": "Failed to load users",
+    "roleToggleError": "Failed to update role",
+    "deleteError": "Failed to delete user"
   },
   "ui": {
     "menuOpen": "Open menu",
@@ -359,56 +408,58 @@
   },
   "tags": {
     "title": "Tags",
-    "manage": "Tags",
+    "manage": "Manage Tags",
     "create": "New tag",
     "createNew": "Create tag",
     "createButton": "+ New tag",
     "empty": "No tags yet",
     "nameLabel": "Tag name",
-    "namePlaceholder": "Tag name",
+    "namePlaceholder": "Name",
     "nameRequired": "Tag name is required",
     "nameTooLong": "Name is too long",
     "nameExists": "Tag already exists",
     "colorLabel": "Color",
     "rename": "Rename",
     "delete": "Delete",
-    "deleteConfirm": "Delete this tag? Documents will not be deleted.",
+    "deleteConfirm": "Delete tag? (Documents won't be deleted)",
+    "deleteConfirmTitle": "Delete Tag",
     "merge": "Merge",
     "mergeTitle": "Merge tags",
-    "mergeDescription": "Move all documents from one tag to another, then delete the source",
+    "mergeDescription": "Move documents to another tag, then delete the source",
     "mergeSource": "Tag to delete",
     "mergeTarget": "Target tag",
     "mergeButton": "Merge",
     "mergeSuccess": "Tags merged",
-    "documentsCount": "{count} document",
+    "documentsCount": "1 document",
     "documentsCountPlural": "{count} documents",
     "addTag": "Add tag",
     "removeTag": "Remove tag",
     "filterByTag": "Filter by tag",
     "allTags": "All tags",
     "noTags": "No tags",
-    "tagsCount": "{count} tag",
+    "tagsCount": "{count} tags",
+    "loadError": "Failed to load tags",
     "untag": "Remove tag"
   },
   "share": {
     "loading": "Loading...",
     "expired": "Link expired",
-    "notFound": "We couldn't find the requested document.",
-    "deleted": "This document has been deleted.",
-    "loadError": "An error occurred while loading the document.",
+    "notFound": "Document not found.",
+    "deleted": "Document deleted.",
+    "loadError": "Failed to load document.",
     "connectionError": "Connection error",
-    "requestNewLink": "Request a new link from the document owner",
+    "requestNewLink": "Request a new link from the owner",
     "download": "Download",
     "preview": "Preview",
     "sharedBy": "Shared by",
     "createdAt": "Created",
     "pages": "pages",
-    "requestNewLinkFromOwner": "Request a new link from the document owner"
+    "requestNewLinkFromOwner": "Request a new link from the owner"
   },
   "shareModal": {
     "title": "Share Document",
     "shareLink": "Public Link",
-    "copyLink": "Copy to Clipboard",
+    "copyLink": "Copy Link",
     "copied": "Copied!",
     "revokeLink": "Revoke Link",
     "createLink": "Create Public Link",
@@ -418,29 +469,81 @@
     "expires30Days": "30 Days",
     "expiresNever": "Never",
     "cancel": "Cancel",
-    "successCreate": "Link created successfully",
-    "successRevoke": "Link revoked successfully",
+    "successCreate": "Link created",
+    "successRevoke": "Link revoked",
     "error": "An error occurred"
   },
   "discovery": {
     "library": "Library",
-    "librarySubtitle": "Open digital library — browse, read, learn",
+    "librarySubtitle": "Digital library — browse, read, learn",
     "documents": "document",
     "documentsPlural": "documents",
     "minutes": "min",
     "minShort": "min",
     "relatedTitle": "Related",
     "prerequisitePrefix": "Read first:",
-    "prerequisiteSuffix": "before this document",
+    "prerequisiteSuffix": "before this",
     "journeyPartOf": "Part of",
-    "journeyNext": "Next in series",
+    "journeyNext": "Next",
     "tocTitle": "Contents",
     "tocAriaLabel": "Table of contents",
-    "docNavLabel": "Document navigation",
+    "docNavLabel": "Navigation",
     "prev": "Previous",
     "next": "Next",
     "readTime": "min read",
     "home": "Home",
-    "breadcrumbLibrary": "Library"
+    "breadcrumbLibrary": "Library",
+    "readingJourneys": "Reading Journeys",
+    "documentCount": "{count, plural, one {# document} other {# documents}}",
+    "step": "Step {number}",
+    "minute": "{count, plural, one {min} other {min}}"
+  },
+  "a11y": {
+    "skipToContent": "Skip to content"
+  },
+  "theme": {
+    "toggleLight": "Switch to light mode",
+    "toggleDark": "Switch to dark mode"
+  },
+  "locale": {
+    "toggle": "Switch language",
+    "switchTitle": "Change language",
+    "switchMessage": "You have an unuploaded file. Changing language will discard it. Are you sure?",
+    "switchConfirm": "Change"
+  },
+  "analytics": {
+    "title": "Analytics",
+    "subtitle": "Platform usage overview",
+    "refresh": "Refresh data",
+    "period7": "Last 7 days",
+    "period30": "Last 30 days",
+    "period90": "Last 90 days",
+    "stats": {
+      "documents": "Documents",
+      "tags": "Tags",
+      "storageUsed": "Storage Used",
+      "uploadsThisWeek": "Uploads this week",
+      "unused": "unused",
+      "avg": "avg",
+      "totalDays": "Total {days} days"
+    },
+    "charts": {
+      "status": "Document Status",
+      "dailyUploads": "Daily Uploads",
+      "topTags": "Top Tags",
+      "largestDocuments": "Largest Documents"
+    },
+    "status": {
+      "COMPLETED": "Completed",
+      "UPLOADED": "Uploaded",
+      "PROCESSING": "Processing",
+      "FAILED": "Failed"
+    }
+  },
+  "bookmarks": {
+    "title": "Bookmarks",
+    "counted": "{count} bookmarks",
+    "emptyTitle": "No bookmarked documents",
+    "emptyDesc": "Click the heart icon on any document to add it to your bookmarks"
   }
 }

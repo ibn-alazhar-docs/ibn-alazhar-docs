@@ -32,7 +32,6 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   try {
-    // @ts-expect-error — bulkDeleteDocuments not yet implemented on DocumentCrudUseCases
     const deleted = await useCases.documentCrud.bulkDeleteDocuments(documentIds, session.user.id);
 
     await auditLog({
@@ -52,6 +51,6 @@ export const POST = withAuth(async (request, { session }) => {
       message: `تم حذف ${deleted} مستند${deleted > 1 ? "ات" : ""}`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/bulk-delete/POST", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/bulk-delete/POST", "حدث خطأ");
   }
 });

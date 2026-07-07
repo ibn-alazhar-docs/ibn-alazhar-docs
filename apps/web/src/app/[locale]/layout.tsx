@@ -38,6 +38,8 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const messages = await getMessages();
 
+  const t = await getTranslations({ locale, namespace: "a11y" });
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
@@ -57,7 +59,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:bg-[var(--color-primary-600)] focus:text-white focus:px-4 focus:py-2 focus:rounded"
       >
-        تخطي إلى المحتوى الرئيسي
+        {t("skipToContent")}
       </a>
       <script
         type="application/ld+json"

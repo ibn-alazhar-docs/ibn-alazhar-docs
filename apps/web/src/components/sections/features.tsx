@@ -26,12 +26,11 @@ function IconSlot({ index, className }: { index: number; className: string }) {
 }
 
 const cardVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.95 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
-    scale: 1,
-    transition: { type: "spring" as const, bounce: 0.4, duration: 0.8 },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
@@ -40,14 +39,14 @@ export function Features() {
   const items = t.raw("items") as FeatureItem[];
 
   return (
-    <section className="border-t border-border-subtle relative" aria-labelledby="features-title">
+    <section className="relative" aria-labelledby="features-title">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_70%)] opacity-[0.03] blur-[80px] pointer-events-none -z-10" />
 
       <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
         <motion.div
           initial={{ opacity: 0, x: -20 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-10px" }}
           className="mb-16 flex items-center gap-3"
         >
           <span
@@ -61,7 +60,7 @@ export function Features() {
         <motion.div
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-10px" }}
           transition={{ staggerChildren: 0.15 }}
           className="grid grid-cols-1 gap-6 md:grid-cols-2"
         >
@@ -74,7 +73,7 @@ export function Features() {
               <div className="absolute inset-0 bg-gradient-to-br from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/5 border border-gold/10 text-gold transition-transform duration-500 group-hover:scale-110 group-hover:rotate-3 group-hover:bg-gold/10">
-                <IconSlot index={index} className="h-6 w-6 fill-current" />
+                <IconSlot index={index} className="h-6 w-6" />
               </div>
 
               <h3 className="heading-display-sm mt-2 text-xl font-bold text-primary-color">

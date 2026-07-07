@@ -12,6 +12,7 @@ const DEFAULT_API_RATE_LIMIT = { limit: 100, windowMs: 60_000 };
 // and IP is the only reliable identifier.
 const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/auth/register": { limit: 10, windowMs: 60_000 },
+  "/api/auth/verify-email": { limit: 20, windowMs: 60_000 },
   "/api/auth/callback/credentials": { limit: 10, windowMs: 60_000 },
   "/api/search": { limit: 30, windowMs: 60_000 },
   "/api/search/suggest": { limit: 30, windowMs: 60_000 },
@@ -97,43 +98,58 @@ function memoryCheck(
 // WHY: Redis-first with in-memory fallback — Redis is the source of truth for
 // distributed rate limiting (multiple server instances), but if Redis is
 // unavailable, we fall back to per-instance memory to avoid blocking all requests.
+// EXCEPT when strict = true is specified (critical paths where memory bypass is a security risk).
 async function checkWithFallback(
   key: string,
   limit: number,
   windowMs: number,
+  strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
   const redisResult = await checkRedisRateLimit(key, limit, windowMs);
   if (redisResult) return redisResult;
+
+  if (strict) {
+    return { allowed: false, retryAfterMs: windowMs };
+  }
+
   return memoryCheck(key, limit, windowMs);
 }
 
 export async function checkRateLimit(
   pathname: string,
   request: Request,
+  strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  if (process.env.DISABLE_RATE_LIMIT === "true" || process.env.NODE_ENV === "test") {
+    return { allowed: true };
+  }
   startCleanupIfNeeded();
   const rule = RATE_LIMITS[pathname] ?? DEFAULT_API_RATE_LIMIT;
 
   const ip = getClientIp(request);
   const key = `${pathname}:${ip}`;
-  return checkWithFallback(key, rule.limit, rule.windowMs);
+  return checkWithFallback(key, rule.limit, rule.windowMs, strict);
 }
 
 export async function checkUserRateLimit(
   action: string,
   userId: string,
+  strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  if (process.env.DISABLE_RATE_LIMIT === "true" || process.env.NODE_ENV === "test") {
+    return { allowed: true };
+  }
   startCleanupIfNeeded();
   const rule = USER_RATE_LIMITS[action];
   if (!rule) return { allowed: true };
 
   const key = `user:${action}:${userId}`;
-  return checkWithFallback(key, rule.limit, rule.windowMs);
+  return checkWithFallback(key, rule.limit, rule.windowMs, strict);
 }
 
 export function rateLimitResponse(retryAfterMs?: number): NextResponse {
   return NextResponse.json(
-    { error: { code: "RATE_LIMITED", message: "تم تجاوز الحد الأقصى للطلبات" } },
+    { error: { code: "RATE_LIMITED", message: "تجاوزت الحد الأقصى للطلبات" } },
     {
       status: 429,
       headers: {

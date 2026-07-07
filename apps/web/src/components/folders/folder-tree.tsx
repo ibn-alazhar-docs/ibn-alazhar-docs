@@ -24,28 +24,31 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   const [showMoveDialog, setShowMoveDialog] = useState(false);
   const [movingFolderId, setMovingFolderId] = useState<string | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   async function handleCreate(name: string): Promise<void> {
     try {
       await createFolder(name, createParentId);
-      toast.success("تم إنشاء المجلد بنجاح");
+      toast.success(t("createSuccess"));
       setShowCreateDialog(false);
       setCreateParentId(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل إنشاء المجلد");
+      toast.error(err instanceof Error ? err.message : t("createError"));
     }
   }
 
   async function handleDelete(folderId: string) {
+    setIsDeleting(true);
     try {
       await deleteFolder(folderId);
-      toast.success("تم حذف المجلد بنجاح");
+      toast.success(t("deleteSuccess"));
       if (selectedFolderId === folderId) {
         onSelectFolder(null);
       }
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل حذف المجلد");
+      toast.error(err instanceof Error ? err.message : t("deleteError"));
     } finally {
+      setIsDeleting(false);
       setDeleteConfirmId(null);
     }
   }
@@ -54,11 +57,11 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
     if (!movingFolderId) return;
     try {
       await moveFolder(movingFolderId, newParentId);
-      toast.success("تم نقل المجلد بنجاح");
+      toast.success(t("moveSuccess"));
       setShowMoveDialog(false);
       setMovingFolderId(null);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "فشل نقل المجلد");
+      toast.error(err instanceof Error ? err.message : t("moveError"));
     }
   }
 
@@ -163,11 +166,12 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
 
       {deleteConfirmId && (
         <ConfirmDialog
-          title={t("deleteTitle", { fallback: "حذف المجلد" })}
+          title={t("deleteTitle")}
           message={t("deleteConfirm")}
           confirmLabel={tCommon("delete")}
           cancelLabel={tCommon("cancel")}
           variant="danger"
+          isLoading={isDeleting}
           onConfirm={() => handleDelete(deleteConfirmId)}
           onCancel={() => setDeleteConfirmId(null)}
         />

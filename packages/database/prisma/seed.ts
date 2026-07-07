@@ -9,7 +9,10 @@ async function main() {
 
   const guestUser = await prisma.user.upsert({
     where: { email: "guest@ibnalazhar.local" },
-    update: {},
+    update: {
+      failedLoginAttempts: 0,
+      lockedAt: null,
+    },
     create: {
       email: "guest@ibnalazhar.local",
       name: "ضيف",
@@ -20,33 +23,41 @@ async function main() {
 
   console.log(`Guest user created: ${guestUser.id}`);
 
+  const userPasswordHash = bcrypt.hashSync(process.env.USER_PASSWORD || "UserPassword123!", 10);
+
   const userUser = await prisma.user.upsert({
     where: { email: "user@ibnalazhar.local" },
-    update: {},
+    update: {
+      passwordHash: userPasswordHash,
+      failedLoginAttempts: 0,
+      lockedAt: null,
+    },
     create: {
       email: "user@ibnalazhar.local",
       name: "مستخدم",
       role: "STUDENT",
       locale: "ar",
-      passwordHash: process.env.USER_PASSWORD
-        ? bcrypt.hashSync(process.env.USER_PASSWORD, 12)
-        : "$2b$12$7C6H1e/jllfmsem3c6i1weD/yTIr0LUJ.nKoHRtp.aB4mVr6iSV3q",
+      passwordHash: userPasswordHash,
     },
   });
 
   console.log(`User created: ${userUser.id}`);
 
+  const adminPasswordHash = bcrypt.hashSync(process.env.ADMIN_PASSWORD || "AdminPassword123!", 10);
+
   const adminUser = await prisma.user.upsert({
     where: { email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.app" },
-    update: {},
+    update: {
+      passwordHash: adminPasswordHash,
+      failedLoginAttempts: 0,
+      lockedAt: null,
+    },
     create: {
       email: process.env.ADMIN_EMAIL ?? "admin@ibnalazhar.app",
       name: "مدير النظام",
       role: "ADMIN",
       locale: "ar",
-      passwordHash: process.env.ADMIN_PASSWORD
-        ? bcrypt.hashSync(process.env.ADMIN_PASSWORD, 12)
-        : bcrypt.hashSync("admin123", 12),
+      passwordHash: adminPasswordHash,
     },
   });
 
