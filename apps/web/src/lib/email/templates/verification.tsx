@@ -31,7 +31,7 @@ export const VerificationEmail = ({
           <Heading style={heading}>مرحباً {username}!</Heading>
           <Text style={paragraph}>شكراً لإنشاء حسابك في {appName}.</Text>
           <Text style={paragraph}>
-            للبدء في استخدام الخدمة، يرجى تأكيد بريد الإلكتروني بالنقر على الزر أدناه:
+            للبدء في استخدام الخدمة، أكّد بريدك الإلكتروني بالنقر على الزر أدناه:
           </Text>
           <Section style={buttonSection}>
             <Button href={verificationUrl} style={button}>
@@ -41,9 +41,7 @@ export const VerificationEmail = ({
           <Text style={paragraph}>أو انسخ هذا الرابط ولصقه في متصفحك:</Text>
           <Text style={linkText}>{verificationUrl}</Text>
           <Hr style={hr} />
-          <Text style={footer}>
-            هذا البريد الإلكتروني تم إرساله تلقائياً من {appName}. لا ترد على هذا البريد.
-          </Text>
+          <Text style={footer}>أُرسل هذا البريد تلقائياً من {appName}. لا ترد على هذا البريد.</Text>
         </Section>
       </Container>
     </Body>

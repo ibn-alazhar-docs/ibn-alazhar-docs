@@ -35,8 +35,9 @@ export class SearchUseCases {
       .replace(/[أإآ]/g, "ا")
       .replace(/ة/g, "ه")
       .replace(/ى/g, "ي")
-      .replace(/[\u064B-\u065F]/g, "")
-      .replace(/ـ/g, "")
+      .replace(/[ؤئ]/g, "ء") // Normalize variants of hamza
+      .replace(/[\u064B-\u065F]/g, "") // Remove tashkeel (diacritics)
+      .replace(/ـ/g, "") // Remove tatweel
       .replace(/_/g, " ")
       .replace(/\s+/g, " ")
       .trim();

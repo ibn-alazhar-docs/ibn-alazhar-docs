@@ -96,15 +96,19 @@ export async function uploadExportBuffer(
   preferDrive = true,
 ): Promise<string> {
   if (preferDrive && account?.access_token && account.refresh_token) {
-    const drive = getDriveClient(
-      account.access_token,
-      account.refresh_token,
-      process.env.GOOGLE_CLIENT_ID || "",
-      process.env.GOOGLE_CLIENT_SECRET || "",
-    );
-    const folderId = await ensureDriveFolder(drive);
-    const fileId = await uploadToDrive(drive, fileName, mimeType, buffer, folderId);
-    return `gdrive://${fileId}`;
+    try {
+      const drive = getDriveClient(
+        account.access_token,
+        account.refresh_token,
+        process.env.GOOGLE_CLIENT_ID || "",
+        process.env.GOOGLE_CLIENT_SECRET || "",
+      );
+      const folderId = await ensureDriveFolder(drive);
+      const fileId = await uploadToDrive(drive, fileName, mimeType, buffer, folderId);
+      return `gdrive://${fileId}`;
+    } catch (error) {
+      console.warn("Failed to upload to Google Drive, falling back to storage:", error);
+    }
   }
 
   const key = `${config.paths.exports}/${userId}/${fileName}`;

@@ -7,8 +7,15 @@ function formatLine(name: string, value: number, help: string, type: string = "g
   return `# HELP ${name} ${help}\n# TYPE ${name} ${type}\n${name} ${value}`;
 }
 
-export const GET = async () => {
+export const GET = async (request: Request) => {
   try {
+    const authHeader = request.headers.get("authorization");
+    const expectedToken = process.env.PROMETHEUS_BEARER_TOKEN;
+
+    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+      return new NextResponse("Unauthorized", { status: 401 });
+    }
+
     const mem = process.memoryUsage();
     const uptime = process.uptime();
 

@@ -4,40 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import * as motion from "motion/react-client";
 import { ArrowLeftIcon, ArrowRightIcon } from "@/components/ui/icons";
-
-function GeometricStar({ className = "" }: { className?: string }) {
-  return (
-    <motion.svg
-      viewBox="0 0 100 100"
-      fill="none"
-      className={className}
-      aria-hidden="true"
-      animate={{ rotate: 360 }}
-      transition={{ duration: 120, repeat: Infinity, ease: "linear" }}
-    >
-      <polygon
-        points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
-        stroke="currentColor"
-        strokeWidth="0.8"
-        fill="none"
-      />
-      <polygon
-        points="50,15 58,35 80,35 63,50 69,72 50,58 31,72 37,50 20,35 42,35"
-        stroke="currentColor"
-        strokeWidth="0.4"
-        fill="none"
-        opacity="0.4"
-      />
-      <polygon
-        points="50,25 54,38 68,38 57,47 61,60 50,52 39,60 43,47 32,38 46,38"
-        stroke="currentColor"
-        strokeWidth="0.3"
-        fill="none"
-        opacity="0.25"
-      />
-    </motion.svg>
-  );
-}
+import { GeometricStar } from "@/components/ui/geometric-star";
 
 interface HeroProps {
   locale?: string;
@@ -53,18 +20,18 @@ const containerVariants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.1,
+      staggerChildren: 0.08,
+      delayChildren: 0.05,
     },
   },
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 300, damping: 24 },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
@@ -75,7 +42,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-28 sm:pt-32">
+    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-32 sm:pt-40 pb-16">
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <motion.div
@@ -110,7 +77,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         </svg>
       </div>
 
-      <div className="mx-auto flex min-h-[70dvh] max-w-6xl flex-col items-start justify-center px-6">
+      <div className="mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-start justify-center px-6 pt-12 pb-8">
         <motion.div
           className="max-w-3xl"
           variants={containerVariants}
@@ -125,32 +92,13 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
 
           <motion.h1
             variants={itemVariants}
-            className="heading-display text-balance text-5xl font-bold leading-[1.1] tracking-tight text-[var(--text-primary)] sm:text-6xl lg:text-7xl xl:text-8xl"
+            className="heading-display text-balance text-4xl font-bold leading-[1.15] tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl lg:text-7xl"
           >
             {title || t("title")}
           </motion.h1>
 
           <motion.div variants={itemVariants} className="geometric-divider my-8 max-w-md">
-            <svg
-              viewBox="0 0 100 100"
-              fill="none"
-              className="geometric-star h-5 w-5"
-              aria-hidden="true"
-            >
-              <polygon
-                points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
-                stroke="currentColor"
-                strokeWidth="0.8"
-                fill="none"
-              />
-              <polygon
-                points="50,15 58,35 80,35 63,50 69,72 50,58 31,72 37,50 20,35 42,35"
-                stroke="currentColor"
-                strokeWidth="0.4"
-                fill="none"
-                opacity="0.4"
-              />
-            </svg>
+            <GeometricStar className="geometric-star h-5 w-5" />
           </motion.div>
 
           <motion.p

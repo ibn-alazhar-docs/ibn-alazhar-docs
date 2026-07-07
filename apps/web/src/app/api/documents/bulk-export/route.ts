@@ -70,9 +70,9 @@ export const POST = withAuth(async (request, { session }) => {
     return NextResponse.json({
       success: true,
       ...result,
-      message: `تم بدء التصدير لـ ${documentIds.length} مستند`,
+      message: `بدأ التصدير لـ ${documentIds.length} مستند`,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/bulk-export/POST", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/bulk-export/POST", "حدث خطأ");
   }
 });

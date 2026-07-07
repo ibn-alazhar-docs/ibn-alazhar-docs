@@ -50,6 +50,7 @@ services:
       - "--web.enable-lifecycle"
     networks:
       - monitoring
+      - frontend
     restart: unless-stopped
     logging: *default-logging
     healthcheck:
@@ -100,3 +101,7 @@ volumes:
 
 networks:
   monitoring:
+  # شبكة التطبيق الرئيسية (docker-compose.yml) — خارجية حتى يتمكّن Prometheus من حلّ اسم المضيف web:3000
+  frontend:
+    external: true
+    name: ibn-al-azhar-docs_frontend

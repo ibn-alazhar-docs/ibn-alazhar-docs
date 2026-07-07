@@ -1,0 +1,3 @@
+-- Migration neutralized: PGroonga is NOT installed or used in this project.
+-- Full-text search uses tsvector / plainto_tsquery('simple') (see 20260616120000_db_hardening).
+-- The original CREATE INDEX ... USING pgroonga would fail `prisma migrate deploy`.

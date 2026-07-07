@@ -7,6 +7,7 @@ export interface IDocumentRepository {
     id: string,
     userId: string,
     include?: Prisma.DocumentInclude,
+    role?: string,
   ): Promise<Document | null>;
   findFirst(
     where: Prisma.DocumentWhereInput,
@@ -14,7 +15,7 @@ export interface IDocumentRepository {
   ): Promise<Document | null>;
   findMany(options: Prisma.DocumentFindManyArgs): Promise<Document[]>;
   count(options: Prisma.DocumentCountArgs): Promise<number>;
-  update(id: string, userId: string, data: UpdateDocumentInput): Promise<Document>;
+  update(id: string, userId: string, data: UpdateDocumentInput, role?: string): Promise<Document>;
   updateSearchVector(id: string, title?: string, description?: string | null): Promise<unknown>;
   updateMany(
     where: Prisma.DocumentWhereInput,

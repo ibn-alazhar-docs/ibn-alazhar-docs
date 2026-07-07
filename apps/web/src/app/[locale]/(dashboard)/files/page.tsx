@@ -16,6 +16,7 @@ import { ActiveJobs } from "@/components/files/active-jobs";
 import { DocumentTable } from "@/components/files/document-table";
 import { FolderIcon } from "@/components/ui/icons";
 import { useFilesManager } from "@/hooks/use-files-manager";
+import { Card } from "@/components/ui/card";
 
 export default function FilesPage() {
   const t = useTranslations("nav");
@@ -30,7 +31,7 @@ export default function FilesPage() {
           <div className="flex gap-6">
             {/* Sidebar */}
             <div className="w-64 shrink-0">
-              <div className="sticky top-4 space-y-6 rounded-xl border border-line bg-card p-4">
+              <Card className="sticky top-4 space-y-6 p-4">
                 <FolderTree
                   selectedFolderId={fm.selectedFolderId}
                   onSelectFolder={fm.handleFolderSelect}
@@ -41,7 +42,7 @@ export default function FilesPage() {
                     onTagsChange={fm.setSelectedTagIds}
                   />
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Main content */}
@@ -59,9 +60,9 @@ export default function FilesPage() {
                 )}
 
                 {/* Upload Zone */}
-                <div className="rounded-xl border border-line bg-card p-6">
+                <Card className="p-6">
                   <FileUpload onUploadStart={fm.handleUploadStart} folderId={fm.selectedFolderId} />
-                </div>
+                </Card>
 
                 {/* Active Jobs */}
                 <ActiveJobs
@@ -77,7 +78,7 @@ export default function FilesPage() {
                     <div className="mb-4 flex items-center justify-between">
                       <div className="h-6 w-32 rounded bg-muted animate-pulse" />
                     </div>
-                    <div className="overflow-x-auto rounded-xl border border-line bg-card">
+                    <Card className="overflow-x-auto">
                       <table className="min-w-[640px] w-full table-auto">
                         <thead>
                           <tr className="border-b border-line text-start">
@@ -136,7 +137,7 @@ export default function FilesPage() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </Card>
                   </div>
                 )}
 
@@ -165,12 +166,13 @@ export default function FilesPage() {
                     showBulkTagPicker={fm.showBulkTagPicker}
                     onToggleBulkTagPicker={() => fm.setShowBulkTagPicker(!fm.showBulkTagPicker)}
                     locale={locale}
+                    isDeleting={fm.isDeleting}
                   />
                 )}
 
                 {/* Empty State */}
                 {fm.activeJobs.length === 0 && !fm.loadingDocs && fm.documents.length === 0 && (
-                  <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 px-6 text-center shadow-sm transition-all duration-300">
+                  <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-20 px-6 text-center">
                     <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/5 text-gold shadow-sm">
                       <FolderIcon className="h-10 w-10" />
                     </div>
@@ -180,7 +182,7 @@ export default function FilesPage() {
                     <Text color="muted" className="max-w-md">
                       {tDocs("uploadPrompt")}
                     </Text>
-                  </div>
+                  </Card>
                 )}
               </Stack>
             </div>

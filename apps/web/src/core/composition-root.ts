@@ -10,6 +10,8 @@ import { ConversionJobRepository } from "./repositories/conversion-job.repositor
 import { ShareRepository } from "./repositories/share.repository";
 import { SearchRepository } from "./repositories/search.repository";
 import { MinioStorageRepository } from "./repositories/storage.repository";
+import { WebhookRepository } from "./repositories/webhook.repository";
+import { BookmarkRepository } from "./repositories/bookmark.repository";
 
 import { RegistrationUseCases } from "./services/registration.use-cases";
 import { ProfileUseCases } from "./services/profile.use-cases";
@@ -27,6 +29,9 @@ import { DocumentShareUseCases } from "./services/document-share.use-cases";
 import { UploadDocumentUseCase } from "./services/upload-document.use-case";
 import { ShareAccessUseCase } from "./services/share-access.use-case";
 import { DocumentDownloadUseCase } from "./services/document-download.use-case";
+import { WebhookUseCases } from "./services/webhook.use-cases";
+import { BookmarkUseCases } from "./services/bookmark.use-cases";
+import { PasswordResetUseCases } from "./services/password-reset.use-cases";
 
 // Repositories — all created from the single PrismaClient instance
 const userRepository = new UserRepository(prisma);
@@ -39,6 +44,8 @@ const conversionJobRepository = new ConversionJobRepository(prisma);
 const shareRepository = new ShareRepository(prisma);
 const searchRepository = new SearchRepository(prisma);
 const storageRepository = new MinioStorageRepository();
+const webhookRepository = new WebhookRepository(prisma);
+const bookmarkRepository = new BookmarkRepository(prisma);
 
 export const repos = {
   user: userRepository,
@@ -51,6 +58,8 @@ export const repos = {
   share: shareRepository,
   search: searchRepository,
   storage: storageRepository,
+  webhook: webhookRepository,
+  bookmark: bookmarkRepository,
 } as const;
 
 // Use-cases
@@ -58,9 +67,10 @@ const shareAccessUseCase = new ShareAccessUseCase(shareRepository);
 const documentDownloadUseCase = new DocumentDownloadUseCase(accountRepository);
 
 export const useCases = {
-  registration: new RegistrationUseCases(userRepository),
+  registration: new RegistrationUseCases(userRepository, prisma),
   profile: new ProfileUseCases(userRepository),
   user: new UserUseCases(userRepository),
+  passwordReset: new PasswordResetUseCases(prisma),
   tag: new TagUseCases(tagRepository, tagDocumentRepository),
   conversion: new ConversionUseCases(documentRepository, conversionJobRepository),
   export: new ExportUseCases(
@@ -89,4 +99,6 @@ export const useCases = {
   ),
   shareAccess: shareAccessUseCase,
   documentDownload: documentDownloadUseCase,
+  webhook: new WebhookUseCases(webhookRepository),
+  bookmark: new BookmarkUseCases(bookmarkRepository),
 } as const;

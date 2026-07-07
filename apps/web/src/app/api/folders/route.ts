@@ -9,13 +9,13 @@ import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
 export const GET = withAuth(async (request, { session }) => {
   try {
     const { searchParams } = new URL(request.url);
-    const parentId = searchParams.get("parentId");
+    const parentId = searchParams.get("parentId") ?? undefined;
 
     const folders = await useCases.folder.getFolders(session.user.id, session.user.role, parentId);
 
     return NextResponse.json({ folders }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/GET", "فشل الحصول على المجلدات");
+    return handleRouteError(error, "folders/GET", "تعذر جلب المجلدات");
   }
 });
 
@@ -48,6 +48,6 @@ export const POST = withAuth(async (request, { session }) => {
     });
     return NextResponse.json({ folder }, { status: 201 });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/POST", "فشل إنشاء المجلد");
+    return handleRouteError(error, "folders/POST", "تعذر إنشاء المجلد");
   }
 });

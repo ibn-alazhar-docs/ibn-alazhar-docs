@@ -9,10 +9,14 @@ import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit"
 export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
   try {
-    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
+    const document = await useCases.documentCrud.getDocumentById(
+      id,
+      session.user.id,
+      session.user.role,
+    );
     return NextResponse.json({ document }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/GET", "حدث خطأ");
   }
 });
 
@@ -49,7 +53,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
 
     return NextResponse.json({ document: updated });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/PATCH", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/PATCH", "حدث خطأ");
   }
 });
 
@@ -70,8 +74,8 @@ export const DELETE = withAuth(async (request, { session, params }) => {
         request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
-    return NextResponse.json({ success: true, message: "تم حذف المستند" });
+    return NextResponse.json({ success: true, message: "حُذف المستند" });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/DELETE", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/DELETE", "حدث خطأ");
   }
 });

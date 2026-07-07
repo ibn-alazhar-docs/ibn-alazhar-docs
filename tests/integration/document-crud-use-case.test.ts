@@ -6,7 +6,7 @@ import {
   createTestFolder,
   cleanupTestUsers,
 } from "./helpers/db";
-import { DocumentCrudUseCases } from "../../apps/web/src/core/use-cases/document-crud.use-cases";
+import { DocumentCrudUseCases } from "../../apps/web/src/core/services/document-crud.use-cases";
 import { DocumentRepository } from "../../apps/web/src/core/repositories/document.repository";
 import { FolderRepository } from "../../apps/web/src/core/repositories/folder.repository";
 import { NotFoundError } from "../../apps/web/src/lib/shared/errors";

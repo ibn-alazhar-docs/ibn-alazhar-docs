@@ -15,7 +15,13 @@ scrape_configs:
       - targets: ["cadvisor:8080"]
 
   - job_name: "web"
-    metrics_path: "/api/metrics"
+    # مصدّر Prometheus الفعلي (مُصادَق بـ Bearer token) — /api/metrics هو نقطة JSON خلف صلاحيات admin
+    metrics_path: /api/metrics/prometheus
     scheme: "http"
+    authorization:
+      type: Bearer
+      # يجب أن يطابق PROMETHEUS_BEARER_TOKEN المعيَّن لخدمة web (انظر .env.production.example)
+      # ملاحظة: Prometheus لا يوسّع متغيّرات البيئة داخل ملف الإعداد — استبدل بالقيمة الفعلية
+      credentials: "REPLACE_WITH_PROMETHEUS_BEARER_TOKEN"
     static_configs:
       - targets: ["web:3000"]

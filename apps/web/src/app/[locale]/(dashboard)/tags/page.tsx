@@ -11,6 +11,10 @@ import { Text } from "@/components/ui/text";
 import { TagIcon } from "@/components/ui/icons";
 import { TAG_COLORS } from "@/lib/shared/validators/tag";
 import type { TagWithCount } from "@/components/tags/types";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface TagWithCountWithDate extends TagWithCount {
   createdAt: string;
@@ -34,6 +38,7 @@ export default function TagsPage() {
 
   const [mergingId, setMergingId] = useState<string | null>(null);
   const [mergeTargetId, setMergeTargetId] = useState("");
+  const [deletingTagId, setDeletingTagId] = useState<string | null>(null);
 
   const fetchTags = useCallback(async () => {
     try {
@@ -43,7 +48,7 @@ export default function TagsPage() {
         setTags(data.tags);
       }
     } catch {
-      setError("فشل تحميل الوسوم");
+      setError(t("loadError"));
     } finally {
       setLoading(false);
     }
@@ -74,7 +79,7 @@ export default function TagsPage() {
         setError(err.error);
       }
     } catch {
-      setError("حدث خطأ");
+      setError(tCommon("error"));
     }
   };
 
@@ -100,20 +105,18 @@ export default function TagsPage() {
         setError(err.error);
       }
     } catch {
-      setError("حدث خطأ");
+      setError(tCommon("error"));
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!window.confirm(t("deleteConfirm"))) return;
-
+  const performDelete = async (id: string) => {
     try {
       const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
       if (res.ok) {
         setTags(tags.filter((tag) => tag.id !== id));
       }
     } catch {
-      setError("حدث خطأ");
+      setError(tCommon("error"));
     }
   };
 
@@ -136,7 +139,7 @@ export default function TagsPage() {
         setError(err.error);
       }
     } catch {
-      setError("حدث خطأ");
+      setError(tCommon("error"));
     }
   };
 
@@ -156,13 +159,7 @@ export default function TagsPage() {
                   {t("documentsCount", { count: totalDocuments })}
                 </Text>
               </div>
-              <button
-                type="button"
-                className="px-4 py-2 text-sm font-medium text-btn-primary-text bg-[var(--success)] hover:opacity-90 rounded-lg"
-                onClick={() => setIsCreating(true)}
-              >
-                {t("createButton")}
-              </button>
+              <Button onClick={() => setIsCreating(true)}>{t("createButton")}</Button>
             </div>
 
             {/* Error */}
@@ -181,14 +178,14 @@ export default function TagsPage() {
 
             {/* Create form */}
             {isCreating && (
-              <div className="bg-card rounded-xl border border-line p-4">
+              <Card className="p-6">
                 <h3 className="text-sm font-semibold text-primary-color mb-3">{t("createNew")}</h3>
-                <input
+                <Input
                   type="text"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   placeholder={t("namePlaceholder")}
-                  className="w-full px-3 py-2 text-sm border border-line rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+                  className="mb-3"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleCreate();
@@ -210,40 +207,30 @@ export default function TagsPage() {
                   ))}
                 </div>
                 <div className="flex gap-2">
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover rounded-lg"
-                    onClick={() => setIsCreating(false)}
-                  >
+                  <Button variant="outline" onClick={() => setIsCreating(false)}>
                     {tCommon("cancel")}
-                  </button>
-                  <button
-                    type="button"
-                    className="px-4 py-2 text-sm font-medium text-btn-primary-text bg-[var(--success)] hover:opacity-90 rounded-lg"
-                    onClick={handleCreate}
-                  >
-                    {tCommon("save")}
-                  </button>
+                  </Button>
+                  <Button onClick={handleCreate}>{tCommon("save")}</Button>
                 </div>
-              </div>
+              </Card>
             )}
 
             {/* Tags table */}
             {loading ? (
               <div className="text-center py-8 text-very-muted">{tCommon("loading")}</div>
             ) : tags.length === 0 ? (
-              <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 text-center">
+              <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-20 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
                   <TagIcon className="h-8 w-8" />
                 </div>
                 <Heading level={3}>{t("empty")}</Heading>
                 <Text className="mt-2 text-muted-color">{t("createButton")}</Text>
-              </div>
+              </Card>
             ) : (
-              <div className="bg-card rounded-xl border border-line overflow-x-auto">
+              <Card className="overflow-x-auto">
                 <table className="w-full min-w-[640px]">
                   <thead>
-                    <tr className="border-b border-line sticky top-0 bg-card">
+                    <tr className="border-b border-line sticky top-0 z-10 bg-card">
                       <th className="text-start px-4 py-3 text-xs font-semibold text-muted-color uppercase">
                         {t("colorLabel")}
                       </th>
@@ -351,7 +338,7 @@ export default function TagsPage() {
                                 <button
                                   type="button"
                                   className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80"
-                                  onClick={() => handleDelete(tag.id)}
+                                  onClick={() => setDeletingTagId(tag.id)}
                                 >
                                   {tCommon("delete")}
                                 </button>
@@ -363,13 +350,13 @@ export default function TagsPage() {
                     ))}
                   </tbody>
                 </table>
-              </div>
+              </Card>
             )}
 
             {/* Merge dialog */}
             {mergingId && (
               <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
+                <Card className="shadow-xl w-full max-w-md mx-4 p-6">
                   <h2 className="text-lg font-semibold text-primary-color mb-2">
                     {t("mergeTitle")}
                   </h2>
@@ -409,27 +396,37 @@ export default function TagsPage() {
                   </div>
 
                   <div className="flex justify-end gap-3 mt-6">
-                    <button
-                      type="button"
-                      className="px-4 py-2 text-sm font-medium text-primary-color hover:bg-hover rounded-lg"
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setMergingId(null);
                         setMergeTargetId("");
                       }}
                     >
                       {tCommon("cancel")}
-                    </button>
-                    <button
-                      type="button"
-                      className="px-4 py-2 text-sm font-medium text-btn-primary-text bg-[var(--success)] hover:opacity-90 rounded-lg disabled:opacity-50"
-                      disabled={!mergeTargetId}
-                      onClick={handleMerge}
-                    >
+                    </Button>
+                    <Button disabled={!mergeTargetId} onClick={handleMerge}>
                       {t("mergeButton")}
-                    </button>
+                    </Button>
                   </div>
-                </div>
+                </Card>
               </div>
+            )}
+            {deletingTagId && (
+              <ConfirmDialog
+                title={t("deleteConfirmTitle")}
+                message={t("deleteConfirm")}
+                confirmLabel={tCommon("delete")}
+                cancelLabel={tCommon("cancel")}
+                variant="danger"
+                onConfirm={() => {
+                  if (deletingTagId) {
+                    performDelete(deletingTagId);
+                    setDeletingTagId(null);
+                  }
+                }}
+                onCancel={() => setDeletingTagId(null)}
+              />
             )}
           </Stack>
         </Section>

@@ -31,11 +31,11 @@ const containerVariants = {
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 40 },
+  hidden: { opacity: 0, y: 15 },
   visible: {
     opacity: 1,
     y: 0,
-    transition: { type: "spring" as const, stiffness: 200, damping: 20 },
+    transition: { duration: 0.4, ease: "easeOut" as const },
   },
 };
 
@@ -44,17 +44,14 @@ export function KnowledgeAreas() {
   const items = t.raw("items") as KnowledgeItem[];
 
   return (
-    <section
-      className="border-t border-border-subtle relative"
-      aria-labelledby="how-it-works-title"
-    >
+    <section className="relative" aria-labelledby="how-it-works-title">
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--btn-primary-bg)_0%,_transparent_60%)] opacity-[0.03] blur-[100px] pointer-events-none -z-10" />
 
       <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-10px" }}
           className="mb-16 flex items-center gap-3"
         >
           <h2
@@ -69,7 +66,7 @@ export function KnowledgeAreas() {
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
+          viewport={{ once: true, margin: "-10px" }}
           className="grid grid-cols-1 gap-6 sm:grid-cols-3"
         >
           {items.map((item, index) => (
@@ -81,7 +78,7 @@ export function KnowledgeAreas() {
               <div className="absolute inset-0 bg-gradient-to-tr from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gold/5 border border-gold/10 text-gold transition-transform duration-500 group-hover:scale-110 group-hover:-rotate-3">
-                <IconSlot index={index} className="h-6 w-6 fill-current" />
+                <IconSlot index={index} className="h-6 w-6" />
               </div>
 
               <h3 className="heading-display-sm mt-2 text-lg font-bold text-primary-color">

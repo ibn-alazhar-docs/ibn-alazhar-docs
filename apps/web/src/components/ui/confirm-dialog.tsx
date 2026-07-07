@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Portal } from "@/components/ui/portal";
 
 interface ConfirmDialogProps {
   title: string;
@@ -10,6 +12,7 @@ interface ConfirmDialogProps {
   variant?: "danger" | "default";
   onConfirm: () => void;
   onCancel: () => void;
+  isLoading?: boolean;
 }
 
 export function ConfirmDialog({
@@ -20,6 +23,7 @@ export function ConfirmDialog({
   variant = "default",
   onConfirm,
   onCancel,
+  isLoading = false,
 }: ConfirmDialogProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
   const previousFocusRef = useRef<HTMLElement | null>(null);
@@ -30,12 +34,12 @@ export function ConfirmDialog({
     if (!dialog) return;
 
     const focusable = dialog.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
     );
     if (focusable.length > 0) focusable[0]!.focus();
 
     function handleKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
+      if (e.key === "Escape" && !isLoading) {
         onCancel();
         return;
       }
@@ -60,48 +64,55 @@ export function ConfirmDialog({
       document.removeEventListener("keydown", handleKeyDown);
       previousFocusRef.current?.focus();
     };
-  }, [onCancel]);
+  }, [onCancel, isLoading]);
 
   const titleId = `confirm-dialog-title-${Math.random().toString(36).slice(2, 9)}`;
 
   return (
-    <div
-      ref={dialogRef}
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      data-testid="confirm-dialog"
-    >
-      <div className="absolute inset-0 bg-black/40" onClick={onCancel} />
-      <div className="relative z-10 mx-4 w-full max-w-md rounded-xl border border-line bg-card p-6 shadow-xl">
-        <h3 id={titleId} className="text-lg font-semibold text-primary-color">
-          {title}
-        </h3>
-        <p className="mt-2 text-sm text-muted-color">{message}</p>
-        <div className="mt-6 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="rounded-lg border border-line px-4 py-2 text-sm font-medium text-muted-color transition-colors hover:bg-badge"
-            data-testid="confirm-cancel"
-          >
-            {cancelLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className={`rounded-lg px-4 py-2 text-sm font-medium text-white transition-colors ${
-              variant === "danger"
-                ? "bg-[var(--danger)] hover:opacity-90"
-                : "bg-[var(--success)] hover:opacity-90"
-            }`}
-            data-testid="confirm-ok"
-          >
-            {confirmLabel}
-          </button>
+    <Portal>
+      <div
+        ref={dialogRef}
+        className="fixed inset-0 z-[100] flex items-center justify-center"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        data-testid="confirm-dialog"
+      >
+        <div className="absolute inset-0 bg-black/40" onClick={() => !isLoading && onCancel()} />
+        <div className="relative z-10 mx-4 w-full max-w-md rounded-xl border border-line bg-card p-6 shadow-xl">
+          <h3 id={titleId} className="text-lg font-semibold text-primary-color">
+            {title}
+          </h3>
+          <p className="mt-2 text-sm text-muted-color">{message}</p>
+          <div className="mt-6 flex items-center justify-end gap-3">
+            <Button
+              type="button"
+              onClick={onCancel}
+              variant="outline"
+              disabled={isLoading}
+              data-testid="confirm-cancel"
+            >
+              {cancelLabel}
+            </Button>
+            <Button
+              type="button"
+              onClick={onConfirm}
+              variant={variant === "danger" ? "destructive" : "default"}
+              disabled={isLoading}
+              data-testid="confirm-ok"
+            >
+              {isLoading ? (
+                <span className="flex items-center gap-2">
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                  {confirmLabel}
+                </span>
+              ) : (
+                confirmLabel
+              )}
+            </Button>
+          </div>
         </div>
       </div>
-    </div>
+    </Portal>
   );
 }

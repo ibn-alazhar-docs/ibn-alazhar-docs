@@ -12,11 +12,10 @@ export const GET = withAuth(async (_request, { session }) => {
   }
 
   try {
-    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     const webhooks = await useCases.webhook.getWebhooks(session.user.id);
     return NextResponse.json({ webhooks }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "webhooks/GET", "حدث خطأ");
   }
 });
 
@@ -38,10 +37,9 @@ export const POST = withAuth(async (request, { session }) => {
   }
 
   try {
-    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     const webhook = await useCases.webhook.createWebhook(session.user.id, parsed.data);
     return NextResponse.json({ webhook }, { status: 201 });
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/POST", "حدث خطأ داخلي");
+    return handleRouteError(error, "webhooks/POST", "حدث خطأ");
   }
 });

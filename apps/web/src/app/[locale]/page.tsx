@@ -8,6 +8,7 @@ import { Hero } from "@/components/sections/hero";
 import { KnowledgeAreas } from "@/components/sections/knowledge-areas";
 import { Features } from "@/components/sections/features";
 import { CTASection } from "@/components/sections/cta-section";
+import { GeometricStar } from "@/components/ui/geometric-star";
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -55,19 +56,7 @@ export default async function HomePage({ params }: HomePageProps) {
           isLoggedIn={isLoggedIn}
         />
         <div className="geometric-divider py-2">
-          <svg
-            viewBox="0 0 100 100"
-            fill="none"
-            className="geometric-star h-4 w-4"
-            aria-hidden="true"
-          >
-            <polygon
-              points="50,5 63,38 98,38 70,60 79,95 50,75 21,95 30,60 2,38 37,38"
-              stroke="currentColor"
-              strokeWidth="0.8"
-              fill="none"
-            />
-          </svg>
+          <GeometricStar className="geometric-star h-4 w-4" />
         </div>
         <KnowledgeAreas />
         <Features />

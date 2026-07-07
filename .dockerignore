@@ -13,6 +13,8 @@ coverage/
 .venv/
 .agents/
 .agent/
+.nx/
+.turbo/
 archive/
 docs/
 test-results/

@@ -11,7 +11,7 @@ export const GET = withAuth(async (_request, { session }) => {
     const tags = await useCases.tag.getTags(session);
     return NextResponse.json({ tags }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/GET", "فشل الحصول على الوسوم");
+    return handleRouteError(error, "tags/GET", "تعذر جلب الوسوم");
   }
 });
 
@@ -44,6 +44,6 @@ export const POST = withAuth(async (request, { session }) => {
     });
     return NextResponse.json({ tag }, { status: 201 });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/POST", "فشل إنشاء الوسم");
+    return handleRouteError(error, "tags/POST", "تعذر إنشاء الوسم");
   }
 });

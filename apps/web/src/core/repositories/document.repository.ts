@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import type { Document, Prisma } from "@prisma/client";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
+import { NotFoundError } from "@/lib/shared/errors";
 
 export class DocumentRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -12,13 +13,21 @@ export class DocumentRepository implements IDocumentRepository {
     });
   }
 
-  async findDocumentById(id: string, userId: string, include?: Prisma.DocumentInclude) {
+  async findDocumentById(
+    id: string,
+    userId: string,
+    include?: Prisma.DocumentInclude,
+    role?: string,
+  ) {
+    const where: Prisma.DocumentWhereInput = {
+      id,
+      deletedAt: null,
+    };
+    if (!role || role !== "ADMIN") {
+      where.userId = userId;
+    }
     return this.prisma.document.findFirst({
-      where: {
-        id,
-        userId,
-        deletedAt: null,
-      },
+      where,
       include,
     });
   }
@@ -35,9 +44,16 @@ export class DocumentRepository implements IDocumentRepository {
     return this.prisma.document.count(options);
   }
 
-  async update(id: string, userId: string, data: UpdateDocumentInput) {
+  async update(id: string, userId: string, data: UpdateDocumentInput, role?: string) {
+    if (!role || role !== "ADMIN") {
+      const owned = await this.prisma.document.findFirst({
+        where: { id, userId },
+        select: { id: true },
+      });
+      if (!owned) throw new NotFoundError();
+    }
     return this.prisma.document.update({
-      where: { id, userId },
+      where: { id },
       data: data as Prisma.DocumentUncheckedUpdateInput,
     });
   }

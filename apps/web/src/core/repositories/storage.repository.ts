@@ -5,6 +5,7 @@ import {
   uploadBuffer,
   uploadFile,
   ensureBucket,
+  deleteFile,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 
@@ -36,6 +37,10 @@ export class MinioStorageRepository implements IStorageRepository {
 
   async uploadFile(key: string, filePath: string, contentType: string): Promise<void> {
     await uploadFile(this.config, key, filePath, contentType);
+  }
+
+  async deleteFile(key: string): Promise<void> {
+    await deleteFile(this.config, key);
   }
 
   async ensureBucket(): Promise<void> {

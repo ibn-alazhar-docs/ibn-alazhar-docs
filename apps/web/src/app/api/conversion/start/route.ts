@@ -34,6 +34,6 @@ export const POST = withAuth(async (request, { session }) => {
       message: "بدأت معالجة التحويل",
     });
   } catch (error) {
-    return handleRouteError(error, "conversion/start", "فشلت معالجة التحويل");
+    return handleRouteError(error, "conversion/start", "تعذرت معالجة التحويل");
   }
 });

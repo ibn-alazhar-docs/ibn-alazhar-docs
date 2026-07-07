@@ -21,7 +21,11 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
       />
       <div className="flex flex-1">
         <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} role={role} />
-        <main className="flex-1 overflow-auto px-0 sm:px-1 lg:px-2">
+        <main
+          id="main-content"
+          tabIndex={-1}
+          className="flex-1 overflow-auto px-0 sm:px-1 lg:px-2 focus:outline-none"
+        >
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>

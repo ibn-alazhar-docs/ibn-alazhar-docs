@@ -110,7 +110,9 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
 
       {error && (
         <div className="bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] px-4 py-3 rounded-lg text-sm">
-          {t(error)}
+          {error.startsWith("pipeline.") || error.startsWith("common.")
+            ? t(error.replace("pipeline.upload.", ""))
+            : error}
         </div>
       )}
 

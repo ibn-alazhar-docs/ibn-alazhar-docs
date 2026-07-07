@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { getTranslations } from "next-intl/server";
 import { generatePageMetadata } from "@/lib/frontend/metadata";
 import { getJourney, getJourneys, getCategoryLabel } from "@/lib/backend/content";
 import { Container } from "@/components/ui/container";
@@ -25,7 +26,8 @@ export async function generateStaticParams(): Promise<{ locale: string; slug: st
 export async function generateMetadata({ params }: JourneyDetailPageProps): Promise<Metadata> {
   const { locale, slug } = await params;
   const journey = await getJourney(slug, locale);
-  if (!journey) return { title: "Not Found" };
+  const tCommon = await getTranslations("common");
+  if (!journey) return { title: tCommon("notFound") };
 
   return generatePageMetadata({
     locale,
@@ -38,6 +40,7 @@ export async function generateMetadata({ params }: JourneyDetailPageProps): Prom
 export default async function JourneyDetailPage({ params }: JourneyDetailPageProps) {
   const { locale, slug } = await params;
   const journey = await getJourney(slug, locale);
+  const t = await getTranslations("discovery");
 
   if (!journey) {
     notFound();
@@ -51,7 +54,7 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
             href={`/${locale}/journeys`}
             className="text-sm font-medium text-muted-color no-underline transition-colors hover:text-primary-color"
           >
-            {locale === "ar" ? "→ مسارات القراءة" : "← Reading Journeys"}
+            {locale === "ar" ? "→" : "←"} {t("readingJourneys")}
           </a>
         </div>
 
@@ -63,10 +66,10 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
           <p className="journey-description">{journey.description}</p>
           <div className="journey-stats">
             <span>
-              {journey.docCount} {locale === "ar" ? "مستند" : "documents"}
+              {t("documentCount", { count: journey.docCount })}
             </span>
             <span>
-              ~{journey.totalReadingTime} {locale === "ar" ? "دقيقة" : "min"}
+              ~{t("minute", { count: journey.totalReadingTime })}
             </span>
           </div>
         </div>
@@ -75,7 +78,7 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
           {journey.docs.map((doc, index) => (
             <div key={doc.slug} className="journey-step">
               <div className="journey-step-number">
-                {locale === "ar" ? `الخطوة ${index + 1}` : `Step ${index + 1}`}
+                {t("step", { number: index + 1 })}
               </div>
               <a href={`/${locale}/docs/${doc.category}/${doc.slug}`}>
                 <div className="journey-step-title">{doc.metadata.title}</div>
@@ -85,7 +88,7 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
               )}
               <div className="journey-step-meta">
                 <span>
-                  {doc.metadata.readingTime} {locale === "ar" ? "دقائق" : "min"}
+                  {t("minute", { count: doc.metadata.readingTime })}
                 </span>
                 <span>{getCategoryLabel(doc.category, locale)}</span>
               </div>

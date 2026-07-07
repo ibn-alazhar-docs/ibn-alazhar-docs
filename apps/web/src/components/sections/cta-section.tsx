@@ -12,7 +12,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate overflow-hidden bg-[var(--text-primary)]">
+    <section className="relative isolate overflow-hidden bg-[#1c1917]">
       {/* Decorative Background Elements */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <motion.div
@@ -24,40 +24,40 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
           <GeometricStar className="h-64 w-64 text-[var(--gold)]" />
         </div>
         <div className="absolute -bottom-20 -right-20 opacity-[0.04]">
-          <GeometricStar className="h-48 w-48 text-[var(--page-bg)]" />
+          <GeometricStar className="h-48 w-48 text-[#1a1614]" />
         </div>
       </div>
 
       <div className="mx-auto max-w-6xl px-6 py-32 sm:py-40">
         <motion.div
-          initial={{ opacity: 0, y: 40 }}
+          initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.8, ease: "easeOut" }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.4, ease: "easeOut" }}
           className="max-w-2xl relative z-10"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[var(--page-bg)]/15 bg-[var(--page-bg)]/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--page-bg)]/80 uppercase">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f5f0e8]/15 bg-[#f5f0e8]/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[#eab308] uppercase">
             {t("title")}
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[var(--page-bg)] sm:text-5xl lg:text-6xl drop-shadow-md">
+          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[#f5f0e8] sm:text-5xl lg:text-6xl drop-shadow-md">
             {t("title")}
           </h2>
 
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[var(--page-bg)]/70 sm:text-lg">
+          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[#f5f0e8]/75 sm:text-lg">
             {t("subtitle")}
           </p>
 
           <div className="mt-12">
             {isLoggedIn ? (
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="inline-block"
               >
                 <Link
                   href="/dashboard"
-                  className="inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 text-xs font-bold tracking-[0.1em] text-white no-underline shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all hover:bg-white/20 hover:border-white/30"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {t("dashboardCTA")}
                   <span aria-hidden="true" className="flex items-center">
@@ -67,13 +67,13 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
               </motion.div>
             ) : (
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="inline-block"
               >
                 <Link
                   href="/register"
-                  className="inline-flex items-center justify-center gap-3 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 px-8 py-4 text-xs font-bold tracking-[0.1em] text-white no-underline shadow-[0_8px_32px_rgba(0,0,0,0.2)] transition-all hover:bg-white/20 hover:border-white/30"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {t("button")}
                   <span aria-hidden="true" className="flex items-center">

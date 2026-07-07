@@ -55,7 +55,6 @@ export function logRequest(entry: {
   };
 
   // Edge-compatible: structured JSON to stdout
-  // This is a single console.log call — non-blocking, fire-and-forget
-  // eslint-disable-next-line no-console
-  console.log(JSON.stringify(logEntry));
+  // This is a single console.warn call — non-blocking, fire-and-forget
+  console.warn(JSON.stringify(logEntry));
 }

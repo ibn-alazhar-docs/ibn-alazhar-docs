@@ -160,10 +160,8 @@
   width: 3px;
   height: 100%;
   background: var(--gold);
-  border-radius: 0 2px 2px 0;
-}
-html[dir="rtl"] .journey-card::before {
-  border-radius: 2px 0 0 2px;
+  border-start-start-radius: 2px;
+  border-end-start-radius: 2px;
 }
 .journey-card:hover {
   border-color: var(--gold-border);
@@ -235,10 +233,6 @@ html[dir="rtl"] .journey-card::before {
   position: relative;
   padding-inline-start: 2rem;
 }
-html[dir="rtl"] .journey-timeline {
-  padding-inline-start: 0;
-  padding-inline-end: 2rem;
-}
 .journey-timeline::before {
   content: "";
   position: absolute;
@@ -248,17 +242,11 @@ html[dir="rtl"] .journey-timeline {
   width: 2px;
   background: var(--gold-border);
 }
-html[dir="rtl"] .journey-timeline::before {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
-}
 
 .journey-step {
   position: relative;
-  padding: 0 0 2rem 1.5rem;
-}
-html[dir="rtl"] .journey-step {
-  padding: 0 1.5rem 2rem 0;
+  padding-block-end: 2rem;
+  padding-inline-start: 1.5rem;
 }
 .journey-step:last-child {
   padding-bottom: 0;
@@ -273,10 +261,6 @@ html[dir="rtl"] .journey-step {
   border-radius: 50%;
   background: var(--gold);
   border: 2px solid var(--card-bg);
-}
-html[dir="rtl"] .journey-step::before {
-  inset-inline-start: auto;
-  inset-inline-end: -0.4375rem;
 }
 .journey-step-number {
   font-size: 0.6875rem;

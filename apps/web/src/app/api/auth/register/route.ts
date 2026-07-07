@@ -4,6 +4,7 @@ import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/lib/shared/route-helpers";
 import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
+import { ConflictError } from "@/lib/shared/errors";
 
 export async function POST(request: Request) {
   try {
@@ -25,7 +26,25 @@ export async function POST(request: Request) {
 
     const { name, email, password } = validation.data;
 
-    const user = await useCases.registration.register(name, email, password);
+    const user = await (async () => {
+      try {
+        return await useCases.registration.register(name, email, password);
+      } catch (error: unknown) {
+        // Avoid account enumeration: do not disclose whether an email is already
+        // registered. Surface a generic success-style response instead of a 409.
+        if (error instanceof ConflictError) {
+          return null;
+        }
+        throw error;
+      }
+    })();
+
+    if (!user) {
+      return NextResponse.json(
+        { message: "إذا لم يكن البريد مسجلاً، ستصلك رسالة التأكيد قريباً" },
+        { status: 200 },
+      );
+    }
 
     await auditLog({
       userId: user.id,
@@ -37,11 +56,8 @@ export async function POST(request: Request) {
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
 
-    return NextResponse.json(
-      { message: "تم إنشاء الحساب بنجاح", userId: user.id },
-      { status: 201 },
-    );
+    return NextResponse.json({ message: "أُنشئ الحساب", userId: user.id }, { status: 201 });
   } catch (error: unknown) {
-    return handleRouteError(error, "auth/register", "حدث خطأ غير متوقع");
+    return handleRouteError(error, "auth/register", "حدث خطأ");
   }
 }

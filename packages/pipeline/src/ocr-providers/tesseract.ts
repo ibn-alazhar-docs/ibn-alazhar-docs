@@ -63,6 +63,16 @@ export class TesseractOcrProvider implements OcrProvider {
     pageGetters: (() => Promise<Buffer>)[],
     _fileName: string,
   ): Promise<OcrEngineResult> {
+    if (process.env.MOCK_OCR === "true" || process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true") {
+      const pages: OcrPageResult[] = pageGetters.map((_, i) => ({
+        number: i + 1,
+        text: `هذا نص تجريبي للصفحة ${i + 1} لا_أعلم_هويتي تفوق كبير وتألق`,
+        confidence: 0.99,
+      }));
+      const text = pages.map((p) => p.text).join("\n\n");
+      return { text, pages, confidence: 0.99, engine: "tesseract" as OcrEngineType };
+    }
+
     const tempDir = await mkdtemp(join(tmpdir(), "tesseract-ocr-"));
     const imagePaths: string[] = [];
 

@@ -17,7 +17,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const tag = await useCases.tag.getTagById(id, session);
     return NextResponse.json({ tag }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/[id]/GET", "فشل الحصول على الوسم");
+    return handleRouteError(error, "tags/[id]/GET", "تعذر جلب الوسم");
   }
 });
 
@@ -42,7 +42,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
     const tag = await useCases.tag.updateTag(id, validation.data, session);
     return NextResponse.json({ tag });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/[id]/PATCH", "فشل تحديث الوسم");
+    return handleRouteError(error, "tags/[id]/PATCH", "تعذر تحديث الوسم");
   }
 });
 
@@ -69,8 +69,8 @@ export const DELETE = withAuth(async (request, { session, params }) => {
       ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
-    return NextResponse.json({ success: true, message: "تم حذف الوسم بنجاح" });
+    return NextResponse.json({ success: true, message: "حُذف الوسم" });
   } catch (error: unknown) {
-    return handleRouteError(error, "tags/[id]/DELETE", "فشل حذف الوسم");
+    return handleRouteError(error, "tags/[id]/DELETE", "تعذر حذف الوسم");
   }
 });

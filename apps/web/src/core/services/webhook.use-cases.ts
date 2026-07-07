@@ -1,10 +1,11 @@
 import type { IWebhookRepository } from "../../domain/repositories/webhook.repository.interface";
 import type { Prisma } from "@prisma/client";
-import { NotFoundError } from "@/lib/shared/errors";
+import { NotFoundError, AppError } from "@/lib/shared/errors";
 import { createHmac, randomBytes } from "crypto";
 import { logger } from "@/lib/shared/logger";
 
 const WEBHOOK_SECRET_LENGTH = 32;
+const MAX_RESPONSE_BODY_CHARS = 2000;
 
 export interface WebhookConfig {
   url: string;
@@ -20,7 +21,34 @@ export interface WebhookTestResult {
 export class WebhookUseCases {
   constructor(private readonly webhookRepository: IWebhookRepository) {}
 
+  private isSafeUrl(urlString: string): boolean {
+    try {
+      const url = new URL(urlString);
+      if (url.protocol !== "https:" && url.protocol !== "http:") return false;
+      const hostname = url.hostname.toLowerCase();
+      if (
+        hostname === "localhost" ||
+        hostname.startsWith("127.") ||
+        hostname.startsWith("10.") ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("169.254.") ||
+        hostname.match(/^172\.(1[6-9]|2[0-9]|3[0-1])\./) ||
+        hostname === "::1" ||
+        hostname.endsWith(".local") ||
+        hostname.endsWith(".internal")
+      ) {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
   async createWebhook(userId: string, config: WebhookConfig) {
+    if (!this.isSafeUrl(config.url)) {
+      throw new AppError("Invalid or unsafe webhook URL", "VALIDATION_ERROR", 400);
+    }
     const secret = randomBytes(WEBHOOK_SECRET_LENGTH).toString("hex");
 
     const webhook = await this.webhookRepository.create(userId, {
@@ -68,6 +96,9 @@ export class WebhookUseCases {
     userId: string,
     data: { url?: string; events?: string[]; active?: boolean },
   ) {
+    if (data.url && !this.isSafeUrl(data.url)) {
+      throw new AppError("Invalid or unsafe webhook URL", "VALIDATION_ERROR", 400);
+    }
     const webhook = await this.webhookRepository.update(id, userId, data);
     return {
       id: webhook.id,
@@ -158,9 +189,17 @@ export class WebhookUseCases {
           signal: AbortSignal.timeout(15_000),
         });
 
+        let responseBody: string | null = null;
+        try {
+          const text = await response.text();
+          responseBody = text.length > 0 ? text.slice(0, MAX_RESPONSE_BODY_CHARS) : null;
+        } catch {
+          responseBody = null;
+        }
+
         await this.webhookRepository.updateDelivery(delivery.id, {
           statusCode: response.status,
-          response: response.statusText,
+          response: responseBody ?? undefined,
           attempts: { increment: 1 },
           deliveredAt: response.ok ? new Date() : null,
         });

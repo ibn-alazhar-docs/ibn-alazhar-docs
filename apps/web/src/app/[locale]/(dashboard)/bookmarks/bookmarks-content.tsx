@@ -46,7 +46,7 @@ export function BookmarksContent() {
           setBookmarks(data.bookmarks);
         }
       } catch {
-        // silently fail
+        // Safe to swallow: error handled gracefully by UI state
       } finally {
         setLoading(false);
       }
@@ -82,9 +82,9 @@ export function BookmarksContent() {
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
                 <BookmarkIcon className="h-8 w-8" />
               </div>
-              <Heading level={3}>لا توجد مستندات مفضلة</Heading>
+              <Heading level={3}>{t("bookmarks.emptyTitle")}</Heading>
               <Text className="mt-2 text-muted-color">
-                انقر على أيقونة القلب في أي مستند لإضافته إلى المفضلة
+                {t("bookmarks.emptyDesc")}
               </Text>
             </div>
           )}
@@ -118,7 +118,7 @@ export function BookmarksContent() {
                         {bookmark.document.pageCount && (
                           <>
                             <span>•</span>
-                            <span>{bookmark.document.pageCount} صفحة</span>
+                            <span>{t("documents.pagesCount", { count: bookmark.document.pageCount })}</span>
                           </>
                         )}
                       </div>

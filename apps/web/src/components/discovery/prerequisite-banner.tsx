@@ -1,5 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import type { DocEntry } from "@/lib/backend/content";
+import { InfoIcon } from "@/components/ui/icons";
 
 interface PrerequisiteBannerProps {
   docs: DocEntry[];
@@ -12,15 +13,8 @@ export async function PrerequisiteBanner({ docs, locale }: PrerequisiteBannerPro
 
   return (
     <div className="prerequisite-banner">
-      <span className="prerequisite-banner-icon" aria-hidden="true">
-        <svg className="w-4 h-4 text-info" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-          />
-        </svg>
+      <span className="prerequisite-banner-icon flex items-center" aria-hidden="true">
+        <InfoIcon className="w-4 h-4 text-info" />
       </span>
       <span>
         {t("prerequisitePrefix")}

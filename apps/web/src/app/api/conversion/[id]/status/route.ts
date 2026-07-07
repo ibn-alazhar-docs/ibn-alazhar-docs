@@ -72,6 +72,6 @@ export const GET = withAuth(async (_request, { session, params }) => {
       NO_STORE,
     );
   } catch (error: unknown) {
-    return handleRouteError(error, "conversion/status", "فشل التحقق من حالة التحويل");
+    return handleRouteError(error, "conversion/status", "تعذر التحقق من حالة التحويل");
   }
 });

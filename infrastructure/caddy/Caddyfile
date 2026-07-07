@@ -1,4 +1,4 @@
-http://{$DOMAIN:localhost} {
+{$DOMAIN:localhost} {
   reverse_proxy web:3000 {
     health_uri /api/health
     health_interval 30s

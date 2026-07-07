@@ -1,4 +1,4 @@
-import { Cairo, Amiri } from "next/font/google";
+import { Cairo, Amiri, Fira_Code } from "next/font/google";
 
 export const cairo = Cairo({
   subsets: ["arabic", "latin"],
@@ -11,5 +11,12 @@ export const amiri = Amiri({
   subsets: ["arabic", "latin"],
   weight: ["400", "700"],
   variable: "--font-amiri",
+  display: "swap",
+});
+
+export const firaCode = Fira_Code({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-mono",
   display: "swap",
 });

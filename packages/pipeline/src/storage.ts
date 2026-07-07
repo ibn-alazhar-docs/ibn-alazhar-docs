@@ -10,6 +10,9 @@ const PDF_TRAILER_PATTERN = /%%EOF\s*$/;
 const PDF_ENCRYPT_PATTERN = /\/Encrypt\s+\d+\s+\d+\s+R/;
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 
+const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff]);
+const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+
 const ALLOWED_MIME_TYPES = new Set(["application/pdf", "image/jpeg", "image/png"]);
 
 interface PdfValidationResult {
@@ -101,11 +104,44 @@ export function validatePdf(
     };
   }
 
-  // For non-PDF files (images), skip PDF-specific checks
-  if (mimeType !== "application/pdf") {
-    details.hasValidHeader = true;
+  // For non-PDF files (images), validate the actual content via magic bytes
+  // before accepting, so a mismatched/forged contentType is rejected.
+  if (mimeType === "image/jpeg") {
+    details.hasValidHeader = buffer.subarray(0, JPEG_MAGIC.length).equals(JPEG_MAGIC);
     details.hasValidTrailer = true;
+    if (!details.hasValidHeader) {
+      return {
+        valid: false,
+        error: "Missing or invalid JPEG magic bytes (FF D8 FF)",
+        errorCode: "IMAGE_CORRUPT",
+        details,
+      };
+    }
     return { valid: true, details };
+  }
+
+  if (mimeType === "image/png") {
+    details.hasValidHeader = buffer.subarray(0, PNG_MAGIC.length).equals(PNG_MAGIC);
+    details.hasValidTrailer = true;
+    if (!details.hasValidHeader) {
+      return {
+        valid: false,
+        error: "Missing or invalid PNG magic bytes (89 50 4E 47)",
+        errorCode: "IMAGE_CORRUPT",
+        details,
+      };
+    }
+    return { valid: true, details };
+  }
+
+  // Any other (non-PDF) MIME type is unsupported here.
+  if (mimeType !== "application/pdf") {
+    return {
+      valid: false,
+      error: `Unsupported MIME type: ${mimeType}`,
+      errorCode: "INVALID_TYPE",
+      details,
+    };
   }
 
   if (buffer.length < 20) {

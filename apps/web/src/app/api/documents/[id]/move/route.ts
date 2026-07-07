@@ -38,6 +38,6 @@ export const PATCH = withAuth(async (request, { session, params }) => {
       document: updated,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/move/PATCH", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/move/PATCH", "حدث خطأ");
   }
 });

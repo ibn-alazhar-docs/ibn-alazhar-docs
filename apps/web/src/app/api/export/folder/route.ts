@@ -45,6 +45,6 @@ export const POST = withAuth(async (request, { session }) => {
         { status: error.statusCode },
       );
     }
-    return handleRouteError(error, "export/folder/POST", "فشل تصدير المجلد");
+    return handleRouteError(error, "export/folder/POST", "تعذر تصدير المجلد");
   }
 });

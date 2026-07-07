@@ -11,10 +11,10 @@ export class ExportDocumentUseCase {
     private readonly documentDownload: DocumentDownloadUseCase,
   ) {}
 
-  async execute(params: { id: string; format: string; userId: string }) {
-    const { id, format, userId } = params;
+  async execute(params: { id: string; format: string; userId: string; userRole?: string }) {
+    const { id, format, userId, userRole } = params;
 
-    const document = await this.documentRepository.findDocumentById(id, userId);
+    const document = await this.documentRepository.findDocumentById(id, userId, undefined, userRole);
 
     if (!document) {
       throw new NotFoundError();

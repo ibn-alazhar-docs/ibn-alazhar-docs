@@ -35,6 +35,6 @@ export const POST = withAuth(async (request, { session, params }) => {
     const updated = await useCases.folder.moveFolder(id, session.user.id, parentId);
     return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/move/POST", "فشل نقل المجلد");
+    return handleRouteError(error, "folders/[id]/move/POST", "تعذر نقل المجلد");
   }
 });

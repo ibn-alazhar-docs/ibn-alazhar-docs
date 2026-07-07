@@ -2,13 +2,13 @@ import { Resend } from "resend";
 
 const resendApiKey = process.env.RESEND_API_KEY;
 
-if (!resendApiKey) {
-  // eslint-disable-next-line no-console
-  console.warn("RESEND_API_KEY not set. Email sending will fail.");
+/** Lazy Resend client instance — initialised only when an API key is set. */
+export function getResendClient(): Resend | null {
+  if (!resendApiKey) {
+    return null;
+  }
+  return new Resend(resendApiKey);
 }
-
-/** Resend client instance — configured via RESEND_API_KEY env var. */
-export const resend = new Resend(resendApiKey);
 
 /** Sender address used for all outbound emails. */
 export const FROM_EMAIL = process.env.EMAIL_FROM || "noreply@ibnalazhar-docs.vercel.app";
@@ -30,10 +30,10 @@ export async function sendEmail(
   options: SendEmailOptions,
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    if (!resendApiKey) {
+    const resend = getResendClient();
+    if (!resend) {
       return { success: false, error: "RESEND_API_KEY not configured" };
     }
-
     await resend.emails.send({
       from: FROM_EMAIL,
       to: options.to,

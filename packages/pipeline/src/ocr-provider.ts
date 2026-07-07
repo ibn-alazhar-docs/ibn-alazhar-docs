@@ -27,6 +27,14 @@ export function createOcrProvider(type: OcrEngineType) {
   }
 }
 
+// DATA-FLOW / DATA-RESIDENCY CONTRACT:
+//   - LOCAL engines (surya, tesseract): run on-prem; document bytes never leave our servers.
+//   - CLOUD engines (gemini, google): upload pages to the vendor (Google uploads to Google
+//     Drive with drive.file scope, then deletes). These are non-default and only run when
+//     explicitly configured via OCR_PROVIDERS or OCR_CLOUD_ENABLED=true.
+// Providers are attempted strictly in the configured order (see config.ts: local-first by
+// default). A cloud provider is therefore only reached AFTER every preceding local provider
+// is unavailable or fails — never as the default path.
 export class OcrManager {
   private providers: InstanceType<
     | typeof GoogleDriveOcrProvider

@@ -20,11 +20,11 @@ export const POST = withAuth(async (_request, { session, params }) => {
   try {
     const result = await useCases.folder.emptyFolder(id, session.user.id);
     return NextResponse.json({
-      message: "تم تفريغ المجلد بنجاح",
+      message: "فُرّغ المجلد",
       documentsMoved: result.documentsMoved,
       foldersMoved: result.foldersMoved,
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/empty/POST", "فشل تفريغ المجلد");
+    return handleRouteError(error, "folders/[id]/empty/POST", "تعذر تفريغ المجلد");
   }
 });

@@ -47,6 +47,6 @@ export const GET = withAuth(async (request, { session, params }) => {
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/export/status/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/export/status/GET", "حدث خطأ");
   }
 });

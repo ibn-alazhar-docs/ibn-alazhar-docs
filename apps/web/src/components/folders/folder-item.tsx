@@ -1,8 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useRef } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import type { FolderNode } from "@/lib/shared/build-folder-tree";
+import {
+  FolderIcon,
+  ChevronDownIcon,
+  ChevronRightIcon,
+  ChevronLeftIcon,
+} from "@/components/ui/icons";
 
 interface FolderItemProps {
   folder: FolderNode;
@@ -25,10 +31,24 @@ export function FolderItem({
 }: FolderItemProps) {
   const t = useTranslations("folders");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
+  const isRtl = locale === "ar";
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(folder.name);
   const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMenu]);
 
   const isSelected = selectedFolderId === folder.id;
   const hasChildren = folder.children.length > 0;
@@ -47,7 +67,7 @@ export function FolderItem({
         className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
           isSelected ? "bg-[var(--success-bg)] text-[var(--success)]" : "text-primary-color"
         }`}
-        style={{ paddingInlineEnd: `${indent + 12}px` }}
+        style={{ paddingInlineStart: `${indent + 12}px` }}
         onClick={() => onSelect(folder.id)}
       >
         {/* Expand/Collapse */}
@@ -63,24 +83,18 @@ export function FolderItem({
             setIsExpanded(!isExpanded);
           }}
         >
-          {isExpanded ? "▼" : "▶"}
+          {isExpanded ? (
+            <ChevronDownIcon className="size-4" />
+          ) : isRtl ? (
+            <ChevronLeftIcon className="size-4" />
+          ) : (
+            <ChevronRightIcon className="size-4" />
+          )}
         </button>
 
         {/* Folder Icon */}
-        <span className="text-lg">
-          <svg
-            className="w-5 h-5 text-muted-color"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"
-            />
-          </svg>
+        <span className="text-lg flex items-center">
+          <FolderIcon className="w-5 h-5 text-muted-color" />
         </span>
 
         {/* Folder Name */}
@@ -110,11 +124,13 @@ export function FolderItem({
         )}
 
         {/* Actions Menu */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button
             type="button"
             className="min-h-11 min-w-11 flex items-center justify-center text-very-muted hover:text-muted-color rounded"
             aria-label={tCommon("settings")}
+            aria-haspopup="true"
+            aria-expanded={showMenu}
             onClick={(e) => {
               e.stopPropagation();
               setShowMenu(!showMenu);
@@ -124,7 +140,7 @@ export function FolderItem({
           </button>
 
           {showMenu && (
-            <div className="absolute start-0 top-full mt-1 w-40 bg-card rounded-lg shadow-lg border border-line py-1 z-10">
+            <div className="absolute end-0 top-full mt-1 w-40 bg-card rounded-lg shadow-lg border border-line py-1 z-50">
               <button
                 type="button"
                 className="w-full px-3 py-2 text-start text-sm hover:bg-badge"

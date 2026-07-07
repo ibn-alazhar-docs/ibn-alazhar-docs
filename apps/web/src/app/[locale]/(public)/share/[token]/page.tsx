@@ -291,7 +291,11 @@ export default async function SharePage({ params }: SharePageProps) {
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 py-8">
+      <main
+        id="main-content"
+        tabIndex={-1}
+        className="max-w-4xl mx-auto px-4 py-8 focus:outline-none"
+      >
         <article className="prose prose-lg max-w-none">
           <h1>{data.document.title}</h1>
 
@@ -323,9 +327,12 @@ export default async function SharePage({ params }: SharePageProps) {
 
           <hr className="my-6 border-line" />
 
-          <div className="text-primary-color leading-relaxed whitespace-pre-wrap">
-            {renderMarkdown(data.content.markdown)}
-          </div>
+          <div
+            className="text-primary-color leading-relaxed"
+            dangerouslySetInnerHTML={{
+              __html: renderMarkdown(data.content.markdown),
+            }}
+          />
         </article>
       </main>
 

@@ -12,7 +12,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const folder = await useCases.folder.getFolderById(id, session.user.id);
     return NextResponse.json({ folder }, { headers: { "Cache-Control": "private, max-age=30" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/GET", "فشل الحصول على المجلد");
+    return handleRouteError(error, "folders/[id]/GET", "تعذر جلب المجلد");
   }
 });
 
@@ -41,7 +41,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
     });
     return NextResponse.json({ folder: updated });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/PATCH", "فشل تحديث المجلد");
+    return handleRouteError(error, "folders/[id]/PATCH", "تعذر تحديث المجلد");
   }
 });
 
@@ -63,8 +63,8 @@ export const DELETE = withAuth(async (request, { session, params }) => {
       ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
-    return NextResponse.json({ message: "تم حذف المجلد بنجاح" });
+    return NextResponse.json({ message: "حُذف المجلد" });
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/DELETE", "فشل حذف المجلد");
+    return handleRouteError(error, "folders/[id]/DELETE", "تعذر حذف المجلد");
   }
 });

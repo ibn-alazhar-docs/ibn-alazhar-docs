@@ -74,8 +74,7 @@ export const POST = withAuth(async (request, { session, params }) => {
           {
             error: {
               code: "NOT_LINKED",
-              message:
-                "يجب ربط حساب Google الخاص بك من الإعدادات أولاً لتتمكن من التصدير إلى Drive.",
+              message: "يجب ربط حساب Google من الإعدادات أولاً لتتمكن من التصدير إلى Drive.",
             },
           },
           { status: 400 },
@@ -107,6 +106,6 @@ export const POST = withAuth(async (request, { session, params }) => {
 
     return NextResponse.json({ success: true, jobId, message: "Export job enqueued" });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/export/POST", "حدث خطأ داخلي");
+    return handleRouteError(error, "documents/export/POST", "حدث خطأ");
   }
 });

@@ -12,7 +12,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const tags = await useCases.documentTag.getDocumentTags(id, session.user.id);
     return NextResponse.json({ tags }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/[id]/tags/GET", "حدث خطأ أثناء تحميل الأوسمة");
+    return handleRouteError(error, "documents/[id]/tags/GET", "تعذر تحميل الأوسمة");
   }
 });
 
@@ -45,7 +45,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     );
     return NextResponse.json({ success: true, tag }, { status: 201 });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/[id]/tags/POST", "حدث خطأ أثناء إضافة الوسم");
+    return handleRouteError(error, "documents/[id]/tags/POST", "تعذرت إضافة الوسم");
   }
 });
 
@@ -78,6 +78,6 @@ export const PUT = withAuth(async (request, { session, params }) => {
     );
     return NextResponse.json({ success: true, tagCount });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/[id]/tags/PUT", "حدث خطأ أثناء تعيين الأوسمة");
+    return handleRouteError(error, "documents/[id]/tags/PUT", "تعذر تعيين الأوسمة");
   }
 });

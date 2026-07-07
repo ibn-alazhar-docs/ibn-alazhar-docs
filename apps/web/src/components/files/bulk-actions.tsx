@@ -37,7 +37,7 @@ export function BulkActions({
           className="rounded-lg bg-[var(--info)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
           onClick={onToggleBulkTagPicker}
         >
-          {tDocs("addTags", { fallback: "إضافة وسوم" })}
+          {tDocs("addTags")}
         </button>
         {showBulkTagPicker && (
           <div className="absolute end-0 top-full z-10 mt-2 w-64 shadow-lg">
@@ -65,7 +65,7 @@ export function BulkActions({
         className="rounded-lg bg-[var(--warning)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
         onClick={onBulkExport}
       >
-        {tDocs("exportSelected", { fallback: "تصدير المحدد" })}
+        {tDocs("exportSelected")}
       </button>
       <button
         type="button"

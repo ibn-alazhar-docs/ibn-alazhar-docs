@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/frontend/cn";
 import { NavLink } from "./nav-link";
@@ -24,6 +25,16 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
   const t = useTranslations();
   const isAdmin = role === "ADMIN";
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isOpen) {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen, onClose]);
+
   const navItems = [
     { href: "/dashboard", label: "nav.home", icon: HomeIcon },
     { href: "/files", label: "nav.files", icon: FileTextIcon },
@@ -39,27 +50,22 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
     <>
       {isOpen && (
         <div
-          className="fixed inset-0 z-30 bg-overlay lg:hidden"
+          className="fixed inset-0 z-40 bg-overlay lg:hidden"
           onClick={onClose}
-          onKeyDown={(e) => {
-            if (e.key === "Escape") onClose();
-          }}
-          role="dialog"
-          aria-modal="true"
           aria-hidden="true"
         />
       )}
 
       <aside
         className={cn(
-          "fixed inset-y-0 end-0 z-40 flex w-64 flex-col border-s border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:static lg:translate-x-0",
-          isOpen ? "translate-x-0" : "translate-x-full rtl:-translate-x-full lg:translate-x-0",
+          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:static lg:translate-x-0",
+          isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full lg:!translate-x-0",
         )}
         style={{ viewTransitionName: "dashboard-sidebar" }}
         data-testid="sidebar"
       >
         <nav
-          aria-label={t("nav.main")}
+          aria-label={t("nav.mainNav")}
           className="flex-1 space-y-0.5 overflow-y-auto px-3 py-6"
           data-testid="sidebar-nav"
         >

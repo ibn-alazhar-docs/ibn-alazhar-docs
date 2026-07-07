@@ -31,8 +31,8 @@ export const ResetPasswordEmail = ({
           <Heading style={heading}>مرحباً {username}!</Heading>
           <Text style={paragraph}>تلقينا طلباً لإعادة تعيين كلمة المرور لحسابك.</Text>
           <Text style={paragraph}>
-            اضغط على الزر أدناه لإعادة تعيين كلمة المرور. سيتم توجيهك إلى صفحة آمنة لإدخال كلمة
-            المرور الجديدة.
+            اضغط على الزر أدناه لإعادة تعيين كلمة المرور. ستُوجّه إلى صفحة آمنة لإدخال كلمة المرور
+            الجديدة.
           </Text>
           <Section style={buttonSection}>
             <Button href={resetUrl} style={button}>
@@ -42,13 +42,11 @@ export const ResetPasswordEmail = ({
           <Text style={paragraph}>أو انسخ هذا الرابط ولصقه في متصفحك:</Text>
           <Text style={linkText}>{resetUrl}</Text>
           <Text style={warning}>
-            ⚠️ إذا لم تطلب إعادة تعيين كلمة المرور، يرجى تجاهل هذا البريد الإلكتروني. لن يتم تغيير
-            كلمة المرور إلا إذا نقرت على الزر أعلاه.
+            ⚠️ إذا لم تطلب إعادة تعيين كلمة المرور، تجاهل هذا البريد الإلكتروني. لن يتم تغيير كلمة
+            المرور إلا إذا نقرت على الزر أعلاه.
           </Text>
           <Hr style={hr} />
-          <Text style={footer}>
-            هذا البريد الإلكتروني تم إرساله تلقائياً من {appName}. لا ترد على هذا البريد.
-          </Text>
+          <Text style={footer}>أُرسل هذا البريد تلقائياً من {appName}. لا ترد على هذا البريد.</Text>
         </Section>
       </Container>
     </Body>

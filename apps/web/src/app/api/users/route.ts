@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { withAuth } from "@/lib/backend/auth-guards";
-import { isAdminRole } from "@/domain/auth";
+import { isAdminRole, canViewUsers } from "@/domain/auth";
 import { handleRouteError } from "@/lib/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { adminUserUpdateSchema, adminUserDeleteSchema } from "@/lib/shared/validators/auth";
@@ -10,7 +10,7 @@ import type { Role } from "@/domain/auth";
 
 export const GET = withAuth(async (request, { session }) => {
   try {
-    if (!isAdminRole(session.user.role)) {
+    if (!canViewUsers(session.user.role)) {
       return NextResponse.json(
         { error: { code: "FORBIDDEN", message: "Admin access required" } },
         { status: 403 },
@@ -29,7 +29,7 @@ export const GET = withAuth(async (request, { session }) => {
     const result = await useCases.user.getUsers(page, limit);
     return NextResponse.json(result, { headers: { "Cache-Control": "private, no-store" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "users/GET", "فشل الحصول على المستخدمين");
+    return handleRouteError(error, "users/GET", "تعذر جلب المستخدمين");
   }
 });
 
@@ -73,7 +73,7 @@ export const PATCH = withAuth(async (request, { session }) => {
     });
     return NextResponse.json({ user });
   } catch (error: unknown) {
-    return handleRouteError(error, "users/PATCH", "فشل تحديث المستخدم");
+    return handleRouteError(error, "users/PATCH", "تعذر تحديث المستخدم");
   }
 });
 
@@ -113,6 +113,6 @@ export const DELETE = withAuth(async (request, { session }) => {
     });
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    return handleRouteError(error, "users/DELETE", "فشل حذف المستخدم");
+    return handleRouteError(error, "users/DELETE", "تعذر حذف المستخدم");
   }
 });

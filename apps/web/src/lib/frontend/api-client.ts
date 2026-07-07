@@ -60,6 +60,22 @@ function buildHeaders(contentType: string, extra?: Record<string, string>): Reco
   return { "Content-Type": contentType, ...extra };
 }
 
+// Read the non-httpOnly csrf_token cookie so we can echo it on mutating requests.
+function getCsrfToken(): string | undefined {
+  if (typeof document === "undefined") return undefined;
+  const match = document.cookie.match(/(?:^|;\s*)csrf_token=([^;]*)/);
+  return match?.[1];
+}
+
+// Headers for state-changing requests: inject X-CSRF-Token when a cookie exists.
+function mutatingHeaders(extra?: Record<string, string>): Record<string, string> {
+  const token = getCsrfToken();
+  return buildHeaders("application/json", {
+    ...(token ? { "X-CSRF-Token": token } : {}),
+    ...extra,
+  });
+}
+
 /**
  * Centralized API client
  * @example
@@ -81,7 +97,7 @@ export const apiClient = {
     const url = buildUrl(path, options?.params);
     const response = await fetch(url, {
       method: "POST",
-      headers: buildHeaders("application/json", options?.headers),
+      headers: mutatingHeaders(options?.headers),
       body: body != null ? JSON.stringify(body) : undefined,
       signal: options?.signal,
     });
@@ -92,7 +108,7 @@ export const apiClient = {
     const url = buildUrl(path, options?.params);
     const response = await fetch(url, {
       method: "PUT",
-      headers: buildHeaders("application/json", options?.headers),
+      headers: mutatingHeaders(options?.headers),
       body: body != null ? JSON.stringify(body) : undefined,
       signal: options?.signal,
     });
@@ -103,7 +119,7 @@ export const apiClient = {
     const url = buildUrl(path, options?.params);
     const response = await fetch(url, {
       method: "PATCH",
-      headers: buildHeaders("application/json", options?.headers),
+      headers: mutatingHeaders(options?.headers),
       body: body != null ? JSON.stringify(body) : undefined,
       signal: options?.signal,
     });
@@ -114,7 +130,7 @@ export const apiClient = {
     const url = buildUrl(path, options?.params);
     const response = await fetch(url, {
       method: "DELETE",
-      headers: buildHeaders("application/json", options?.headers),
+      headers: mutatingHeaders(options?.headers),
       signal: options?.signal,
     });
     return handleResponse<T>(response);

@@ -18,6 +18,6 @@ export const GET = withAuth(async (_request, { session, params }) => {
       { headers: { "Cache-Control": "private, max-age=10" } },
     );
   } catch (error: unknown) {
-    return handleRouteError(error, "folders/[id]/tags/GET", "فشل تحميل أوسمة المجلد");
+    return handleRouteError(error, "folders/[id]/tags/GET", "تعذر تحميل أوسمة المجلد");
   }
 });

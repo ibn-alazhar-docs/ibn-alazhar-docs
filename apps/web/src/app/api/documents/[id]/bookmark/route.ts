@@ -13,14 +13,10 @@ export const POST = withAuth(async (_request, { session, params }) => {
   }
 
   try {
-    // @ts-expect-error — bookmark use-case not yet implemented in composition-root
-    const result = await useCases.bookmark.toggleBookmark(
-      { user: { id: session.user.id, role: session.user.role } } as never,
-      id,
-    );
+    const result = await useCases.bookmark.toggleBookmark(id, session);
     return NextResponse.json(result);
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/[id]/bookmark/POST", "حدث خطأ أثناء تبديل المفضلة");
+    return handleRouteError(error, "documents/[id]/bookmark/POST", "تعذر تبديل حالة المفضلة");
   }
 });
 
@@ -28,22 +24,11 @@ export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;
 
   try {
-    // @ts-expect-error — bookmark use-case not yet implemented in composition-root
-    const bookmarked = await useCases.bookmark.isBookmarked(
-      { user: { id: session.user.id, role: session.user.role } } as never,
-      id,
-    );
-    return NextResponse.json(
-      { bookmarked },
-      {
-        headers: { "Cache-Control": "private, max-age=10" },
-      },
-    );
+    const result = await useCases.bookmark.checkBookmarkStatus(id, session);
+    return NextResponse.json(result, {
+      headers: { "Cache-Control": "private, max-age=10" },
+    });
   } catch (error: unknown) {
-    return handleRouteError(
-      error,
-      "documents/[id]/bookmark/GET",
-      "حدث خطأ أثناء التحقق من المفضلة",
-    );
+    return handleRouteError(error, "documents/[id]/bookmark/GET", "تعذر التحقق من المفضلة");
   }
 });

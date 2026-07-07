@@ -14,11 +14,10 @@ export const GET = withAuth(async (_request, { session, params }) => {
   }
 
   try {
-    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     const webhook = await useCases.webhook.getWebhookById(id, session.user.id);
     return NextResponse.json({ webhook }, { headers: { "Cache-Control": "private, max-age=10" } });
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/GET", "حدث خطأ داخلي");
+    return handleRouteError(error, "webhooks/GET", "حدث خطأ");
   }
 });
 
@@ -41,11 +40,10 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   }
 
   try {
-    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     const webhook = await useCases.webhook.updateWebhook(id, session.user.id, parsed.data);
     return NextResponse.json({ webhook });
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/PATCH", "حدث خطأ داخلي");
+    return handleRouteError(error, "webhooks/PATCH", "حدث خطأ");
   }
 });
 
@@ -58,10 +56,9 @@ export const DELETE = withAuth(async (_request, { session, params }) => {
   }
 
   try {
-    // @ts-expect-error — webhook use-case not yet implemented in composition-root
     await useCases.webhook.deleteWebhook(id, session.user.id);
-    return NextResponse.json({ success: true, message: "تم حذف الويب هوك" });
+    return NextResponse.json({ success: true, message: "حُذف الويب هوك" });
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/DELETE", "حدث خطأ داخلي");
+    return handleRouteError(error, "webhooks/DELETE", "حدث خطأ");
   }
 });

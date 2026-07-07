@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { RegistrationUseCases } from "@/core/services/registration.use-cases";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 import { ConflictError } from "@/lib/shared/errors";
+import { PrismaClient } from "@prisma/client";
 
 vi.mock("bcryptjs", () => ({
   default: {
@@ -16,6 +17,7 @@ describe("RegistrationUseCases", () => {
     findByEmail: ReturnType<typeof vi.fn>;
     create: ReturnType<typeof vi.fn>;
   };
+  let prismaMock: { verificationToken: { create: ReturnType<typeof vi.fn> } };
   let useCases: RegistrationUseCases;
 
   beforeEach(() => {
@@ -23,7 +25,11 @@ describe("RegistrationUseCases", () => {
       findByEmail: vi.fn(),
       create: vi.fn(),
     };
-    useCases = new RegistrationUseCases(userRepo as unknown as IUserRepository);
+    prismaMock = { verificationToken: { create: vi.fn().mockResolvedValue(undefined) } };
+    useCases = new RegistrationUseCases(
+      userRepo as unknown as IUserRepository,
+      prismaMock as unknown as PrismaClient,
+    );
     vi.clearAllMocks();
   });
 

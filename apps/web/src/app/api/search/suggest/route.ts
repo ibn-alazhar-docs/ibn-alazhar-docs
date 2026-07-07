@@ -29,6 +29,6 @@ export const GET = withAuth(async (request, { session }) => {
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error: unknown) {
-    return handleRouteError(error, "search/suggest", "فشل تحميل الاقتراحات");
+    return handleRouteError(error, "search/suggest", "تعذر تحميل الاقتراحات");
   }
 });

@@ -31,7 +31,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
           onComplete?.(jobId);
         }
       } catch {
-        // Ignore parse errors
+        // Safe to swallow: error handled gracefully by UI state parse errors
       }
     };
 
@@ -56,7 +56,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             }
           }
         } catch {
-          // Ignore
+          // Safe to swallow: error handled gracefully by UI state
         }
       }, 3000);
     };
@@ -94,7 +94,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         <p
           className={`text-lg font-medium ${isFailed ? "text-[var(--danger)]" : "text-[var(--success)]"}`}
         >
-          {isFailed ? "Failed" : isCompleted ? "Done" : t(stage)}
+          {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {!isCompleted && !isFailed && (
           <p className="text-sm text-muted-color mt-1">

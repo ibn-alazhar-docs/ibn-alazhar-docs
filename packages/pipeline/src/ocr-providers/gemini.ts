@@ -19,12 +19,22 @@ export class GeminiOcrProvider implements OcrProvider {
     fileName: string,
     mimeType: string,
   ): Promise<OcrEngineResult> {
+    if (process.env.MOCK_OCR === "true") {
+      const text = `هذا نص تجريبي مستخرج لا_أعلم_هويتي تفوق كبير وتألق`;
+      return {
+        text,
+        pages: [{ number: 1, text, confidence: 0.99 }],
+        confidence: 0.99,
+        engine: "gemini" as OcrEngineType,
+      };
+    }
+
     if (!config.gemini?.apiKey) {
       throw new Error("Gemini API Key is missing");
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const prompt = `You are an expert Arabic OCR and document layout analysis system.
 Extract all text exactly as it appears in this document.
@@ -56,12 +66,22 @@ Return ONLY the markdown text, without any conversational prefixes.`;
     pageGetters: (() => Promise<Buffer>)[],
     _fileName: string,
   ): Promise<OcrEngineResult> {
+    if (process.env.MOCK_OCR === "true") {
+      const pages: OcrPageResult[] = pageGetters.map((_, i) => ({
+        number: i + 1,
+        text: `هذا نص تجريبي للصفحة ${i + 1} لا_أعلم_هويتي تفوق كبير وتألق`,
+        confidence: 0.99,
+      }));
+      const text = pages.map((p) => p.text).join("\n\n");
+      return { text, pages, confidence: 0.99, engine: "gemini" as OcrEngineType };
+    }
+
     if (!config.gemini?.apiKey) {
       throw new Error("Gemini API Key is missing");
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
 
     const BATCH_SIZE = 10;
     const batchPrompt = `You are an expert Arabic OCR and document layout analysis system.
@@ -112,10 +132,8 @@ IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this
         }
       } catch (err: unknown) {
         const msg = err instanceof Error ? err.message : String(err);
-        logger.warn(`Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`);
-        for (let j = 0; j < batchGetters.length; j++) {
-          pages.push({ number: i + j + 1, text: "", confidence: 0.0 });
-        }
+        logger.error(`Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`);
+        throw err;
       }
     }
 

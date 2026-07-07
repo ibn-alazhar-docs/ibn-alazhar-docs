@@ -27,7 +27,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "pnpm --filter @ibn-al-azhar-docs/web exec next dev --webpack",
+    command: "PLAYWRIGHT_TEST=true pnpm --filter @ibn-al-azhar-docs/web exec next dev --webpack",
     url: "http://localhost:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 300 * 1000,

@@ -1,4 +1,5 @@
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 const patterns = [
   { name: "Generic sk-* token", regex: /sk-[0-9a-fA-F]{20,}/ },
@@ -9,44 +10,66 @@ const patterns = [
   { name: "GitHub token", regex: /gh[pousr]_[A-Za-z0-9_]{20,}/ },
 ];
 
-const stagedFiles = execFileSync("git", ["diff", "--cached", "--name-only"], {
-  encoding: "utf8",
-})
-  .split(/\r?\n/)
-  .map((line) => line.trim())
-  .filter(Boolean);
+const stagedMode = process.argv.includes("--staged");
 
-if (stagedFiles.length === 0) {
-  console.log("No staged files to scan");
+let files;
+if (stagedMode) {
+  files = execFileSync("git", ["diff", "--cached", "--name-only"], {
+    encoding: "utf8",
+  })
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+} else {
+  files = execFileSync("git", ["ls-files", "--exclude-standard"], {
+    encoding: "utf8",
+  })
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+}
+
+if (files.length === 0) {
+  console.log(stagedMode ? "No staged files to scan" : "No tracked files to scan");
   process.exit(0);
 }
 
 let found = false;
 
-for (const file of stagedFiles) {
-  let diff = "";
+for (const file of files) {
+  let lines;
 
-  try {
-    diff = execFileSync("git", ["diff", "--cached", "--unified=0", "--", file], {
-      encoding: "utf8",
-      maxBuffer: 256 * 1024 * 1024,
-    });
-  } catch (error) {
-    console.error(`Failed to scan staged diff for ${file}`);
-    if (error?.message) console.error(error.message);
-    process.exit(1);
+  if (stagedMode) {
+    let diff = "";
+    try {
+      diff = execFileSync("git", ["diff", "--cached", "--unified=0", "--", file], {
+        encoding: "utf8",
+        maxBuffer: 256 * 1024 * 1024,
+      });
+    } catch (error) {
+      console.error(`Failed to scan staged diff for ${file}`);
+      if (error?.message) console.error(error.message);
+      process.exit(1);
+    }
+    lines = diff
+      .split(/\r?\n/)
+      .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
+  } else {
+    let content = "";
+    try {
+      content = readFileSync(file, "utf8");
+    } catch (error) {
+      continue;
+    }
+    lines = content.split(/\r?\n/);
   }
 
-  const addedLines = diff
-    .split(/\r?\n/)
-    .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
-
-  for (const [index, line] of addedLines.entries()) {
+  for (const [index, line] of lines.entries()) {
     for (const pattern of patterns) {
       if (pattern.regex.test(line)) {
         found = true;
         console.error(
-          `Potential secret found in ${file} near added diff line ${index + 1}: ${pattern.name}`,
+          `Potential secret found in ${file} at line ${index + 1}: ${pattern.name}`,
         );
       }
     }
@@ -57,4 +80,4 @@ if (found) {
   process.exit(1);
 }
 
-console.log("No obvious staged secrets");
+console.log(stagedMode ? "No obvious staged secrets" : "No obvious secrets found in repository");

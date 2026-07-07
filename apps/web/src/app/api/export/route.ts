@@ -54,6 +54,6 @@ export const POST = withAuth(async (request, { session }) => {
       },
     });
   } catch (error: unknown) {
-    return handleRouteError(error, "export", "فشل التصدير");
+    return handleRouteError(error, "export", "تعذر التصدير");
   }
 });
