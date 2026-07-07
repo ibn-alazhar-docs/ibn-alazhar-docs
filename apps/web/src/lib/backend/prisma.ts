@@ -1,1 +1,1 @@
-export { prisma } from "@ibn-al-azhar-docs/database";
+export { prisma } from "@/transport/db";

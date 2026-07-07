@@ -3,7 +3,7 @@ import { withAuth } from "@/lib/backend/auth-guards";
 import { handleRouteError } from "@/lib/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { AnalyticsUseCases } from "@/core/services/analytics.use-cases";
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 
 const analyticsUseCases = new AnalyticsUseCases(prisma);
 

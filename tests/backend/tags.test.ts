@@ -24,7 +24,7 @@ vi.mock("next/server", () => ({
   },
 }));
 
-vi.mock("@/lib/backend/prisma", () => {
+vi.mock("@/transport/db", () => {
   function mockModel() {
     return {
       findMany: vi.fn(),
@@ -66,7 +66,7 @@ vi.mock("@/lib/shared/logger", () => ({
 // ─── Imports (run after hoisted mocks) ─────────────────────────────────────────
 
 import { auth } from "@/lib/backend/auth";
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 
 import { GET as listTags, POST as createTag } from "@/app/api/tags/route";
 import { GET as getTag, PATCH as updateTag, DELETE as deleteTag } from "@/app/api/tags/[id]/route";

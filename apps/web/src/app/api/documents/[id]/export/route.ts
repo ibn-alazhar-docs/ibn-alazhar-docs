@@ -65,7 +65,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     }
 
     if (options?.destination === "drive") {
-      const { prisma } = await import("@/lib/backend/prisma");
+      const { prisma } = await import("@/transport/db");
       const account = await prisma.account.findFirst({
         where: { userId: session.user.id, provider: "google" },
       });

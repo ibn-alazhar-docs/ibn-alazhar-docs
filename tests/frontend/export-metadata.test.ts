@@ -7,10 +7,10 @@ import {
   resolvePipelineData,
   buildExportMetadata,
 } from "../../apps/web/src/lib/backend/export/metadata";
-import { prisma } from "../../apps/web/src/lib/backend/prisma";
+import { prisma } from "../../apps/web/src/transport/db";
 import type { ExportProfile } from "../../apps/web/src/lib/backend/export/types";
 
-vi.mock("../../apps/web/src/lib/backend/prisma", () => ({
+vi.mock("../../apps/web/src/transport/db", () => ({
   prisma: {
     $queryRaw: vi.fn(),
     document: {
