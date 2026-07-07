@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 import type { IAccountRepository } from "../../domain/repositories/account.repository.interface";
 
 export class AccountRepository implements IAccountRepository {

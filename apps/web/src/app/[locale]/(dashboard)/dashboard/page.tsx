@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/lib/backend/auth-guards";
 import { isAdminRole } from "@/domain/auth";
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 import { DashboardContent } from "../dashboard-content";
 import { PageTransition } from "@/components/ui/page-transition";
 

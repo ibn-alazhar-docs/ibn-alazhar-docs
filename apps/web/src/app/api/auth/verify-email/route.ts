@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
 import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
 

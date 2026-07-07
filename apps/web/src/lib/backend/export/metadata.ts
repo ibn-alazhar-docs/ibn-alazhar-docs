@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
 import { NotFoundError } from "@/lib/shared/errors";

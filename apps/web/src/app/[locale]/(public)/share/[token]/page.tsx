@@ -1,5 +1,5 @@
 import { getTranslations } from "next-intl/server";
-import { prisma } from "@/lib/backend/prisma";
+import { prisma } from "@/transport/db";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
 
 interface SharePageProps {
