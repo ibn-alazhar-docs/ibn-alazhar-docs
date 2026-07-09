@@ -1,8 +1,8 @@
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import type { DocumentDownloadUseCase } from "./document-download.use-case";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
-import { ERROR_CODES } from "@/lib/shared/constants";
+import { NotFoundError, AppError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
 
 export class ExportDocumentUseCase {
   constructor(

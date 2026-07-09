@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
-import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { generatePageMetadata } from "@/ui/metadata";
+import { ForgotPasswordForm } from "@/ui/auth/forgot-password-form";
 
 interface ForgotPasswordPageProps {
   params: Promise<{ locale: string }>;

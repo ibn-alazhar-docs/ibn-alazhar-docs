@@ -1,12 +1,13 @@
+vi.unmock("@/middleware/auth-guards");
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // ─── Module-level mocks (hoisted) ──────────────────────────────────────────────
 
-vi.mock("@/lib/backend/auth", () => ({
+vi.mock("@/middleware/auth", () => ({
   auth: vi.fn(),
 }));
 
-vi.mock("@/lib/backend/rate-limit", () => ({
+vi.mock("@/clients/redis", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   rateLimitResponse: vi.fn().mockImplementation((retryAfterMs) => ({
@@ -58,14 +59,14 @@ vi.mock("@/transport/db", () => {
   };
 });
 
-vi.mock("@/lib/shared/logger", () => ({
+vi.mock("@/shared/logger", () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
   generateRequestId: () => "test-request-id",
 }));
 
 // ─── Imports (run after hoisted mocks) ─────────────────────────────────────────
 
-import { auth } from "@/lib/backend/auth";
+import { auth } from "@/middleware/auth";
 import { prisma } from "@/transport/db";
 
 import { GET as listTags, POST as createTag } from "@/app/api/tags/route";

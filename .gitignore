@@ -74,3 +74,20 @@ testsprite_tests/tmp/config.json
 
 # repowise API keys (local)
 .repowise/.env
+
+# Scratch / debug artifacts (root-level throwaway scripts & logs)
+.stryker-tmp/
+.fuse_hidden*
+redis_debug.txt
+debug_*.ts
+debug_*.txt
+run_*.ts
+run_*.mjs
+run_mock_test*
+fix-*.ts
+fix-test.ts
+fix-auth-test.ts
+test_auth_guards.ts
+test_env.ts
+test_path.ts
+*.test.ts.deprecated

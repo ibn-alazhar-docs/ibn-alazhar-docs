@@ -124,7 +124,7 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 
 | Command                 | Suite            | Tests | Notes                                |
 | ----------------------- | ---------------- | ----- | ------------------------------------ |
-| `pnpm test`             | Unit             | 776   | `tests/backend/` + `tests/frontend/` |
+| `pnpm test`             | Unit             | 800+  | `tests/backend/` + `tests/frontend/` |
 | `pnpm test:integration` | Integration      | —     | Requires running DB                  |
 | `pnpm test:security`    | Security         | 213+  | OWASP coverage                       |
 | `pnpm test:pentest`     | Penetration      | —     | Requires running DB                  |
@@ -133,6 +133,22 @@ See [HF Deployment Guide](docs/deployment/HF_DEPLOYMENT_GUIDE.md) for step-by-st
 | `pnpm test:backup`      | Backup & Restore | —     | Requires running DB                  |
 
 Test files: `tests/backend/`, `tests/frontend/`, `tests/security/`, `tests/integration/`, `tests/pentest/`, `tests/load/`, `tests/recovery/`, `tests/backup/`, `tests/e2e/`
+
+## Documentation
+
+A full, categorized documentation index lives at [`docs/README.md`](docs/README.md).
+
+| Area | Entry Point |
+| ---- | ----------- |
+| Architecture & ADRs | [`docs/ARCHITECTURE_CURRENT.md`](docs/ARCHITECTURE_CURRENT.md), [`docs/ADR/`](docs/ADR/) |
+| Security | [`docs/SECURITY_AUDIT_LOG.md`](docs/SECURITY_AUDIT_LOG.md) |
+| Deployment | [`docs/deployment/HF_DEPLOYMENT_GUIDE.md`](docs/deployment/HF_DEPLOYMENT_GUIDE.md) |
+| Operations | [`docs/production/RUNBOOK.md`](docs/production/RUNBOOK.md) |
+| API Reference | [`docs/openapi.yaml`](docs/openapi.yaml) |
+| Agent Governance | [`docs/governance/`](docs/governance/) |
+| Coding Standards | [`docs/reference/CODE_STYLE_GUIDE.md`](docs/reference/CODE_STYLE_GUIDE.md) |
+
+> The canonical architecture document is [`ARCHITECTURE.md`](ARCHITECTURE.md), authored in Arabic for Arabic-first contributors and AI agents.
 
 ## Operations
 
@@ -152,8 +168,8 @@ Test files: `tests/backend/`, `tests/frontend/`, `tests/security/`, `tests/integ
 
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [CODE_STYLE.md](CODE_STYLE.md) for coding standards.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development workflow and [CODE_STYLE_GUIDE.md](docs/reference/CODE_STYLE_GUIDE.md) for coding standards.
 
 ## License
 
-Copyright 2026 Ibn Al-Azhar Docs. All rights reserved.
+Licensed under the [MIT License](LICENSE).

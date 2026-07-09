@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { DashboardShell } from "@/components/layout/dashboard-shell";
-import { requireAuth } from "@/lib/backend/auth-guards";
+import { DashboardShell } from "@/ui/layout/dashboard-shell";
+import { requireAuth } from "@/middleware/auth-guards";
 
 interface DashboardLayoutProps {
   children: ReactNode;

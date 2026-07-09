@@ -5,7 +5,7 @@ import {
   normalizeStage,
   getProgressPercent,
   type Stage,
-} from "@/lib/shared/conversion-status-utils";
+} from "@/shared/conversion-status-utils";
 
 describe("STATUS_NORMALIZE", () => {
   const lowercaseMap: [string, Stage][] = [

@@ -6,9 +6,9 @@ import {
   resolveOcrData,
   resolvePipelineData,
   buildExportMetadata,
-} from "../../apps/web/src/lib/backend/export/metadata";
+} from "../../apps/web/src/core/services/export/metadata";
 import { prisma } from "../../apps/web/src/transport/db";
-import type { ExportProfile } from "../../apps/web/src/lib/backend/export/types";
+import type { ExportProfile } from "../../apps/web/src/core/services/export/types";
 
 vi.mock("../../apps/web/src/transport/db", () => ({
   prisma: {
@@ -29,7 +29,7 @@ vi.mock("../../apps/web/src/transport/db", () => ({
   },
 }));
 
-vi.mock("../../apps/web/src/lib/backend/auth-guards", () => ({
+vi.mock("../../apps/web/src/middleware/auth-guards", () => ({
   ownedWhere: vi.fn((where) => where),
 }));
 

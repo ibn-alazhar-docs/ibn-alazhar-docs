@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { firaCode } from "@/lib/frontend/fonts";
+import { firaCode } from "@/ui/fonts";
 import "@/styles/globals.css";
 
 interface RootLayoutProps {

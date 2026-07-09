@@ -1,7 +1,7 @@
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { DashboardService } from "@/lib/backend/services/dashboard.service";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { DashboardService } from "@/core/services/dashboard.service";
 
 export const GET = withAuth(async (request, { session }) => {
   // Use strict: true for strict rate limit check (blocking if Redis is down)

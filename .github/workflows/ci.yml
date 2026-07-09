@@ -1,49 +1,19 @@
-name: CI
+name: CI Pipeline
 
 on:
   push:
-    branches: [main, "feat/*", "fix/*"]
-  pull_request:
     branches: [main]
-  workflow_dispatch:
+  pull_request:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.ref }}-${{ github.job }}
   cancel-in-progress: true
 
 jobs:
-  format:
+  fast:
+    name: Fast checks
     runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: npx prettier --check .
-        name: Format check
-
-  lint:
-    runs-on: ubuntu-24.04
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm lint
-        name: ESLint check
-
-  typecheck:
-    runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request'
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -55,12 +25,12 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate
-        name: Prisma generate
-      - run: pnpm typecheck
-        name: TypeScript type check
+      - run: bash scripts/ci-pipeline.sh --stage fast
 
-  test:
+  pr:
+    name: PR checks
     runs-on: ubuntu-24.04
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
     services:
       postgres:
         image: postgres:16
@@ -100,17 +70,14 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate
-        name: Prisma generate
       - run: npx prisma migrate deploy
-        name: Prisma migrate
-      - run: pnpm test
-        name: Run unit tests
-      - run: pnpm test:security
-        name: Run security tests
+      - run: npx playwright install --with-deps chromium
+      - run: bash scripts/ci-pipeline.sh --stage pr
 
-  smoke:
+  full:
+    name: Full checks
     runs-on: ubuntu-24.04
-    needs: [test]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     services:
       postgres:
         image: postgres:16
@@ -122,6 +89,15 @@ jobs:
           - 5432:5432
         options: >-
           --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -141,224 +117,6 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate
-        name: Prisma generate
       - run: npx prisma migrate deploy
-        name: Prisma migrate
-      - name: Start dev server
-        run: pnpm --filter @ibn-al-azhar-docs/web dev &
-        env:
-          DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-          DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-          AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
-          REDIS_URL: redis://localhost:6379
-      - name: Wait for server
-        run: |
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
-              echo "Server ready"
-              exit 0
-            fi
-            sleep 2
-          done
-          echo "Server did not start in time"
-          exit 1
-      - name: Run smoke tests
-        run: pnpm tsx tests/smoke/pre-deploy.ts
-
-  integration:
-    runs-on: ubuntu-24.04
-    needs: [format, lint, typecheck]
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: ibn_docs
-          POSTGRES_PASSWORD: ibn_docs_password
-          POSTGRES_DB: ibn_docs
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
-      REDIS_URL: redis://localhost:6379
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
-        name: Prisma generate
-      - run: npx prisma migrate deploy
-        name: Prisma migrate
-      - run: pnpm test:integration
-        name: Run integration tests
-
-  build:
-    runs-on: ubuntu-24.04
-    needs: [format, lint, typecheck, test, integration]
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_USER: ibn_docs
-          POSTGRES_PASSWORD: ibn_docs_password
-          POSTGRES_DB: ibn_docs
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    env:
-      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
-      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "22"
-          cache: "pnpm"
-      - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
-        name: Prisma generate
-      - run: ANALYZE=true npx next build
-        working-directory: apps/web
-        name: Next.js build with bundle analysis
-      - name: Check bundle size
-        working-directory: apps/web
-        run: |
-          echo "=== Bundle Size Report ==="
-          du -sh .next/ 2>/dev/null || true
-          du -sh .next/static/ 2>/dev/null || true
-          echo "--- Page bundles ---"
-          find .next/static/chunks -name "*.js" -exec du -h {} + 2>/dev/null | sort -rh | head -20 || true
-          TOTAL_KB=$(du -sk .next/ 2>/dev/null | cut -f1)
-          echo "Total .next size: ${TOTAL_KB}KB"
-          MAX_KB=51200
-          if [ "$TOTAL_KB" -gt "$MAX_KB" ]; then
-            echo "::error::Bundle size ${TOTAL_KB}KB exceeds ${MAX_KB}KB limit"
-            exit 1
-          fi
-          echo "Bundle size OK: ${TOTAL_KB}KB <= ${MAX_KB}KB"
-      - name: Build Docker images
-        run: |
-          docker build -t ibn-web -f Dockerfile .
-          docker build -t ibn-ocr-worker -f Dockerfile.worker --target ocr-runner .
-          docker build -t ibn-export-worker -f Dockerfile.worker --target export-runner .
-
-  security:
-    runs-on: ubuntu-24.04
-    needs: [build]
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run Trivy vulnerability scanner (filesystem)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "fs"
-          scan-ref: "."
-          format: "table"
-          exit-code: "1"
-          severity: "CRITICAL,HIGH"
-          ignore-unfixed: true
-
-      - name: Build Docker image for scanning
-        run: docker build -t ibn-web-scan -f Dockerfile .
-
-      - name: Run Trivy vulnerability scanner (image)
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          image-ref: "ibn-web-scan"
-          format: "table"
-          exit-code: "1"
-          severity: "CRITICAL,HIGH"
-          ignore-unfixed: true
-
-      - name: Run Trivy config scanner
-        uses: aquasecurity/trivy-action@0.28.0
-        with:
-          scan-type: "config"
-          scan-ref: "."
-          format: "table"
-          exit-code: "0"
-          severity: "MEDIUM,HIGH,CRITICAL"
-
-  deploy:
-    runs-on: ubuntu-24.04
-    needs: [security]
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push web image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          build-args: |
-            SENTRY_RELEASE=${{ github.sha }}
-          tags: |
-            ghcr.io/${{ github.repository }}/web:latest
-            ghcr.io/${{ github.repository }}/web:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push ocr-worker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.worker
-          target: ocr-runner
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/ocr-worker:latest
-            ghcr.io/${{ github.repository }}/ocr-worker:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Build and push export-worker image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile.worker
-          target: export-runner
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/export-worker:latest
-            ghcr.io/${{ github.repository }}/export-worker:${{ github.sha }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
-      - name: Trigger deployment webhook
-        if: secrets.DEPLOY_WEBHOOK_URL != ''
-        run: |
-          curl -X POST ${{ secrets.DEPLOY_WEBHOOK_URL }} \
-            -H "Content-Type: application/json" \
-            -d '{"ref":"${{ github.sha }}","repository":"${{ github.repository }}"}'
+      - run: npx playwright install --with-deps chromium
+      - run: bash scripts/ci-pipeline.sh --stage full

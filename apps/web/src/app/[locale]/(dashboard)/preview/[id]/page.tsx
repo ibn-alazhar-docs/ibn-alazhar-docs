@@ -4,11 +4,11 @@ import { useParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { PreviewToolbar } from "@/components/pipeline/preview-toolbar";
-import { PreviewView } from "@/components/pipeline/preview-view";
-import { ExportModal } from "@/components/pipeline/export-modal";
-import { ShareModal } from "@/components/pipeline/share-modal";
-import { ShareIcon } from "@/components/ui/icons";
+import { PreviewToolbar } from "@/ui/pipeline/preview-toolbar";
+import { PreviewView } from "@/ui/pipeline/preview-view";
+import { ExportModal } from "@/ui/pipeline/export-modal";
+import { ShareModal } from "@/ui/pipeline/share-modal";
+import { ShareIcon } from "@/ui/icons";
 
 interface JobInfo {
   fileName: string;

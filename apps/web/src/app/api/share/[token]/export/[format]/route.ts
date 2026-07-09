@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/lib/shared/validators/share";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { SHARE_EXPORT_FORMATS, type ShareExportFormat } from "@/shared/validators/share";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import {
   contentDispositionHeader,
   sanitizeTitle,
   getContentType,
-} from "@/lib/backend/export/profiles";
+} from "@/core/services/export/profiles";
 import { repos, useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { handleRouteError } from "@/shared/route-helpers";
 
 export async function GET(
   request: Request,

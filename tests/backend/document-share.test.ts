@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { DocumentShareUseCases } from "@/core/services/document-share.use-cases";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IShareRepository } from "@/domain/repositories/share.repository.interface";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
+import { NotFoundError, AppError } from "@/shared/errors";
 
 function makeDoc(overrides: Record<string, unknown> = {}) {
   return {

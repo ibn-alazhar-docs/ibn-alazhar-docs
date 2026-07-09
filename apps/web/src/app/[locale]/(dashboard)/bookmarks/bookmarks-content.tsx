@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { BookmarkButton } from "@/components/documents/bookmark-button";
-import { FileTextIcon, BookmarkIcon } from "@/components/ui/icons";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { BookmarkButton } from "@/ui/documents/bookmark-button";
+import { FileTextIcon, BookmarkIcon } from "@/ui/icons";
 
 interface BookmarkItem {
   id: string;

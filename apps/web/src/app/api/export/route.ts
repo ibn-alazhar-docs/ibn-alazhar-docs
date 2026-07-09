@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { singleExportSchema } from "@/lib/backend/export/validators";
-import { contentDispositionHeader } from "@/lib/backend/export/profiles";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { singleExportSchema } from "@/core/services/export/validators";
+import { contentDispositionHeader } from "@/core/services/export/profiles";
 import { useCases } from "@/core/composition-root";
-import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 
 export const POST = withAuth(async (request, { session }) => {
   const body = await request.json();

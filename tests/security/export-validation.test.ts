@@ -1,15 +1,18 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
 
-const exportSchema = z.object({
-  format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"]),
-  options: z
-    .object({
-      destination: z.enum(["local", "drive"]).optional(),
-      profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
-    })
-    .optional(),
-});
+const exportSchema = z
+  .object({
+    format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"]),
+    options: z
+      .object({
+        destination: z.enum(["local", "drive"]).optional(),
+        profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
 
 describe("Security Fixes — Export Input Validation", () => {
   describe("exportSchema", () => {
@@ -51,8 +54,7 @@ describe("Security Fixes — Export Input Validation", () => {
       expect(() =>
         exportSchema.parse({
           format: "md",
-          options: { destination: "local" },
-          __proto__: { polluted: true },
+          options: { destination: "local", __proto__: { polluted: true } },
         }),
       ).toThrow();
     });

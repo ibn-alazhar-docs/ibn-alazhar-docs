@@ -46,6 +46,14 @@ describe("Failure Categorization & Retry Logic", () => {
       { msg: "PDF_ENCRYPTED: File is password-protected", code: "PDF_ENCRYPTED" },
       { msg: "PDF_CORRUPT: Invalid PDF header", code: "PDF_CORRUPT" },
       { msg: "PDF_TRUNCATED: File ends unexpectedly at byte 4096", code: "PDF_TRUNCATED" },
+      { msg: "PDF_INVALID: could not open document (Data format error)", code: "PDF_INVALID" },
+      { msg: "PDF_EXCEEDS_MAX_PAGES: 4 > 3", code: "PDF_EXCEEDS_MAX_PAGES" },
+      { msg: "PDF_RENDER_FAILED: page 1 (out of memory)", code: "PDF_RENDER_FAILED" },
+      // Wrapped by splitPdfPages (PDF_SPLIT_FAILED: <code>: <msg>) — substring still matches.
+      {
+        msg: "PDF_SPLIT_FAILED: PDF_INVALID: could not open document",
+        code: "PDF_INVALID",
+      },
       { msg: "FILE_TOO_LARGE: 6GB exceeds maximum allowed", code: "FILE_TOO_LARGE" },
       { msg: "INVALID_TYPE: application/x-executable not allowed", code: "INVALID_TYPE" },
     ];

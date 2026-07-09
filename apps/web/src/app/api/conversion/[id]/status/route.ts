@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { normalizeStage } from "@/lib/shared/conversion-status-utils";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { withAuth } from "@/middleware/auth-guards";
+import { normalizeStage } from "@/shared/conversion-status-utils";
+import { handleRouteError } from "@/shared/route-helpers";
 import { useCases } from "@/core/composition-root";
 
 const NO_STORE = { headers: { "Cache-Control": "private, no-store" } } as const;

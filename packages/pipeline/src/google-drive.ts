@@ -69,13 +69,24 @@ export async function uploadToDrive(
   return res.data.id!;
 }
 
+const MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024;
+
 export async function downloadFromDrive(drive: drive_v3.Drive, fileId: string): Promise<Buffer> {
   const res = await drive.files.get({ fileId, alt: "media" }, { responseType: "stream" });
 
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
+    let totalSize = 0;
     res.data
-      .on("data", (chunk: Buffer) => chunks.push(Buffer.from(chunk)))
+      .on("data", (chunk: Buffer) => {
+        totalSize += chunk.length;
+        if (totalSize > MAX_DOWNLOAD_SIZE) {
+          res.data.destroy();
+          reject(new Error("File too large"));
+          return;
+        }
+        chunks.push(Buffer.from(chunk));
+      })
       .on("error", reject)
       .on("end", () => resolve(Buffer.concat(chunks)));
   });

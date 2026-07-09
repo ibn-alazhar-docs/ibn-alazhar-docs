@@ -5,7 +5,7 @@ import {
   loadConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { IAccountRepository } from "@/domain/repositories/account.repository.interface";
-import { AppError } from "@/lib/shared/errors";
+import { AppError } from "@/shared/errors";
 
 export class DocumentDownloadUseCase {
   constructor(private readonly accountRepository: IAccountRepository) {}

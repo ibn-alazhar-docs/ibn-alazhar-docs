@@ -4,17 +4,17 @@ import { useState, useEffect, useCallback } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { SearchBar } from "@/components/search/search-bar";
-import { TagFilterSidebar } from "@/components/tags/tag-filter-sidebar";
-import { SearchResultCard, type SearchResult } from "@/components/search/search-result-card";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { SearchBar } from "@/ui/search/search-bar";
+import { TagFilterSidebar } from "@/ui/tags/tag-filter-sidebar";
+import { SearchResultCard, type SearchResult } from "@/ui/search/search-result-card";
+import { Card } from "@/ui/card";
+import { Button } from "@/ui/button";
 
 interface SearchResponse {
   query: string;

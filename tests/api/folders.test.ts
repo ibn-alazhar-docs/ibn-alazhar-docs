@@ -214,7 +214,7 @@ describe("Folders API", () => {
 
       expect(response.status).toBe(200);
       const data = await response.json();
-      expect(data.message).toBe("تم حذف المجلد بنجاح");
+      expect(data.message).toBe("حُذف المجلد");
     });
 
     it("should return 404 if trying to delete another user's folder", async () => {

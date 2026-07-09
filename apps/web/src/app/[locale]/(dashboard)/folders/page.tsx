@@ -2,16 +2,16 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { FolderTree } from "@/components/folders/folder-tree";
-import { Breadcrumbs } from "@/components/folders/breadcrumbs";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
+import { FolderTree } from "@/ui/folders/folder-tree";
+import { Breadcrumbs } from "@/ui/folders/breadcrumbs";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
 
-import { Card } from "@/components/ui/card";
+import { Card } from "@/ui/card";
 
 interface Breadcrumb {
   id: string;

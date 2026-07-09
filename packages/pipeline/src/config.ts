@@ -63,6 +63,10 @@ export function loadConfig(): PipelineConfig {
     },
     gemini: {
       apiKey: process.env.GEMINI_API_KEY ?? "",
+      // Configurable model id. Defaults to a currently-available Gemini Flash
+      // model that supports vision + PDF + Arabic. Override via GEMINI_MODEL
+      // if your account/region uses a different id (e.g. gemini-1.5-flash).
+      model: process.env.GEMINI_MODEL ?? "gemini-2.5-flash",
     },
     ocr: {
       dpi: Number(process.env.OCR_DPI ?? 300),

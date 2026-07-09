@@ -1,22 +1,22 @@
 "use client";
 
 import { useTranslations, useLocale } from "next-intl";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { FileUpload } from "@/components/pipeline/file-upload";
-import { FolderTree } from "@/components/folders/folder-tree";
-import { Breadcrumbs } from "@/components/folders/breadcrumbs";
-import { MoveDialog } from "@/components/folders/move-dialog";
-import { TagFilterSidebar } from "@/components/tags/tag-filter-sidebar";
-import { ActiveJobs } from "@/components/files/active-jobs";
-import { DocumentTable } from "@/components/files/document-table";
-import { FolderIcon } from "@/components/ui/icons";
-import { useFilesManager } from "@/hooks/use-files-manager";
-import { Card } from "@/components/ui/card";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { FileUpload } from "@/ui/pipeline/file-upload";
+import { FolderTree } from "@/ui/folders/folder-tree";
+import { Breadcrumbs } from "@/ui/folders/breadcrumbs";
+import { MoveDialog } from "@/ui/folders/move-dialog";
+import { TagFilterSidebar } from "@/ui/tags/tag-filter-sidebar";
+import { ActiveJobs } from "@/ui/files/active-jobs";
+import { DocumentTable } from "@/ui/files/document-table";
+import { FolderIcon } from "@/ui/icons";
+import { useFilesManager } from "@/state/use-files-manager";
+import { Card } from "@/ui/card";
 
 export default function FilesPage() {
   const t = useTranslations("nav");

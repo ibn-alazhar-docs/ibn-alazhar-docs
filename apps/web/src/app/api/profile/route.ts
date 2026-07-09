@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { AppError } from "@/lib/shared/errors";
-import { profileUpdateSchema } from "@/lib/shared/validators/auth";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { AppError } from "@/shared/errors";
+import { profileUpdateSchema } from "@/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
 
 const deleteAccountSchema = z

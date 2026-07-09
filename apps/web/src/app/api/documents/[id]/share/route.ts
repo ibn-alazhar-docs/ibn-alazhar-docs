@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { createShareSchema } from "@/lib/shared/validators/share";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { createShareSchema } from "@/shared/validators/share";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session, params }) => {

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { loginSchema, registerSchema } from "@/lib/shared/validators/auth";
-import { documentUpdateSchema } from "@/lib/shared/validators/document";
-import { createFolderSchema } from "@/lib/shared/validators/folder";
-import { createTagSchema } from "@/lib/shared/validators/tag";
-import { singleExportSchema, batchExportSchema } from "@/lib/backend/export/validators";
+import { loginSchema, registerSchema } from "@/shared/validators/auth";
+import { documentUpdateSchema } from "@/shared/validators/document";
+import { createFolderSchema } from "@/shared/validators/folder";
+import { createTagSchema } from "@/shared/validators/tag";
+import { singleExportSchema, batchExportSchema } from "@/core/services/export/validators";
 
 function percentile(arr: number[], p: number): number {
   const sorted = [...arr].sort((a, b) => a - b);

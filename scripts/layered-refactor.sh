@@ -74,10 +74,10 @@ echo "==================================================================="
 echo "PHASE 1 — Decompose lib/backend into layers"
 echo "==================================================================="
 
-# 1.1 prisma client singleton -> transport/db.ts
-git mv "$APP/lib/backend/prisma.ts" "$APP/transport/db.ts"
-fix_imports; gate
-commit_move "refactor(apps/web): move PrismaClient singleton to transport/db (Phase 1)"
+# 1.1 prisma client singleton -> transport/db.ts  (already done in baseline commit)
+# git mv "$APP/lib/backend/prisma.ts" "$APP/transport/db.ts"
+# fix_imports; gate
+# commit_move "refactor(apps/web): move PrismaClient singleton to transport/db (Phase 1)"
 
 # 1.2 rate-limit (file + dir) -> clients/redis
 git mv "$APP/lib/backend/rate-limit" "$APP/clients/redis"

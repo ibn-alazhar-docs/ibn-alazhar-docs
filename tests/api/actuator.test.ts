@@ -6,6 +6,20 @@ import { GET as getActuatorHealth } from "@/app/api/actuator/health/route";
 import { createApiRequest } from "./helpers";
 
 describe("Actuator API", () => {
+  const originalToken = process.env.ACTUATOR_BEARER_TOKEN;
+
+  beforeAll(() => {
+    process.env.ACTUATOR_BEARER_TOKEN = "test-token";
+  });
+
+  afterAll(() => {
+    if (originalToken === undefined) {
+      delete process.env.ACTUATOR_BEARER_TOKEN;
+    } else {
+      process.env.ACTUATOR_BEARER_TOKEN = originalToken;
+    }
+  });
+
   describe("GET /api/actuator/info", () => {
     it("returns app info with 200", async () => {
       const req = createApiRequest("/api/actuator/info");
@@ -28,7 +42,9 @@ describe("Actuator API", () => {
 
   describe("GET /api/actuator/metrics", () => {
     it("returns process metrics with 200", async () => {
-      const res = await getActuatorMetrics();
+      const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
+      const req = createApiRequest("/api/actuator/metrics", { headers: { authorization: `Bearer ${token}` } });
+      const res = await getActuatorMetrics(req as any);
       const json = await res.json();
 
       expect(res.status).toBe(200);
@@ -43,14 +59,18 @@ describe("Actuator API", () => {
     });
 
     it("sets no-store cache header", async () => {
-      const res = await getActuatorMetrics();
+      const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
+      const req = createApiRequest("/api/actuator/metrics", { headers: { authorization: `Bearer ${token}` } });
+      const res = await getActuatorMetrics(req as any);
       expect(res.headers.get("Cache-Control")).toBe("no-store");
     });
   });
 
   describe("GET /api/actuator/prometheus", () => {
     it("returns Prometheus-format text", async () => {
-      const res = await getActuatorPrometheus();
+      const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
+      const req = createApiRequest("/api/actuator/prometheus", { headers: { authorization: `Bearer ${token}` } });
+      const res = await getActuatorPrometheus(req as any);
       const text = await res.text();
 
       expect(res.status).toBe(200);

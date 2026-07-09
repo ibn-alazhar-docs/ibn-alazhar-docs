@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
-import { getJourneys } from "@/lib/backend/content";
-import { Container } from "@/components/ui/container";
-import { JourneyCard } from "@/components/discovery/journey-card";
+import { generatePageMetadata } from "@/ui/metadata";
+import { getJourneys } from "@/shared/content/index";
+import { Container } from "@/ui/container";
+import { JourneyCard } from "@/ui/discovery/journey-card";
 
 interface JourneysIndexPageProps {
   params: Promise<{ locale: string }>;

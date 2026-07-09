@@ -2,8 +2,8 @@ import createMiddleware from "next-intl/middleware";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { routing } from "./i18n/routing";
-import { checkRateLimit } from "./lib/backend/rate-limit";
-import { generateRequestId } from "./lib/shared/logger";
+import { checkRateLimit } from "@/clients/redis";
+import { generateRequestId } from "@/shared/logger";
 
 const handleI18nRouting = createMiddleware(routing);
 
@@ -55,7 +55,15 @@ function getLocaleFromRequest(request: NextRequest): string {
 }
 
 function hasSessionCookie(request: NextRequest): boolean {
-  return request.cookies.has("next-auth.session-token");
+  // Auth.js renames the session cookie to `__Secure-next-auth.session-token`
+  // when cookies are set with `secure: true` (production). Match both names so
+  // page-route auth gating and the CSRF session fallback are not silently skipped.
+  return (
+    request.cookies.has("next-auth.session-token") ||
+    request.cookies.has("__Secure-next-auth.session-token") ||
+    request.cookies.has("authjs.session-token") ||
+    request.cookies.has("__Secure-authjs.session-token")
+  );
 }
 
 export async function middleware(request: NextRequest) {
@@ -71,7 +79,7 @@ export async function middleware(request: NextRequest) {
 
   // Handle API routes: CSRF check + rate limiting, no i18n routing
   if (pathname.startsWith("/api")) {
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method)) {
+    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method) && !pathname.startsWith("/api/auth")) {
       const csrfCookie = request.cookies.get(CSRF_COOKIE_NAME)?.value;
       if (csrfCookie) {
         // Double-submit cookie enforcement (defense-in-depth, stronger than Origin check)

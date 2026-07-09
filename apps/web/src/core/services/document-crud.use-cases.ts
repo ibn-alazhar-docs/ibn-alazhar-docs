@@ -1,10 +1,10 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
 import type { Prisma } from "@prisma/client";
-import { AppError, NotFoundError } from "@/lib/shared/errors";
-import { ERROR_CODES } from "@/lib/shared/constants";
+import { AppError, NotFoundError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
 import { isAdminRole } from "@/domain/auth";
-import { logger } from "@/lib/shared/logger";
+import { logger } from "@/shared/logger";
 
 export class DocumentCrudUseCases {
   constructor(

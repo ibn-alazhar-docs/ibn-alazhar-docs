@@ -2,19 +2,19 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { TagIcon } from "@/components/ui/icons";
-import { TAG_COLORS } from "@/lib/shared/validators/tag";
-import type { TagWithCount } from "@/components/tags/types";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { TagIcon } from "@/ui/icons";
+import { TAG_COLORS } from "@/shared/validators/tag";
+import type { TagWithCount } from "@/ui/tags/types";
+import { Card } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+import { ConfirmDialog } from "@/ui/confirm-dialog";
 
 interface TagWithCountWithDate extends TagWithCount {
   createdAt: string;

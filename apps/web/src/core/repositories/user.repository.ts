@@ -48,6 +48,10 @@ export class UserRepository implements IUserRepository {
     return this.prisma.user.update({ where: { id }, data });
   }
 
+  async updateByEmail(email: string, data: Prisma.UserUncheckedUpdateInput): Promise<void> {
+    await this.prisma.user.update({ where: { email }, data });
+  }
+
   async updateRole(id: string, role: Role): Promise<UserRoleUpdate> {
     return this.prisma.user.update({
       where: { id },

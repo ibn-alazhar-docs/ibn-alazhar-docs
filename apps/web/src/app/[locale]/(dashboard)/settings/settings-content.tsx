@@ -3,17 +3,17 @@
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useRouter, usePathname } from "@/i18n/navigation";
-import { useTheme } from "@/components/theme/theme-provider";
-import { Container } from "@/components/ui/container";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { UI_TIMING } from "@/lib/shared/constants";
+import { useTheme } from "@/ui/theme/theme-provider";
+import { Container } from "@/ui/container";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+import { Label } from "@/ui/label";
+import { Badge } from "@/ui/badge";
+import { UI_TIMING } from "@/shared/constants";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { SunIcon, MoonIcon } from "@/components/ui/icons";
+import { SunIcon, MoonIcon } from "@/ui/icons";
 
 interface SettingsContentProps {
   user: {

@@ -12,6 +12,7 @@ import { SearchRepository } from "./repositories/search.repository";
 import { MinioStorageRepository } from "./repositories/storage.repository";
 import { WebhookRepository } from "./repositories/webhook.repository";
 import { BookmarkRepository } from "./repositories/bookmark.repository";
+import { VerificationTokenRepository } from "./repositories/verification-token.repository";
 
 import { RegistrationUseCases } from "./services/registration.use-cases";
 import { ProfileUseCases } from "./services/profile.use-cases";
@@ -46,6 +47,7 @@ const searchRepository = new SearchRepository(prisma);
 const storageRepository = new MinioStorageRepository();
 const webhookRepository = new WebhookRepository(prisma);
 const bookmarkRepository = new BookmarkRepository(prisma);
+const verificationTokenRepository = new VerificationTokenRepository(prisma);
 
 export const repos = {
   user: userRepository,
@@ -67,10 +69,10 @@ const shareAccessUseCase = new ShareAccessUseCase(shareRepository);
 const documentDownloadUseCase = new DocumentDownloadUseCase(accountRepository);
 
 export const useCases = {
-  registration: new RegistrationUseCases(userRepository, prisma),
+  registration: new RegistrationUseCases(userRepository, verificationTokenRepository),
   profile: new ProfileUseCases(userRepository),
   user: new UserUseCases(userRepository),
-  passwordReset: new PasswordResetUseCases(prisma),
+  passwordReset: new PasswordResetUseCases(userRepository, verificationTokenRepository),
   tag: new TagUseCases(tagRepository, tagDocumentRepository),
   conversion: new ConversionUseCases(documentRepository, conversionJobRepository),
   export: new ExportUseCases(

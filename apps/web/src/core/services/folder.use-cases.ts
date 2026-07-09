@@ -1,7 +1,7 @@
-import { type FlatFolder } from "@/lib/shared/build-folder-tree";
-import { AppError, NotFoundError } from "@/lib/shared/errors";
-import { ERROR_CODES } from "@/lib/shared/constants";
-import { MAX_FOLDER_DEPTH } from "@/lib/shared/validators/folder";
+import { type FlatFolder } from "@/core/folder-tree";
+import { AppError, NotFoundError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
+import { MAX_FOLDER_DEPTH } from "@/shared/validators/folder";
 import { isAdminRole } from "@/domain/auth";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";

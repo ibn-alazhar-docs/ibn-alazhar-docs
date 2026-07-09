@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { POST as uploadPost } from "@/app/api/upload/route";
 import { mockSession } from "./setup";
 
-vi.mock("@/lib/backend/rate-limit", () => ({
+vi.mock("@/clients/redis", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   rateLimitResponse: vi.fn().mockReturnValue(
@@ -10,7 +10,7 @@ vi.mock("@/lib/backend/rate-limit", () => ({
   ),
 }));
 
-vi.mock("@/lib/backend/services/dashboard.service", () => ({
+vi.mock("@/core/services/dashboard.service", () => ({
   DashboardService: {
     trackUpload: vi.fn().mockResolvedValue(undefined),
   },
@@ -126,12 +126,19 @@ describe("Upload API (/api/upload)", () => {
   });
 
   it("should reject files that exceed the max upload size with 400", async () => {
-    const oversized = new File(
-      [new Uint8Array(50 * 1024 * 1024 + 1024)],
-      "huge.pdf",
-      { type: "application/pdf" },
-    );
-    const req = createUploadRequest(oversized);
+    const req = new Request("http://localhost/api/upload", { method: "POST" });
+    const mockFile = new File(["dummy content"], "huge.pdf", { type: "application/pdf" });
+    Object.defineProperty(mockFile, "size", { value: 3000 * 1024 * 1024 }); // 3GB
+    const mockFormData = new FormData();
+    mockFormData.append("file", mockFile);
+    
+    // We override formData method
+    req.formData = async () => {
+      // Re-define size inside so formData.get("file") returns our mocked file
+      const retrieved = mockFormData.get("file") as File;
+      Object.defineProperty(retrieved, "size", { value: 3000 * 1024 * 1024 });
+      return mockFormData;
+    };
     const res = await uploadPost(req, { params: Promise.resolve({}) } as any);
     const data = await res.json();
 

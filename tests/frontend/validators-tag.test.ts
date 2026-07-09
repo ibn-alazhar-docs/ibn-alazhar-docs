@@ -9,7 +9,7 @@ import {
   bulkUntagSchema,
   TAG_COLORS,
   MAX_TAGS_PER_USER,
-} from "@/lib/shared/validators/tag";
+} from "@/shared/validators/tag";
 
 describe("TAG_COLORS", () => {
   it("has 10 colors", () => {

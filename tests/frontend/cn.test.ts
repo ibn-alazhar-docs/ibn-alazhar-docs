@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { cn } from "@/lib/frontend/cn";
+import { cn } from "@/ui/cn";
 
 describe("cn", () => {
   it("single class returns itself", () => {

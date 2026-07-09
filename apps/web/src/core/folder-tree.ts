@@ -1,4 +1,16 @@
-import type { FolderNode, FlatFolder } from "@/lib/shared/build-folder-tree";
+export interface FlatFolder {
+  id: string;
+  name: string;
+  parentId: string | null;
+  color: string | null;
+  icon: string | null;
+  order: number;
+  _count: { documents: number; children: number };
+}
+
+export interface FolderNode extends FlatFolder {
+  children: FolderNode[];
+}
 
 interface FolderParent {
   parentId: string | null;
@@ -12,19 +24,26 @@ export function getDescendantMaxDepth(
   folderId: string,
   currentDepth: number,
   folderMap: Map<string, FolderParent>,
+  visited: Set<string> = new Set(),
 ): number {
+  // Guard against cyclic parent references (corrupt data) to avoid infinite recursion.
+  if (visited.has(folderId)) return currentDepth;
+  visited.add(folderId);
+
   const children = Array.from(folderMap.entries())
     .filter(([, f]) => f.parentId === folderId)
     .map(([id]) => id);
   if (children.length === 0) return currentDepth;
   return Math.max(
-    ...children.map((childId) => getDescendantMaxDepth(childId, currentDepth + 1, folderMap)),
+    ...children.map((childId) =>
+      getDescendantMaxDepth(childId, currentDepth + 1, folderMap, visited),
+    ),
   );
 }
 
 /**
  * Converts a flat folder list into a nested tree structure.
- * Maintains sort order via the `order` field on each node.
+ * Maintains deterministic sort order via the `order` field on each node.
  */
 export function buildFolderTree(folders: FlatFolder[], parentId: string | null): FolderNode[] {
   const nodes: (FlatFolder & { children: FolderNode[] })[] = folders.map((f) => ({

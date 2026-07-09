@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { documentUpdateSchema } from "@/lib/shared/validators/document";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { documentUpdateSchema } from "@/shared/validators/document";
 import { useCases } from "@/core/composition-root";
-import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 
 export const GET = withAuth(async (_request, { session, params }) => {
   const id = params.id!;

@@ -1,9 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { loginSchema, registerSchema, profileUpdateSchema } from "@/lib/shared/validators/auth";
-import { documentUpdateSchema } from "@/lib/shared/validators/document";
-import { createFolderSchema, renameFolderSchema } from "@/lib/shared/validators/folder";
-import { createTagSchema } from "@/lib/shared/validators/tag";
-import { singleExportSchema, batchExportSchema } from "@/lib/backend/export/validators";
+import { loginSchema, registerSchema, profileUpdateSchema } from "@/shared/validators/auth";
+import { documentUpdateSchema } from "@/shared/validators/document";
+import { createFolderSchema, renameFolderSchema } from "@/shared/validators/folder";
+import { createTagSchema } from "@/shared/validators/tag";
+import { singleExportSchema, batchExportSchema } from "@/core/services/export/validators";
 
 describe("Input Validation Security", () => {
   describe("XSS payloads", () => {

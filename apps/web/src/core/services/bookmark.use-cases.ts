@@ -1,5 +1,5 @@
 import type { IBookmarkRepository } from "../../domain/repositories/bookmark.repository.interface";
-import type { AuthSession } from "@/lib/backend/auth-guards";
+import type { AuthSession } from "@/middleware/auth-guards";
 
 export class BookmarkUseCases {
   constructor(private readonly bookmarkRepository: IBookmarkRepository) {}

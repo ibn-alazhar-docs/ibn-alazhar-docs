@@ -3,7 +3,7 @@ import {
   expirationToMs,
   createShareSchema,
   EXPIRATION_OPTIONS,
-} from "@/lib/shared/validators/share";
+} from "@/shared/validators/share";
 
 describe("expirationToMs", () => {
   it('"never" returns null', () => {

@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DistributedLockService } from "@/lib/backend/rate-limit/distributed-lock";
-import { getRedisClient } from "@/lib/backend/rate-limit/redis";
+import { DistributedLockService } from "@/clients/redis/rate-limit/distributed-lock";
+import { getRedisClient } from "@/clients/redis/rate-limit/redis";
 
-vi.mock("@/lib/backend/rate-limit/redis", () => {
+vi.mock("@/clients/redis/rate-limit/redis", () => {
   const mockRedis = {
     set: vi.fn(),
     eval: vi.fn(),

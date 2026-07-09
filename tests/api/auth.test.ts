@@ -9,7 +9,7 @@ describe("Auth API - /api/auth/register", () => {
   const validPassword = "Password123";
   const validRegisterData = {
     name: "Test User",
-    email: "newuser_register_test@example.com",
+    email: `newuser_register_test_${Date.now()}_${Math.random().toString(36).substring(7)}@example.com`,
     password: validPassword,
     confirmPassword: validPassword,
   };
@@ -30,7 +30,7 @@ describe("Auth API - /api/auth/register", () => {
       expect(response.status).toBe(201);
 
       const data = await response.json();
-      expect(data.message).toBe("تم إنشاء الحساب بنجاح");
+      expect(data.message).toBe("أُنشئ الحساب");
       expect(data.userId).toBeDefined();
 
       createdUserIds.push(data.userId);

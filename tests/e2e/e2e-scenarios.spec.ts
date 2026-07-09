@@ -25,12 +25,19 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await page.locator('button[type="submit"]').first().click();
     await page.waitForLoadState("networkidle");
 
+    const csrfRes = await request.get("/api/auth/csrf");
+    const { csrfToken } = await csrfRes.json();
+
     const res = await request.post("/api/auth/register", {
       data: {
         name: "Test User E2E",
         email: TEST_EMAIL,
         password: TEST_PASSWORD,
         confirmPassword: TEST_PASSWORD,
+      },
+      headers: {
+        "X-CSRF-Token": csrfToken,
+        Cookie: `csrf_token=${csrfToken}`,
       },
     });
     expect(res.status()).toBe(201);

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { contentDispositionHeader } from "@/lib/backend/export/profiles";
-import { tagExportSchema } from "@/lib/backend/export/validators";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { contentDispositionHeader } from "@/core/services/export/profiles";
+import { tagExportSchema } from "@/core/services/export/validators";
 import { useCases } from "@/core/composition-root";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
+import { NotFoundError, AppError } from "@/shared/errors";
 
 export const POST = withAuth(async (request, { session }) => {
   try {

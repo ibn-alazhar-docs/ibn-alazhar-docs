@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
+import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
 
 const SUPPORTED_LOCALES = ["ar", "en"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];

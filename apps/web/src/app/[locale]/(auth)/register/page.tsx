@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
-import { RegisterForm } from "@/components/auth/register-form";
+import { generatePageMetadata } from "@/ui/metadata";
+import { RegisterForm } from "@/ui/auth/register-form";
 
 interface RegisterPageProps {
   params: Promise<{ locale: string }>;
