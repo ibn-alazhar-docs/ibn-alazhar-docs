@@ -1,32 +1,27 @@
-name: Feature Request
-description: Suggest an idea for Ibn Al-Azhar Docs
-labels: [enhancement]
-body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to suggest a feature!
-  - type: textarea
-    id: problem
-    attributes:
-      label: Is your feature request related to a problem? Please describe.
-      description: A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
-    validations:
-      required: true
-  - type: textarea
-    id: solution
-    attributes:
-      label: Describe the solution you'd like
-      description: A clear and concise description of what you want to happen.
-    validations:
-      required: true
-  - type: textarea
-    id: alternatives
-    attributes:
-      label: Describe alternatives you've considered
-      description: A clear and concise description of any alternative solutions or features you've considered.
-  - type: textarea
-    id: additional
-    attributes:
-      label: Additional context
-      description: Add any other context or screenshots about the feature request here.
+---
+name: "✨ Feature Request"
+about: "اقترح ميزة جديدة أو تحسيناً"
+title: "[Feature]: "
+labels: ["enhancement"]
+assignees: ""
+---
+
+## ✨ وصف الميزة
+وصف واضح ومختصر للميزة المطلوبة.
+
+## 🎯 المشكلة التي تحلها
+ما هي المشكلة أو الحاجة التي تلبيها هذه الميزة؟
+
+## 💡 الحل المقترح
+كيف تتصور الحل؟ (رسومات، تدفقات، أمثلة).
+
+## 🔄 البدائل المعتبرة
+أي حلول بديلة فكرت فيها ولماذا لم تخترها؟
+
+## 📋 معايير القبول (Acceptance Criteria)
+- [ ] معيار 1
+- [ ] معيار 2
+- [ ] معيار 3
+
+## 📎 سياق إضافي
+أي مراجع، تصميمات، أو معلومات أخرى.
