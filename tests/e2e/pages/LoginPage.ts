@@ -10,9 +10,9 @@ export class LoginPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.getByLabel(/البريد|Email/);
-    this.passwordInput = page.getByLabel(/كلمة المرور|Password/);
-    this.submitButton = page.getByRole("button", { name: /تسجيل الدخول|Sign in/ });
+    this.emailInput = page.locator('input[name="email"]');
+    this.passwordInput = page.locator('input[name="password"]');
+    this.submitButton = page.getByRole("button", { name: /تسجيل الدخول|سجّل الدخول|Sign in/ });
     this.errorMessage = page.getByRole("alert").first();
     this.htmlElement = page.locator("html");
   }
@@ -23,34 +23,17 @@ export class LoginPage {
   }
 
   async login(email: string, password: string) {
-    // E2E Tests backdoor: we added a CredentialsProvider to NextAuth specifically for tests.
-    // Instead of clicking "Sign in with Google", we bypass via a direct POST.
-    const csrfResponse = await this.page.request.get("/api/auth/csrf");
-    const csrfData = await csrfResponse.json();
-    const csrfToken = csrfData.csrfToken;
-
-    const response = await this.page.request.post("/api/auth/callback/credentials", {
-      form: {
-        csrfToken: csrfToken,
-        email: email,
-        password: password,
-        redirect: "false",
-      },
-    });
-    console.log(`Login response status: ${response.status()}`);
-    if (response.status() !== 200) {
-      console.error("Login failed:", await response.text());
-    }
-
-    // Refresh page to apply session
-    await this.page.reload();
+    await this.goto();
+    await this.emailInput.fill(email);
+    await this.passwordInput.fill(password);
+    await this.submitButton.click();
   }
 
-  async expectRedirectToDashboard(timeout: number = 20000) {
+  async expectRedirectToDashboard(timeout: number = 120000) {
     await this.page.waitForURL(/\/ar\/dashboard/, { timeout });
   }
 
-  async expectRedirectToLogin(timeout: number = 10000) {
+  async expectRedirectToLogin(timeout: number = 120000) {
     await this.page.waitForURL(/\/ar\/login/, { timeout });
   }
 

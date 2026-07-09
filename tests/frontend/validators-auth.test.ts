@@ -6,7 +6,7 @@ import {
   adminUserUpdateSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
-} from "@/lib/shared/validators/auth";
+} from "@/shared/validators/auth";
 
 describe("loginSchema", () => {
   it("valid input passes", () => {

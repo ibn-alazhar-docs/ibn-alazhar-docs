@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildFolderTree, type FlatFolder } from "@/lib/shared/build-folder-tree";
+import { buildFolderTree, type FlatFolder } from "@/core/folder-tree";
 
 function makeFolder(overrides: Partial<FlatFolder> = {}): FlatFolder {
   return {
@@ -21,7 +21,7 @@ describe("buildFolderTree", () => {
 
   it("single root folder returns one root node", () => {
     const folders = [makeFolder({ id: "r1", name: "Root" })];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(1);
     expect(tree[0].id).toBe("r1");
     expect(tree[0].children).toEqual([]);
@@ -33,7 +33,7 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "r2", name: "Root 2" }),
       makeFolder({ id: "r3", name: "Root 3" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(3);
   });
 
@@ -42,7 +42,7 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "parent", name: "Parent" }),
       makeFolder({ id: "child", name: "Child", parentId: "parent" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(1);
     expect(tree[0].children).toHaveLength(1);
     expect(tree[0].children[0].id).toBe("child");
@@ -54,14 +54,14 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "b", name: "B", parentId: "a" }),
       makeFolder({ id: "c", name: "C", parentId: "b" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(1);
     expect(tree[0].children[0].children[0].id).toBe("c");
   });
 
   it("orphaned child (parentId points to nonexistent) is excluded from tree", () => {
     const folders = [makeFolder({ id: "orphan", name: "Orphan", parentId: "nonexistent" })];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(0);
   });
 
@@ -72,7 +72,7 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "c2", name: "C2", parentId: "parent" }),
       makeFolder({ id: "c3", name: "C3", parentId: "parent" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(1);
     expect(tree[0].children).toHaveLength(3);
   });
@@ -84,7 +84,7 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "c1", name: "Child 1", parentId: "r1" }),
       makeFolder({ id: "c2", name: "Child 2", parentId: "r2" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree).toHaveLength(2);
     expect(tree[0].children).toHaveLength(1);
     expect(tree[1].children).toHaveLength(1);
@@ -101,7 +101,7 @@ describe("buildFolderTree", () => {
         _count: { documents: 5, children: 2 },
       }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree[0].color).toBe("#FF0000");
     expect(tree[0].icon).toBe("book");
     expect(tree[0].order).toBe(3);
@@ -113,7 +113,18 @@ describe("buildFolderTree", () => {
       makeFolder({ id: "parent", name: "Parent" }),
       makeFolder({ id: "child", name: "Child", parentId: "parent" }),
     ];
-    const tree = buildFolderTree(folders);
+    const tree = buildFolderTree(folders, null);
     expect(tree[0].children[0].children).toEqual([]);
+  });
+
+  it("sorts siblings deterministically by the `order` field", () => {
+    const folders = [
+      makeFolder({ id: "p", name: "Parent" }),
+      makeFolder({ id: "c3", name: "C3", parentId: "p", order: 3 }),
+      makeFolder({ id: "c1", name: "C1", parentId: "p", order: 1 }),
+      makeFolder({ id: "c2", name: "C2", parentId: "p", order: 2 }),
+    ];
+    const tree = buildFolderTree(folders, null);
+    expect(tree[0].children.map((c) => c.id)).toEqual(["c1", "c2", "c3"]);
   });
 });

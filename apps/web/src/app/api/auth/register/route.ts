@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { registerSchema } from "@/lib/shared/validators/auth";
+import { registerSchema } from "@/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
-import { ConflictError } from "@/lib/shared/errors";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
+import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
+import { ConflictError } from "@/shared/errors";
 
 export async function POST(request: Request) {
   try {

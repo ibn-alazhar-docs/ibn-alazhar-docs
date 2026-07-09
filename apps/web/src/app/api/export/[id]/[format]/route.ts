@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
 import { useCases } from "@/core/composition-root";
-import { contentDispositionHeader, getContentType } from "@/lib/backend/export/profiles";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { contentDispositionHeader, getContentType } from "@/core/services/export/profiles";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 
 export const GET = withAuth(async (request, { session, params }) => {
   try {

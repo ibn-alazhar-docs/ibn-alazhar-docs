@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
 import { useCases } from "@/core/composition-root";
 
 const documentsQuerySchema = z

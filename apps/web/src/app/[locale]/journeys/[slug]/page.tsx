@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
-import { getJourney, getJourneys, getCategoryLabel } from "@/lib/backend/content";
-import { Container } from "@/components/ui/container";
+import { generatePageMetadata } from "@/ui/metadata";
+import { getJourney, getJourneys, getCategoryLabel } from "@/shared/content/index";
+import { Container } from "@/ui/container";
 
 interface JourneyDetailPageProps {
   params: Promise<{ locale: string; slug: string }>;

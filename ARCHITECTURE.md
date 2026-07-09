@@ -82,6 +82,36 @@ sequenceDiagram
 
 ---
 
+## 🧱 2.5. البنية الطبقية للكود — `apps/web/src` (Layered Source Layout)
+
+بعد عملية إعادة الهيكلة الطبقية (layered refactor)، تتبع شفرة `apps/web` تقسيمًا
+واضحاً حسب المسؤولية لتقليل الاقتران (low coupling) ورفع التماسك (high cohesion):
+
+| المسار | المسؤولية | الطبقة |
+| ------ | --------- | ------ |
+| `core/services/` | حالات الاستخدام (Use Cases) — منطق الأعمال البحت | Domain |
+| `core/repositories/` | تطبيقات مستودعات Prisma (DIP) | Infrastructure |
+| `domain/repositories/*.interface.ts` | واجهات المستودعات (تبعيات مقلوبة) | Domain |
+| `core/folder-tree.ts` | بناء الشجرة + حساب العمق (منطق خالص) | Domain |
+| `core/composition-root.ts` | الربط المركزي (DI) بين المستودعات وحالات الاستخدام | Composition Root |
+| `transport/db.ts` | نسخة وحيدة من `PrismaClient` (singleton) | Transport |
+| `clients/redis/` | تحديد المعدل (rate-limit) + القفل الموزع | Infrastructure Client |
+| `middleware/` | المصادقة، حراس الصلاحيات، CSRF، التدقيق، تسجيل الطلبات | Middleware |
+| `shared/` | الأخطاء، المسجّل (logger)، الثوابت، المدقّقات (validators)، OpenAPI | Shared Kernel |
+| `ui/` | مكونات React (folders, files, pipeline, layout …) | Presentation |
+| `state/` | خطافات React (use-folders, use-queries, use-file-upload) | Presentation State |
+| `api/` | عميل واجهة البرمجة (api-client) | Presentation Client |
+
+**مبادئ أساسية مُطبَّقة:**
+- *Dependency Inversion*: حالات الاستخدام تعتمد على **واجهات** المستودعات فقط
+  (مثال: `RegistrationUseCases` / `PasswordResetUseCases` تعتمد على
+  `IVerificationTokenRepository` بدل `PrismaClient` المجرّد).
+- *Single source of truth*: تعريفا `FlatFolder`/`FolderNode` ودالة `buildFolderTree`
+  موجودان في مكان واحد هو `core/folder-tree.ts` (وُحدّت النسختان المتباعدتان).
+- *No raw Prisma in use cases*: أي وصول لقاعدة البيانات يمر عبر مستودع.
+
+---
+
 ## 🧠 3. القرارات المعمارية الرئيسية (Core Architectural Decisions)
 
 تم توثيق القرارات التالية بناءً على كود المشروع الفعلي والمنطق المتبع:

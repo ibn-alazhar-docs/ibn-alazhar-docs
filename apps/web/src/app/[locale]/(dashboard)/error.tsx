@@ -2,10 +2,10 @@
 
 import { useEffect } from "react";
 import { Link } from "@/i18n/navigation";
-import { Container } from "@/components/ui/container";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
+import { Container } from "@/ui/container";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
 
 interface DashboardErrorProps {
   error: Error & { digest?: string };

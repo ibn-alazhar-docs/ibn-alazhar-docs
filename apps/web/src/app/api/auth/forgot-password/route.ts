@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { forgotPasswordSchema } from "@/lib/shared/validators/auth";
+import { forgotPasswordSchema } from "@/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { sendResetPasswordEmail } from "@/lib/email/send";
-import { auditLog, AUDIT_ACTIONS } from "@/lib/backend/audit";
+import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
 
 export async function POST(request: Request) {
   try {

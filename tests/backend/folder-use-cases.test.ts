@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { FolderUseCases } from "@/core/services/folder.use-cases";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
+import { NotFoundError, AppError } from "@/shared/errors";
 
 function makeFolder(overrides: Record<string, unknown> = {}) {
   return {

@@ -8,7 +8,7 @@ const { mockEnqueueSplitting } = vi.hoisted(() => ({
   mockEnqueueSplitting: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("@/lib/backend/rate-limit", () => ({
+vi.mock("@/clients/redis", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   rateLimitResponse: vi

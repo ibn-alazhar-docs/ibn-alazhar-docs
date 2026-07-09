@@ -94,8 +94,11 @@ export function validatePdf(
     };
   }
 
-  // Validate file size
-  if (fileSize > MAX_FILE_SIZE) {
+  // Validate file size against the ACTUAL buffer content, not the
+  // client-reported `fileSize` (which an attacker could under-report to
+  // bypass the gate while still uploading a large file).
+  if (buffer.length > MAX_FILE_SIZE) {
+    details.size = buffer.length;
     return {
       valid: false,
       error: `File exceeds maximum size of 100MB`,
@@ -193,7 +196,7 @@ export function validatePdf(
   return { valid: true, details };
 }
 
-export async function ensureBucket(config: PipelineConfig): Promise<void> {
+export async function ensureBucket(config: PipelineConfig, retryDelay?: number): Promise<void> {
   const mc = getStorageClient(config);
   const maxRetries = 10;
 
@@ -206,7 +209,7 @@ export async function ensureBucket(config: PipelineConfig): Promise<void> {
       return;
     } catch (err) {
       if (attempt === maxRetries) throw err;
-      const delay = Math.min(1000 * attempt, 5000);
+      const delay = retryDelay ?? Math.min(1000 * attempt, 5000);
       logger.warn(
         `Storage not ready (attempt ${attempt}/${maxRetries}), retrying in ${delay}ms...`,
       );

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
-import { logger } from "@/lib/shared/logger";
+import { logger } from "@/shared/logger";
 import net from "net";
 
 async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {

@@ -5,8 +5,33 @@ import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
 
+/**
+ * Split a Gemini batch response on the PAGE_BREAK separator and produce
+ * ordered page results. Pure function — no I/O, no SDK, easily unit-testable.
+ *
+ * @param text       Raw text returned by Gemini for one batch.
+ * @param batchStart 0-based index of the first page in the batch.
+ * @param expected   How many pages we expected from this batch.
+ */
+export function splitGeminiBatchPages(
+  text: string,
+  batchStart: number,
+  expected: number,
+): OcrPageResult[] {
+  const pageTexts = text.split("===PAGE_BREAK===").map((t) => t.trim());
+  const pages: OcrPageResult[] = [];
+  for (let j = 0; j < expected; j++) {
+    pages.push({
+      number: batchStart + j + 1,
+      text: pageTexts[j] || "",
+      confidence: 1.0,
+    });
+  }
+  return pages;
+}
+
 export class GeminiOcrProvider implements OcrProvider {
-  readonly name = "Gemini 1.5 Flash OCR";
+  readonly name = "Gemini OCR (configurable model)";
   readonly type = "gemini" as OcrEngineType;
 
   isAvailable(config: PipelineConfig): boolean {
@@ -34,13 +59,16 @@ export class GeminiOcrProvider implements OcrProvider {
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: config.gemini.model });
 
-    const prompt = `You are an expert Arabic OCR and document layout analysis system.
-Extract all text exactly as it appears in this document.
-Maintain the exact structure and layout of the original text.
-Preserve all tables using Markdown format perfectly.
-Return ONLY the markdown text, without any conversational prefixes.`;
+    const prompt = `أنت نظام خبير في التعرف الضوئي على النصوص العربية وتحليل تخطيط المستندات.
+استخرج كل النص تمامًا كما يظهر في المستند الأصلي دون إضافة أو حذف.
+الأهمية القصوى: احتفظ بعلامات التشكيل (التنوين والحركات: الفتحة والضمة والكسرة والسكون) لكل كلمة كما هي، ولا تحذفها ولا تقدّرها.
+احتفظ بعلامات الترقيم (، . ؛ : ؟ ! " " ( ) وغيرها) بدقة.
+حافظ على اتجاه النص من اليمين إلى اليسار (RTL) وبنفس ترتيب الصفحات.
+حافظ على البنية والتخطيط الأصلي: العناوين، الفقرات، والقوائم (النقطية والرقمية) كما هي.
+أعد أي جداول (tables) بصيغة Markdown صحيحة ومطابقة للأصل تمامًا.
+لا تُضف أي نص استهلالي أو ختامي؛ أعد النص المستخرج فقط.`;
 
     const result = await model.generateContent([
       prompt,
@@ -81,17 +109,19 @@ Return ONLY the markdown text, without any conversational prefixes.`;
     }
 
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+    const model = genAI.getGenerativeModel({ model: config.gemini.model });
 
     const BATCH_SIZE = 10;
-    const batchPrompt = `You are an expert Arabic OCR and document layout analysis system.
-I am providing you with multiple pages from a document.
-Extract all text exactly as it appears in this document.
-Maintain the exact structure and layout of the original text.
-Preserve all tables using Markdown format perfectly.
-IMPORTANT: If the page contains footnotes or marginalia (الهوامش والحواشي السفلية), you MUST extract them accurately, preserve their reference numbers, and place them at the bottom of the extracted page text separated by a horizontal rule "---".
-Return ONLY the markdown text, without any conversational prefixes.
-IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this separator on a new line: "===PAGE_BREAK==="`;
+    const batchPrompt = `أنت نظام خبير في التعرف الضوئي على النصوص العربية وتحليل تخطيط المستندات.
+أزوّدك بعدة صفحات من مستند.
+استخرج كل النص تمامًا كما يظهر في المستند الأصلي دون إضافة أو حذف.
+الأهمية القصوى: احتفظ بعلامات التشكيل (التنوين والحركات: الفتحة والضمة والكسرة والسكون) لكل كلمة كما هي، ولا تحذفها.
+احتفظ بعلامات الترقيم (، . ؛ : ؟ ! " " ( ) وغيرها) بدقة.
+حافظ على اتجاه النص من اليمين إلى اليسار (RTL) وبنفس ترتيب الصفحات.
+حافظ على البنية والتخطيط الأصلي: العناوين، الفقرات، والقوائم كما هي.
+أعد أي جداول (tables) بصيغة Markdown صحيحة ومطابقة للأصل تمامًا.
+تعليمة هامة: إذا احتوت الصفحة على هوامش أو حواشٍ سفلية، فاستخرجها بدقة مع أرقام المراجع، وضعها أسفل نص الصفحة مفصولة بخط أفقي "---".
+تعليمة هامة: افصل نص كل صفحة عن الصفحة التي تليها تمامًا بفاصل في سطر جديد وهو: "===PAGE_BREAK==="`;
     const pages: OcrPageResult[] = [];
     let fullText = "";
 
@@ -118,13 +148,10 @@ IMPORTANT INSTRUCTION: You MUST separate the text of each page with exactly this
         const result = await model.generateContent(parts);
         const text = result.response.text();
 
-        const pageTexts = text.split("===PAGE_BREAK===").map((t: string) => t.trim());
-
-        for (let j = 0; j < batchGetters.length; j++) {
-          const pageNum = i + j + 1;
-          const pageText = pageTexts[j] || "";
-          pages.push({ number: pageNum, text: pageText, confidence: 1.0 });
-          fullText += pageText + "\n\n";
+        const batchPages = splitGeminiBatchPages(text, i, batchGetters.length);
+        pages.push(...batchPages);
+        for (const p of batchPages) {
+          fullText += p.text + "\n\n";
         }
 
         if (i + BATCH_SIZE < pageGetters.length) {

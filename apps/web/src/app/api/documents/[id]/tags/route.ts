@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { addTagToDocumentSchema, setDocumentTagsSchema } from "@/lib/shared/validators/tag";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { addTagToDocumentSchema, setDocumentTagsSchema } from "@/shared/validators/tag";
 import { useCases } from "@/core/composition-root";
 
 export const GET = withAuth(async (_request, { session, params }) => {

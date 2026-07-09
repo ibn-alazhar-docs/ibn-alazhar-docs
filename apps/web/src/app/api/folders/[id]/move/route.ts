@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { checkUserRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
-import { moveFolderSchema } from "@/lib/shared/validators/folder";
+import { withAuth } from "@/middleware/auth-guards";
+import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { moveFolderSchema } from "@/shared/validators/folder";
 import { useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { handleRouteError } from "@/shared/route-helpers";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id;

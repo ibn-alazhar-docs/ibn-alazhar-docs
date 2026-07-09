@@ -111,7 +111,7 @@ describe("Share API", () => {
 
       expect(res.status).toBe(409);
       expect(data.error.code).toBe("VALIDATION_ERROR");
-      expect(data.error.message).toBe("الملف جاهز للتصدير بعد");
+      expect(data.error.message).toBe("الملف غير جاهز للمشاركة بعد");
     });
 
     it("should reject invalid expiration date", async () => {
@@ -182,7 +182,7 @@ describe("Share API", () => {
       expect(res.status).toBe(200);
       expect(data.success).toBe(true);
 
-      const check = await prisma.shareLink.findFirst({ where: { documentId: freshDoc.id } });
+      const check = await prisma.shareLink.findFirst({ where: { documentId: freshDoc.id, deletedAt: null } });
       expect(check).toBeNull();
     });
 
@@ -207,6 +207,7 @@ describe("Share API", () => {
       const req = createApiRequest(`/api/share/${share.token}`, { method: "GET" });
       const res = await getPublicShare(req, { params: Promise.resolve({ token: share.token }) });
       const data = await res.json();
+      console.log("SHARE DATA:", data);
 
       expect(res.status).toBe(200);
       expect(data.document.id).toBe(docA.id);

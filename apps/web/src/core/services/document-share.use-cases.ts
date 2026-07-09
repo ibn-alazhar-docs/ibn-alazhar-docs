@@ -1,9 +1,9 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IShareRepository } from "../../domain/repositories/share.repository.interface";
 import { randomBytes } from "crypto";
-import { expirationToMs } from "@/lib/shared/validators/share";
-import { AppError, NotFoundError } from "@/lib/shared/errors";
-import { ERROR_CODES } from "@/lib/shared/constants";
+import { expirationToMs } from "@/shared/validators/share";
+import { AppError, NotFoundError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
 
 export class DocumentShareUseCases {
   constructor(

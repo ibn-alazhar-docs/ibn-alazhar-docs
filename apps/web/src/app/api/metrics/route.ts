@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
-import { withAdminAuth } from "@/lib/backend/auth-guards";
+import { withAdminAuth } from "@/middleware/auth-guards";
 
 interface Metrics {
   timestamp: string;

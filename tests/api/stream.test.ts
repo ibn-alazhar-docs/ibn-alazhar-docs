@@ -2,12 +2,12 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { GET as streamGet } from "@/app/api/stream/route";
 import { mockSession } from "./setup";
 import { createApiRequest } from "./helpers";
-import { StreamService } from "@/lib/backend/services/stream.service";
+import { StreamService } from "@/core/services/stream.service";
 
-vi.mock("@/lib/backend/rate-limit", () => ({
-  checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
-  checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
-  rateLimitResponse: vi.fn().mockReturnValue(
+vi.mock("@/clients/redis", () => ({
+  checkRateLimit: vi.fn(async () => ({ allowed: true })),
+  checkUserRateLimit: vi.fn(async () => ({ allowed: true })),
+  rateLimitResponse: vi.fn(() => 
     new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
   ),
 }));

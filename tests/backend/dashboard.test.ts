@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { DashboardService } from "@/lib/backend/services/dashboard.service";
-import { getRedisClient } from "@/lib/backend/rate-limit/redis";
+import { DashboardService } from "@/core/services/dashboard.service";
+import { getRedisClient } from "@/clients/redis/rate-limit/redis";
 import { repos } from "@/core/composition-root";
 
-vi.mock("@/lib/backend/rate-limit/redis", () => {
+vi.mock("@/clients/redis/rate-limit/redis", () => {
   const mockRedis = {
     zadd: vi.fn(),
     zremrangebyscore: vi.fn(),

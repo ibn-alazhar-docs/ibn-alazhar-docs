@@ -14,11 +14,11 @@ import {
   prisma,
 } from "../integration/helpers/db";
 
-vi.mock("@/lib/backend/export/zip-builder", () => ({
+vi.mock("@/core/services/export/zip-builder", () => ({
   buildZipPackage: vi.fn().mockResolvedValue(Buffer.from("dummy zip content")),
 }));
 
-vi.mock("@/lib/backend/rate-limit", () => ({
+vi.mock("@/clients/redis", () => ({
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   rateLimitResponse: vi
@@ -185,7 +185,7 @@ describe("Export API Routes", () => {
       const res = await batchExportPost(req);
       expect(res.status).toBe(404);
       const data = await res.json();
-      expect(data.error.message).toContain("لم يتم العثور على بعض المستندات");
+      expect(data.error.message).toContain("لم يُعثر على بعض المستندات");
     });
 
     it("should return 400 if format is not zip", async () => {

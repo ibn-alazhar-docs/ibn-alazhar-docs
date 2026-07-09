@@ -11,6 +11,12 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_CORRUPT" };
   if (msg.includes("PDF_TRUNCATED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_TRUNCATED" };
+  if (msg.includes("PDF_INVALID"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_INVALID" };
+  if (msg.includes("PDF_EXCEEDS_MAX_PAGES"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_EXCEEDS_MAX_PAGES" };
+  if (msg.includes("PDF_RENDER_FAILED"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_RENDER_FAILED" };
   if (msg.includes("FILE_TOO_LARGE"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "FILE_TOO_LARGE" };
   if (msg.includes("INVALID_TYPE"))

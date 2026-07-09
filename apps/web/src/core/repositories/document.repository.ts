@@ -2,7 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import type { Document, Prisma } from "@prisma/client";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
-import { NotFoundError } from "@/lib/shared/errors";
+import { NotFoundError } from "@/shared/errors";
 
 export class DocumentRepository implements IDocumentRepository {
   constructor(private readonly prisma: PrismaClient) {}

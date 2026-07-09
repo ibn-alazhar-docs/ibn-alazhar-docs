@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
-import { auth } from "@/lib/backend/auth";
-import { PublicHeader } from "@/components/layout/public-header";
-import { PublicFooter } from "@/components/layout/public-footer";
-import { Hero } from "@/components/sections/hero";
-import { KnowledgeAreas } from "@/components/sections/knowledge-areas";
-import { Features } from "@/components/sections/features";
-import { CTASection } from "@/components/sections/cta-section";
-import { GeometricStar } from "@/components/ui/geometric-star";
+import { generatePageMetadata } from "@/ui/metadata";
+import { auth } from "@/middleware/auth";
+import { PublicHeader } from "@/ui/layout/public-header";
+import { PublicFooter } from "@/ui/layout/public-footer";
+import { Hero } from "@/ui/sections/hero";
+import { KnowledgeAreas } from "@/ui/sections/knowledge-areas";
+import { Features } from "@/ui/sections/features";
+import { CTASection } from "@/ui/sections/cta-section";
+import { GeometricStar } from "@/ui/geometric-star";
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;

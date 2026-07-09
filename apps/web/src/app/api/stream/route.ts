@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { withAuth } from "@/lib/backend/auth-guards";
-import { handleRouteError } from "@/lib/shared/route-helpers";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { withAuth } from "@/middleware/auth-guards";
+import { handleRouteError } from "@/shared/route-helpers";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos } from "@/core/composition-root";
-import { ERROR_CODES, LIMITS, UI_TIMING } from "@/lib/shared/constants";
-import { StreamService } from "@/lib/backend/services/stream.service";
+import { ERROR_CODES, LIMITS, UI_TIMING } from "@/shared/constants";
+import { StreamService } from "@/core/services/stream.service";
 
 export const GET = withAuth(async (request, { session }) => {
   const rateLimitResult = await checkRateLimit("/api/stream", request);

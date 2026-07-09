@@ -1,8 +1,8 @@
 import type { IWebhookRepository } from "../../domain/repositories/webhook.repository.interface";
 import type { Prisma } from "@prisma/client";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
+import { NotFoundError, AppError } from "@/shared/errors";
 import { createHmac, randomBytes } from "crypto";
-import { logger } from "@/lib/shared/logger";
+import { logger } from "@/shared/logger";
 
 const WEBHOOK_SECRET_LENGTH = 32;
 const MAX_RESPONSE_BODY_CHARS = 2000;

@@ -2,18 +2,18 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
-import { PAGINATION } from "@/lib/shared/constants";
-import { ConversionStatus } from "@/components/pipeline/conversion-status";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
+import { PAGINATION } from "@/shared/constants";
+import { ConversionStatus } from "@/ui/pipeline/conversion-status";
+import { Card } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Input } from "@/ui/input";
+import { Badge } from "@/ui/badge";
 
 interface ConversionJob {
   id: string;

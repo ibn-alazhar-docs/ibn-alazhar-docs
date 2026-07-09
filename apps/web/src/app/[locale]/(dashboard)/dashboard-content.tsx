@@ -2,17 +2,17 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import { Container } from "@/components/ui/container";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Container } from "@/ui/container";
+import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
+import { Badge } from "@/ui/badge";
+import { Button } from "@/ui/button";
 import {
   FileTextIcon,
   FolderIcon,
   TagIcon,
   RefreshIcon,
   ChevronRightIcon,
-} from "@/components/ui/icons";
+} from "@/ui/icons";
 import { type ReactNode } from "react";
 
 interface Document {

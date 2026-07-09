@@ -1,8 +1,8 @@
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
 import { isAdminRole } from "@/domain/auth";
-import { NotFoundError, AppError } from "@/lib/shared/errors";
-import { executeBulkExport } from "@/lib/backend/export/bulk-export-helpers";
+import { NotFoundError, AppError } from "@/shared/errors";
+import { executeBulkExport } from "@/core/services/export/bulk-export-helpers";
 import {
   resolveDocumentForExport,
   resolveTagsForExport,
@@ -10,9 +10,9 @@ import {
   resolveOcrData,
   resolvePipelineData,
   buildExportMetadata,
-} from "@/lib/backend/export/metadata";
-import { buildZipPackage } from "@/lib/backend/export/zip-builder";
-import type { ExportMetadata } from "@/lib/backend/export/types";
+} from "@/core/services/export/metadata";
+import { buildZipPackage } from "@/core/services/export/zip-builder";
+import type { ExportMetadata } from "@/core/services/export/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
@@ -135,7 +135,7 @@ export class ExportUseCases {
       includeSource: options.includeSource,
     });
 
-    const { sanitizeTitle, getContentType } = await import("@/lib/backend/export/profiles");
+    const { sanitizeTitle, getContentType } = await import("@/core/services/export/profiles");
     const zipName = `${sanitizeTitle(document.title)}_${new Date().toISOString().split("T")[0]}.zip`;
 
     return {
@@ -183,7 +183,7 @@ export class ExportUseCases {
     format: string,
     pipeline: { wordCount: number; pageCount?: number },
   ): Promise<SingleExportResult> {
-    const { sanitizeTitle, getContentType } = await import("@/lib/backend/export/profiles");
+    const { sanitizeTitle, getContentType } = await import("@/core/services/export/profiles");
 
     const cached = await this.findCachedExport(document.id, format);
     if (cached) {
@@ -203,9 +203,8 @@ export class ExportUseCases {
     const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
-    const { generateMarkdown, generateTxt, generateJson } = await import(
-      "@ibn-al-azhar-docs/pipeline"
-    );
+    const { generateMarkdown, generateTxt, generateJson } =
+      await import("@ibn-al-azhar-docs/pipeline");
     const cleaned = generateMarkdown(rawText, { pageCount: pipeline.pageCount });
 
     let outputBuffer: Buffer;
@@ -243,7 +242,7 @@ export class ExportUseCases {
     pipeline: { wordCount: number; pageCount?: number },
     options: ExportOptions,
   ): Promise<SingleExportResult> {
-    const { sanitizeTitle, getContentType } = await import("@/lib/backend/export/profiles");
+    const { sanitizeTitle, getContentType } = await import("@/core/services/export/profiles");
 
     const cached = await this.findCachedExport(document.id, format);
     if (cached) {

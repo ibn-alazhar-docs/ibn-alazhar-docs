@@ -67,8 +67,8 @@
 
 ## Code Layout
 
-- Frontend Components: `apps/web/src/components/auth/`
+- Frontend Components: `apps/web/src/ui/auth/`
 - App Router Pages: `apps/web/src/app/[locale]/(auth)/`
-- Validation Schemas: `apps/web/src/lib/shared/validators/auth.ts`
+- Validation Schemas: `apps/web/src/shared/validators/auth.ts`
 - Backend Use Cases: `apps/web/src/core/services/`
 - API Routes: `apps/web/src/app/api/auth/`

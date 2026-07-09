@@ -7,7 +7,9 @@ export default defineConfig({
       "@": path.resolve(__dirname, "apps/web/src"),
       "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
       "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
+      zod: "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/node_modules/.pnpm/zod@4.4.3/node_modules/zod",
     },
+    conditions: ["development", "import"],
   },
   test: {
     globals: true,

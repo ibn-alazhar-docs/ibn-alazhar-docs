@@ -2,15 +2,15 @@
 
 import { useTranslations, useLocale } from "next-intl";
 import { useState, useEffect } from "react";
-import { Container } from "@/components/ui/container";
-import { PageTransition } from "@/components/ui/page-transition";
-import { Section } from "@/components/ui/section";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Container } from "@/ui/container";
+import { PageTransition } from "@/ui/page-transition";
+import { Section } from "@/ui/section";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Card } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Badge } from "@/ui/badge";
+import { ConfirmDialog } from "@/ui/confirm-dialog";
 
 interface User {
   id: string;

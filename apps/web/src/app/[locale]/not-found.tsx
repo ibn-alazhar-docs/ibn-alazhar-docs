@@ -1,7 +1,7 @@
-import { Container } from "@/components/ui/container";
-import { Stack } from "@/components/ui/stack";
-import { Heading } from "@/components/ui/heading";
-import { Text } from "@/components/ui/text";
+import { Container } from "@/ui/container";
+import { Stack } from "@/ui/stack";
+import { Heading } from "@/ui/heading";
+import { Text } from "@/ui/text";
 
 export default function LocaleNotFound() {
   return (

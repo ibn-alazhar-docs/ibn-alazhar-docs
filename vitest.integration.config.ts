@@ -7,6 +7,7 @@ export default defineConfig({
       "@": path.resolve(__dirname, "apps/web/src"),
       "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
       "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
+      ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
     },
   },
   test: {

@@ -15,6 +15,7 @@ export interface IUserRepository {
   count(args?: Prisma.UserCountArgs): Promise<number>;
   create(data: Prisma.UserUncheckedCreateInput): Promise<User>;
   update(id: string, data: Prisma.UserUncheckedUpdateInput): Promise<User>;
+  updateByEmail(email: string, data: Prisma.UserUncheckedUpdateInput): Promise<void>;
   updateRole(id: string, role: Role): Promise<UserRoleUpdate>;
   softDelete(id: string): Promise<void>;
 }

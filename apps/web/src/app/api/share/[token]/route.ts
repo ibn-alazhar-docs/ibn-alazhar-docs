@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { checkRateLimit, rateLimitResponse } from "@/lib/backend/rate-limit";
+import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos, useCases } from "@/core/composition-root";
-import { handleRouteError } from "@/lib/shared/route-helpers";
+import { handleRouteError } from "@/shared/route-helpers";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -105,6 +105,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error: unknown) {
+    console.error("Public share route error:", error);
     return handleRouteError(error, "share/[token]", "Failed to load document");
   }
 }

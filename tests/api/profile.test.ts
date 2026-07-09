@@ -4,7 +4,7 @@ import { mockSession } from "./setup";
 import { PATCH as updateProfile, DELETE as deleteProfile } from "@/app/api/profile/route";
 import { createTestUser, cleanupTestUsers, prisma } from "../integration/helpers/db";
 
-vi.mock("@/lib/backend/rate-limit", () => ({
+vi.mock("@/clients/redis", () => ({
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   rateLimitResponse: vi

@@ -1,8 +1,29 @@
 import { drive_v3 } from "@googleapis/drive";
-import type { PipelineConfig, OcrEngineType, OcrEngineResult } from "../types";
+import type { PipelineConfig, OcrEngineType, OcrEngineResult, OcrPageResult } from "../types";
 import type { OcrProvider } from "./types";
 import { estimateConfidence, toOcrPageResult } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+
+/**
+ * Parse the text result of a Google Drive OCR export into a structured result.
+ * Handles form-feed (page-break) splitting, empty-content detection, and
+ * confidence estimation.
+ * Pure function — no I/O, no SDK, easily unit-testable.
+ */
+export function parseGoogleExportResult(fullText: string): OcrEngineResult {
+  const rawPages = fullText
+    .split("\f")
+    .filter(Boolean)
+    .map((text: string, i: number) => ({
+      number: i + 1,
+      text: text.trim(),
+    }));
+
+  const pages: OcrPageResult[] = toOcrPageResult(rawPages);
+  const confidence = estimateConfidence(fullText);
+
+  return { text: fullText, pages, confidence, engine: "google" };
+}
 
 const logger = baseLogger.child({ module: "ocr-google" });
 
@@ -98,18 +119,7 @@ export class GoogleDriveOcrProvider implements OcrProvider {
         throw new Error("OCR_NO_TEXT");
       }
 
-      const rawPages = fullText
-        .split("\f")
-        .filter(Boolean)
-        .map((text: string, i: number) => ({
-          number: i + 1,
-          text: text.trim(),
-        }));
-
-      const pages = toOcrPageResult(rawPages);
-      const confidence = estimateConfidence(fullText);
-
-      return { text: fullText, pages, confidence, engine: "google" };
+      return parseGoogleExportResult(fullText);
     } finally {
       try {
         await drv.files.delete({ fileId });

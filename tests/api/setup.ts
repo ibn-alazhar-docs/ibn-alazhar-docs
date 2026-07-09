@@ -16,7 +16,7 @@ const { mockSession } = vi.hoisted(() => ({
 
 export { mockSession };
 
-vi.mock("@/lib/backend/auth-guards", () => {
+vi.mock("@/middleware/auth-guards", () => {
   return {
     requireAuth: vi.fn().mockImplementation(async () => {
       if (!mockSession.user) {

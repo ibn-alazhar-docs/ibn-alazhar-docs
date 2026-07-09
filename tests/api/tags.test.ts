@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from
 import { mockSession } from "./setup";
 import { GET as getTags, POST as createTag } from "@/app/api/tags/route";
 import { GET as getTag, PATCH as updateTag, DELETE as deleteTag } from "@/app/api/tags/[id]/route";
-import { MAX_TAGS_PER_USER } from "@/lib/shared/validators/tag";
+import { MAX_TAGS_PER_USER } from "@/shared/validators/tag";
 import { createApiRequest } from "./helpers";
 import { createTestUser, cleanupTestUsers, createTestTag, prisma } from "../integration/helpers/db";
 

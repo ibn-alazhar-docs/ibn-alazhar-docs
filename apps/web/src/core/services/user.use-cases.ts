@@ -1,5 +1,5 @@
-import { NotFoundError, ValidationError } from "@/lib/shared/errors";
-import { LIMITS } from "@/lib/shared/constants";
+import { NotFoundError, ValidationError } from "@/shared/errors";
+import { LIMITS } from "@/shared/constants";
 import type { Role } from "@/domain/auth";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
 

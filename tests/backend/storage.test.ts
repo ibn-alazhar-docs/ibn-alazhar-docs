@@ -72,8 +72,12 @@ describe("validatePdf — file size", () => {
   });
 
   it("rejects 101MB → FILE_TOO_LARGE", () => {
-    const size = 101 * 1024 * 1024;
-    const result = validatePdf(Buffer.alloc(100), "application/pdf", size);
+    // The size gate is enforced on the ACTUAL buffer content, not the
+    // client-reported fileSize (which an attacker could under-report to
+    // bypass the limit). This passes a tiny reported size with an oversized
+    // buffer to confirm the bypass is closed.
+    const oversized = Buffer.alloc(101 * 1024 * 1024);
+    const result = validatePdf(oversized, "application/pdf", 1);
     expect(result.valid).toBe(false);
     expect(result.errorCode).toBe("FILE_TOO_LARGE");
   });
@@ -206,7 +210,8 @@ describe("validatePdf — error codes", () => {
   });
 
   it("returns FILE_TOO_LARGE for oversized file", () => {
-    const result = validatePdf(Buffer.alloc(50), "application/pdf", 200 * 1024 * 1024);
+    const oversized = Buffer.alloc(101 * 1024 * 1024);
+    const result = validatePdf(oversized, "application/pdf", oversized.length);
     expect(result.errorCode).toBe("FILE_TOO_LARGE");
   });
 

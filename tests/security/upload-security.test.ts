@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { validateUploadFile } from "@/lib/shared/validators/document";
+import { validateUploadFile } from "@/shared/validators/document";
 
 // NOTE: Previously this file re-implemented `simulateUploadValidation` as a copy of the
 // app's upload validation logic. It now imports the REAL `validateUploadFile` from
@@ -154,7 +154,7 @@ describe("File Upload Security", () => {
     it("uses a custom limit from MAX_UPLOAD_SIZE_MB", async () => {
       process.env.MAX_UPLOAD_SIZE_MB = "1";
       vi.resetModules();
-      const mod = await import("@/lib/shared/validators/document");
+      const mod = await import("@/shared/validators/document");
 
       const small = { type: "application/pdf", size: 1024 } as unknown as File;
       const big = { type: "application/pdf", size: 2 * 1024 * 1024 } as unknown as File;
@@ -167,7 +167,7 @@ describe("File Upload Security", () => {
     it("falls back to 50MB when env is invalid", async () => {
       process.env.MAX_UPLOAD_SIZE_MB = "not-a-number";
       vi.resetModules();
-      const mod = await import("@/lib/shared/validators/document");
+      const mod = await import("@/shared/validators/document");
 
       const huge = { type: "application/pdf", size: 60 * 1024 * 1024 } as unknown as File;
       expect(mod.validateUploadFile(huge).valid).toBe(false);

@@ -1,8 +1,8 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "../../domain/repositories/tag-document.repository.interface";
-import { AppError, NotFoundError } from "@/lib/shared/errors";
-import { ERROR_CODES } from "@/lib/shared/constants";
+import { AppError, NotFoundError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
 
 interface DocumentWithTags {
   tags: { tag: { id: string; name: string; color: string } }[];

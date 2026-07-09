@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { generatePageMetadata } from "@/ui/metadata";
 import {
   getCategoryLabel,
   getCategoryDescription,
@@ -8,8 +8,8 @@ import {
   getCategoryThemes,
   getCategoryTotalReadingTime,
   getContentCollection,
-} from "@/lib/backend/content";
-import { Container } from "@/components/ui/container";
+} from "@/shared/content/index";
+import { Container } from "@/ui/container";
 
 interface CategoryPageProps {
   params: Promise<{ locale: string; category: string }>;

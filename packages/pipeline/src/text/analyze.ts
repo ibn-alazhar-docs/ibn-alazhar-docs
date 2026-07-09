@@ -43,7 +43,10 @@ export function analyzeText(text: string, knownPageCount?: number): TextAnalysis
   const paragraphScore = paragraphs.length > 1 ? 15 : paragraphs.length === 1 ? 5 : 0;
   const sizeScore = words.length > 100 ? 15 : (words.length / 100) * 15;
   const qualityScore = Math.round(
-    Math.min(100, arabicScore + headingScore + paragraphScore + sizeScore - garbagePenalty),
+    Math.max(
+      0,
+      Math.min(100, arabicScore + headingScore + paragraphScore + sizeScore - garbagePenalty),
+    ),
   );
 
   return {

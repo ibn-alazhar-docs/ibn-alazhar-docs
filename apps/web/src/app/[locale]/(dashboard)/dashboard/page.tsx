@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { requireAuth } from "@/lib/backend/auth-guards";
+import { requireAuth } from "@/middleware/auth-guards";
 import { isAdminRole } from "@/domain/auth";
 import { prisma } from "@/transport/db";
 import { DashboardContent } from "../dashboard-content";
-import { PageTransition } from "@/components/ui/page-transition";
+import { PageTransition } from "@/ui/page-transition";
 
 export const revalidate = 0;
 

@@ -4,7 +4,7 @@ import { compileMDX } from "next-mdx-remote/rsc";
 import rehypeHighlight from "rehype-highlight";
 import rehypeSlug from "rehype-slug";
 import remarkGfm from "remark-gfm";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { generatePageMetadata } from "@/ui/metadata";
 import {
   getDocContent,
   getDocNavigation,
@@ -14,18 +14,18 @@ import {
   getPrerequisiteDocs,
   getContinuationDoc,
   getDocJourneys,
-} from "@/lib/backend/content";
-import { mdxComponents } from "@/components/mdx/mdx-components";
-import { Breadcrumbs } from "@/components/reading/breadcrumbs";
-import { DocMetadataBar } from "@/components/reading/doc-metadata";
-import { DocNavigation } from "@/components/reading/doc-navigation";
-import { TOC } from "@/components/reading/toc";
-import { ReadingProgress } from "@/components/reading/reading-progress";
-import { Container } from "@/components/ui/container";
-import { JourneyContext } from "@/components/discovery/journey-context";
-import { RelatedDocs } from "@/components/discovery/related-docs";
-import { PrerequisiteBanner } from "@/components/discovery/prerequisite-banner";
-import { ContinuationLink } from "@/components/discovery/continuation-link";
+} from "@/shared/content/index";
+import { mdxComponents } from "@/ui/mdx/mdx-components";
+import { Breadcrumbs } from "@/ui/reading/breadcrumbs";
+import { DocMetadataBar } from "@/ui/reading/doc-metadata";
+import { DocNavigation } from "@/ui/reading/doc-navigation";
+import { TOC } from "@/ui/reading/toc";
+import { ReadingProgress } from "@/ui/reading/reading-progress";
+import { Container } from "@/ui/container";
+import { JourneyContext } from "@/ui/discovery/journey-context";
+import { RelatedDocs } from "@/ui/discovery/related-docs";
+import { PrerequisiteBanner } from "@/ui/discovery/prerequisite-banner";
+import { ContinuationLink } from "@/ui/discovery/continuation-link";
 
 interface DocPageProps {
   params: Promise<{ locale: string; category: string; slug: string }>;

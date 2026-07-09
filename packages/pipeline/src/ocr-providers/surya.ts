@@ -156,7 +156,9 @@ rec_predictor = RecognitionPredictor(foundation)
 with open(sys.argv[1], "r") as f:
     paths = json.load(f)
 BATCH_SIZE = 2
-all_results = []
+# Pre-size to one empty slot per page so individual batch/image failures can
+# never shift or misalign results relative to the input page order.
+all_results = [[] for _ in paths]
 total = len(paths)
 
 for start in range(0, total, BATCH_SIZE):
@@ -175,8 +177,6 @@ for start in range(0, total, BATCH_SIZE):
 
     valid = [(i, img) for i, img in enumerate(images) if img is not None]
     if not valid:
-        for _ in batch_paths:
-            all_results.append([])
         continue
 
     valid_indices = [v[0] for v in valid]
@@ -193,34 +193,18 @@ for start in range(0, total, BATCH_SIZE):
         )
     except Exception as e:
         print(f"[surya] Batch {batch_num} recognition failed: {e}", file=sys.stderr, flush=True)
-        for vi in valid_indices:
-            while len(all_results) < start + vi:
-                all_results.append([])
-            all_results.append([])
-        for i, img in enumerate(images):
-            idx = start + i
-            if img is None and idx >= len(all_results):
-                all_results.append([])
+        # Leave the affected pages as empty results (already initialized) so the
+        # document is still returned with correct page alignment.
         gc.collect()
         continue
 
     for vi, res in zip(valid_indices, ocr_results):
         lines = [{"text": l.text, "confidence": l.confidence} for l in res.text_lines]
-        while len(all_results) < start + vi:
-            all_results.append([])
-        all_results.append(lines)
-
-    for i, img in enumerate(images):
-        idx = start + i
-        if img is None and idx >= len(all_results):
-            all_results.append([])
+        all_results[start + vi] = lines
 
     # Free memory between batches
     del images, valid_imgs, ocr_results
     gc.collect()
-
-while len(all_results) < len(paths):
-    all_results.append([])
 
 print(json.dumps(all_results))
 `;

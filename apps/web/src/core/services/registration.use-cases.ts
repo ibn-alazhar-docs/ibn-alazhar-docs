@@ -1,15 +1,16 @@
 import crypto from "crypto";
 import bcrypt from "bcryptjs";
-import { PrismaClient } from "@prisma/client";
-import { ConflictError } from "@/lib/shared/errors";
+import { ConflictError } from "@/shared/errors";
 import { ROLE } from "@/domain/auth";
 import type { IUserRepository } from "@/domain/repositories/user.repository.interface";
+import type { IVerificationTokenRepository } from "@/domain/repositories/verification-token.repository.interface";
 import { sendVerificationEmail } from "@/lib/email/send";
+import { logger } from "@/shared/logger";
 
 export class RegistrationUseCases {
   constructor(
     private readonly userRepository: IUserRepository,
-    private readonly prisma: PrismaClient,
+    private readonly verificationTokenRepository: IVerificationTokenRepository,
   ) {}
 
   async register(name: string | null, email: string, password: string) {
@@ -47,12 +48,10 @@ export class RegistrationUseCases {
       const expires = new Date();
       expires.setHours(expires.getHours() + 24);
 
-      await this.prisma.verificationToken.create({
-        data: {
-          identifier: normalizedEmail,
-          token,
-          expires,
-        },
+      await this.verificationTokenRepository.create({
+        identifier: normalizedEmail,
+        token,
+        expires,
       });
 
       const sent = await sendVerificationEmail({
@@ -62,15 +61,17 @@ export class RegistrationUseCases {
       });
 
       if (!sent.success) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[registration] Verification email not sent for ${normalizedEmail}: ${sent.error ?? "unknown"}`,
+        logger.warn(
+          { email: normalizedEmail, error: sent.error ?? "unknown" },
+          "[registration] verification email not sent",
         );
       }
     } catch (error) {
       // Never fail registration because of email/verification-token issues.
-      // eslint-disable-next-line no-console
-      console.error("[registration] Failed to issue verification token/email:", error);
+      logger.error(
+        { err: error, email: normalizedEmail },
+        "[registration] failed to issue verification token/email",
+      );
     }
 
     return user;

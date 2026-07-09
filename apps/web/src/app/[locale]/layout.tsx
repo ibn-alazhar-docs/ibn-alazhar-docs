@@ -4,9 +4,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
-import { cairo, amiri } from "@/lib/frontend/fonts";
-import { ThemeWrapper } from "@/components/theme/theme-wrapper";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { cairo, amiri } from "@/ui/fonts";
+import { ThemeWrapper } from "@/ui/theme/theme-wrapper";
+import { generatePageMetadata } from "@/ui/metadata";
 import { Toaster } from "sonner";
 
 interface LocaleLayoutProps {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { generatePageMetadata } from "@/lib/frontend/metadata";
+import { generatePageMetadata } from "@/ui/metadata";
 import {
   getContentCollection,
   getCategoryDescription,
@@ -7,11 +7,11 @@ import {
   getCategoryTotalReadingTime,
   getJourneys,
   getRecentDocs,
-} from "@/lib/backend/content";
-import { Container } from "@/components/ui/container";
-import { KnowledgeHero } from "@/components/discovery/knowledge-hero";
-import { CategoryCard } from "@/components/discovery/category-card";
-import { JourneyCard } from "@/components/discovery/journey-card";
+} from "@/shared/content/index";
+import { Container } from "@/ui/container";
+import { KnowledgeHero } from "@/ui/discovery/knowledge-hero";
+import { CategoryCard } from "@/ui/discovery/category-card";
+import { JourneyCard } from "@/ui/discovery/journey-card";
 
 interface DocsIndexPageProps {
   params: Promise<{ locale: string }>;

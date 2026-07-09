@@ -5,6 +5,18 @@
   },
   "nav": {
     "home": "الرئيسية",
+    "files": "الملفات",
+    "folders": "المجلدات",
+    "tags": "الوسوم",
+    "search": "البحث",
+    "conversions": "المعالجة",
+    "settings": "الإعدادات",
+    "users": "المستخدمين",
+    "admin": "المدير",
+    "signIn": "تسجيل الدخول",
+    "signUp": "حساب جديد",
+    "mainNav": "القائمة الرئيسية",
+    "bookmarks": "المفضلة",
     "breadcrumbLibrary": "المكتبة"
   },
   "section": {

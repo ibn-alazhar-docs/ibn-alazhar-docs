@@ -1,4 +1,4 @@
-import { openApiSpec } from "@/lib/shared/openapi";
+import { openApiSpec } from "@/shared/openapi";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-static";
