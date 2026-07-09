@@ -1,47 +1,35 @@
-name: Bug Report
-description: Create a report to help us improve
-labels: [bug]
-body:
-  - type: markdown
-    attributes:
-      value: |
-        Thanks for taking the time to fill out this bug report!
-  - type: textarea
-    id: description
-    attributes:
-      label: Description
-      description: A clear and concise description of what the bug is.
-    validations:
-      required: true
-  - type: textarea
-    id: reproduction
-    attributes:
-      label: Steps to Reproduce
-      description: How can we reproduce this bug?
-      placeholder: |
-        1. Go to '...'
-        2. Click on '....'
-        3. Scroll down to '....'
-        4. See error
-    validations:
-      required: true
-  - type: textarea
-    id: expected
-    attributes:
-      label: Expected Behavior
-      description: A clear and concise description of what you expected to happen.
-    validations:
-      required: true
-  - type: textarea
-    id: logs
-    attributes:
-      label: Logs / Output
-      description: If applicable, add error logs or screenshots to help explain your problem.
-      render: bash
-  - type: input
-    id: version
-    attributes:
-      label: Version
-      description: Which version of Ibn Al-Azhar Docs are you using?
-    validations:
-      required: true
+---
+name: "🐛 Bug Report"
+about: "سجّل عطلاً قابلاً للتكرار"
+title: "[Bug]: "
+labels: ["bug"]
+assignees: ""
+---
+
+## 🐛 وصف العطل
+وصف واضح ومختصر للمشكلة.
+
+## 🔁 خطوات التكرار
+1. اذهب إلى '...'
+2. اضغط على '...'
+3. مرر إلى '...'
+4. شاهد الخطأ
+
+## ✅ السلوك المتوقع
+ما الذي كان يجب أن يحدث؟
+
+## 📸 لقطات شاشة
+إن أمكن، أضف لقطات شاشة.
+
+## 🖥️ بيئة التشغيل
+- المتصفح: [مثلاً Chrome 120]
+- نظام التشغيل: [مثلاً macOS 14 / Windows 11]
+- الجهاز: [Desktop / Mobile]
+- اللغة: [ar / en]
+
+## 📋 معلومات إضافية
+أي سياق إضافي، سجلات خطأ، أو إعدادات ذات صلة.
+
+---
+
+**للحفاظ على الجودة:** نرحب بـ PR يصلح العطل مع اختبار يمنع تكراره.
