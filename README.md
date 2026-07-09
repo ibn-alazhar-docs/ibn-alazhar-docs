@@ -1,3 +1,16 @@
+---
+title: Ibn Al-Azhar Docs
+emoji: 📚
+colorFrom: green
+colorTo: yellow
+sdk: docker
+app_port: 7860
+dockerfile: Dockerfile.space
+secrets:
+  - AUTH_SECRET
+  - ADMIN_PASSWORD
+---
+
 # Ibn Al-Azhar Docs — مستندات ابن الأزهر
 
 <div align="center">
@@ -138,15 +151,15 @@ Test files: `tests/backend/`, `tests/frontend/`, `tests/security/`, `tests/integ
 
 A full, categorized documentation index lives at [`docs/README.md`](docs/README.md).
 
-| Area | Entry Point |
-| ---- | ----------- |
+| Area                | Entry Point                                                                              |
+| ------------------- | ---------------------------------------------------------------------------------------- |
 | Architecture & ADRs | [`docs/ARCHITECTURE_CURRENT.md`](docs/ARCHITECTURE_CURRENT.md), [`docs/ADR/`](docs/ADR/) |
-| Security | [`docs/SECURITY_AUDIT_LOG.md`](docs/SECURITY_AUDIT_LOG.md) |
-| Deployment | [`docs/deployment/HF_DEPLOYMENT_GUIDE.md`](docs/deployment/HF_DEPLOYMENT_GUIDE.md) |
-| Operations | [`docs/production/RUNBOOK.md`](docs/production/RUNBOOK.md) |
-| API Reference | [`docs/openapi.yaml`](docs/openapi.yaml) |
-| Agent Governance | [`docs/governance/`](docs/governance/) |
-| Coding Standards | [`docs/reference/CODE_STYLE_GUIDE.md`](docs/reference/CODE_STYLE_GUIDE.md) |
+| Security            | [`docs/SECURITY_AUDIT_LOG.md`](docs/SECURITY_AUDIT_LOG.md)                               |
+| Deployment          | [`docs/deployment/HF_DEPLOYMENT_GUIDE.md`](docs/deployment/HF_DEPLOYMENT_GUIDE.md)       |
+| Operations          | [`docs/production/RUNBOOK.md`](docs/production/RUNBOOK.md)                               |
+| API Reference       | [`docs/openapi.yaml`](docs/openapi.yaml)                                                 |
+| Agent Governance    | [`docs/governance/`](docs/governance/)                                                   |
+| Coding Standards    | [`docs/reference/CODE_STYLE_GUIDE.md`](docs/reference/CODE_STYLE_GUIDE.md)               |
 
 > The canonical architecture document is [`ARCHITECTURE.md`](ARCHITECTURE.md), authored in Arabic for Arabic-first contributors and AI agents.
 
