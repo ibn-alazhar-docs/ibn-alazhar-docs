@@ -61,12 +61,12 @@ Arabic is the default language. RTL is the default direction. Every UI decision 
 
 ### 6. Use Official Brand Colors
 
-| Color | Value | Note |
-|-------|-------|------|
-| Primary Green | `#16A34A` | NOT `#10B981` (Emerald) |
-| Heritage Gold | `#CA8A04` | |
-| Dark Text Gray | `#1F2937` | |
-| Pure White | `#FFFFFF` | |
+| Color          | Value     | Note                    |
+| -------------- | --------- | ----------------------- |
+| Primary Green  | `#16A34A` | NOT `#10B981` (Emerald) |
+| Heritage Gold  | `#CA8A04` |                         |
+| Dark Text Gray | `#1F2937` |                         |
+| Pure White     | `#FFFFFF` |                         |
 
 **Violation:** Using wrong brand colors.
 **Consequence:** Brand inconsistency. Must be corrected.
@@ -204,14 +204,14 @@ When UI exists, use Playwright MCP for browser/UI/RTL/responsive verification.
 
 ## Rule Enforcement
 
-| Rule | Enforced By |
-|------|------------|
-| 1-4 | Spec-guardian agent |
-| 5 | RTL-auditor agent |
-| 6 | Frontend-polish agent |
-| 7 | Docker-auditor agent |
-| 8-9 | Architect agent |
-| 10 | Docs-sync agent |
-| 11 | Security-reviewer agent |
-| 12-18 | All agents + human review |
+| Rule  | Enforced By                 |
+| ----- | --------------------------- |
+| 1-4   | Spec-guardian agent         |
+| 5     | RTL-auditor agent           |
+| 6     | Frontend-polish agent       |
+| 7     | Docker-auditor agent        |
+| 8-9   | Architect agent             |
+| 10    | Docs-sync agent             |
+| 11    | Security-reviewer agent     |
+| 12-18 | All agents + human review   |
 | 19-20 | Human engineer + tool usage |

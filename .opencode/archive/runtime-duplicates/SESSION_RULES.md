@@ -16,11 +16,14 @@ Start → Boot → Task Intake → Execution → Verification → Wrap → End
 ## Session Start
 
 ### Trigger
+
 - User opens a new session.
 - User requests work on the project.
 
 ### Boot Sequence
+
 Follow `BOOT_SEQUENCE.md`:
+
 1. Load runtime manifest (`SYSTEM.md`).
 2. Hydrate memory (`memory/`).
 3. Detect active phase (`runtime/runtime-status.md`).
@@ -30,7 +33,9 @@ Follow `BOOT_SEQUENCE.md`:
 7. Run health checks (`runtime/runtime-health.md`).
 
 ### Session Record
+
 Create a session record in `sessions/`:
+
 ```markdown
 # Session: YYYY-MM-DD-HHMM
 
@@ -46,17 +51,22 @@ Create a session record in `sessions/`:
 ## Task Intake
 
 ### Task Classification
+
 Classify the incoming task:
+
 - **Coding:** Implementation, refactoring, bug fix.
 - **Reasoning:** Architecture, planning, analysis.
 - **Review:** Code review, spec review, audit.
 - **Utility:** Summarization, formatting, organization.
 
 ### Model Selection
+
 Route to appropriate model per `MODEL_ROUTING.md`.
 
 ### Agent Selection
+
 Activate relevant agents per task type:
+
 - Coding → architect (if architecture involved)
 - Review → security-reviewer, rtl-auditor, frontend-polish
 - Planning → architect
@@ -67,6 +77,7 @@ Activate relevant agents per task type:
 ## Execution
 
 ### Execution Rules
+
 1. **Read specs first.** Never implement without reading the spec.
 2. **Follow phase scope.** Do not work outside current phase scope.
 3. **Respect brand rules.** Use correct colors, fonts, RTL.
@@ -75,20 +86,23 @@ Activate relevant agents per task type:
 6. **Verify as you go.** Check each step before proceeding.
 
 ### Execution Boundaries
-| Boundary | Rule |
-|----------|------|
-| Phase scope | Do not implement features outside current phase |
-| File scope | Do not modify unrelated files |
-| Spec scope | Do not deviate from spec without updating spec |
-| Brand scope | Do not use non-brand colors or fonts |
-| Security scope | Do not bypass security checks |
+
+| Boundary       | Rule                                            |
+| -------------- | ----------------------------------------------- |
+| Phase scope    | Do not implement features outside current phase |
+| File scope     | Do not modify unrelated files                   |
+| Spec scope     | Do not deviate from spec without updating spec  |
+| Brand scope    | Do not use non-brand colors or fonts            |
+| Security scope | Do not bypass security checks                   |
 
 ---
 
 ## Verification
 
 ### Self-Verification
+
 Before claiming task completion:
+
 1. Check that all requirements are met.
 2. Check that no rules were violated.
 3. Check that no unrelated files were modified.
@@ -96,6 +110,7 @@ Before claiming task completion:
 5. Check that RTL is correct (for UI).
 
 ### External Verification
+
 - Run relevant tests.
 - Run lint and typecheck.
 - Run Docker health check (if applicable).
@@ -106,6 +121,7 @@ Before claiming task completion:
 ## Session Wrap
 
 ### Actions
+
 1. Update session record with final status.
 2. Record changes made (files, lines).
 3. Record decisions made.
@@ -114,6 +130,7 @@ Before claiming task completion:
 6. Note any follow-up tasks.
 
 ### Session Record Update
+
 ```markdown
 # Session: YYYY-MM-DD-HHMM
 
@@ -134,18 +151,21 @@ Before claiming task completion:
 ## Session End
 
 ### Clean Session End
+
 - All tasks complete.
 - Session record updated.
 - Memory and docs updated.
 - No unresolved issues.
 
 ### Partial Session End
+
 - Some tasks complete, others blocked.
 - Blocking issues documented.
 - Follow-up tasks identified.
 - Session record updated with status.
 
 ### Failed Session End
+
 - Tasks could not be completed.
 - Failure reasons documented.
 - Recovery path identified.
@@ -155,20 +175,21 @@ Before claiming task completion:
 
 ## Session Constraints
 
-| Constraint | Rule |
-|------------|------|
-| Time | Sessions should be focused and time-bounded |
-| Scope | Sessions should not exceed current phase scope |
-| Model | Sessions should use appropriate model |
-| Agents | Sessions should activate only relevant agents |
-| Files | Sessions should not modify unrelated files |
-| Secrets | Sessions must never expose or store secrets |
+| Constraint | Rule                                           |
+| ---------- | ---------------------------------------------- |
+| Time       | Sessions should be focused and time-bounded    |
+| Scope      | Sessions should not exceed current phase scope |
+| Model      | Sessions should use appropriate model          |
+| Agents     | Sessions should activate only relevant agents  |
+| Files      | Sessions should not modify unrelated files     |
+| Secrets    | Sessions must never expose or store secrets    |
 
 ---
 
 ## Session Continuation
 
 If a session ends with incomplete work:
+
 1. Follow-up tasks are clearly documented.
 2. Next session picks up from session record.
 3. Memory is current.
@@ -178,11 +199,11 @@ If a session ends with incomplete work:
 
 ## Session Anti-Patterns
 
-| Anti-Pattern | Problem | Fix |
-|--------------|---------|-----|
-| Jumping to code without reading specs | Wrong implementation | Always read specs first |
-| Expanding scope mid-session | Scope creep | Flag scope change, get approval |
-| Modifying many unrelated files | Review difficulty | Focus changes on relevant files |
-| Claiming completion without verification | False status | Verify before claiming complete |
-| Not updating memory/docs | Lost context | Update memory and docs on every change |
-| Using wrong model | Poor output quality | Route task to correct model |
+| Anti-Pattern                             | Problem              | Fix                                    |
+| ---------------------------------------- | -------------------- | -------------------------------------- |
+| Jumping to code without reading specs    | Wrong implementation | Always read specs first                |
+| Expanding scope mid-session              | Scope creep          | Flag scope change, get approval        |
+| Modifying many unrelated files           | Review difficulty    | Focus changes on relevant files        |
+| Claiming completion without verification | False status         | Verify before claiming complete        |
+| Not updating memory/docs                 | Lost context         | Update memory and docs on every change |
+| Using wrong model                        | Poor output quality  | Route task to correct model            |

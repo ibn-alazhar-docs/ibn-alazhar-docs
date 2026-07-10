@@ -1,42 +1,120 @@
-node_modules
-.next
-dist
-build
-out
-coverage
-playwright-report
-test-results
-uploads
-tmp
-.cache
-00_Inbox/agent-outputs
-09_Archive
-.agents
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+dist/
+build/
+out/
+coverage/
+
+# Environment files
+.env
+.env.*
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
 *.log
-*.pdf
-*.docx
-*.xlsx
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
 
-# GitHub issue templates (YAML frontmatter + markdown body - prettier can't parse)
-.github/ISSUE_TEMPLATE/
-.github/pull_request_template.md
-.claude/skills/impeccable
-.claude/skills/speckit-*
-.specify
+# Test artifacts
+test-results/
+test-data/
+playwright-report/
+.nyc_output/
 
-# OpenCode operating files - avoid noisy formatting-only changes during tooling setup
-.claude/agents
-.claude/skills/ibn-*
-CLAUDE.md
-PRODUCT.md
-DESIGN.md
-pnpm-lock.yaml
+# Cache
+.turbo/
+.vercel/
+.netlify/
+.cache/
+.eslintcache
+.prettiercache
+.tsbuildinfo
 
-# Imported/archived documentation snapshots
-docs/_archived/
-docs/_incoming/
+# Prisma
+packages/database/prisma/migrations/
+
+# Misc
+*.tsbuildinfo
+pnpm-lock.yaml.old
+
+# GitHub Actions workflows (contain GH expressions not valid YAML)
+.github/workflows/
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+*.md
+
+# Specs & config
+specs/
+governance/
 00_Inbox/
 09_Archive/
+.opencode/
+.specify/
+.agents/
 
-# Imported/archived/generated documentation snapshots
-docs/_reports/
+# Config files not needed in build
+*.config.ts
+*.config.js
+*.config.mjs
+!next.config.ts
+!postcss.config.mjs
+!tsconfig.json
+!vitest.config.ts
+!playwright.config.ts
+!tailwind.config.ts
+!tsconfig.base.json
+!tsconfig.build.json
+!stryker.config.ts
+!wrangler.jsonc
+
+# Large media
+**/*.pdf
+**/*.png
+**/*.jpg
+**/*.jpeg
+!apps/web/public/**/*.png
+!apps/web/public/**/*.jpg
+!apps/web/public/**/*.jpeg
+
+# Infrastructure
+infrastructure/
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+supervisord.conf
+scripts/docker-entrypoint.sh
+
+# Monitoring
+monitoring/
+grafana/
+prometheus/
+
+# Backup scripts
+scripts/backup-job.sh
+
+# Deployment configs
+railway.toml
+northflank*.yml
+k8s/
+*.yaml
+*.yml
+!pnpm-workspace.yaml
+!package.json
+!pnpm-lock.yaml

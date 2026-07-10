@@ -41,22 +41,23 @@ jobs:
               IdentityFile ~/.ssh/id_rsa
 
       - name: Deploy over SSH
+        env:
+          APP_DIR: ${{ secrets.DEPLOY_APP_DIR || '/app' }}
+          SERVICE: ${{ secrets.DEPLOY_COMPOSE_SERVICE || 'web' }}
+          HEALTH_URL: ${{ secrets.DEPLOY_HEALTH_URL }}
+          REGISTRY_TOKEN: ${{ secrets.DEPLOY_REGISTRY_TOKEN }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           set -euo pipefail
 
-          APP_DIR="${{ secrets.DEPLOY_APP_DIR || '/app' }}"
-          SERVICE="${{ secrets.DEPLOY_COMPOSE_SERVICE || 'web' }}"
-          HEALTH_URL="${{ secrets.DEPLOY_HEALTH_URL }}"
-          REGISTRY_TOKEN="${{ secrets.DEPLOY_REGISTRY_TOKEN }}"
-
-          ssh deploy bash -s <<'EOF'
+          ssh deploy bash -s <<'SSH_EOF'
             set -euo pipefail
 
             cd "${APP_DIR}"
 
             # Authenticate to container registry
             if [ -n "${REGISTRY_TOKEN}" ]; then
-              echo "${REGISTRY_TOKEN}" | docker login ghcr.io -u "${{ secrets.DEPLOY_USER }}" --password-stdin
+              echo "${REGISTRY_TOKEN}" | docker login ghcr.io -u "${DEPLOY_USER}" --password-stdin
             fi
 
             # Pull the latest images
@@ -83,4 +84,4 @@ jobs:
             else
               echo "DEPLOY_HEALTH_URL not set; skipping healthcheck"
             fi
-EOF
+SSH_EOF
