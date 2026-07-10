@@ -1,6 +1,5 @@
 import { vi } from "vitest";
-
-const React = await import("react");
+import React from "react";
 
 vi.mock("next-intl", () => ({
   useTranslations: (namespace?: string) => (key: string) =>
@@ -44,7 +43,6 @@ vi.mock("sonner", () => ({
 }));
 
 vi.mock("motion/react", () => {
-  const React = await import("react");
   const passthrough = (tag: string) =>
     React.forwardRef(({ children, ...props }: any, ref: any) =>
       React.createElement(tag, { ref, ...props }, children),
