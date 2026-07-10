@@ -229,13 +229,40 @@ jobs:
         run: pnpm vitest run --project=api
 
   # ------------------------------------------------------------
-  # Security Tests
+  # Security Tests (with postgres/redis)
   # ------------------------------------------------------------
   test-security:
     name: Security Tests
     runs-on: ubuntu-latest
     timeout-minutes: 15
     needs: quality-gates
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ibn_docs
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U ibn_docs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: test-secret-do-not-use-in-prod
+      NODE_ENV: test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -256,6 +283,9 @@ jobs:
 
       - name: Generate Prisma Client
         run: pnpm db:generate
+
+      - name: Run migrations
+        run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
 
       - name: Run security tests
         run: pnpm vitest run --project=security
@@ -324,7 +354,6 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
-      # Provide dummy S3 credentials for build
       S3_ACCESS_KEY_ID: dummy
       S3_SECRET_ACCESS_KEY: dummy
     steps:
