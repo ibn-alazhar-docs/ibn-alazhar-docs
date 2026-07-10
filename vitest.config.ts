@@ -36,10 +36,7 @@ export default defineConfig({
           name: "unit",
           environment: "node",
           setupFiles: ["./tests/setup.ts"],
-          include: [
-            "tests/backend/**/*.test.ts",
-            "tests/frontend/**/*.test.{ts,tsx}",
-          ],
+          include: ["tests/backend/**/*.test.ts", "tests/frontend/**/*.test.{ts,tsx}"],
           exclude: [
             "tests/e2e/**",
             "tests/integration/**",
