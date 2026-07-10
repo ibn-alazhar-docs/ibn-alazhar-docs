@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { useState } from "react";
+import React, { useState } from "react";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import type { FlatFolder } from "@/core/folder-tree";
 
@@ -60,7 +60,7 @@ describe("FolderTree integration (component ↔ useFolders ↔ /api/folders)", (
       vi.fn().mockResolvedValue({ ok: true, json: async () => ({ folders: [] }) }),
     );
     render(<Harness />);
-    expect(await screen.findByText("empty")).toBeInTheDocument();
+    expect(await screen.findByText("folders.empty")).toBeInTheDocument();
   });
 
   it("opens the create dialog, submits, and POSTs a new folder", async () => {
@@ -74,11 +74,11 @@ describe("FolderTree integration (component ↔ useFolders ↔ /api/folders)", (
     render(<Harness />);
     await screen.findByText("محاضرات");
 
-    fireEvent.click(screen.getByRole("button", { name: "createButton" }));
+    fireEvent.click(screen.getByRole("button", { name: /createButton/i }));
     const dialog = await screen.findByRole("dialog");
-    const input = within(dialog).getByLabelText("nameLabel");
+    const input = within(dialog).getByLabelText(/nameLabel/i);
     fireEvent.change(input, { target: { value: "جديد" } });
-    fireEvent.click(within(dialog).getByText("create"));
+    fireEvent.click(within(dialog).getByRole("button", { name: /folders\.create/i }));
 
     await waitFor(() => {
       const calls = fetchMock.mock.calls.map((c: any[]) => ({ url: c[0], method: c[1]?.method }));

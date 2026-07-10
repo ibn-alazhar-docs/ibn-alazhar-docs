@@ -14,7 +14,89 @@ const { mockSession } = vi.hoisted(() => ({
   },
 }));
 
-export { mockSession };
+const mockPrisma = {
+  $queryRaw: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
+  $transaction: vi.fn().mockImplementation((cb) => cb(mockPrisma)),
+  user: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  document: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+    aggregate: vi.fn().mockResolvedValue({ _sum: { fileSize: 0 }, _avg: { fileSize: 0 } }),
+    groupBy: vi.fn().mockResolvedValue([]),
+  },
+  folder: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  tag: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  conversionJob: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  shareLink: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  webhook: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  account: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  session: {
+    findUnique: vi.fn(),
+    findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+    count: vi.fn().mockResolvedValue(0),
+  },
+  auditLog: {
+    groupBy: vi.fn().mockResolvedValue([]),
+  },
+};
+
+export { mockSession, mockPrisma };
 
 vi.mock("@/middleware/auth-guards", () => {
   return {
@@ -86,6 +168,14 @@ vi.mock("@/middleware/auth-guards", () => {
   };
 });
 
+vi.mock("@ibn-al-azhar-docs/database", () => ({
+  prisma: mockPrisma,
+}));
+
+vi.mock("@/transport/db", () => ({
+  prisma: mockPrisma,
+}));
+
 // Reset session before each test
 beforeEach(() => {
   mockSession.user = {
@@ -94,4 +184,6 @@ beforeEach(() => {
     email: "test@example.com",
     role: "USER",
   } as any;
+  vi.clearAllMocks();
+  mockPrisma.$queryRaw.mockResolvedValue([{ "?column?": 1 }]);
 });
