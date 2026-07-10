@@ -32,7 +32,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
       - run: pnpm format:check
       - run: pnpm lint
       - run: pnpm typecheck
@@ -51,7 +51,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
       - run: pnpm test
       - run: pnpm test:api
       - run: pnpm test:frontend
@@ -79,7 +79,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
       - run: pnpm test:security
       - run: pnpm test:pentest
 
@@ -120,8 +120,8 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
-      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma --schema=packages/database/prisma/schema.prisma
       - run: pnpm test:integration
       - run: pnpm test:edge
       - run: pnpm test:fuzz
@@ -140,7 +140,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
       - run: npx playwright install --with-deps chromium
       - run: pnpm build
       - name: Run critical E2E flows
@@ -167,7 +167,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
       - run: pnpm coverage
       - uses: actions/upload-artifact@v4
         with:
