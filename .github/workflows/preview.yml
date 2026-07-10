@@ -44,7 +44,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.worker
+          file: Dockerfile
           target: ocr-runner
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}
@@ -55,7 +55,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.worker
+          file: Dockerfile
           target: export-runner
           push: true
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}
@@ -108,9 +108,9 @@ SPACE_DOCKERFILE
               '',
               '| Service | Tag |',
               '|---------|-----|',
-              `| Web | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}\` |`,
-              `| OCR Worker | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}\` |`,
-              `| Export Worker | \`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}\` |`,
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}\` |`,
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}\` |`,
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}\` |`,
             ].join('\n');
 
             const { data: comments } = await github.rest.issues.listComments({

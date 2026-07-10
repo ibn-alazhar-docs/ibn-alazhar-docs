@@ -38,22 +38,22 @@ A PWA that transforms the proven concept from `tahweel-tauri` (desktop research 
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|------------|
-| Frontend | Next.js 16 App Router + React 19 |
-| UI | shadcn/ui + Tailwind CSS v4 |
-| State | Zustand |
-| i18n | next-intl (ar/en) |
-| Auth | NextAuth.js v5 (JWT strategy, 24h maxAge) |
-| Database | PostgreSQL 16 + Prisma |
-| Object Storage | MinIO |
-| Queue | BullMQ + Redis |
-| OCR (MVP) | Google Drive API |
-| Reverse Proxy | Caddy |
-| PWA | @serwist/next (candidate, needs spike) |
-| Testing | Vitest |
-| CI | GitHub Actions |
-| Local Dev | Docker Compose |
+| Layer          | Technology                                |
+| -------------- | ----------------------------------------- |
+| Frontend       | Next.js 16 App Router + React 19          |
+| UI             | shadcn/ui + Tailwind CSS v4               |
+| State          | Zustand                                   |
+| i18n           | next-intl (ar/en)                         |
+| Auth           | NextAuth.js v5 (JWT strategy, 24h maxAge) |
+| Database       | PostgreSQL 16 + Prisma                    |
+| Object Storage | MinIO                                     |
+| Queue          | BullMQ + Redis                            |
+| OCR (MVP)      | Google Drive API                          |
+| Reverse Proxy  | Caddy                                     |
+| PWA            | @serwist/next (candidate, needs spike)    |
+| Testing        | Vitest                                    |
+| CI             | GitHub Actions                            |
+| Local Dev      | Docker Compose                            |
 
 ---
 
@@ -64,6 +64,7 @@ A PWA that transforms the proven concept from `tahweel-tauri` (desktop research 
 Focus: Repository setup, Next.js app foundation, TypeScript strict, Tailwind/shadcn foundation, Cairo font, brand tokens, RTL/i18n foundation, Docker Compose local stack, PostgreSQL, Redis, MinIO, worker skeleton, Prisma setup, auth skeleton, app shell, CI baseline, .env.example, README, specs folder.
 
 **Not in Phase 1:**
+
 - Full OCR pipeline
 - Full upload pipeline
 - Production deployment
@@ -78,13 +79,13 @@ See `memory/project/phase-1-focus.md` for details.
 
 ## Brand Rules
 
-| Token | Value | Usage |
-|-------|-------|-------|
-| Primary Green | `#16A34A` | Buttons, links, primary actions |
-| Heritage Gold | `#CA8A04` | Heritage accents, distinctions |
-| Dark Text Gray | `#1F2937` | Body text, headings |
-| Pure White | `#FFFFFF` | Backgrounds, surfaces |
-| Font | Cairo | Primary Arabic font |
+| Token          | Value     | Usage                           |
+| -------------- | --------- | ------------------------------- |
+| Primary Green  | `#16A34A` | Buttons, links, primary actions |
+| Heritage Gold  | `#CA8A04` | Heritage accents, distinctions  |
+| Dark Text Gray | `#1F2937` | Body text, headings             |
+| Pure White     | `#FFFFFF` | Backgrounds, surfaces           |
+| Font           | Cairo     | Primary Arabic font             |
 
 **NOT #10B981 (Emerald).** The primary green is `#16A34A`.
 
@@ -109,36 +110,36 @@ See `memory/brand/brand-rules.md` for full rules.
 
 ## Key Documents
 
-| Document | Path | Purpose |
-|----------|------|---------|
-| Project Brief | `docs/00_PROJECT_BRIEF.md` | One-page project summary |
-| PRD | `docs/01_PRD.md` | Product requirements |
-| Roadmap | `docs/02_ROADMAP.md` | Product roadmap |
-| UX Spec | `docs/03_UX_SPEC.md` | User experience specification |
-| Design System | `docs/04_UI_DESIGN_SYSTEM.md` | UI design system |
-| Technical Design | `docs/05_TECHNICAL_DESIGN.md` | Technical architecture |
-| API Spec | `docs/06_API_SPEC.md` | API specification |
-| Database Schema | `docs/07_DATABASE_SCHEMA.md` | Database schema |
-| Security & Privacy | `docs/08_SECURITY_PRIVACY.md` | Security requirements |
-| QA Test Plan | `docs/09_QA_TEST_PLAN.md` | QA and testing plan |
-| DevOps Deployment | `docs/10_DEVOPS_DEPLOYMENT.md` | Deployment strategy |
-| Phase 1 Plan | `docs/13_PHASE_1_PLAN.md` | Phase 1 execution plan |
-| MVP Scope Lock | `docs/27_MVP_SCOPE_LOCK.md` | Locked MVP scope |
-| Brand Implementation Guide | `docs/29_BRAND_IMPLEMENTATION_GUIDE.md` | Brand rules and tokens |
-| Spec Kit Workflow | `docs/31_SPEC_KIT_WORKFLOW.md` | Spec-driven workflow |
-| ADRs | `docs/ADR/` | Architecture decision records |
+| Document                   | Path                                    | Purpose                       |
+| -------------------------- | --------------------------------------- | ----------------------------- |
+| Project Brief              | `docs/00_PROJECT_BRIEF.md`              | One-page project summary      |
+| PRD                        | `docs/01_PRD.md`                        | Product requirements          |
+| Roadmap                    | `docs/02_ROADMAP.md`                    | Product roadmap               |
+| UX Spec                    | `docs/03_UX_SPEC.md`                    | User experience specification |
+| Design System              | `docs/04_UI_DESIGN_SYSTEM.md`           | UI design system              |
+| Technical Design           | `docs/05_TECHNICAL_DESIGN.md`           | Technical architecture        |
+| API Spec                   | `docs/06_API_SPEC.md`                   | API specification             |
+| Database Schema            | `docs/07_DATABASE_SCHEMA.md`            | Database schema               |
+| Security & Privacy         | `docs/08_SECURITY_PRIVACY.md`           | Security requirements         |
+| QA Test Plan               | `docs/09_QA_TEST_PLAN.md`               | QA and testing plan           |
+| DevOps Deployment          | `docs/10_DEVOPS_DEPLOYMENT.md`          | Deployment strategy           |
+| Phase 1 Plan               | `docs/13_PHASE_1_PLAN.md`               | Phase 1 execution plan        |
+| MVP Scope Lock             | `docs/27_MVP_SCOPE_LOCK.md`             | Locked MVP scope              |
+| Brand Implementation Guide | `docs/29_BRAND_IMPLEMENTATION_GUIDE.md` | Brand rules and tokens        |
+| Spec Kit Workflow          | `docs/31_SPEC_KIT_WORKFLOW.md`          | Spec-driven workflow          |
+| ADRs                       | `docs/ADR/`                             | Architecture decision records |
 
 ---
 
 ## Success Metrics
 
-| Metric | Target |
-|--------|--------|
-| Registered users (month 1) | 50 |
-| Conversion success rate | > 90% |
-| Avg conversion time (10 pages) | < 60 seconds |
-| Lighthouse Performance | > 90 |
-| PWA install rate (returning visitors) | > 30% |
+| Metric                                | Target       |
+| ------------------------------------- | ------------ |
+| Registered users (month 1)            | 50           |
+| Conversion success rate               | > 90%        |
+| Avg conversion time (10 pages)        | < 60 seconds |
+| Lighthouse Performance                | > 90         |
+| PWA install rate (returning visitors) | > 30%        |
 
 ---
 
