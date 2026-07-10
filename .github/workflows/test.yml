@@ -41,6 +41,35 @@ jobs:
     name: Unit & API Tests
     runs-on: ubuntu-24.04
     needs: [lint-typecheck]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: ibn_docs_password
+          POSTGRES_DB: ibn_docs
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs?schema=public
+      AUTH_SECRET: ci-test-secret-do-not-use-in-production-minimum-32-chars
+      REDIS_URL: redis://localhost:6379
+      NODE_OPTIONS: --max-old-space-size=4096
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -52,6 +81,17 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ibn_docs; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
       - run: pnpm test
       - run: pnpm test:api
       - run: pnpm test:frontend
@@ -103,6 +143,18 @@ jobs:
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
       - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ibn_docs; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
       - run: pnpm test:security
       - run: pnpm test:pentest
 
@@ -143,8 +195,18 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma --schema=packages/database/prisma/schema.prisma
-      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - name: Wait for PostgreSQL
+        run: |
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U ibn_docs; then
+              echo "PostgreSQL is ready"
+              break
+            fi
+            echo "Waiting for PostgreSQL... ($i/30)"
+            sleep 2
+          done
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
       - run: pnpm test:integration
       - run: pnpm test:edge
       - run: pnpm test:fuzz
