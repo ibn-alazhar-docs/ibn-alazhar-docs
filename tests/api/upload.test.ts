@@ -5,9 +5,11 @@ import { mockSession } from "./setup";
 vi.mock("@/clients/redis", () => ({
   checkRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
   checkUserRateLimit: vi.fn().mockResolvedValue({ allowed: true }),
-  rateLimitResponse: vi.fn().mockReturnValue(
-    new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
-  ),
+  rateLimitResponse: vi
+    .fn()
+    .mockReturnValue(
+      new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
+    ),
 }));
 
 vi.mock("@/core/services/dashboard.service", () => ({
@@ -131,7 +133,7 @@ describe("Upload API (/api/upload)", () => {
     Object.defineProperty(mockFile, "size", { value: 3000 * 1024 * 1024 }); // 3GB
     const mockFormData = new FormData();
     mockFormData.append("file", mockFile);
-    
+
     // We override formData method
     req.formData = async () => {
       // Re-define size inside so formData.get("file") returns our mocked file

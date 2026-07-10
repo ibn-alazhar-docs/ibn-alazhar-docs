@@ -15,13 +15,7 @@
  *   node scripts/fix-imports.mjs --build   # scan ORIGINAL tree, write .move-map.json
  *   node scripts/fix-imports.mjs --apply   # rewrite imports using .move-map.json
  */
-import {
-  readFileSync,
-  writeFileSync,
-  readdirSync,
-  statSync,
-  existsSync,
-} from "node:fs";
+import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join, dirname, resolve, relative, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -102,8 +96,7 @@ function buildMap() {
   return map;
 }
 
-const IMPORT_RE =
-  /(\bfrom\s*|\bimport\s*|\bexport\s+\*\s+from\s*|\brequire\(\s*)(['"])([^'"]+)\2/g;
+const IMPORT_RE = /(\bfrom\s*|\bimport\s*|\bexport\s+\*\s+from\s*|\brequire\(\s*)(['"])([^'"]+)\2/g;
 
 function apply(map) {
   let changed = 0;

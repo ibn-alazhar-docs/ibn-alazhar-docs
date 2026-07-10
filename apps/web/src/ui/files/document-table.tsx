@@ -84,7 +84,7 @@ export function DocumentTable({
     opts?: Record<string, unknown>,
   ) => string;
   const tCommon = useTranslations("common") as unknown as (key: string) => string;
-  
+
   // Find the document currently being deleted for its title in the confirm dialog
   const deletingDoc = documents.find((d) => d.id === deletingDocId);
 

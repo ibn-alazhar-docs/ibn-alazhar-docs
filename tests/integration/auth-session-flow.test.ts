@@ -310,18 +310,16 @@ describe("Auth Session Lifecycle", () => {
     });
 
     it("getUsers returns paginated results", async () => {
-      mockUserRepo.findMany = vi
-        .fn()
-        .mockResolvedValue([
-          {
-            id: "1",
-            name: "User 1",
-            email: "u1@test.com",
-            role: "STUDENT",
-            createdAt: new Date(),
-            _count: { documents: 0 },
-          },
-        ]);
+      mockUserRepo.findMany = vi.fn().mockResolvedValue([
+        {
+          id: "1",
+          name: "User 1",
+          email: "u1@test.com",
+          role: "STUDENT",
+          createdAt: new Date(),
+          _count: { documents: 0 },
+        },
+      ]);
       mockUserRepo.count = vi.fn().mockResolvedValue(1);
 
       const result = await userUseCases.getUsers(1, 10);

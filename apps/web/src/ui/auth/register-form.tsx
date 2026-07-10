@@ -91,7 +91,9 @@ export function RegisterForm() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="register-name" className="mb-2 block text-xs font-bold text-muted-color">{t("nameLabel")}</label>
+          <label htmlFor="register-name" className="mb-2 block text-xs font-bold text-muted-color">
+            {t("nameLabel")}
+          </label>
           <input
             id="register-name"
             type="text"
@@ -109,7 +111,9 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="register-email" className="mb-2 block text-xs font-bold text-muted-color">{t("emailLabel")}</label>
+          <label htmlFor="register-email" className="mb-2 block text-xs font-bold text-muted-color">
+            {t("emailLabel")}
+          </label>
           <input
             id="register-email"
             type="email"
@@ -128,7 +132,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="register-password" className="mb-2 block text-xs font-bold text-muted-color">
+          <label
+            htmlFor="register-password"
+            className="mb-2 block text-xs font-bold text-muted-color"
+          >
             {t("passwordLabel")}
           </label>
           <input
@@ -149,7 +156,10 @@ export function RegisterForm() {
         </div>
 
         <div>
-          <label htmlFor="register-confirm-password" className="mb-2 block text-xs font-bold text-muted-color">
+          <label
+            htmlFor="register-confirm-password"
+            className="mb-2 block text-xs font-bold text-muted-color"
+          >
             {t("confirmPasswordLabel")}
           </label>
           <input

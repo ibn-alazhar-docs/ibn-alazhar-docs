@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 
-
-
 import { Button } from "@/ui/button";
 import { ConfirmDialog } from "@/ui/confirm-dialog";
 import { CreateFolderDialog } from "@/ui/folders/create-folder-dialog";
@@ -30,9 +28,7 @@ describe("Accessibility contract (component-level a11y)", () => {
 
   describe("ConfirmDialog", () => {
     it("is a modal dialog with an accessible name and traps Tab focus", () => {
-      render(
-        <ConfirmDialog title="حذف" message="تأكيد؟" onConfirm={vi.fn()} onCancel={vi.fn()} />,
-      );
+      render(<ConfirmDialog title="حذف" message="تأكيد؟" onConfirm={vi.fn()} onCancel={vi.fn()} />);
       const dialog = screen.getByRole("dialog");
       expect(dialog).toHaveAttribute("aria-modal", "true");
       expect(dialog).toHaveAccessibleName("حذف");
@@ -51,7 +47,7 @@ describe("Accessibility contract (component-level a11y)", () => {
       render(
         <NextIntlClientProvider locale="ar" messages={{}}>
           <CreateFolderDialog onSubmit={vi.fn()} onClose={vi.fn()} />
-        </NextIntlClientProvider>
+        </NextIntlClientProvider>,
       );
       const input = screen.getByLabelText("nameLabel");
       expect(input).toHaveAttribute("id", "folder-name");
@@ -64,7 +60,7 @@ describe("Accessibility contract (component-level a11y)", () => {
       render(
         <NextIntlClientProvider locale="ar" messages={{}}>
           <CreateFolderDialog onSubmit={vi.fn()} onClose={vi.fn()} />
-        </NextIntlClientProvider>
+        </NextIntlClientProvider>,
       );
       fireEvent.click(screen.getByText("create"));
       await screen.findByText("nameRequired");

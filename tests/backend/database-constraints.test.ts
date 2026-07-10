@@ -1,8 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  registerSchema,
-  profileUpdateSchema,
-} from "@/shared/validators/auth";
+import { registerSchema, profileUpdateSchema } from "@/shared/validators/auth";
 import {
   createFolderSchema,
   renameFolderSchema,
@@ -27,7 +24,12 @@ import type { FlatFolder } from "@/core/folder-tree";
  * ========================================================================= */
 describe("DB constraints — validators (integrity gate)", () => {
   describe("registerSchema", () => {
-    const base = { name: "أحمد", email: "A@Example.com", password: "Passw0rd", confirmPassword: "Passw0rd" };
+    const base = {
+      name: "أحمد",
+      email: "A@Example.com",
+      password: "Passw0rd",
+      confirmPassword: "Passw0rd",
+    };
 
     it("accepts a valid payload", () => {
       expect(registerSchema.safeParse(base).success).toBe(true);
@@ -45,16 +47,27 @@ describe("DB constraints — validators (integrity gate)", () => {
       expect(registerSchema.safeParse({ ...base, email: "not-email" }).success).toBe(false);
     });
     it("rejects password shorter than 8 (boundary)", () => {
-      expect(registerSchema.safeParse({ ...base, password: "Ab0", confirmPassword: "Ab0" }).success).toBe(false);
+      expect(
+        registerSchema.safeParse({ ...base, password: "Ab0", confirmPassword: "Ab0" }).success,
+      ).toBe(false);
     });
     it("accepts password at exactly 8 chars (boundary)", () => {
-      expect(registerSchema.safeParse({ ...base, password: "Abcdef01", confirmPassword: "Abcdef01" }).success).toBe(true);
+      expect(
+        registerSchema.safeParse({ ...base, password: "Abcdef01", confirmPassword: "Abcdef01" })
+          .success,
+      ).toBe(true);
     });
     it("rejects password missing an uppercase letter", () => {
-      expect(registerSchema.safeParse({ ...base, password: "abcdef01", confirmPassword: "abcdef01" }).success).toBe(false);
+      expect(
+        registerSchema.safeParse({ ...base, password: "abcdef01", confirmPassword: "abcdef01" })
+          .success,
+      ).toBe(false);
     });
     it("rejects password missing a digit", () => {
-      expect(registerSchema.safeParse({ ...base, password: "Abcdefgh", confirmPassword: "Abcdefgh" }).success).toBe(false);
+      expect(
+        registerSchema.safeParse({ ...base, password: "Abcdefgh", confirmPassword: "Abcdefgh" })
+          .success,
+      ).toBe(false);
     });
     it("rejects mismatched confirmPassword", () => {
       expect(registerSchema.safeParse({ ...base, confirmPassword: "Other0" }).success).toBe(false);
@@ -115,7 +128,10 @@ describe("DB constraints — validators (integrity gate)", () => {
       expect(mergeTagsSchema.safeParse({ sourceTagId: "" }).success).toBe(false);
     });
     it("rejects tag name exceeding MAX_TAG_NAME_LENGTH", () => {
-      expect(createTagSchema.safeParse({ name: "x".repeat(CONTENT_LIMITS.MAX_TAG_NAME_LENGTH + 1) }).success).toBe(false);
+      expect(
+        createTagSchema.safeParse({ name: "x".repeat(CONTENT_LIMITS.MAX_TAG_NAME_LENGTH + 1) })
+          .success,
+      ).toBe(false);
     });
   });
 
@@ -138,7 +154,9 @@ describe("DB constraints — validators (integrity gate)", () => {
       expect(validateUploadFile(badType).valid).toBe(false);
 
       const big = new File(["x"], "a.pdf", { type: "application/pdf" });
-      Object.defineProperty(big, "size", { value: (Number(process.env.MAX_UPLOAD_SIZE_MB) || 50) * 1024 * 1024 + 1 });
+      Object.defineProperty(big, "size", {
+        value: (Number(process.env.MAX_UPLOAD_SIZE_MB) || 50) * 1024 * 1024 + 1,
+      });
       expect(validateUploadFile(big).valid).toBe(false);
     });
     it("validateUploadFile: null file -> 400", () => {
@@ -168,12 +186,7 @@ describe("DB constraints — folder depth integrity", () => {
   }
 
   it("computes depth of a linear chain", () => {
-    const folders: FlatFolder[] = [
-      f("1", null),
-      f("2", "1"),
-      f("3", "2"),
-      f("4", "3"),
-    ];
+    const folders: FlatFolder[] = [f("1", null), f("2", "1"), f("3", "2"), f("4", "3")];
     expect(getDescendantMaxDepth("1", 0, mapOf(folders))).toBe(3);
   });
 

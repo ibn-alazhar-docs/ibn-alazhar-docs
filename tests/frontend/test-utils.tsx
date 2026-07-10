@@ -23,11 +23,7 @@ interface ProvidersProps {
 }
 
 /** Wrap a component with the providers it needs in the real app. */
-export function AllProviders({
-  children,
-  queryClient,
-  theme = "light",
-}: ProvidersProps) {
+export function AllProviders({ children, queryClient, theme = "light" }: ProvidersProps) {
   const client = queryClient ?? makeQueryClient();
   return (
     <QueryClientProvider client={client}>

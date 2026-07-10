@@ -1,9 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  expirationToMs,
-  createShareSchema,
-  EXPIRATION_OPTIONS,
-} from "@/shared/validators/share";
+import { expirationToMs, createShareSchema, EXPIRATION_OPTIONS } from "@/shared/validators/share";
 
 describe("expirationToMs", () => {
   it('"never" returns null', () => {

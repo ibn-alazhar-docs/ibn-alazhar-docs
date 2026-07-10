@@ -1,8 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-
-
 vi.mock("@/i18n/navigation", () => ({
   useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
   Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
@@ -57,7 +55,9 @@ describe("RegisterForm (component)", () => {
     fireEvent.change(screen.getByLabelText("nameLabel"), { target: { value: "أحمد" } });
     fireEvent.change(screen.getByLabelText("emailLabel"), { target: { value: "a@b.com" } });
     fireEvent.change(screen.getByLabelText("passwordLabel"), { target: { value: "Passw0rd" } });
-    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), { target: { value: "Other1" } });
+    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), {
+      target: { value: "Other1" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
     expect(await screen.findByText("confirmPasswordError")).toBeInTheDocument();
   });
@@ -74,7 +74,9 @@ describe("RegisterForm (component)", () => {
     fireEvent.change(screen.getByLabelText("nameLabel"), { target: { value: "أحمد" } });
     fireEvent.change(screen.getByLabelText("emailLabel"), { target: { value: "a@b.com" } });
     fireEvent.change(screen.getByLabelText("passwordLabel"), { target: { value: "Passw0rd" } });
-    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), { target: { value: "Passw0rd" } });
+    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), {
+      target: { value: "Passw0rd" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
 
     await waitFor(() =>
@@ -107,7 +109,9 @@ describe("RegisterForm (component)", () => {
     fireEvent.change(screen.getByLabelText("nameLabel"), { target: { value: "أحمد" } });
     fireEvent.change(screen.getByLabelText("emailLabel"), { target: { value: "a@b.com" } });
     fireEvent.change(screen.getByLabelText("passwordLabel"), { target: { value: "Passw0rd" } });
-    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), { target: { value: "Passw0rd" } });
+    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), {
+      target: { value: "Passw0rd" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
     expect(await screen.findByText("البريد مستخدم")).toBeInTheDocument();
   });
@@ -118,7 +122,9 @@ describe("RegisterForm (component)", () => {
     fireEvent.change(screen.getByLabelText("nameLabel"), { target: { value: "أحمد" } });
     fireEvent.change(screen.getByLabelText("emailLabel"), { target: { value: "a@b.com" } });
     fireEvent.change(screen.getByLabelText("passwordLabel"), { target: { value: "Passw0rd" } });
-    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), { target: { value: "Passw0rd" } });
+    fireEvent.change(screen.getByLabelText("confirmPasswordLabel"), {
+      target: { value: "Passw0rd" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
     expect(await screen.findByText("unexpectedError")).toBeInTheDocument();
   });

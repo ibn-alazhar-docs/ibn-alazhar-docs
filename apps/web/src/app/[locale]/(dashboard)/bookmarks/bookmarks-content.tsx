@@ -83,9 +83,7 @@ export function BookmarksContent() {
                 <BookmarkIcon className="h-8 w-8" />
               </div>
               <Heading level={3}>{t("bookmarks.emptyTitle")}</Heading>
-              <Text className="mt-2 text-muted-color">
-                {t("bookmarks.emptyDesc")}
-              </Text>
+              <Text className="mt-2 text-muted-color">{t("bookmarks.emptyDesc")}</Text>
             </div>
           )}
 
@@ -118,7 +116,9 @@ export function BookmarksContent() {
                         {bookmark.document.pageCount && (
                           <>
                             <span>•</span>
-                            <span>{t("documents.pagesCount", { count: bookmark.document.pageCount })}</span>
+                            <span>
+                              {t("documents.pagesCount", { count: bookmark.document.pageCount })}
+                            </span>
                           </>
                         )}
                       </div>

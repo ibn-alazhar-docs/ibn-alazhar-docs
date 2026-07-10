@@ -65,21 +65,15 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
           <h1>{journey.title}</h1>
           <p className="journey-description">{journey.description}</p>
           <div className="journey-stats">
-            <span>
-              {t("documentCount", { count: journey.docCount })}
-            </span>
-            <span>
-              ~{t("minute", { count: journey.totalReadingTime })}
-            </span>
+            <span>{t("documentCount", { count: journey.docCount })}</span>
+            <span>~{t("minute", { count: journey.totalReadingTime })}</span>
           </div>
         </div>
 
         <div className="journey-timeline">
           {journey.docs.map((doc, index) => (
             <div key={doc.slug} className="journey-step">
-              <div className="journey-step-number">
-                {t("step", { number: index + 1 })}
-              </div>
+              <div className="journey-step-number">{t("step", { number: index + 1 })}</div>
               <a href={`/${locale}/docs/${doc.category}/${doc.slug}`}>
                 <div className="journey-step-title">{doc.metadata.title}</div>
               </a>
@@ -87,9 +81,7 @@ export default async function JourneyDetailPage({ params }: JourneyDetailPagePro
                 <div className="journey-step-subtitle">{doc.metadata.subtitle}</div>
               )}
               <div className="journey-step-meta">
-                <span>
-                  {t("minute", { count: doc.metadata.readingTime })}
-                </span>
+                <span>{t("minute", { count: doc.metadata.readingTime })}</span>
                 <span>{getCategoryLabel(doc.category, locale)}</span>
               </div>
             </div>

@@ -51,9 +51,7 @@ for (const file of files) {
       if (error?.message) console.error(error.message);
       process.exit(1);
     }
-    lines = diff
-      .split(/\r?\n/)
-      .filter((line) => line.startsWith("+") && !line.startsWith("+++"));
+    lines = diff.split(/\r?\n/).filter((line) => line.startsWith("+") && !line.startsWith("+++"));
   } else {
     let content = "";
     try {
@@ -68,9 +66,7 @@ for (const file of files) {
     for (const pattern of patterns) {
       if (pattern.regex.test(line)) {
         found = true;
-        console.error(
-          `Potential secret found in ${file} at line ${index + 1}: ${pattern.name}`,
-        );
+        console.error(`Potential secret found in ${file} at line ${index + 1}: ${pattern.name}`);
       }
     }
   }

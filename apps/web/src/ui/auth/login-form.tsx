@@ -31,7 +31,7 @@ export function LoginForm() {
       try {
         const email = formData.get("email") as string;
         const password = formData.get("password") as string;
-        
+
         // Zod validation
         const validation = loginSchema.safeParse({ email, password });
         if (!validation.success) {
@@ -91,7 +91,9 @@ export function LoginForm() {
 
       <div className="space-y-4">
         <div>
-          <label htmlFor="login-email" className="mb-2 block text-xs font-bold text-muted-color">{t("emailLabel")}</label>
+          <label htmlFor="login-email" className="mb-2 block text-xs font-bold text-muted-color">
+            {t("emailLabel")}
+          </label>
           <input
             id="login-email"
             type="email"
@@ -111,7 +113,9 @@ export function LoginForm() {
 
         <div>
           <div className="flex items-center justify-between mb-2">
-            <label htmlFor="login-password" className="text-xs font-bold text-muted-color">{t("passwordLabel")}</label>
+            <label htmlFor="login-password" className="text-xs font-bold text-muted-color">
+              {t("passwordLabel")}
+            </label>
             <Link
               href="/forgot-password"
               className="text-xs font-semibold text-gold hover:underline underline-offset-4 decoration-1 decoration-gold/20 transition-colors"

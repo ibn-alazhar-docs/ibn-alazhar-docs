@@ -97,17 +97,10 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
               </div>
 
               <div className="flex justify-end gap-3">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={onClose}
-                >
+                <Button type="button" variant="outline" onClick={onClose}>
                   {tCommon("cancel")}
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={isSubmitting}
-                >
+                <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting ? "..." : t("create")}
                 </Button>
               </div>

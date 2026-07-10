@@ -29,7 +29,9 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
   const tCommon = useTranslations("common");
 
   // Determine badge color variant based on status
-  const getBadgeVariant = (status: string): "default" | "secondary" | "destructive" | "success" | "warning" => {
+  const getBadgeVariant = (
+    status: string,
+  ): "default" | "secondary" | "destructive" | "success" | "warning" => {
     switch (status.toUpperCase()) {
       case "COMPLETED":
         return "success";
@@ -69,19 +71,17 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
       <CardContent className="p-5 flex flex-col md:flex-row gap-4 items-start justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link 
+            <Link
               href={`/${locale}/preview/${result.id}`}
               className="text-lg font-semibold text-primary hover:underline hover:text-primary/80 transition-colors"
             >
               {result.title}
             </Link>
-            <Badge variant={getBadgeVariant(result.status)}>
-              {getStatusLabel(result.status)}
-            </Badge>
+            <Badge variant={getBadgeVariant(result.status)}>{getStatusLabel(result.status)}</Badge>
           </div>
 
           {result.searchPreview ? (
-            <p 
+            <p
               className="text-sm text-foreground/80 bg-muted/30 p-2.5 rounded border border-line/35 font-mono text-xs leading-relaxed"
               dangerouslySetInnerHTML={{ __html: result.searchPreview }}
             />
@@ -101,7 +101,7 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
             <span>{formattedDate}</span>
           </div>
         </div>
-        
+
         <Link
           href={`/${locale}/preview/${result.id}`}
           className="self-end md:self-center bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-md transition-colors whitespace-nowrap"

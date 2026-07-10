@@ -6,13 +6,7 @@ import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
-import {
-  FileTextIcon,
-  FolderIcon,
-  TagIcon,
-  RefreshIcon,
-  ChevronRightIcon,
-} from "@/ui/icons";
+import { FileTextIcon, FolderIcon, TagIcon, RefreshIcon, ChevronRightIcon } from "@/ui/icons";
 import { type ReactNode } from "react";
 
 interface Document {
@@ -32,8 +26,6 @@ interface DashboardContentProps {
   };
   recentDocuments: Document[];
 }
-
-
 
 export function DashboardContent({ counts, recentDocuments }: DashboardContentProps) {
   const tNav = useTranslations("nav");
@@ -97,8 +89,6 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             accent="gold"
           />
         </div>
-
-
 
         {/* Quick Actions */}
         <Card>

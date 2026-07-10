@@ -4,7 +4,6 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useSearchParams } from "next/navigation";
 
-
 vi.mock("next/navigation", () => ({
   useSearchParams: vi.fn(() => ({ get: () => null })),
   useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),

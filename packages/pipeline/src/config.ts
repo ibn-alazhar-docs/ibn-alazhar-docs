@@ -82,8 +82,7 @@ export function loadConfig(): PipelineConfig {
       //   - Otherwise cloud providers are excluded from the default set UNLESS
       //     OCR_CLOUD_ENABLED=true is explicitly set. Cloud is OFF by default.
       providers: (() => {
-        const explicit = process.env.OCR_PROVIDERS
-          ?.split(",")
+        const explicit = process.env.OCR_PROVIDERS?.split(",")
           .map((p) => p.trim())
           .filter(Boolean) as OcrEngineType[] | undefined;
         if (explicit && explicit.length > 0) return explicit;
