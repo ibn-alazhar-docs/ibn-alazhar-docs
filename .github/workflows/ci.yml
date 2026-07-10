@@ -69,8 +69,8 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
-      - run: npx prisma migrate deploy
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
       - run: npx playwright install --with-deps chromium
       - run: bash scripts/ci-pipeline.sh --stage pr
 
@@ -116,7 +116,7 @@ jobs:
           node-version: "22"
           cache: "pnpm"
       - run: pnpm install --frozen-lockfile
-      - run: npx prisma generate
-      - run: npx prisma migrate deploy
+      - run: npx prisma generate --schema=packages/database/prisma/schema.prisma
+      - run: npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma
       - run: npx playwright install --with-deps chromium
       - run: bash scripts/ci-pipeline.sh --stage full
