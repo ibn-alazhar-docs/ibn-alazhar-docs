@@ -205,9 +205,14 @@ describe("DocumentCrudUseCases", () => {
 
       await useCases.deleteDocument("doc-1", "user-1");
 
-      expect(documentRepo.update).toHaveBeenCalledWith("doc-1", "user-1", {
-        deletedAt: expect.any(Date),
-      }, undefined);
+      expect(documentRepo.update).toHaveBeenCalledWith(
+        "doc-1",
+        "user-1",
+        {
+          deletedAt: expect.any(Date),
+        },
+        undefined,
+      );
     });
 
     it("throws NotFoundError when document does not exist", async () => {

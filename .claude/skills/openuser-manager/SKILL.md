@@ -72,8 +72,8 @@ well-designed persona catches real user pain.
 2. **Behaviorally specific** — `patience: "low"` means the tester gives up after 2 retries;
    `readingStyle: "skims"` means the tester will miss fine print. These values drive real
    tester behavior through the skill.
-3. **Knowledgeable in the right way** — `productKnowledge` captures what the persona *already
-   knows* (not what they should discover). A first-time buyer knows nothing; a reseller knows
+3. **Knowledgeable in the right way** — `productKnowledge` captures what the persona _already
+   knows_ (not what they should discover). A first-time buyer knows nothing; a reseller knows
    SKU codes and bulk-pricing rules.
 4. **Vocabulary-accurate** — `vocabulary` tells the tester which words to use in findings
    ("the 'Checkout' button", not "the submit element at #checkout-btn"). This keeps findings
@@ -310,12 +310,12 @@ Retrieve findings: `get_findings({ projectId: "<prj_id>", status: "open" })`.
 
 ### Severity guide
 
-| Severity | Definition | Action |
-|---|---|---|
-| `critical` | Goal impossible or data loss | Fix before merging; block the PR |
-| `high` | Goal blocked but a workaround exists | Fix before merging unless explicitly deferred |
-| `medium` | Significant friction; user confused but can continue | Fix in this sprint or file issue |
-| `low` | Papercut; minor wording or cosmetic issue | File issue, fix opportunistically |
+| Severity   | Definition                                           | Action                                        |
+| ---------- | ---------------------------------------------------- | --------------------------------------------- |
+| `critical` | Goal impossible or data loss                         | Fix before merging; block the PR              |
+| `high`     | Goal blocked but a workaround exists                 | Fix before merging unless explicitly deferred |
+| `medium`   | Significant friction; user confused but can continue | Fix in this sprint or file issue              |
+| `low`      | Papercut; minor wording or cosmetic issue            | File issue, fix opportunistically             |
 
 ### What to fix vs acknowledge vs dismiss
 
@@ -369,21 +369,21 @@ from `get_run` and `get_findings` and relay it faithfully.
 
 ## Quick reference — all manager tools
 
-| Tool | When to use |
-|---|---|
-| `register_project` | First time in a repo. Writes to `openuser.config.json`. |
-| `list_projects` | Enumerate registered projects; verify daemon is running. |
-| `create_persona` | Design a new user archetype (Step 1). |
-| `update_persona` | Edit an existing persona (update credentials, behavior, or notes). |
-| `list_personas` | Show all personas for a project; pick one for a run. |
-| `create_test` | Save a new test flow or promote an ad-hoc run (Step 7). |
-| `update_test` | Edit a test's goal, preconditions, priority, or tags. |
-| `list_tests` | Enumerate saved tests; used when running a full smoke suite. |
-| `prepare_run` | Generate a run token + testerPrompt (Steps 3 and 4). |
-| `get_run` | Poll run status; retrieve steps, findings, and video path (Step 5). |
-| `list_runs` | List recent runs for a project filtered by status. |
-| `get_findings` | Retrieve all findings for a project filtered by severity/type/status. |
-| `update_finding` | Triage a finding: set status to acknowledged, resolved, or dismissed. |
-| `list_checkpoints` | Show saved checkpoints for a project/persona. |
-| `delete_checkpoint` | Remove a stale checkpoint (e.g., after credentials change). |
-| `get_report` | Retrieve the markdown run report with findings and evidence links. |
+| Tool                | When to use                                                           |
+| ------------------- | --------------------------------------------------------------------- |
+| `register_project`  | First time in a repo. Writes to `openuser.config.json`.               |
+| `list_projects`     | Enumerate registered projects; verify daemon is running.              |
+| `create_persona`    | Design a new user archetype (Step 1).                                 |
+| `update_persona`    | Edit an existing persona (update credentials, behavior, or notes).    |
+| `list_personas`     | Show all personas for a project; pick one for a run.                  |
+| `create_test`       | Save a new test flow or promote an ad-hoc run (Step 7).               |
+| `update_test`       | Edit a test's goal, preconditions, priority, or tags.                 |
+| `list_tests`        | Enumerate saved tests; used when running a full smoke suite.          |
+| `prepare_run`       | Generate a run token + testerPrompt (Steps 3 and 4).                  |
+| `get_run`           | Poll run status; retrieve steps, findings, and video path (Step 5).   |
+| `list_runs`         | List recent runs for a project filtered by status.                    |
+| `get_findings`      | Retrieve all findings for a project filtered by severity/type/status. |
+| `update_finding`    | Triage a finding: set status to acknowledged, resolved, or dismissed. |
+| `list_checkpoints`  | Show saved checkpoints for a project/persona.                         |
+| `delete_checkpoint` | Remove a stale checkpoint (e.g., after credentials change).           |
+| `get_report`        | Retrieve the markdown run report with findings and evidence links.    |

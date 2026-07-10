@@ -43,7 +43,9 @@ describe("Actuator API", () => {
   describe("GET /api/actuator/metrics", () => {
     it("returns process metrics with 200", async () => {
       const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
-      const req = createApiRequest("/api/actuator/metrics", { headers: { authorization: `Bearer ${token}` } });
+      const req = createApiRequest("/api/actuator/metrics", {
+        headers: { authorization: `Bearer ${token}` },
+      });
       const res = await getActuatorMetrics(req as any);
       const json = await res.json();
 
@@ -60,7 +62,9 @@ describe("Actuator API", () => {
 
     it("sets no-store cache header", async () => {
       const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
-      const req = createApiRequest("/api/actuator/metrics", { headers: { authorization: `Bearer ${token}` } });
+      const req = createApiRequest("/api/actuator/metrics", {
+        headers: { authorization: `Bearer ${token}` },
+      });
       const res = await getActuatorMetrics(req as any);
       expect(res.headers.get("Cache-Control")).toBe("no-store");
     });
@@ -69,7 +73,9 @@ describe("Actuator API", () => {
   describe("GET /api/actuator/prometheus", () => {
     it("returns Prometheus-format text", async () => {
       const token = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
-      const req = createApiRequest("/api/actuator/prometheus", { headers: { authorization: `Bearer ${token}` } });
+      const req = createApiRequest("/api/actuator/prometheus", {
+        headers: { authorization: `Bearer ${token}` },
+      });
       const res = await getActuatorPrometheus(req as any);
       const text = await res.text();
 

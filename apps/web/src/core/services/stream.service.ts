@@ -63,7 +63,9 @@ export class StreamService {
       return consecutiveCompleteChecks;
     }
 
-    send(JSON.stringify({ type: "progress", jobId, stage: status.stage, progress: status.progress }));
+    send(
+      JSON.stringify({ type: "progress", jobId, stage: status.stage, progress: status.progress }),
+    );
 
     if (status.stage === "completed" || status.stage === "failed") {
       return consecutiveCompleteChecks + 1;

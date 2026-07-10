@@ -12,7 +12,8 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const classNameComputed = cn(
       "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none cursor-pointer",
       variant === "default" && "bg-primary text-primary-foreground hover:bg-primary/90",
-      variant === "destructive" && "bg-destructive text-destructive-foreground hover:bg-destructive/90",
+      variant === "destructive" &&
+        "bg-destructive text-destructive-foreground hover:bg-destructive/90",
       variant === "outline" && "border border-line bg-background hover:bg-muted/50",
       variant === "secondary" && "bg-secondary text-secondary-foreground hover:bg-secondary/80",
       variant === "ghost" && "hover:bg-muted/50",
@@ -21,7 +22,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       size === "sm" && "h-9 rounded-md px-3",
       size === "lg" && "h-11 rounded-md px-8",
       size === "icon" && "h-10 w-10",
-      className
+      className,
     );
 
     if (asChild) {
@@ -33,17 +34,11 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       return React.cloneElement(child, {
         className: cn(classNameComputed, child.props.className),
         ...props,
-        children: child.props.children
+        children: child.props.children,
       });
     }
 
-    return (
-      <button
-        className={classNameComputed}
-        ref={ref}
-        {...props}
-      />
-    );
-  }
+    return <button className={classNameComputed} ref={ref} {...props} />;
+  },
 );
 Button.displayName = "Button";

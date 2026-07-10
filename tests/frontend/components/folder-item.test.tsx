@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 
-
-
 import { FolderItem } from "@/ui/folders/folder-item";
 import { createFolderNode } from "../test-utils";
 

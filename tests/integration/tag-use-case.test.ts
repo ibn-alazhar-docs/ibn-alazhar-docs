@@ -10,11 +10,7 @@ import { TagUseCases } from "../../apps/web/src/core/services/tag.use-cases";
 import { TagRepository } from "../../apps/web/src/core/repositories/tag.repository";
 import { TagDocumentRepository } from "../../apps/web/src/core/repositories/tag-document.repository";
 import type { AuthSession } from "../../apps/web/src/lib/backend/auth-guards";
-import {
-  NotFoundError,
-  ConflictError,
-  ValidationError,
-} from "../../apps/web/src/shared/errors";
+import { NotFoundError, ConflictError, ValidationError } from "../../apps/web/src/shared/errors";
 
 describe("TagUseCases (use-case level)", () => {
   let userA: { id: string; role: string };
@@ -60,8 +56,8 @@ describe("TagUseCases (use-case level)", () => {
       const adminSession = { user: { id: userA.id, role: "ADMIN" } } as AuthSession;
       const tags = await tagUseCases.getTags(adminSession);
       expect(tags.length).toBeGreaterThanOrEqual(2);
-      expect(tags.some(t => t.name === "a-tag" && t.userId === userA.id)).toBe(true);
-      expect(tags.some(t => t.name === "b-tag" && t.userId === userB.id)).toBe(true);
+      expect(tags.some((t) => t.name === "a-tag" && t.userId === userA.id)).toBe(true);
+      expect(tags.some((t) => t.name === "b-tag" && t.userId === userB.id)).toBe(true);
     });
   });
 

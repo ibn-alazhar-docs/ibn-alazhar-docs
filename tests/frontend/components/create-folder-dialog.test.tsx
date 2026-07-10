@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-
-
 import { CreateFolderDialog } from "@/ui/folders/create-folder-dialog";
 import { CONTENT_LIMITS } from "@/shared/constants";
 

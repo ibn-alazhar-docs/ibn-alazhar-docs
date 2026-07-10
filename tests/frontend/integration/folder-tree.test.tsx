@@ -3,8 +3,6 @@ import { useState } from "react";
 import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import type { FlatFolder } from "@/core/folder-tree";
 
-
-
 vi.mock("sonner", () => ({
   toast: { success: vi.fn(), error: vi.fn(), message: vi.fn() },
 }));
@@ -21,7 +19,15 @@ vi.mock("motion/react", () => {
 import { FolderTree } from "@/ui/folders/folder-tree";
 
 const flat: FlatFolder[] = [
-  { id: "1", name: "محاضرات", parentId: null, color: null, icon: null, order: 0, _count: { documents: 1, children: 0 } },
+  {
+    id: "1",
+    name: "محاضرات",
+    parentId: null,
+    color: null,
+    icon: null,
+    order: 0,
+    _count: { documents: 1, children: 0 },
+  },
 ];
 
 function Harness() {

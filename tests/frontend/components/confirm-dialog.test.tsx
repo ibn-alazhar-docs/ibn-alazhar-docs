@@ -1,8 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-
-
 import { ConfirmDialog } from "@/ui/confirm-dialog";
 
 describe("ConfirmDialog (component)", () => {
@@ -43,8 +41,6 @@ describe("ConfirmDialog (component)", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-
-
   it("does NOT call onCancel on Escape while loading", () => {
     const onCancel = vi.fn();
     render(<ConfirmDialog {...baseProps} onCancel={onCancel} isLoading />);
@@ -69,5 +65,4 @@ describe("ConfirmDialog (component)", () => {
     fireEvent.click(screen.getByRole("dialog").querySelector(".absolute.inset-0")!);
     expect(onCancel).toHaveBeenCalled();
   });
-
 });

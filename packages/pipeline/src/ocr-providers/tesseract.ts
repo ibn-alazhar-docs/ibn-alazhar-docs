@@ -63,7 +63,11 @@ export class TesseractOcrProvider implements OcrProvider {
     pageGetters: (() => Promise<Buffer>)[],
     _fileName: string,
   ): Promise<OcrEngineResult> {
-    if (process.env.MOCK_OCR === "true" || process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true") {
+    if (
+      process.env.MOCK_OCR === "true" ||
+      process.env.NODE_ENV === "test" ||
+      process.env.PLAYWRIGHT_TEST === "true"
+    ) {
       const pages: OcrPageResult[] = pageGetters.map((_, i) => ({
         number: i + 1,
         text: `هذا نص تجريبي للصفحة ${i + 1} لا_أعلم_هويتي تفوق كبير وتألق`,

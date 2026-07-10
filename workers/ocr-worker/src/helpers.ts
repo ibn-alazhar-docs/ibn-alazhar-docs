@@ -85,7 +85,11 @@ export async function generateSearchablePdf(
   config: PipelineConfig,
 ): Promise<string | null> {
   try {
-    if (process.env.MOCK_OCR === "true" || process.env.NODE_ENV === "test" || process.env.PLAYWRIGHT_TEST === "true") {
+    if (
+      process.env.MOCK_OCR === "true" ||
+      process.env.NODE_ENV === "test" ||
+      process.env.PLAYWRIGHT_TEST === "true"
+    ) {
       const finalBuffer = Buffer.from("%PDF-1.4 mock pdf content");
       const pdfKey = `${config.paths.exports}/${job.id}/searchable.pdf`;
       await uploadBuffer(config, pdfKey, finalBuffer, "application/pdf");

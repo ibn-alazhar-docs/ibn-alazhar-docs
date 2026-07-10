@@ -79,7 +79,10 @@ export async function middleware(request: NextRequest) {
 
   // Handle API routes: CSRF check + rate limiting, no i18n routing
   if (pathname.startsWith("/api")) {
-    if (["POST", "PUT", "PATCH", "DELETE"].includes(request.method) && !pathname.startsWith("/api/auth")) {
+    if (
+      ["POST", "PUT", "PATCH", "DELETE"].includes(request.method) &&
+      !pathname.startsWith("/api/auth")
+    ) {
       const csrfCookie = request.cookies.get(CSRF_COOKIE_NAME)?.value;
       if (csrfCookie) {
         // Double-submit cookie enforcement (defense-in-depth, stronger than Origin check)

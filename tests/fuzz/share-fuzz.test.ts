@@ -18,19 +18,17 @@ vi.mock("@/core/composition-root", () => ({
       downloadFile: vi.fn().mockResolvedValue(Buffer.from("")),
     },
     document: {
-      findFirst: vi
-        .fn()
-        .mockResolvedValue({
-          id: "share-doc",
-          title: "Shared Doc",
-          description: null,
-          language: "ar",
-          isRtl: true,
-          pageCount: 5,
-          outputFormats: ["md", "txt"],
-          createdAt: new Date(),
-          status: "COMPLETED",
-        }),
+      findFirst: vi.fn().mockResolvedValue({
+        id: "share-doc",
+        title: "Shared Doc",
+        description: null,
+        language: "ar",
+        isRtl: true,
+        pageCount: 5,
+        outputFormats: ["md", "txt"],
+        createdAt: new Date(),
+        status: "COMPLETED",
+      }),
     },
   },
   useCases: {

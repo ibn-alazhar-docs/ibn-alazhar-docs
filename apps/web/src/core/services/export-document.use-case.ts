@@ -14,7 +14,12 @@ export class ExportDocumentUseCase {
   async execute(params: { id: string; format: string; userId: string; userRole?: string }) {
     const { id, format, userId, userRole } = params;
 
-    const document = await this.documentRepository.findDocumentById(id, userId, undefined, userRole);
+    const document = await this.documentRepository.findDocumentById(
+      id,
+      userId,
+      undefined,
+      userRole,
+    );
 
     if (!document) {
       throw new NotFoundError();

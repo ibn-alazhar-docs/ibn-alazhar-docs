@@ -84,11 +84,11 @@ export class DocumentCrudUseCases {
   ) {
     const document = await this.documentRepository.findDocumentById(id, userId, undefined, role);
     if (!document) throw new NotFoundError();
- 
+
     const updateData: Record<string, unknown> = {};
     if (data.title !== undefined) updateData.title = data.title;
     if (data.description !== undefined) updateData.description = data.description;
- 
+
     if (data.folderId !== undefined) {
       if (data.folderId === null) {
         updateData.folderId = null;
@@ -98,9 +98,9 @@ export class DocumentCrudUseCases {
         updateData.folderId = data.folderId;
       }
     }
- 
+
     const updated = await this.documentRepository.update(id, userId, updateData, role);
- 
+
     if (data.title !== undefined || data.description !== undefined) {
       try {
         await this.documentRepository.updateSearchVector(id, updated.title, updated.description);
@@ -108,10 +108,10 @@ export class DocumentCrudUseCases {
         logger.warn(err, "Search vector update failed (non-critical):");
       }
     }
- 
+
     return { ...updated, fileSize: Number(updated.fileSize) };
   }
- 
+
   async bulkDeleteDocuments(ids: string[], userId: string, role?: string) {
     const admin = role ? isAdminRole(role) : false;
     const where: Prisma.DocumentWhereInput = {
@@ -125,25 +125,24 @@ export class DocumentCrudUseCases {
       where,
       select: { id: true },
     });
- 
+
     if (documents.length === 0) return 0;
- 
+
     const foundIds = documents.map((d) => d.id);
     const updateWhere: Prisma.DocumentWhereInput = { id: { in: foundIds } };
     if (!admin) {
       updateWhere.userId = userId;
     }
-    const { count } = await this.documentRepository.updateMany(
-      updateWhere,
-      { deletedAt: new Date() },
-    );
+    const { count } = await this.documentRepository.updateMany(updateWhere, {
+      deletedAt: new Date(),
+    });
     return count;
   }
- 
+
   async deleteDocument(id: string, userId: string, role?: string) {
     const document = await this.documentRepository.findDocumentById(id, userId, undefined, role);
     if (!document) throw new NotFoundError();
- 
+
     await this.documentRepository.update(id, userId, { deletedAt: new Date() }, role);
   }
 

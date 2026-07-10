@@ -4,8 +4,24 @@ import { buildFolderTree, type FlatFolder } from "@/core/folder-tree";
 import { useFolders } from "@/ui/folders/use-folders";
 
 const flat: FlatFolder[] = [
-  { id: "1", name: "A", parentId: null, color: null, icon: null, order: 0, _count: { documents: 2, children: 1 } },
-  { id: "2", name: "B", parentId: "1", color: null, icon: null, order: 0, _count: { documents: 0, children: 0 } },
+  {
+    id: "1",
+    name: "A",
+    parentId: null,
+    color: null,
+    icon: null,
+    order: 0,
+    _count: { documents: 2, children: 1 },
+  },
+  {
+    id: "2",
+    name: "B",
+    parentId: "1",
+    color: null,
+    icon: null,
+    order: 0,
+    _count: { documents: 0, children: 0 },
+  },
 ];
 
 describe("useFolders (hook)", () => {

@@ -55,7 +55,11 @@ describe("DashboardService", () => {
     await DashboardService.trackUpload("doc-123");
 
     expect(mockRedis.zadd).toHaveBeenCalledWith("dashboard:uploads", expect.any(Number), "doc-123");
-    expect(mockRedis.zremrangebyscore).toHaveBeenCalledWith("dashboard:uploads", "-inf", expect.any(Number));
+    expect(mockRedis.zremrangebyscore).toHaveBeenCalledWith(
+      "dashboard:uploads",
+      "-inf",
+      expect.any(Number),
+    );
   });
 
   it("successfully tracks active users in Redis", async () => {
@@ -64,15 +68,21 @@ describe("DashboardService", () => {
 
     await DashboardService.trackUserActivity("user-123");
 
-    expect(mockRedis.zadd).toHaveBeenCalledWith("dashboard:active_users", expect.any(Number), "user-123");
-    expect(mockRedis.zremrangebyscore).toHaveBeenCalledWith("dashboard:active_users", "-inf", expect.any(Number));
+    expect(mockRedis.zadd).toHaveBeenCalledWith(
+      "dashboard:active_users",
+      expect.any(Number),
+      "user-123",
+    );
+    expect(mockRedis.zremrangebyscore).toHaveBeenCalledWith(
+      "dashboard:active_users",
+      "-inf",
+      expect.any(Number),
+    );
   });
 
   it("gets all analytics metrics correctly", async () => {
     mockRedis.zremrangebyscore.mockResolvedValue(0);
-    mockRedis.zcount
-      .mockResolvedValueOnce(5)
-      .mockResolvedValueOnce(12);
+    mockRedis.zcount.mockResolvedValueOnce(5).mockResolvedValueOnce(12);
 
     const now = new Date();
     const created1 = new Date(now.getTime() - 10000);

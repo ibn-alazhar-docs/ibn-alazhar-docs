@@ -20,13 +20,21 @@ vi.mock("next/server", () => {
       this.headers = new Headers(init?.headers);
       this.cookies = {
         _store: new Map(),
-        set: function(key, val, opt) { this._store.set(key, {value: val, options: opt}); },
-        get: function(key) { return this._store.get(key); }
+        set: function (key, val, opt) {
+          this._store.set(key, { value: val, options: opt });
+        },
+        get: function (key) {
+          return this._store.get(key);
+        },
       };
     }
     async json() {
       if (typeof this.body === "string") {
-        try { return JSON.parse(this.body); } catch (e) { return this.body; }
+        try {
+          return JSON.parse(this.body);
+        } catch (e) {
+          return this.body;
+        }
       }
       return this.body;
     }
@@ -40,9 +48,13 @@ vi.mock("next/server", () => {
         json: () => Promise.resolve(data),
         cookies: {
           _store: new Map(),
-          set: function(key: string, val: string, opt?: any) { this._store.set(key, {value: val, options: opt}); },
-          get: function(key: string) { return this._store.get(key); }
-        }
+          set: function (key: string, val: string, opt?: any) {
+            this._store.set(key, { value: val, options: opt });
+          },
+          get: function (key: string) {
+            return this._store.get(key);
+          },
+        },
       };
     });
     static redirect = vi.fn((url: string) => {
@@ -51,9 +63,13 @@ vi.mock("next/server", () => {
         headers: new Headers({ Location: url }),
         cookies: {
           _store: new Map(),
-          set: function(key: string, val: string, opt?: any) { this._store.set(key, {value: val, options: opt}); },
-          get: function(key: string) { return this._store.get(key); }
-        }
+          set: function (key: string, val: string, opt?: any) {
+            this._store.set(key, { value: val, options: opt });
+          },
+          get: function (key: string) {
+            return this._store.get(key);
+          },
+        },
       };
     });
   }

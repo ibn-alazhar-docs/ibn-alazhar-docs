@@ -7,8 +7,8 @@ import { StreamService } from "@/core/services/stream.service";
 vi.mock("@/clients/redis", () => ({
   checkRateLimit: vi.fn(async () => ({ allowed: true })),
   checkUserRateLimit: vi.fn(async () => ({ allowed: true })),
-  rateLimitResponse: vi.fn(() => 
-    new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
+  rateLimitResponse: vi.fn(
+    () => new Response(JSON.stringify({ error: { code: "RATE_LIMITED" } }), { status: 429 }),
   ),
 }));
 

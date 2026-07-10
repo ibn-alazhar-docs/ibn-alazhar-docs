@@ -182,7 +182,9 @@ describe("Share API", () => {
       expect(res.status).toBe(200);
       expect(data.success).toBe(true);
 
-      const check = await prisma.shareLink.findFirst({ where: { documentId: freshDoc.id, deletedAt: null } });
+      const check = await prisma.shareLink.findFirst({
+        where: { documentId: freshDoc.id, deletedAt: null },
+      });
       expect(check).toBeNull();
     });
 

@@ -64,7 +64,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
       const expirationMap = {
         "7": "7days",
         "30": "30days",
-        "never": "never"
+        never: "never",
       } as const;
       const expiration = expirationMap[expiresIn];
 
@@ -160,7 +160,10 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
               {/* Body */}
               <div className="p-6">
                 {error && (
-                  <div className="mb-4 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)] text-start" dir="auto">
+                  <div
+                    className="mb-4 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)] text-start"
+                    dir="auto"
+                  >
                     {error}
                   </div>
                 )}

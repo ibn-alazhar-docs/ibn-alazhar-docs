@@ -194,7 +194,7 @@
 | `user.repository.ts`               | `tests/backend/user.test.ts`                   | ✅       |
 | `account.repository.ts`            | `tests/backend/registration.test.ts`           | ✅       |
 | `conversion-job.repository.ts`     | `tests/backend/conversion.test.ts`             | ✅       |
-| `bookmark.repository.ts`           | tests/backend/bookmarks*`                      | ✅       |
+| `bookmark.repository.ts`           | tests/backend/bookmarks\*`                     | ✅       |
 | `storage.repository.ts`            | `tests/backend/storage.test.ts`                | ✅       |
 | `verification-token.repository.ts` | `tests/backend/registration.test.ts`           | ✅       |
 | `webhook.repository.ts`            | covered by API route tests                     | ✅       |

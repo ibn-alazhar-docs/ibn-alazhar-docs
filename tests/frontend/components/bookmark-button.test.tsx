@@ -2,8 +2,6 @@ import { describe, it, expect, vi } from "vitest";
 import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { renderWithProviders } from "../test-utils";
 
-
-
 vi.mock("motion/react", () => {
   const React = require("react");
   const passthrough = (tag: string) =>
@@ -13,7 +11,12 @@ vi.mock("motion/react", () => {
   return { motion: new Proxy({}, { get: (_t, tag) => passthrough(tag as string) }) };
 });
 
-const mockApiClient = vi.hoisted(() => ({ post: vi.fn(), get: vi.fn(), put: vi.fn(), delete: vi.fn() }));
+const mockApiClient = vi.hoisted(() => ({
+  post: vi.fn(),
+  get: vi.fn(),
+  put: vi.fn(),
+  delete: vi.fn(),
+}));
 vi.mock("@/api/api-client", () => ({ apiClient: mockApiClient }));
 
 import { BookmarkButton } from "@/ui/documents/bookmark-button";

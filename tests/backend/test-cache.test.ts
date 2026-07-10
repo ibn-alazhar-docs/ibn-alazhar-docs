@@ -9,11 +9,11 @@ vi.mock("@/middleware/auth", () => ({
 describe("Cache test", () => {
   it("should not cache", async () => {
     const mockedAuth = vi.mocked(auth);
-    
+
     mockedAuth.mockResolvedValue({ user: { id: "1", role: "admin" } } as any);
     console.log("NODE_ENV:", process.env.NODE_ENV);
     console.log("First call:", await requireAuth());
-    
+
     mockedAuth.mockResolvedValue(null as any);
     console.log("Second call:", await requireAuth().catch(() => null));
   });

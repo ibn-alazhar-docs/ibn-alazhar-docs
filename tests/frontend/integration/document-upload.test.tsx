@@ -2,8 +2,6 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { useRef } from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
-
-
 import { useFileUpload } from "@/state/use-file-upload";
 
 /** Tiny harness that wires the hook to a real <input type="file"> + upload button. */

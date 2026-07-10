@@ -30,7 +30,10 @@ const studentSession: AuthSession = {
   user: { id: "u1", email: "s@x.com", name: "S", role: "STUDENT", image: null },
   expires: new Date(Date.now() + 1e9).toISOString(),
 };
-const adminSession: AuthSession = { ...studentSession, user: { ...studentSession.user, role: "ADMIN" } };
+const adminSession: AuthSession = {
+  ...studentSession,
+  user: { ...studentSession.user, role: "ADMIN" },
+};
 
 function setAuth(session: unknown) {
   auth.mockReturnValue(session as never);
@@ -104,13 +107,19 @@ describe("Auth guards (middleware/auth-guards)", () => {
   });
 
   it("unauthorizedResponse returns 401 with UNAUTHORIZED code", () => {
-    const res = unauthorizedResponse() as unknown as { status: number; json: () => Promise<{ error: { code: string } }> };
+    const res = unauthorizedResponse() as unknown as {
+      status: number;
+      json: () => Promise<{ error: { code: string } }>;
+    };
     expect(res.status).toBe(401);
     return res.json().then((j) => expect(j.error.code).toBe("UNAUTHORIZED"));
   });
 
   it("forbiddenResponse returns 403 with FORBIDDEN code", () => {
-    const res = forbiddenResponse() as unknown as { status: number; json: () => Promise<{ error: { code: string } }> };
+    const res = forbiddenResponse() as unknown as {
+      status: number;
+      json: () => Promise<{ error: { code: string } }>;
+    };
     expect(res.status).toBe(403);
     return res.json().then((j) => expect(j.error.code).toBe("FORBIDDEN"));
   });
@@ -134,7 +143,9 @@ describe("Auth guards (middleware/auth-guards)", () => {
   it("withAdminAuth returns 403 for non-admin", async () => {
     setAuth(studentSession);
     const handler = vi.fn();
-    const res = (await withAdminAuth(handler as any)({} as any, { params: Promise.resolve({}) })) as any;
+    const res = (await withAdminAuth(handler as any)({} as any, {
+      params: Promise.resolve({}),
+    })) as any;
     expect(res.status).toBe(403);
   });
 

@@ -203,8 +203,9 @@ export class ExportUseCases {
     const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
-    const { generateMarkdown, generateTxt, generateJson } =
-      await import("@ibn-al-azhar-docs/pipeline");
+    const { generateMarkdown, generateTxt, generateJson } = await import(
+      "@ibn-al-azhar-docs/pipeline"
+    );
     const cleaned = generateMarkdown(rawText, { pageCount: pipeline.pageCount });
 
     let outputBuffer: Buffer;

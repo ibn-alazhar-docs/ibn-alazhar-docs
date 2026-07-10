@@ -199,11 +199,9 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       const anonymousContext = await context.browser()!.newContext();
       const anonymousPage = await anonymousContext.newPage();
       await anonymousPage.goto(shareLink);
-      await expect(
-        anonymousPage
-          .locator("text=Ibn Al-Azhar Docs")
-          .first()
-      ).toBeVisible({ timeout: 15000 });
+      await expect(anonymousPage.locator("text=Ibn Al-Azhar Docs").first()).toBeVisible({
+        timeout: 15000,
+      });
       await anonymousContext.close();
     }
   });
