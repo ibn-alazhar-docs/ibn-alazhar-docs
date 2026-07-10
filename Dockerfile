@@ -6,7 +6,7 @@
 # -----------------------------------------------------------------------------
 # Builder: installs deps, generates Prisma, builds Next.js
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS builder
+FROM node:26-slim AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -47,7 +47,7 @@ RUN NODE_ENV=production npx next build
 # -----------------------------------------------------------------------------
 # Base runner: minimal runtime deps for all targets
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS base-runner
+FROM node:26-slim AS base-runner
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -144,7 +144,7 @@ CMD ["node", "--import", "tsx", "workers/export-worker/src/index.ts"]
 # Bundles PostgreSQL, Redis, MinIO, web, ocr-worker, export-worker
 # All data persists on /data (HF persistent volume)
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS hf-space
+FROM node:26-slim AS hf-space
 WORKDIR /app
 
 ENV NODE_ENV=production
