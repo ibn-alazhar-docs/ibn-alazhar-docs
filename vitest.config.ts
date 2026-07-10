@@ -1,14 +1,13 @@
-import { defineConfig } from "vitest/config";
+import { defineConfig, mergeConfig } from "vitest/config";
 import path from "path";
 
-export default defineConfig({
+const baseConfig = {
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "apps/web/src"),
       "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
       "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-      zod: "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/node_modules/.pnpm/zod@4.4.3/node_modules/zod",
-      // Mock CJS deps via alias — vi.mock cannot intercept CJS imports across module boundaries
+      zod: path.resolve(__dirname, "node_modules/zod"),
       minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
       ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
       "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
@@ -16,7 +15,6 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    environment: "node",
     server: {
       deps: {
         inline: [
@@ -31,41 +29,80 @@ export default defineConfig({
         ],
       },
     },
-    setupFiles: ["./tests/setup.ts", "./tests/api/setup.ts"],
-    include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
-    exclude: [
-      "node_modules",
-      "tests/e2e",
-      "tests/integration",
-      "tests/security",
-      "tests/pentest",
-      "tests/load",
-      "tests/soak",
-      "tests/recovery",
-      "tests/backup",
-      "tests/frontend",
-      ".opencode",
-      ".opencode_backups",
-      ".next",
-      "dist",
-      "build",
-      "out",
-      "coverage",
-      "archive",
-      "docs",
-      "specs",
-      "governance",
-      "tools",
-      ".agents",
-      ".specify",
-      "00_Inbox",
-      "09_Archive",
-    ],
-    coverage: {
-      provider: "v8",
-      reporter: ["text", "json", "html"],
-      include: ["packages/**/*.ts", "apps/web/src/**/*.ts", "apps/web/src/**/*.tsx"],
-      exclude: ["node_modules", "dist", "build", "**/*.test.ts", "**/*.test.tsx"],
-    },
   },
-});
+};
+
+export default defineConfig([
+  // Unit tests
+  mergeConfig(baseConfig, {
+    test: {
+      name: "unit",
+      environment: "node",
+      setupFiles: ["./tests/setup.ts"],
+      include: ["tests/**/*.test.ts", "tests/**/*.test.tsx"],
+      exclude: [
+        "tests/e2e/**",
+        "tests/integration/**",
+        "tests/security/**",
+        "tests/load/**",
+        "tests/soak/**",
+        "tests/recovery/**",
+        "tests/backup/**",
+        "tests/frontend/**",
+        "tests/fuzz/**",
+        "tests/pentest/**",
+        "tests/edge/**",
+      ],
+      coverage: {
+        provider: "v8",
+        reporter: ["text", "json", "html"],
+        include: ["packages/**/*.ts", "apps/web/src/**/*.ts", "apps/web/src/**/*.tsx"],
+        exclude: ["node_modules", "dist", "build", "**/*.test.ts", "**/*.test.tsx"],
+      },
+    },
+  }),
+  // Integration tests (with postgres/redis)
+  mergeConfig(baseConfig, {
+    test: {
+      name: "integration",
+      environment: "node",
+      setupFiles: ["./tests/setup.ts", "./tests/integration/setup.ts"],
+      include: ["tests/integration/**/*.test.ts"],
+      pool: "forks",
+      poolOptions: { forks: { singleFork: true } },
+      testTimeout: 60000,
+    },
+  }),
+  // API tests
+  mergeConfig(baseConfig, {
+    test: {
+      name: "api",
+      environment: "node",
+      setupFiles: ["./tests/setup.ts", "./tests/api/setup.ts"],
+      include: ["tests/api/**/*.test.ts"],
+      testTimeout: 30000,
+    },
+  }),
+  // Security tests
+  mergeConfig(baseConfig, {
+    test: {
+      name: "security",
+      environment: "node",
+      setupFiles: ["./tests/setup.ts"],
+      include: ["tests/security/**/*.test.ts"],
+      testTimeout: 30000,
+    },
+  }),
+  // Frontend tests (jsdom)
+  mergeConfig(baseConfig, {
+    test: {
+      name: "frontend",
+      environment: "jsdom",
+      setupFiles: ["./tests/setup.ts", "./tests/frontend/setup.ts"],
+      include: ["tests/frontend/**/*.test.{ts,tsx}"],
+      testTimeout: 30000,
+    },
+  }),
+  // E2E tests (Playwright) - configured separately via playwright.config.ts
+  // Load/soak/recovery/pentest/edge/fuzz/backup - run manually via separate commands
+]);

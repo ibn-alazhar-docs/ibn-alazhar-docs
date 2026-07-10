@@ -14,6 +14,7 @@ concurrency:
 
 jobs:
   build-preview:
+    name: Build Preview Images
     runs-on: ubuntu-24.04
     permissions:
       contents: read
@@ -62,6 +63,7 @@ jobs:
           cache-to: type=gha,mode=max
 
   deploy-preview:
+    name: Deploy Preview to HF Spaces
     runs-on: ubuntu-24.04
     needs: [build-preview]
     environment:
@@ -85,7 +87,7 @@ jobs:
           # The Space will pull and run the PR-specific image
           cat > /tmp/Dockerfile <<'SPACE_DOCKERFILE'
           FROM ghcr.io/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
-          SPACE_DOCKERFILE
+SPACE_DOCKERFILE
 
           huggingface-cli upload "$HF_SPACE_NAME" /tmp/Dockerfile --repo-type model
 

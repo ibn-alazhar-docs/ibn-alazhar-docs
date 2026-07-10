@@ -1,14 +1,6 @@
 # Dependencies
 node_modules/
 .pnpm-store/
-.turbo/
-
-# Environment and secrets
-.env
-.env.*
-!.env.example
-*.pem
-*.key
 
 # Build outputs
 .next/
@@ -16,78 +8,51 @@ dist/
 build/
 out/
 coverage/
-playwright-report/
-test-results/
-.vercel/
-*.tsbuildinfo
 
-# Test data (large binary files, test reports)
-test-data/
-packages/pipeline/test-data/
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.production.example
+!.env.hf.example
+
+# IDE / Editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
 
 # Logs
 *.log
 npm-debug.log*
+yarn-debug.log*
 pnpm-debug.log*
 
-# OS and editor
-.DS_Store
-Thumbs.db
-.vscode/
-.idea/
+# Test artifacts
+test-results/
+test-data/
+playwright-report/
+.nyc_output/
 
-# Runtime data
-uploads/
-tmp/
+# Cache
+.turbo/
+.vercel/
+.netlify/
 .cache/
+.eslintcache
+.prettiercache
+.tsbuildinfo
 
-# Non-canonical project paths (see SOURCE_OF_TRUTH.md)
-archive/
-00_Inbox/
-09_Archive/
+# Docker
+.dockerignore
 
-# Agent runtime config
-.agents/
-.opencode/help.mdc
+# Prisma
+packages/database/prisma/migrations/
 
-# Binary test data
-*.ppm
-*.pbm
-*.pgm
-
-# Python cache (OCR worker venv)
-.ruff_cache/
-__pycache__/
-*.pyc
-
-# Tooling
-.aider*
-.pi/
-scratch/
-opencode.json
-
-# Test artifacts at root
-*.docx
-*.epub
-
-testsprite_tests/tmp/config.json
-
-# repowise API keys (local)
-.repowise/.env
-
-# Scratch / debug artifacts (root-level throwaway scripts & logs)
-.stryker-tmp/
-.fuse_hidden*
-redis_debug.txt
-debug_*.ts
-debug_*.txt
-run_*.ts
-run_*.mjs
-run_mock_test*
-fix-*.ts
-fix-test.ts
-fix-auth-test.ts
-test_auth_guards.ts
-test_env.ts
-test_path.ts
-*.test.ts.deprecated
+# Misc
+*.tsbuildinfo
+pnpm-lock.yaml.old
