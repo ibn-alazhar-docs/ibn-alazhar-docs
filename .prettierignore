@@ -17,7 +17,9 @@ tmp
 *.docx
 *.xlsx
 
-# external AI/tooling assets - keep vendor formatting stable
+# GitHub issue templates (YAML frontmatter + markdown body - prettier can't parse)
+.github/ISSUE_TEMPLATE/
+.github/pull_request_template.md
 .claude/skills/impeccable
 .claude/skills/speckit-*
 .specify
