@@ -22,7 +22,9 @@ vi.mock("next-intl", () => ({
   useNow: () => new Date(),
   useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
   NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <NextIntlContext.Provider value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}>
+    <NextIntlContext.Provider
+      value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}
+    >
       {children}
     </NextIntlContext.Provider>
   ),
@@ -47,7 +49,9 @@ vi.mock("next-intl/react", () => ({
   useNow: () => new Date(),
   useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
   NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <NextIntlContext.Provider value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}>
+    <NextIntlContext.Provider
+      value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}
+    >
       {children}
     </NextIntlContext.Provider>
   ),

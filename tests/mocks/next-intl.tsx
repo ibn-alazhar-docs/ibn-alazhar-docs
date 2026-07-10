@@ -34,7 +34,9 @@ export function useFormatter() {
 
 export function NextIntlClientProvider({ children }: { children: React.ReactNode }) {
   return (
-    <NextIntlContext.Provider value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}>
+    <NextIntlContext.Provider
+      value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}
+    >
       {children}
     </NextIntlContext.Provider>
   );
