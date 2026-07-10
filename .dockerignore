@@ -1,3 +1,4 @@
+# Dependencies & build
 node_modules/
 .pnpm-store/
 .next/
@@ -5,21 +6,74 @@ dist/
 build/
 out/
 coverage/
+
+# Git & CI
 .git/
+.github/
+
+# Environment
 .env
 .env.*
-.aider*
-.opencode_backups/
-.venv/
-.agents/
-.agent/
-.nx/
-.turbo/
-archive/
-docs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Test artifacts
 test-results/
 test-data/
-my-project/
+playwright-report/
+.nyc_output/
+
+# Cache
+.turbo/
+.vercel/
+.netlify/
+.cache/
+.eslintcache
+.prettiercache
+.tsbuildinfo
+
+# Documentation
+docs/
+README.md
+CHANGELOG.md
+*.md
+
+# Specs & config
+specs/
+governance/
+00_Inbox/
+09_Archive/
+.opencode/
+.specify/
+.agents/
+
+# Config files not needed in build
+*.config.ts
+*.config.js
+*.config.mjs
+!next.config.ts
+!postcss.config.mjs
+!tsconfig.json
+!vitest.config.ts
+!playwright.config.ts
+!tailwind.config.ts
+!tsconfig.base.json
+!tsconfig.build.json
+!stryker.config.ts
+!wrangler.jsonc
+
+# Large media
 **/*.pdf
 **/*.png
 **/*.jpg
@@ -27,11 +81,29 @@ my-project/
 !apps/web/public/**/*.png
 !apps/web/public/**/*.jpg
 !apps/web/public/**/*.jpeg
-.opencode/
-specs/
-governance/
-00_Inbox/
-09_Archive/
-.github/
+
+# Infrastructure
 infrastructure/
-*.md
+docker-compose*.yml
+Dockerfile*
+.dockerignore
+supervisord.conf
+scripts/docker-entrypoint.sh
+
+# Monitoring
+monitoring/
+grafana/
+prometheus/
+
+# Backup scripts
+scripts/backup-job.sh
+
+# Deployment configs
+railway.toml
+northflank*.yml
+k8s/
+*.yaml
+*.yml
+!pnpm-workspace.yaml
+!package.json
+!pnpm-lock.yaml

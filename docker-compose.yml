@@ -218,6 +218,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      target: web
     ports:
       - "127.0.0.1:3000:3000"
     environment:
@@ -265,7 +266,7 @@ services:
   ocr-worker:
     build:
       context: .
-      dockerfile: Dockerfile.worker
+      dockerfile: Dockerfile
       target: ocr-runner
     environment:
       <<: *common-env
@@ -306,7 +307,7 @@ services:
   export-worker:
     build:
       context: .
-      dockerfile: Dockerfile.worker
+      dockerfile: Dockerfile
       target: export-runner
     environment:
       <<: *common-env

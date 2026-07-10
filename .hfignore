@@ -34,8 +34,35 @@ test_path.ts
 *.ppm
 *.pbm
 *.pgm
+
 # Local dev/debug scratch
 redis_debug.txt
 debug_rate.ts
 debug_rate_limit.txt
 query_jobs.ts
+
+# Infrastructure not needed in HF build
+infrastructure/
+docker-compose*.yml
+monitoring/
+grafana/
+prometheus/
+scripts/backup-job.sh
+railway.toml
+northflank*.yml
+k8s/
+
+# Documentation
+*.md
+!README.md
+
+# Config files not needed
+*.config.ts
+*.config.js
+!next.config.ts
+!postcss.config.mjs
+!tsconfig.json
+!vitest.config.ts
+!playwright.config.ts
+!tsconfig.base.json
+!wrangler.jsonc
