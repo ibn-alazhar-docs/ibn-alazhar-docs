@@ -1,11 +1,60 @@
+import React from "react";
+import { createContext, useContext } from "react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
+// Mock next-intl context
+const NextIntlContext = createContext({
+  locale: "ar",
+  messages: {},
+  formats: {},
+  timeZone: "UTC",
+  now: new Date(),
+});
+
 vi.mock("next-intl", () => ({
-  useTranslations: () => (key: string) => key,
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
   useLocale: () => "ar",
-  NextIntlClientProvider: ({ children }: any) => children,
+  useMessages: () => ({}),
+  useTimeZone: () => "UTC",
+  useNow: () => new Date(),
+  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <NextIntlContext.Provider value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}>
+      {children}
+    </NextIntlContext.Provider>
+  ),
+}));
+
+vi.mock("next-intl/client", () => ({
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
+  useLocale: () => "ar",
+  useMessages: () => ({}),
+  useTimeZone: () => "UTC",
+  useNow: () => new Date(),
+  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
+}));
+
+vi.mock("next-intl/react", () => ({
+  useTranslations: (namespace?: string) => (key: string) =>
+    namespace ? `${namespace}.${key}` : key,
+  useLocale: () => "ar",
+  useMessages: () => ({}),
+  useTimeZone: () => "UTC",
+  useNow: () => new Date(),
+  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
+  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
+    <NextIntlContext.Provider value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}>
+      {children}
+    </NextIntlContext.Provider>
+  ),
+}));
+
+vi.mock("next-intl/server", () => ({
+  getTranslations: () => (key: string) => key,
 }));
 
 afterEach(() => {

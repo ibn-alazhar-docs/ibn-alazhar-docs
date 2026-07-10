@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { GET as getActuatorInfo } from "@/app/api/actuator/info/route";
 import { GET as getActuatorMetrics } from "@/app/api/actuator/metrics/route";
 import { GET as getActuatorPrometheus } from "@/app/api/actuator/prometheus/route";
