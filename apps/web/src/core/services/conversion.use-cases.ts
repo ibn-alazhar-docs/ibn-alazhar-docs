@@ -3,7 +3,7 @@ import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
 import { isAdminRole } from "@/domain/auth";
 import { LIMITS } from "@/shared/constants";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/domain/repositories/prisma-types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IConversionJobRepository } from "@/domain/repositories/conversion-job.repository.interface";
 
@@ -35,6 +35,17 @@ export class ConversionUseCases {
       progress: 0,
       createdAt: new Date().toISOString(),
     };
+
+    await this.conversionJobRepository.create({
+      id: document.id,
+      userId: session.user.id,
+      documentId: document.id,
+      sourceFormat: document.mimeType,
+      targetFormat: "md",
+      status: "PROCESSING",
+      progress: 0,
+      inputKey: document.storageKey,
+    });
 
     await enqueueSplitting(config, job);
     return { jobId: document.id };

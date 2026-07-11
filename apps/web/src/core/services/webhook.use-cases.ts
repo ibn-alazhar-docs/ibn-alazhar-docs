@@ -1,5 +1,5 @@
 import type { IWebhookRepository } from "../../domain/repositories/webhook.repository.interface";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/domain/repositories/prisma-types";
 import { NotFoundError, AppError } from "@/shared/errors";
 import { createHmac, randomBytes } from "crypto";
 import { logger } from "@/shared/logger";

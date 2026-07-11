@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef } from "react";
 import { Button } from "@/ui/button";
 import { Portal } from "@/ui/portal";
 
@@ -66,7 +66,7 @@ export function ConfirmDialog({
     };
   }, [onCancel, isLoading]);
 
-  const titleId = `confirm-dialog-title-${Math.random().toString(36).slice(2, 9)}`;
+  const titleId = useId();
 
   return (
     <Portal>

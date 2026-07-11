@@ -31,6 +31,29 @@
         "no-console": "off",
         "prefer-const": "off"
       }
+    },
+    {
+      "files": ["apps/web/src/core/services/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+      }
+    },
+    {
+      "files": ["apps/web/src/ui/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+      }
+    },
+    {
+      "files": ["apps/web/src/domain/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": ["@/app*", "@/ui*", "@/core*", "@/middleware*", "@/transport*"]
+          }
+        ]
+      }
     }
   ],
   "ignorePatterns": [

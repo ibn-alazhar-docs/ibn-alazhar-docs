@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { moveFolderSchema } from "@/shared/validators/folder";
@@ -14,18 +15,9 @@ export const POST = withAuth(async (request, { session, params }) => {
     );
 
   try {
-    const body = await request.json();
-    const validation = moveFolderSchema.safeParse(body);
+    const validation = await parseValidatedBody(request, moveFolderSchema);
 
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
-
-    const { parentId } = validation.data;
+    const { parentId } = validation;
 
     const rateLimit = await checkUserRateLimit("folders:move", session.user.id);
     if (!rateLimit.allowed) {

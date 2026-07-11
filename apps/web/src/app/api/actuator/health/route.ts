@@ -7,10 +7,10 @@ async function checkDb() {
   try {
     await prisma.$queryRaw`SELECT 1`;
     return { status: "UP" as const, details: `${Date.now() - start}ms` };
-  } catch (err) {
+  } catch {
     return {
       status: "DOWN" as const,
-      details: err instanceof Error ? err.message : "Unknown error",
+      details: "database connection check failed",
     };
   }
 }

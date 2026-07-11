@@ -35,7 +35,6 @@
     "db:migrate": "prisma migrate dev --schema=packages/database/prisma/schema.prisma",
     "db:seed": "npx tsx packages/database/prisma/seed.ts",
     "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "rename:use-cases": "node scripts/rename-use-cases.js",
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },

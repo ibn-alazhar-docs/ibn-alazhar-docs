@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { contentDispositionHeader } from "@/core/services/export/profiles";
@@ -8,23 +9,9 @@ import { NotFoundError, AppError } from "@/shared/errors";
 
 export const POST = withAuth(async (request, { session }) => {
   try {
-    const body = await request.json();
-    const parsed = folderExportSchema.safeParse(body);
+    const parsed = await parseValidatedBody(request, folderExportSchema);
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid data",
-            details: parsed.error.issues,
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    const { folderId, format, profile, includeSource, recursive } = parsed.data;
+    const { folderId, format, profile, includeSource, recursive } = parsed;
 
     const { zipBuffer, zipName } = await useCases.export.exportByFolder(
       folderId,

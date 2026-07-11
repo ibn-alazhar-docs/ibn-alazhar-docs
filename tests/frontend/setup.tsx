@@ -1,65 +1,25 @@
 import React from "react";
-import { createContext, useContext } from "react";
 import "@testing-library/jest-dom/vitest";
 import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 
-// Mock next-intl context
-const NextIntlContext = createContext({
-  locale: "ar",
-  messages: {},
-  formats: {},
-  timeZone: "UTC",
-  now: new Date(),
+vi.mock("sonner", () => ({
+  toast: {
+    success: vi.fn(),
+    error: vi.fn(),
+    message: vi.fn(),
+    info: vi.fn(),
+    warning: vi.fn(),
+  },
+}));
+
+vi.mock("motion/react", () => {
+  const passthrough = (tag: string) =>
+    React.forwardRef(({ children, ...props }: any, ref: any) =>
+      React.createElement(tag, { ref, ...props }, children),
+    );
+  return { motion: new Proxy({}, { get: (_t, tag) => passthrough(tag as string) }) };
 });
-
-vi.mock("next-intl", () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
-  useLocale: () => "ar",
-  useMessages: () => ({}),
-  useTimeZone: () => "UTC",
-  useNow: () => new Date(),
-  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
-  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <NextIntlContext.Provider
-      value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}
-    >
-      {children}
-    </NextIntlContext.Provider>
-  ),
-}));
-
-vi.mock("next-intl/client", () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
-  useLocale: () => "ar",
-  useMessages: () => ({}),
-  useTimeZone: () => "UTC",
-  useNow: () => new Date(),
-  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
-}));
-
-vi.mock("next-intl/react", () => ({
-  useTranslations: (namespace?: string) => (key: string) =>
-    namespace ? `${namespace}.${key}` : key,
-  useLocale: () => "ar",
-  useMessages: () => ({}),
-  useTimeZone: () => "UTC",
-  useNow: () => new Date(),
-  useFormatter: () => ({ formatNumber: (n: number) => String(n) }),
-  NextIntlClientProvider: ({ children }: { children: React.ReactNode }) => (
-    <NextIntlContext.Provider
-      value={{ locale: "ar", messages: {}, formats: {}, timeZone: "UTC", now: new Date() }}
-    >
-      {children}
-    </NextIntlContext.Provider>
-  ),
-}));
-
-vi.mock("next-intl/server", () => ({
-  getTranslations: () => (key: string) => key,
-}));
 
 afterEach(() => {
   cleanup();

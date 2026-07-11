@@ -48,13 +48,20 @@ export const GET = withAuth(async (request, { session }) => {
     const stream = new ReadableStream({
       start(controller) {
         let closed = false;
+        let cleaned = false;
         let consecutiveCompleteChecks = 0;
         let pollCount = 0;
 
         const send = (data: string) => StreamService.sendSSE(controller, encoder, data, closed);
+        const cleanup = () => {
+          if (cleaned) return;
+          cleaned = true;
+          StreamService.decrementConnections(session.user.id);
+          StreamService.closeSSE(controller, closed);
+        };
         const close = () => {
           closed = true;
-          StreamService.closeSSE(controller, closed);
+          cleanup();
         };
 
         send(JSON.stringify({ type: "connected", jobId }));
@@ -127,11 +134,9 @@ export const GET = withAuth(async (request, { session }) => {
         }, 2000);
 
         request.signal.addEventListener("abort", () => {
-          closed = true;
           clearInterval(interval);
           clearTimeout(timeoutId);
-          controller.close();
-          StreamService.decrementConnections(session.user.id);
+          cleanup();
         });
       },
     });

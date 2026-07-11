@@ -25,20 +25,30 @@ export function getDescendantMaxDepth(
   currentDepth: number,
   folderMap: Map<string, FolderParent>,
   visited: Set<string> = new Set(),
+  childrenIndex?: Map<string | null, string[]>,
 ): number {
   // Guard against cyclic parent references (corrupt data) to avoid infinite recursion.
   if (visited.has(folderId)) return currentDepth;
   visited.add(folderId);
 
-  const children = Array.from(folderMap.entries())
-    .filter(([, f]) => f.parentId === folderId)
-    .map(([id]) => id);
+  const index = childrenIndex ?? buildChildrenIndex(folderMap);
+  const children = index.get(folderId) ?? [];
   if (children.length === 0) return currentDepth;
   return Math.max(
     ...children.map((childId) =>
-      getDescendantMaxDepth(childId, currentDepth + 1, folderMap, visited),
+      getDescendantMaxDepth(childId, currentDepth + 1, folderMap, visited, index),
     ),
   );
+}
+
+function buildChildrenIndex(folderMap: Map<string, FolderParent>): Map<string | null, string[]> {
+  const index = new Map<string | null, string[]>();
+  for (const [id, folder] of folderMap.entries()) {
+    const list = index.get(folder.parentId) ?? [];
+    list.push(id);
+    index.set(folder.parentId, list);
+  }
+  return index;
 }
 
 /**

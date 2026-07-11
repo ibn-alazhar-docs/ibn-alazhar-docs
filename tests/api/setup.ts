@@ -1,5 +1,6 @@
 import { vi, beforeEach } from "vitest";
 import dotenv from "dotenv";
+import { handleRouteError } from "@/shared/route-helpers";
 
 dotenv.config();
 
@@ -144,7 +145,11 @@ vi.mock("@/middleware/auth-guards", () => {
           );
         }
         const params = context?.params ? await context.params : {};
-        return handler(request, { session: mockSession, params });
+        try {
+          return await handler(request, { session: mockSession, params });
+        } catch (error) {
+          return handleRouteError(error, "test", "Test request failed");
+        }
       };
     }),
     withAdminAuth: vi.fn().mockImplementation((handler) => {
@@ -162,19 +167,23 @@ vi.mock("@/middleware/auth-guards", () => {
           );
         }
         const params = context?.params ? await context.params : {};
-        return handler(request, { session: mockSession, params });
+        try {
+          return await handler(request, { session: mockSession, params });
+        } catch (error) {
+          return handleRouteError(error, "test", "Test request failed");
+        }
       };
     }),
   };
 });
 
-vi.mock("@ibn-al-azhar-docs/database", () => ({
-  prisma: mockPrisma,
-}));
-
-vi.mock("@/transport/db", () => ({
-  prisma: mockPrisma,
-}));
+// NOTE: The DB is exercised against a real Postgres instance (see P2.5 of the
+// audit). We intentionally do NOT mock `@ibn-al-azhar-docs/database` /
+// `@/transport/db` here — the repository code expects a full `PrismaClient`
+// (delegates such as folder.findFirst / aggregate), and the api suites seed
+// real data via `tests/integration/helpers/db`. Mocking it with the internal
+// `mockPrisma` (a partial delegate stub) caused `findFirst is not a function`
+// 500s and broke the real-data assertions.
 
 // Reset session before each test
 beforeEach(() => {

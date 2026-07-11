@@ -301,25 +301,25 @@ export function AnalyticsContent() {
           </CardHeader>
           <CardContent>
             <div className="flex items-end gap-1 h-32">
-              {(data?.documents.uploadsOverTime ?? []).slice(-14).map((item) => {
-                const maxCount = Math.max(
-                  ...(data?.documents.uploadsOverTime.map((d) => d.count) ?? [1]),
-                  1,
-                );
-                const height = (item.count / maxCount) * 100;
-                return (
-                  <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
-                    <div
-                      className="w-full bg-[var(--success)] rounded-t-sm transition-all duration-500 hover:opacity-80"
-                      style={{ height: `${Math.max(height, 4)}%`, opacity: 0.75 }}
-                      title={`${item.date}: ${item.count}`}
-                    />
-                    <span className="text-[9px] text-[var(--text-tertiary)]">
-                      {new Date(item.date).getDate()}/{new Date(item.date).getMonth() + 1}
-                    </span>
-                  </div>
-                );
-              })}
+              {(() => {
+                const series = data?.documents.uploadsOverTime ?? [];
+                const maxCount = Math.max(1, ...series.map((d) => d.count));
+                return series.slice(-14).map((item) => {
+                  const height = (item.count / maxCount) * 100;
+                  return (
+                    <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
+                      <div
+                        className="w-full bg-[var(--success)] rounded-t-sm transition-all duration-500 hover:opacity-80"
+                        style={{ height: `${Math.max(height, 4)}%`, opacity: 0.75 }}
+                        title={`${item.date}: ${item.count}`}
+                      />
+                      <span className="text-[9px] text-[var(--text-tertiary)]">
+                        {new Date(item.date).getDate()}/{new Date(item.date).getMonth() + 1}
+                      </span>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </CardContent>
         </Card>

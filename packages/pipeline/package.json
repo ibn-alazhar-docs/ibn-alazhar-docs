@@ -16,7 +16,8 @@
     "googleapis": "173.0.0",
     "ioredis": "^5.0.0",
     "minio": "^8.0.0",
-    "pdfmake": "0.3.11"
+    "pdfmake": "0.3.11",
+    "@fontsource/cairo": "5.2.7"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

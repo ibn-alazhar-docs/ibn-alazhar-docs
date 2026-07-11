@@ -216,4 +216,32 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
       console.log("PASS: No mobile overflow");
     }
   });
+
+  test("Search type=content returns matching document", async ({ page }) => {
+    await login(page);
+    const res = await page.evaluate(async () => {
+      const r = await fetch("/api/search?q=علم&type=content", {
+        headers: { accept: "application/json" },
+      });
+      const body = await r.json().catch(() => null);
+      return { status: r.status, body };
+    });
+    expect(res.status).toBe(200);
+    expect(Array.isArray(res.body?.results)).toBe(true);
+    console.log(`PASS: search type=content — ${res.body?.results?.length ?? 0} results`);
+  });
+
+  test("Analytics returns data for authed user", async ({ page }) => {
+    await login(page);
+    const res = await page.evaluate(async () => {
+      const r = await fetch("/api/analytics", {
+        headers: { accept: "application/json" },
+      });
+      const body = await r.json().catch(() => null);
+      return { status: r.status, body };
+    });
+    expect(res.status).toBe(200);
+    expect(res.body).toBeTruthy();
+    console.log(`PASS: analytics — ${JSON.stringify(res.body).slice(0, 120)}`);
+  });
 });

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
+import { isBearerAuthorized } from "@/shared/security";
 
 export async function GET(request: Request) {
-  const authHeader = request.headers.get("authorization");
   const expectedToken = process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN;
 
-  if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+  if (!isBearerAuthorized(request.headers.get("authorization"), expectedToken)) {
     return new NextResponse("Unauthorized", { status: 401 });
   }
 

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -8,21 +9,7 @@ import { useCases } from "@/core/composition-root";
 export const POST = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
-    const body = await request.json();
-    const parsed = createShareSchema.safeParse(body);
-
-    if (!parsed.success) {
-      return NextResponse.json(
-        {
-          error: {
-            code: "VALIDATION_ERROR",
-            message: "Invalid data",
-            details: parsed.error.issues,
-          },
-        },
-        { status: 400 },
-      );
-    }
+    const parsed = await parseValidatedBody(request, createShareSchema);
 
     const rateLimit = await checkUserRateLimit("documents:share", session.user.id);
     if (!rateLimit.allowed) {
@@ -32,7 +19,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     const share = await useCases.documentShare.createShareLink(
       id,
       session.user.id,
-      parsed.data.expiration || null,
+      parsed.expiration || null,
     );
     const url = `${request.headers.get("origin") || process.env.APP_URL || "http://localhost:3000"}/share/${share.token}`;
 

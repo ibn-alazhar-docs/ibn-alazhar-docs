@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { isAdminRole, canViewUsers } from "@/domain/auth";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -47,27 +48,19 @@ export const PATCH = withAuth(async (request, { session }) => {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const validation = adminUserUpdateSchema.safeParse(body);
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
+    const validation = await parseValidatedBody(request, adminUserUpdateSchema);
 
     const user = await useCases.user.updateUserRole(
-      validation.data.userId,
-      validation.data.role as Role,
+      validation.userId,
+      validation.role as Role,
       session.user.id,
     );
     await auditLog({
       userId: session.user.id,
       action: AUDIT_ACTIONS.USER_ROLE_CHANGE,
       entity: "user",
-      entityId: validation.data.userId,
-      metadata: { newRole: validation.data.role },
+      entityId: validation.userId,
+      metadata: { newRole: validation.role },
       ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,
     });
@@ -91,16 +84,8 @@ export const DELETE = withAuth(async (request, { session }) => {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const validation = adminUserDeleteSchema.safeParse(body);
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "userId required" } },
-        { status: 400 },
-      );
-    }
-    const { userId } = validation.data;
+    const validation = await parseValidatedBody(request, adminUserDeleteSchema);
+    const { userId } = validation;
 
     await useCases.user.deleteUser(userId, session.user.id);
     await auditLog({

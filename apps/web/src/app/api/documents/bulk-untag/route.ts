@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -6,18 +7,9 @@ import { bulkUntagSchema } from "@/shared/validators/tag";
 import { useCases } from "@/core/composition-root";
 
 export const POST = withAuth(async (request, { session }) => {
-  const body = await request.json();
-  const validation = bulkUntagSchema.safeParse(body);
+  const validation = await parseValidatedBody(request, bulkUntagSchema);
 
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صالحة" } },
-      { status: 400 },
-    );
-  }
-
-  const { documentIds, tagId } = validation.data;
+  const { documentIds, tagId } = validation;
 
   const rateLimit = await checkUserRateLimit("documents:bulk-untag", session.user.id);
   if (!rateLimit.allowed) {

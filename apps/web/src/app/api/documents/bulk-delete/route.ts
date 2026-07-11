@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { z } from "zod";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -13,18 +14,9 @@ const bulkDeleteSchema = z
   .strip();
 
 export const POST = withAuth(async (request, { session }) => {
-  const body = await request.json();
-  const parsed = bulkDeleteSchema.safeParse(body);
+  const parsed = await parseValidatedBody(request, bulkDeleteSchema);
 
-  if (!parsed.success) {
-    const firstError = parsed.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-      { status: 400 },
-    );
-  }
-
-  const { documentIds } = parsed.data;
+  const { documentIds } = parsed;
 
   const rateLimit = await checkUserRateLimit("documents:bulk-delete", session.user.id);
   if (!rateLimit.allowed) {

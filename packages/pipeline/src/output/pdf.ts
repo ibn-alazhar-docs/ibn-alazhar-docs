@@ -9,6 +9,17 @@ import type { TDocumentDefinitions, Content } from "pdfmake/interfaces";
 import type { CleanedText } from "../types";
 
 function findCairoWoff(filename: string): string {
+  // Resolve the font reliably regardless of pnpm/node_modules layout.
+  try {
+    const pkgJson = localRequire.resolve("@fontsource/cairo/package.json");
+    const candidate = path.join(path.dirname(pkgJson), "files", filename);
+    if (fs.existsSync(candidate)) {
+      return candidate;
+    }
+  } catch {
+    // fall through to filesystem walk
+  }
+
   const currentDir = path.dirname(fileURLToPath(import.meta.url));
   let dir = currentDir;
   while (dir !== path.parse(dir).root) {
