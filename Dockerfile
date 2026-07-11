@@ -43,7 +43,7 @@ COPY workers ./workers
 WORKDIR /app/apps/web
 ARG SENTRY_RELEASE=""
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
-RUN NODE_ENV=production npx next build
+RUN AUTH_SECRET="dummy_secret_for_build_only_12345678901234567890" NODE_ENV=production npx next build
 
 # -----------------------------------------------------------------------------
 # Base runner: minimal runtime deps for all targets
