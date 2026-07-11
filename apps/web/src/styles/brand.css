@@ -109,14 +109,14 @@
 }
 
 :root {
-  --page-bg: #f4f1ea;
-  --surface: #f8f6f0;
-  --card-bg: #f8f6f0;
-  --border-line: #e8e2d8;
-  --border-subtle: #efebe2;
-  --text-primary: #2c2826;
-  --text-secondary: #5a5551;
-  --text-tertiary: #78716c;
+  --page-bg: #fafafa;
+  --surface: #ffffff;
+  --card-bg: #ffffff;
+  --border-line: #e5e5e5;
+  --border-subtle: #f0f0f0;
+  --text-primary: #171717;
+  --text-secondary: #525252;
+  --text-tertiary: #737373;
   --text-inverse: #fffdf7;
   --btn-primary-bg: #086941;
   --btn-primary-text: #ffffff;
@@ -153,14 +153,14 @@
 }
 
 .dark {
-  --page-bg: #1a1614;
-  --surface: #241f1c;
-  --card-bg: #2e2824;
-  --border-line: #3d3632;
-  --border-subtle: #2e2824;
-  --text-primary: #f5f0e8;
-  --text-secondary: #a8a29e;
-  --text-tertiary: #948e89;
+  --page-bg: #0a0a0a;
+  --surface: #171717;
+  --card-bg: #171717;
+  --border-line: #262626;
+  --border-subtle: #171717;
+  --text-primary: #fafafa;
+  --text-secondary: #a3a3a3;
+  --text-tertiary: #737373;
   --text-inverse: #1a1614;
   --btn-primary-bg: #086941;
   --btn-primary-text: #ffffff;
