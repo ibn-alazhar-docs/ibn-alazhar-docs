@@ -50,23 +50,33 @@ PGPORT=5432
 PGHOST=127.0.0.1
 
 # ---- 1) PostgreSQL -----------------------------------------------------------
+# Hugging Face runs containers as user 1000. PostgreSQL cannot be run as root.
+# If we are root, we drop privileges to the postgres user.
+# If we are already a non-root user, we run postgres directly.
+RUN_PG=""
+if [ "$(id -u)" = "0" ]; then
+  chown -R postgres:postgres "$PGDATA"
+  RUN_PG="su postgres -c"
+else
+  RUN_PG="eval"
+fi
+
 if [ ! -f "$PGDATA/PG_VERSION" ]; then
   echo "[entrypoint] initializing PostgreSQL data directory..."
-  chown -R postgres:postgres "$PGDATA"
-  su postgres -c "$PG_BIN/initdb -D $PGDATA -U postgres --auth=trust" >/dev/null 2>&1
+  $RUN_PG "$PG_BIN/initdb -D $PGDATA --auth=trust" >/dev/null 2>&1
 fi
 echo "[entrypoint] starting PostgreSQL..."
-su postgres -c "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l $APP_DATA/pg.log start" >/dev/null 2>&1 || true
+$RUN_PG "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l $APP_DATA/pg.log start" >/dev/null 2>&1 || true
 
 # Wait for Postgres
 for i in $(seq 1 30); do
-  if su postgres -c "$PG_BIN/pg_isready -h $PGHOST -p $PGPORT -U postgres" >/dev/null 2>&1; then break; fi
+  if $RUN_PG "$PG_BIN/pg_isready -h $PGHOST -p $PGPORT" >/dev/null 2>&1; then break; fi
   sleep 1
 done
 
 # Create role + database idempotently
-su postgres -c "$PG_BIN/psql -h $PGHOST -p $PGPORT -U postgres -tc \"SELECT 1 FROM pg_roles WHERE rolname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -U postgres -c \"CREATE ROLE ibn_docs LOGIN PASSWORD 'postgres';\"" 2>/dev/null
-su postgres -c "$PG_BIN/psql -h $PGHOST -p $PGPORT -U postgres -tc \"SELECT 1 FROM pg_database WHERE datname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -U postgres -c \"CREATE DATABASE ibn_docs OWNER ibn_docs;\"" 2>/dev/null
+$RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_roles WHERE rolname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE ROLE ibn_docs LOGIN PASSWORD 'postgres';\"" 2>/dev/null || true
+$RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_database WHERE datname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE DATABASE ibn_docs OWNER ibn_docs;\"" 2>/dev/null || true
 
 # ---- 2) Redis ---------------------------------------------------------------
 echo "[entrypoint] starting Redis..."

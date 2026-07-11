@@ -187,6 +187,7 @@ ENV PATH="/opt/ocr-venv/bin:$PATH"
 COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
+COPY --from=builder /app/apps/web/src/messages ./apps/web/src/messages
 COPY --from=builder /app/packages/database ./packages/database
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
 COPY --from=builder /app/packages/shared ./packages/shared
