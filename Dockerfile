@@ -44,7 +44,7 @@ WORKDIR /app/apps/web
 ARG SENTRY_RELEASE=""
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
 COPY .env.example /app/apps/web/.env.production
-RUN NODE_ENV=production npx next build
+RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build
 
 # -----------------------------------------------------------------------------
 # Base runner: minimal runtime deps for all targets
