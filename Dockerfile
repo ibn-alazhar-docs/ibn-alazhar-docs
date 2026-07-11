@@ -25,6 +25,7 @@ COPY pnpm-lock.yaml package.json pnpm-workspace.yaml .npmrc* ./
 COPY apps/web/package.json apps/web/package.json
 COPY packages/pipeline/package.json packages/pipeline/package.json
 COPY packages/database/package.json packages/database/package.json
+COPY packages/shared/package.json packages/shared/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
 RUN corepack enable && pnpm install --frozen-lockfile && pnpm rebuild
