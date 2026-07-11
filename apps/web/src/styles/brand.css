@@ -109,9 +109,9 @@
 }
 
 :root {
-  --page-bg: #fffdf7;
-  --surface: #fdfcfa;
-  --card-bg: #fdfcfa;
+  --page-bg: #f7f6f2;
+  --surface: #faf9f6;
+  --card-bg: #faf9f6;
   --border-line: #e8e2d8;
   --border-subtle: #f0ebe3;
   --text-primary: #1f2937;
