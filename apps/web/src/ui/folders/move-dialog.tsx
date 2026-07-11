@@ -6,6 +6,7 @@ import { buildFolderTree, type FolderNode } from "@/core/folder-tree";
 import { FolderIcon } from "@/ui/icons";
 import { Button } from "@/ui/button";
 import { Portal } from "@/ui/portal";
+import { apiFetch } from "@/shared/api";
 
 interface MoveDialogProps {
   selectedCount: number;
@@ -22,7 +23,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
 
   const loadFolders = useCallback(async () => {
     try {
-      const response = await fetch("/api/folders");
+      const response = await apiFetch("/api/folders");
       if (!response.ok) throw new Error(t("loadError"));
       const data = await response.json();
       setFolders(buildFolderTree(data.folders || [], null));

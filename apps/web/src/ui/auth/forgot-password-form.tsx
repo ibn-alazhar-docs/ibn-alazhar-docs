@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { forgotPasswordSchema } from "@/shared/validators/auth";
+import { apiFetch } from "@/shared/api";
 
 interface ActionState {
   error: string | null;
@@ -34,7 +35,7 @@ export function ForgotPasswordForm() {
           return { error: null, success: false, fieldErrors };
         }
 
-        const response = await fetch("/api/auth/forgot-password", {
+        const response = await apiFetch("/api/auth/forgot-password", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

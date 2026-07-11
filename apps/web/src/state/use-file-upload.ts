@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { apiFetch } from "@/shared/api";
 
 const MAX_SIZE = 5 * 1024 * 1024 * 1024;
 
@@ -84,7 +85,7 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
         formData.append("pageRange", rangeToUse);
       }
 
-      const response = await fetch("/api/upload", {
+      const response = await apiFetch("/api/upload", {
         method: "POST",
         body: formData,
       });

@@ -15,6 +15,7 @@ import { Card } from "@/ui/card";
 import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { ConfirmDialog } from "@/ui/confirm-dialog";
+import { apiFetch } from "@/shared/api";
 
 interface TagWithCountWithDate extends TagWithCount {
   createdAt: string;
@@ -42,7 +43,7 @@ export default function TagsPage() {
 
   const fetchTags = useCallback(async () => {
     try {
-      const res = await fetch("/api/tags");
+      const res = await apiFetch("/api/tags");
       if (res.ok) {
         const data = await res.json();
         setTags(data.tags);
@@ -63,7 +64,7 @@ export default function TagsPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/tags", {
+      const res = await apiFetch("/api/tags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newTagName.trim(), color: newTagColor }),
@@ -124,7 +125,7 @@ export default function TagsPage() {
     if (!mergingId || !mergeTargetId) return;
 
     try {
-      const res = await fetch("/api/tags/merge", {
+      const res = await apiFetch("/api/tags/merge", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sourceTagId: mergingId, targetTagId: mergeTargetId }),

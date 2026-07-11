@@ -14,6 +14,7 @@ import { UI_TIMING } from "@/shared/constants";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { SunIcon, MoonIcon } from "@/ui/icons";
+import { apiFetch } from "@/shared/api";
 
 interface SettingsContentProps {
   user: {
@@ -53,7 +54,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
     setSaving(true);
     setError(null);
     try {
-      const res = await fetch("/api/profile", {
+      const res = await apiFetch("/api/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: name.trim() }),
@@ -77,7 +78,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
   async function handleDeleteAccount() {
     setDeleting(true);
     try {
-      const res = await fetch("/api/profile", { method: "DELETE" });
+      const res = await apiFetch("/api/profile", { method: "DELETE" });
       if (!res.ok) {
         setError(t("error"));
         return;

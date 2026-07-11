@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { TagChip } from "./tag-chip";
 import { TAG_COLORS } from "@/shared/validators/tag";
 import type { Tag } from "./types";
+import { apiFetch } from "@/shared/api";
 
 interface TagPickerProps {
   selectedTagIds: string[];
@@ -25,7 +26,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
 
   const fetchTags = useCallback(async () => {
     try {
-      const res = await fetch("/api/tags");
+      const res = await apiFetch("/api/tags");
       if (res.ok) {
         const data = await res.json();
         setTags(
@@ -64,7 +65,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
 
     setError(null);
     try {
-      const res = await fetch("/api/tags", {
+      const res = await apiFetch("/api/tags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: newTagName.trim(), color: newTagColor }),
