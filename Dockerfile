@@ -28,7 +28,7 @@ COPY packages/database/package.json packages/database/package.json
 COPY packages/shared/package.json packages/shared/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
-RUN corepack enable && pnpm install --frozen-lockfile && pnpm rebuild
+RUN npm install -g pnpm && pnpm install --frozen-lockfile && pnpm rebuild
 
 # Generate Prisma Client
 COPY packages/database ./packages/database
