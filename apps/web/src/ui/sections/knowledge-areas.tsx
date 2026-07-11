@@ -49,7 +49,7 @@ export function KnowledgeAreas() {
 
       <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 1, y: 0 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10px" }}
           className="mb-16 flex items-center gap-3"
@@ -64,7 +64,7 @@ export function KnowledgeAreas() {
 
         <motion.div
           variants={containerVariants}
-          initial="hidden"
+          initial="visible"
           whileInView="visible"
           viewport={{ once: true, margin: "-10px" }}
           className="grid grid-cols-1 gap-6 sm:grid-cols-3"

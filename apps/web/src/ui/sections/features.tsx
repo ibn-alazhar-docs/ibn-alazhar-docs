@@ -44,7 +44,7 @@ export function Features() {
 
       <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
         <motion.div
-          initial={{ opacity: 0, x: -20 }}
+          initial={{ opacity: 1, x: 0 }}
           whileInView={{ opacity: 1, x: 0 }}
           viewport={{ once: true, margin: "-10px" }}
           className="mb-16 flex items-center gap-3"
@@ -58,7 +58,7 @@ export function Features() {
         </motion.div>
 
         <motion.div
-          initial="hidden"
+          initial="visible"
           whileInView="visible"
           viewport={{ once: true, margin: "-10px" }}
           transition={{ staggerChildren: 0.15 }}
