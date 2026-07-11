@@ -10,7 +10,7 @@ export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Pr
   if (token && !headers.has("X-CSRF-Token")) {
     headers.set("X-CSRF-Token", token);
   }
-  
+
   return fetch(input, {
     ...init,
     headers,

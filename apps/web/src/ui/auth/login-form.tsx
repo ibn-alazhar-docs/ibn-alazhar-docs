@@ -22,7 +22,6 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
 
-
   const [state, submitAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
       try {
