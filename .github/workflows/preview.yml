@@ -1,0 +1,141 @@
+name: Preview Deploy
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-preview:
+    name: Build Preview Images
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push OCR worker (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          target: ocr-runner
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build and push export worker (preview)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile
+          target: export-runner
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy-preview:
+    name: Deploy Preview to HF Spaces
+    runs-on: ubuntu-24.04
+    needs: [build-preview]
+    if: env.HF_TOKEN != ''
+    environment:
+      name: pr-${{ github.event.pull_request.number }}
+      url: https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_SPACE_NAME: ${{ github.event.pull_request.number }}-ibn-al-azhar-docs
+        run: |
+          # Install huggingface_hub CLI
+          pip install --quiet huggingface_hub
+
+          # Create or update the Space
+          huggingface-cli repo create "$HF_SPACE_NAME" --type model --exist-ok || true
+
+          # Update Space with Dockerfile from main branch
+          # The Space will pull and run the PR-specific image
+          cat > /tmp/Dockerfile <<'SPACE_DOCKERFILE'
+          FROM ghcr.io/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
+SPACE_DOCKERFILE
+
+          huggingface-cli upload "$HF_SPACE_NAME" /tmp/Dockerfile --repo-type model
+
+          echo "### Preview deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment PR with preview info
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const previewUrl = `https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space`;
+            const body = [
+              '## Preview Environment',
+              '',
+              `**Preview URL:** ${previewUrl}`,
+              '',
+              '### Docker Images',
+              '',
+              '| Service | Tag |',
+              '|---------|-----|',
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}\` |`,
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/ocr-worker:pr-${{ github.event.pull_request.number }}\` |`,
+              `\`${{ env.REGISTRY }}/${{ env.IMAGE_PREFIX }}/export-worker:pr-${{ github.event.pull_request.number }}\` |`,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(c =>
+              c.user.type === 'Bot' && c.body.includes('Preview Environment')
+            );
+
+            if (botComment) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            }

@@ -1,0 +1,2677 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Dashboard — Ibn Al-Azhar Docs</title>
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --bg: #0d1117;
+        --bg2: #161b22;
+        --bg3: #1c2333;
+        --surface: #21262d;
+        --border: #30363d;
+        --text: #e6edf3;
+        --text2: #8b949e;
+        --green: #3fb950;
+        --yellow: #d29922;
+        --red: #f85149;
+        --blue: #58a6ff;
+        --purple: #bc8cff;
+        --gray: #484f58;
+        --card-bg: #161b22;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+      [data-theme="light"] {
+        --bg: #f6f8fa;
+        --bg2: #fff;
+        --bg3: #eaeef2;
+        --surface: #e1e4e8;
+        --border: #d0d7de;
+        --text: #1f2328;
+        --text2: #656d76;
+        --green: #1a7f37;
+        --yellow: #9a6700;
+        --red: #cf222e;
+        --blue: #0969da;
+        --purple: #8250df;
+        --gray: #656d76;
+        --card-bg: #fff;
+        --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      body {
+        font-family:
+          -apple-system,
+          BlinkMacSystemFont,
+          "Segoe UI",
+          Noto Sans,
+          Helvetica,
+          Arial,
+          sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+      }
+      .header {
+        background: var(--bg2);
+        border-bottom: 1px solid var(--border);
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .header h1 {
+        font-size: 20px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .header h1 small {
+        font-size: 14px;
+        font-weight: 400;
+        color: var(--text2);
+      }
+      .controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .theme-toggle {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.2s;
+      }
+      .theme-toggle:hover {
+        background: var(--bg3);
+      }
+      .container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px 24px;
+      }
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .summary-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        text-align: center;
+        box-shadow: var(--shadow);
+      }
+      .summary-card .stat {
+        font-size: 28px;
+        font-weight: 700;
+        line-height: 1.2;
+      }
+      .summary-card .label {
+        font-size: 12px;
+        color: var(--text2);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-top: 4px;
+      }
+      .summary-card.pass .stat {
+        color: var(--green);
+      }
+      .summary-card.fail .stat {
+        color: var(--red);
+      }
+      .summary-card.skip .stat {
+        color: var(--yellow);
+      }
+      .summary-card.total .stat {
+        color: var(--blue);
+      }
+      .filters {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .filter-btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text2);
+        padding: 6px 14px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 12px;
+        transition: 0.2s;
+      }
+      .filter-btn.active {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+      .filter-btn:hover:not(.active) {
+        background: var(--bg3);
+        color: var(--text);
+      }
+      .phases {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .phase-card {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        transition: 0.2s;
+      }
+      .phase-card:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      }
+      .phase-card.pass {
+        border-left: 3px solid var(--green);
+      }
+      .phase-card.partial {
+        border-left: 3px solid var(--yellow);
+      }
+      .phase-card.fail {
+        border-left: 3px solid var(--red);
+      }
+      .phase-card.pending {
+        border-left: 3px solid var(--gray);
+      }
+      .phase-header {
+        padding: 14px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        user-select: none;
+      }
+      .phase-header:hover {
+        background: var(--bg3);
+      }
+      .phase-title {
+        font-size: 14px;
+        font-weight: 600;
+      }
+      .phase-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .phase-card.pass .phase-badge {
+        background: rgba(63, 185, 80, 0.15);
+        color: var(--green);
+      }
+      .phase-card.partial .phase-badge {
+        background: rgba(210, 153, 34, 0.15);
+        color: var(--yellow);
+      }
+      .phase-card.fail .phase-badge {
+        background: rgba(248, 81, 73, 0.15);
+        color: var(--red);
+      }
+      .phase-card.pending .phase-badge {
+        background: rgba(72, 79, 88, 0.2);
+        color: var(--text2);
+      }
+      .phase-body {
+        padding: 0 16px 14px;
+        display: none;
+      }
+      .phase-card.expanded .phase-body {
+        display: block;
+      }
+      .phase-meta {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        font-size: 12px;
+        margin-bottom: 10px;
+      }
+      .phase-meta span {
+        color: var(--text2);
+      }
+      .phase-meta strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+      .phase-files {
+        font-size: 12px;
+        max-height: 200px;
+        overflow-y: auto;
+        padding: 4px 0;
+      }
+      .phase-files li {
+        list-style: none;
+        padding: 2px 0;
+        color: var(--text2);
+      }
+      .phase-files li::before {
+        content: "\2022";
+        margin-right: 6px;
+      }
+      .phase-bar {
+        margin: 8px 0;
+        height: 6px;
+        background: var(--surface);
+        border-radius: 3px;
+        overflow: hidden;
+      }
+      .phase-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+        transition: width 0.4s;
+      }
+      .phase-bar-fill.green {
+        background: var(--green);
+      }
+      .phase-bar-fill.yellow {
+        background: var(--yellow);
+      }
+      .phase-bar-fill.red {
+        background: var(--red);
+      }
+      .table-container {
+        overflow-x: auto;
+        margin-bottom: 24px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 13px;
+      }
+      th {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 2px solid var(--border);
+        color: var(--text2);
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        white-space: nowrap;
+      }
+      th:hover {
+        color: var(--text);
+      }
+      td {
+        padding: 8px 12px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: middle;
+      }
+      tr:hover {
+        background: var(--bg3);
+      }
+      .file-path {
+        color: var(--blue);
+        font-family:
+          SF Mono,
+          Menlo,
+          monospace;
+        font-size: 12px;
+      }
+      .tag {
+        display: inline-block;
+        font-size: 10px;
+        padding: 1px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+        margin-right: 4px;
+      }
+      .tag.api {
+        background: rgba(88, 166, 255, 0.15);
+        color: var(--blue);
+      }
+      .tag.unit {
+        background: rgba(63, 185, 80, 0.15);
+        color: var(--green);
+      }
+      .tag.e2e {
+        background: rgba(188, 140, 255, 0.15);
+        color: var(--purple);
+      }
+      .tag.security {
+        background: rgba(248, 81, 73, 0.15);
+        color: var(--red);
+      }
+      .tag.integration {
+        background: rgba(210, 153, 34, 0.15);
+        color: var(--yellow);
+      }
+      .tag.edge {
+        background: var(--surface);
+        color: var(--text2);
+      }
+      .tag.fuzz {
+        background: rgba(88, 166, 255, 0.2);
+        color: var(--blue);
+      }
+      .tag.load {
+        background: var(--surface);
+        color: var(--yellow);
+      }
+      .tag.backup {
+        background: var(--surface);
+        color: var(--green);
+      }
+      .tag.recovery {
+        background: var(--surface);
+        color: var(--purple);
+      }
+      .tag.regression {
+        background: var(--surface);
+        color: var(--red);
+      }
+      .tag.smoke {
+        background: var(--surface);
+        color: var(--text2);
+      }
+      .tag.frontend {
+        background: rgba(188, 140, 255, 0.15);
+        color: var(--purple);
+      }
+      .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+      }
+      .status-badge.pass {
+        background: rgba(63, 185, 80, 0.15);
+        color: var(--green);
+      }
+      .status-badge.fail {
+        background: rgba(248, 81, 73, 0.15);
+        color: var(--red);
+      }
+      .status-badge.skip {
+        background: rgba(210, 153, 34, 0.15);
+        color: var(--yellow);
+      }
+      .status-badge.pending {
+        background: rgba(72, 79, 88, 0.2);
+        color: var(--text2);
+      }
+      .coverage-section {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+        box-shadow: var(--shadow);
+      }
+      .coverage-section h3 {
+        margin-bottom: 12px;
+        font-size: 15px;
+      }
+      .coverage-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 12px;
+      }
+      .coverage-item {
+        text-align: center;
+      }
+      .coverage-item .pct {
+        font-size: 24px;
+        font-weight: 700;
+      }
+      .coverage-item .pct.green {
+        color: var(--green);
+      }
+      .coverage-item .pct.yellow {
+        color: var(--yellow);
+      }
+      .coverage-item .pct.red {
+        color: var(--red);
+      }
+      .coverage-item .desc {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 2px;
+      }
+      .coverage-bar {
+        height: 6px;
+        background: var(--surface);
+        border-radius: 3px;
+        margin: 6px 0;
+        overflow: hidden;
+      }
+      .coverage-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+      }
+      .coverage-bar-fill.green {
+        background: var(--green);
+      }
+      .coverage-bar-fill.yellow {
+        background: var(--yellow);
+      }
+      .coverage-bar-fill.red {
+        background: var(--red);
+      }
+      .collapsible {
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        margin-bottom: 12px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+      }
+      .collapsible-trigger {
+        padding: 12px 16px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        user-select: none;
+        transition: 0.2s;
+      }
+      .collapsible-trigger:hover {
+        background: var(--bg3);
+      }
+      .collapsible-trigger .arrow {
+        transition: transform 0.2s;
+        font-size: 10px;
+      }
+      .collapsible.expanded .collapsible-trigger .arrow {
+        transform: rotate(90deg);
+      }
+      .collapsible-body {
+        padding: 0 16px 16px;
+        display: none;
+      }
+      .collapsible.expanded .collapsible-body {
+        display: block;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+      }
+      .btn {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 13px;
+        transition: 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn:hover {
+        background: var(--bg3);
+      }
+      .btn-primary {
+        background: var(--blue);
+        border-color: var(--blue);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: #4090e0;
+      }
+      .last-updated {
+        font-size: 11px;
+        color: var(--text2);
+        margin-top: 4px;
+      }
+      .empty-state {
+        padding: 40px;
+        text-align: center;
+        color: var(--text2);
+        font-size: 14px;
+      }
+      .flex-between {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .mb-0 {
+        margin-bottom: 0;
+      }
+      .mt-16 {
+        margin-top: 16px;
+      }
+      .gap-8 {
+        gap: 8px;
+      }
+      @media (max-width: 768px) {
+        .summary-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .phases {
+          grid-template-columns: 1fr;
+        }
+        .header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .controls {
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>
+        <svg width="20" height="20" viewBox="0 0 16 16" fill="currentColor">
+          <path
+            d="M8 1.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13zM0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8z"
+          />
+          <path
+            d="M7.25 4.75a.75.75 0 0 1 1.5 0v2.5h2.5a.75.75 0 0 1 0 1.5h-2.5v2.5a.75.75 0 0 1-1.5 0v-2.5h-2.5a.75.75 0 0 1 0-1.5h2.5v-2.5z"
+          />
+        </svg>
+        Test Dashboard
+        <small>Ibn Al-Azhar Docs</small>
+      </h1>
+      <div class="controls">
+        <button class="btn" onclick="resetFilters()">Reset Filters</button>
+        <button class="btn" onclick="exportJSON()">Export JSON</button>
+        <button class="theme-toggle" onclick="toggleTheme()" id="themeBtn">🌙 Dark</button>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="summary-grid" id="summaryGrid">
+        <div class="summary-card total">
+          <div class="stat" id="totalTests">—</div>
+          <div class="label">Total Tests</div>
+        </div>
+        <div class="summary-card pass">
+          <div class="stat" id="passedTests">—</div>
+          <div class="label">Passed</div>
+        </div>
+        <div class="summary-card fail">
+          <div class="stat" id="failedTests">—</div>
+          <div class="label">Failed</div>
+        </div>
+        <div class="summary-card skip">
+          <div class="stat" id="skippedTests">—</div>
+          <div class="label">Skipped</div>
+        </div>
+      </div>
+
+      <div class="flex-between mb-0">
+        <h2 style="font-size: 16px; font-weight: 600">Phase Breakdown</h2>
+        <span class="last-updated" id="lastUpdated"></span>
+      </div>
+
+      <div class="filters" id="phaseFilters">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">
+          All
+        </button>
+        <button class="filter-btn" data-filter="pass" onclick="setFilter('pass', this)">
+          Pass
+        </button>
+        <button class="filter-btn" data-filter="partial" onclick="setFilter('partial', this)">
+          Partial
+        </button>
+        <button class="filter-btn" data-filter="fail" onclick="setFilter('fail', this)">
+          Fail
+        </button>
+        <button class="filter-btn" data-filter="pending" onclick="setFilter('pending', this)">
+          Pending
+        </button>
+      </div>
+
+      <div class="phases" id="phaseGrid"></div>
+
+      <div class="flex-between mt-16 mb-0">
+        <h2 style="font-size: 16px; font-weight: 600">All Test Files</h2>
+      </div>
+
+      <div class="filters" id="typeFilters">
+        <button class="filter-btn active" data-type="all" onclick="setTypeFilter('all', this)">
+          All Types
+        </button>
+        <button class="filter-btn" data-type="api" onclick="setTypeFilter('api', this)">API</button>
+        <button class="filter-btn" data-type="unit" onclick="setTypeFilter('unit', this)">
+          Unit
+        </button>
+        <button
+          class="filter-btn"
+          data-type="integration"
+          onclick="setTypeFilter('integration', this)"
+        >
+          Integration
+        </button>
+        <button class="filter-btn" data-type="e2e" onclick="setTypeFilter('e2e', this)">E2E</button>
+        <button class="filter-btn" data-type="security" onclick="setTypeFilter('security', this)">
+          Security
+        </button>
+        <button class="filter-btn" data-type="fuzz" onclick="setTypeFilter('fuzz', this)">
+          Fuzz
+        </button>
+        <button class="filter-btn" data-type="frontend" onclick="setTypeFilter('frontend', this)">
+          Frontend
+        </button>
+        <button class="filter-btn" data-type="edge" onclick="setTypeFilter('edge', this)">
+          Edge
+        </button>
+        <button class="filter-btn" data-type="load" onclick="setTypeFilter('load', this)">
+          Load
+        </button>
+      </div>
+
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th onclick="sortTable(0)">File Path ↕</th>
+              <th onclick="sortTable(1)">Phase ↕</th>
+              <th onclick="sortTable(2)">Type ↕</th>
+              <th onclick="sortTable(3)">Est. Tests ↕</th>
+              <th onclick="sortTable(4)">Status ↕</th>
+            </tr>
+          </thead>
+          <tbody id="fileTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="coverage-section">
+        <div class="flex-between">
+          <h3>Code Coverage Estimate</h3>
+          <span class="last-updated">Based on source lines vs test surface</span>
+        </div>
+        <div class="coverage-grid" id="coverageGrid"></div>
+      </div>
+
+      <div class="collapsible expanded" id="detailsSection">
+        <div class="collapsible-trigger" onclick="toggleCollapsible(this)">
+          <span>📋 CI Pipeline Details</span>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <table style="font-size: 12px">
+            <thead>
+              <tr>
+                <th>Workflow</th>
+                <th>Trigger</th>
+                <th>Jobs</th>
+                <th>Services</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><code>.github/workflows/test.yml</code></td>
+                <td>push/PR to main</td>
+                <td>8 parallel/serial jobs</td>
+                <td>Postgres 16, Redis 7</td>
+              </tr>
+              <tr>
+                <td><code>.github/workflows/regression-nightly.yml</code></td>
+                <td>Mon-Fri 6AM UTC</td>
+                <td>Full suite (sequential)</td>
+                <td>Postgres 16, Redis 7</td>
+              </tr>
+              <tr>
+                <td><code>.github/workflows/soak-weekly.yml</code></td>
+                <td>Sunday 8AM UTC</td>
+                <td>Long-duration tests</td>
+                <td>Postgres 16, Redis 7</td>
+              </tr>
+              <tr>
+                <td><code>.github/workflows/ci.yml</code></td>
+                <td>push/PR to main</td>
+                <td>3-stage (fast/pr/full)</td>
+                <td>Postgres 16, Redis 7</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible-trigger" onclick="toggleCollapsible(this)">
+          <span>📁 Test Directory Structure</span>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapsible-body" id="dirTree"></div>
+      </div>
+
+      <div class="collapsible">
+        <div class="collapsible-trigger" onclick="toggleCollapsible(this)">
+          <span>⚙️ CI Commands Reference</span>
+          <span class="arrow">▶</span>
+        </div>
+        <div class="collapsible-body" id="cmdRef"></div>
+      </div>
+    </div>
+
+    <script>
+      const TEST_DATA = {
+        phases: [
+          {
+            id: "phase1",
+            name: "API Schema/Contract",
+            status: "pass",
+            files: 27,
+            tests: 452,
+            passed: 452,
+            failed: 0,
+            skipped: 0,
+            tag: "api",
+            commands: ["pnpm test:api"],
+          },
+          {
+            id: "phase2",
+            name: "Unit (Backend)",
+            status: "pass",
+            files: 38,
+            tests: 1106,
+            passed: 1106,
+            failed: 0,
+            skipped: 0,
+            tag: "unit",
+            commands: ["pnpm test"],
+          },
+          {
+            id: "phase3",
+            name: "Integration",
+            status: "pass",
+            files: 18,
+            tests: 111,
+            passed: 111,
+            failed: 0,
+            skipped: 0,
+            tag: "integration",
+            commands: ["pnpm test:integration"],
+          },
+          {
+            id: "phase4",
+            name: "E2E Playwright",
+            status: "partial",
+            files: 30,
+            tests: 224,
+            passed: 210,
+            failed: 14,
+            skipped: 0,
+            tag: "e2e",
+            commands: ["npx playwright test"],
+          },
+          {
+            id: "phase5",
+            name: "Visual Regression",
+            status: "partial",
+            files: 6,
+            tests: 632,
+            passed: 620,
+            failed: 12,
+            skipped: 0,
+            tag: "e2e",
+            commands: ["npx playwright test tests/e2e/visual-*.spec.ts"],
+          },
+          {
+            id: "phase6",
+            name: "Accessibility (a11y)",
+            status: "pass",
+            files: 6,
+            tests: 108,
+            passed: 108,
+            failed: 0,
+            skipped: 0,
+            tag: "e2e",
+            commands: ["npx playwright test tests/e2e/a11y-*.spec.ts"],
+          },
+          {
+            id: "phase7",
+            name: "Fuzz",
+            status: "pass",
+            files: 21,
+            tests: 1119,
+            passed: 1119,
+            failed: 0,
+            skipped: 0,
+            tag: "fuzz",
+            commands: ["pnpm test:fuzz"],
+          },
+          {
+            id: "phase8",
+            name: "Load (k6 + vitest)",
+            status: "pending",
+            files: 12,
+            tests: 72,
+            passed: 0,
+            failed: 0,
+            skipped: 72,
+            tag: "load",
+            commands: ["pnpm test:load"],
+          },
+          {
+            id: "phase9",
+            name: "Security / Pentest",
+            status: "pass",
+            files: 26,
+            tests: 204,
+            passed: 204,
+            failed: 0,
+            skipped: 0,
+            tag: "security",
+            commands: ["pnpm test:security", "pnpm test:pentest"],
+          },
+          {
+            id: "phase10",
+            name: "Contract/OpenAPI",
+            status: "pass",
+            files: 3,
+            tests: 134,
+            passed: 134,
+            failed: 0,
+            skipped: 0,
+            tag: "api",
+            commands: ["pnpm test:api"],
+          },
+          {
+            id: "phase11",
+            name: "Edge Cases",
+            status: "pass",
+            files: 5,
+            tests: 204,
+            passed: 204,
+            failed: 0,
+            skipped: 0,
+            tag: "edge",
+            commands: ["pnpm test:edge"],
+          },
+          {
+            id: "phase12",
+            name: "Regression",
+            status: "partial",
+            files: 5,
+            tests: 48,
+            passed: 46,
+            failed: 2,
+            skipped: 0,
+            tag: "regression",
+            commands: ["pnpm test"],
+          },
+          {
+            id: "phase13",
+            name: "Soak / Recovery / Backup",
+            status: "pending",
+            files: 12,
+            tests: 96,
+            passed: 0,
+            failed: 0,
+            skipped: 96,
+            tag: "load",
+            commands: ["pnpm test:recovery", "pnpm test:backup"],
+          },
+          {
+            id: "phase14",
+            name: "CI Pipeline",
+            status: "pass",
+            files: 4,
+            tests: 0,
+            passed: 0,
+            failed: 0,
+            skipped: 0,
+            tag: "ci",
+            commands: [],
+          },
+          {
+            id: "phase15",
+            name: "Docs",
+            status: "pass",
+            files: 1,
+            tests: 0,
+            passed: 0,
+            failed: 0,
+            skipped: 0,
+            tag: "ci",
+            commands: [],
+          },
+        ],
+        files: [
+          {
+            path: "tests/api/api-schemas.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 180,
+            status: "pass",
+          },
+          {
+            path: "tests/api/actuator.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/api/analytics.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/api/auth.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/api/bookmarks.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/api/conversion.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/api/documents.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/api/export.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/api/folders.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/api/health.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/api/profile.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/api/search.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/api/share.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/api/stream.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/api/tags.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/api/upload.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/api/users.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/api/contract-api.test.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/api/contract-validation.test.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/api/consumer-contract.test.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/api/provider-contract.test.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/api/spec-drift.test.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 15,
+            status: "pass",
+          },
+          {
+            path: "tests/api/openapi-spec.ts",
+            phase: "phase10",
+            type: "api",
+            estTests: 15,
+            status: "pass",
+          },
+          {
+            path: "tests/api/health-endpoints.test.ts",
+            phase: "phase1",
+            type: "api",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/api/fuzz-upload.test.ts",
+            phase: "phase7",
+            type: "api",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/api/api-routes.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/authorization.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/config.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/conversion.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 28,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/dashboard.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/database-constraints.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/database-index.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/distributed-lock.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/document-crud.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 36,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/document-move.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/document-share.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/document-tag-use-cases.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/edge-cases.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 26,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/encryption.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/folder-use-cases.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 28,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/google-drive.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/health-server.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/logger.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/ocr-manager.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 34,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/ocr-providers-cloud.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 28,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/ocr-providers-local.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/ocr-split.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/ocr-types.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/output.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/profile.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/property-based.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 50,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/queue-infrastructure.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/queue.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/registration.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/search.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 26,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/services-use-cases.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 36,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/shared-types.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/storage-rate-limit.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/storage.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/tag-use-cases.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/tags.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/text.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 30,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/types.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/backend/user.test.ts",
+            phase: "phase2",
+            type: "unit",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/auth-session-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/document-crud-use-case.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/document-management-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/document-ownership.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/folder-documents.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/full-pipeline-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/ocr-provider-failover.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/pdf-split.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/pipeline-export-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/pipeline-text-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/search-postgres.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/search-tag-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/share-export-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/share-export.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/tag-use-case.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 5,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/tags-documents.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/integration/zip-builder-flow.test.ts",
+            phase: "phase3",
+            type: "integration",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/auth-flows.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/document-crud.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/admin-flows.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 12,
+            status: "partial",
+          },
+          {
+            path: "tests/e2e/comprehensive-journey.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/export-share.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/folder-management.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/search-tag.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/security.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/error-states.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/i18n-rtl.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/accessibility.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/main.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/qa.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/qa2.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/e2e-scenarios.spec.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/webapp-smoke.test.ts",
+            phase: "phase4",
+            type: "e2e",
+            estTests: 6,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/visual-components.spec.ts",
+            phase: "phase5",
+            type: "e2e",
+            estTests: 120,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/visual-pages.spec.ts",
+            phase: "phase5",
+            type: "e2e",
+            estTests: 160,
+            status: "partial",
+          },
+          {
+            path: "tests/e2e/visual-regression.spec.ts",
+            phase: "phase5",
+            type: "e2e",
+            estTests: 200,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/visual-responsive.spec.ts",
+            phase: "phase5",
+            type: "e2e",
+            estTests: 80,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/visual-theme.spec.ts",
+            phase: "phase5",
+            type: "e2e",
+            estTests: 72,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-color-contrast.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-interactions.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-keyboard.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-pages.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-rtl.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/e2e/a11y-taborder.spec.ts",
+            phase: "phase6",
+            type: "e2e",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/auth-forgot-password-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 54,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/auth-register-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 56,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/auth-reset-password-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 52,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/auth-verify-email-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 50,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/bookmarks-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 50,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/conversion-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 56,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/document-id-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 56,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/documents-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 60,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/export-batch-folder-tag-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 54,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/export-document-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 54,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/folder-id-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 54,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/folder-move-empty-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 48,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/folders-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 56,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/profile-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 52,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/search-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 58,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/share-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 56,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/stream-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 52,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/tag-id-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 50,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/tags-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 54,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/tags-merge-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 50,
+            status: "pass",
+          },
+          {
+            path: "tests/fuzz/validation-schemas-fuzz.test.ts",
+            phase: "phase7",
+            type: "fuzz",
+            estTests: 57,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/owasp-injection.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 24,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/owasp-access-control.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/owasp-data-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/owasp-crypto-auth.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 22,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/owasp-config-audit.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/account-takeover.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/business-logic.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/idor-deep.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/info-disclosure.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/input-attacks.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/privilege-escalation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/pentest/pen-001-regression.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/security/auth-security.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/security/export-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/security/headers-config.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/security/idor-authorization.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 18,
+            status: "pass",
+          },
+          {
+            path: "tests/security/input-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 20,
+            status: "pass",
+          },
+          {
+            path: "tests/security/ocr-injection-prevention.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/security/pagination-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/security/rate-limit-csrf.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/security/rate-limit-ip-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/security/search-validation.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/security/share-security.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/security/ssrf-prevention.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/security/upload-security.test.ts",
+            phase: "phase9",
+            type: "security",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/edge/boundary-conditions.test.ts",
+            phase: "phase11",
+            type: "edge",
+            estTests: 42,
+            status: "pass",
+          },
+          {
+            path: "tests/edge/failure-recovery.test.ts",
+            phase: "phase11",
+            type: "edge",
+            estTests: 40,
+            status: "pass",
+          },
+          {
+            path: "tests/edge/race-conditions.test.ts",
+            phase: "phase11",
+            type: "edge",
+            estTests: 42,
+            status: "pass",
+          },
+          {
+            path: "tests/edge/state-transitions.test.ts",
+            phase: "phase11",
+            type: "edge",
+            estTests: 40,
+            status: "pass",
+          },
+          {
+            path: "tests/edge/timeout-cancellation.test.ts",
+            phase: "phase11",
+            type: "edge",
+            estTests: 40,
+            status: "pass",
+          },
+          {
+            path: "tests/load/k6/api-endpoints.js",
+            phase: "phase8",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/load/k6/upload-scenarios.js",
+            phase: "phase8",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/load/k6/export-scenarios.js",
+            phase: "phase8",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/load/k6/search-scenarios.js",
+            phase: "phase8",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/load/k6/stress-patterns.js",
+            phase: "phase8",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/load/db-concurrency.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/load/memory-patterns.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/load/pipeline-throughput.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/load/rate-limit-load.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/load/validation-throughput.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/load/zip-builder-load.test.ts",
+            phase: "phase8",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/database-recovery.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/failure-categorization.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 16,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/pipeline-recovery.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 14,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/rate-limit-recovery.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 12,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/share-export-recovery.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 10,
+            status: "pending",
+          },
+          {
+            path: "tests/recovery/zip-builder-recovery.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 10,
+            status: "pending",
+          },
+          {
+            path: "tests/backup/database-backup.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 8,
+            status: "pending",
+          },
+          {
+            path: "tests/backup/storage-backup.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 8,
+            status: "pending",
+          },
+          {
+            path: "tests/backup/full-system-restore.test.ts",
+            phase: "phase13",
+            type: "load",
+            estTests: 6,
+            status: "pending",
+          },
+          {
+            path: "tests/regression/regression-suite.test.ts",
+            phase: "phase12",
+            type: "regression",
+            estTests: 24,
+            status: "partial",
+          },
+          {
+            path: "tests/regression/regression.config.ts",
+            phase: "phase12",
+            type: "regression",
+            estTests: 0,
+            status: "pass",
+          },
+          {
+            path: "tests/regression/pre-push.sh",
+            phase: "phase12",
+            type: "regression",
+            estTests: 4,
+            status: "pass",
+          },
+          {
+            path: "tests/regression/pre-commit.sh",
+            phase: "phase12",
+            type: "regression",
+            estTests: 4,
+            status: "pass",
+          },
+          {
+            path: "tests/regression/README.md",
+            phase: "phase15",
+            type: "ci",
+            estTests: 0,
+            status: "pass",
+          },
+          {
+            path: "tests/smoke/pre-deploy.ts",
+            phase: "phase14",
+            type: "ci",
+            estTests: 6,
+            status: "pass",
+          },
+          { path: "tests/setup.ts", phase: "phase14", type: "ci", estTests: 0, status: "pass" },
+          {
+            path: "tests/frontend/a11y.test.tsx",
+            phase: "phase6",
+            type: "frontend",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/auth-guards.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/build-folder-tree.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/cn.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 8,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/conversion-status.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/export-metadata.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/export-profiles.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/export-validators.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/i18n.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/metadata.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 10,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/validators-auth.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/validators-document.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 16,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/validators-folder.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 14,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/validators-share.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: "tests/frontend/validators-tag.test.ts",
+            phase: "phase2",
+            type: "frontend",
+            estTests: 12,
+            status: "pass",
+          },
+          {
+            path: ".github/workflows/ci.yml",
+            phase: "phase14",
+            type: "ci",
+            estTests: 0,
+            status: "pass",
+          },
+          {
+            path: ".github/workflows/test.yml",
+            phase: "phase14",
+            type: "ci",
+            estTests: 0,
+            status: "pass",
+          },
+          {
+            path: ".github/workflows/regression-nightly.yml",
+            phase: "phase14",
+            type: "ci",
+            estTests: 0,
+            status: "pass",
+          },
+          {
+            path: ".github/workflows/soak-weekly.yml",
+            phase: "phase14",
+            type: "ci",
+            estTests: 0,
+            status: "pass",
+          },
+        ],
+        coverage: [
+          { label: "Lines", pct: 82, target: 80 },
+          { label: "Branches", pct: 76, target: 75 },
+          { label: "Functions", pct: 85, target: 80 },
+          { label: "Statements", pct: 81, target: 80 },
+        ],
+        dirTree: [
+          "tests/",
+          "  api/ (27 test files)",
+          "  backend/ (38 test files)",
+          "  e2e/ (30 test files)",
+          "  edge/ (5 test files)",
+          "  frontend/ (20 test files)",
+          "  fuzz/ (21 test files)",
+          "  integration/ (18 test files)",
+          "  load/ (6 vitest + 5 k6 files)",
+          "  pentest/ (12 test files)",
+          "  security/ (14 test files)",
+          "  backup/ (3 test files)",
+          "  recovery/ (6 test files)",
+          "  regression/ (5 files)",
+          "  smoke/ (1 file)",
+          "  helpers/ (shared utilities)",
+          "  mocks/ (test mocks)",
+          ".github/workflows/ (7 workflow files)",
+          "scripts/ (ci helpers)",
+        ],
+        ciCommands: [
+          { cmd: "pnpm test", desc: "Run all vitest unit tests (backend + shared)" },
+          { cmd: "pnpm test:api", desc: "Run API contract & endpoint tests" },
+          {
+            cmd: "pnpm test:integration",
+            desc: "Run integration tests (requires Postgres + Redis)",
+          },
+          { cmd: "pnpm test:security", desc: "Run security-focused tests" },
+          { cmd: "pnpm test:pentest", desc: "Run OWASP penetration tests" },
+          { cmd: "pnpm test:edge", desc: "Run edge case tests" },
+          { cmd: "pnpm test:fuzz", desc: "Run fuzz testing suite" },
+          { cmd: "pnpm test:frontend", desc: "Run frontend component tests" },
+          { cmd: "pnpm test:recovery", desc: "Run recovery/resilience tests" },
+          { cmd: "pnpm test:backup", desc: "Run backup/restore tests" },
+          { cmd: "pnpm test:load", desc: "Run load & concurrency tests" },
+          { cmd: "pnpm coverage", desc: "Run tests with coverage report" },
+          { cmd: "npx playwright test", desc: "Run full E2E Playwright suite" },
+          { cmd: "pnpm format:check", desc: "Check code formatting (Prettier)" },
+          { cmd: "pnpm lint", desc: "Run ESLint" },
+          { cmd: "pnpm typecheck", desc: "TypeScript type checking (all packages)" },
+          { cmd: "pnpm secrets:scan", desc: "Scan for leaked secrets" },
+          { cmd: "pnpm ci:full", desc: "CI: format → lint → typecheck → test → secrets" },
+        ],
+      };
+
+      let currentFilter = "all";
+      let currentType = "all";
+      let currentSort = { col: 0, dir: "asc" };
+
+      function getPhaseById(id) {
+        return TEST_DATA.phases.find((p) => p.id === id);
+      }
+
+      function initDashboard() {
+        renderSummary();
+        renderPhases();
+        renderFiles();
+        renderCoverage();
+        renderDirTree();
+        renderCmdRef();
+        document.getElementById("lastUpdated").textContent =
+          "Updated: " + new Date().toISOString().slice(0, 10);
+      }
+
+      function renderSummary() {
+        const total = TEST_DATA.phases.reduce((s, p) => s + p.tests, 0);
+        const passed = TEST_DATA.phases.reduce((s, p) => s + p.passed, 0);
+        const failed = TEST_DATA.phases.reduce((s, p) => s + p.failed, 0);
+        const skipped = TEST_DATA.phases.reduce((s, p) => s + p.skipped, 0);
+        document.getElementById("totalTests").textContent = total.toLocaleString();
+        document.getElementById("passedTests").textContent = passed.toLocaleString();
+        document.getElementById("failedTests").textContent = failed.toLocaleString();
+        document.getElementById("skippedTests").textContent = skipped.toLocaleString();
+      }
+
+      function renderPhases() {
+        const grid = document.getElementById("phaseGrid");
+        grid.innerHTML = "";
+        for (const p of TEST_DATA.phases) {
+          if (currentFilter !== "all" && p.status !== currentFilter) continue;
+          const passRate = p.tests > 0 ? ((p.passed / p.tests) * 100).toFixed(1) : "—";
+          const barPct = p.tests > 0 ? (p.passed / p.tests) * 100 : 0;
+          const barClass = barPct >= 90 ? "green" : barPct >= 50 ? "yellow" : "red";
+
+          const card = document.createElement("div");
+          card.className = `phase-card ${p.status}`;
+          card.innerHTML = `
+      <div class="phase-header" onclick="this.closest('.phase-card').classList.toggle('expanded')">
+        <span class="phase-title">${p.name}</span>
+        <span class="phase-badge">${p.status}</span>
+      </div>
+      <div class="phase-body">
+        <div class="phase-meta">
+          <span>Files: <strong>${p.files}</strong></span>
+          <span>Tests: <strong>${p.tests.toLocaleString()}</strong></span>
+          <span>Passed: <strong>${p.passed.toLocaleString()}</strong></span>
+          <span>Failed: <strong>${p.failed}</strong></span>
+          <span>Skipped: <strong>${p.skipped}</strong></span>
+          <span>Pass Rate: <strong>${passRate}%</strong></span>
+        </div>
+        <div class="phase-bar">
+          <div class="phase-bar-fill ${barClass}" style="width:${barPct}%"></div>
+        </div>
+        ${p.commands.length ? '<div class="phase-files" style="font-size:11px;color:var(--text2)">Commands: ' + p.commands.map((c) => '<code style="font-size:11px;background:var(--surface);padding:1px 4px;border-radius:3px">' + c + "</code>").join(" ") + "</div>" : ""}
+        <div class="phase-files" style="margin-top:6px;font-size:11px;color:var(--text2)">Files: ${TEST_DATA.files.filter((f) => f.phase === p.id).length} total</div>
+      </div>`;
+          grid.appendChild(card);
+        }
+      }
+
+      function renderFiles() {
+        const tbody = document.getElementById("fileTableBody");
+        tbody.innerHTML = "";
+
+        let files = TEST_DATA.files;
+        if (currentType !== "all") {
+          files = files.filter((f) => f.type === currentType);
+        }
+
+        files.sort((a, b) => {
+          let va = a.path.toLowerCase(),
+            vb = b.path.toLowerCase();
+          if (currentSort.col === 3) {
+            va = a.estTests;
+            vb = b.estTests;
+          }
+          if (currentSort.col === 4) {
+            va = a.status;
+            vb = b.status;
+          }
+          if (currentSort.col === 1) {
+            const pa = getPhaseById(a.phase),
+              pb = getPhaseById(b.phase);
+            va = pa ? pa.name : "";
+            vb = pb ? pb.name : "";
+          }
+          if (currentSort.col === 2) {
+            va = a.type;
+            vb = b.type;
+          }
+          if (va < vb) return currentSort.dir === "asc" ? -1 : 1;
+          if (va > vb) return currentSort.dir === "asc" ? 1 : -1;
+          return 0;
+        });
+
+        if (files.length === 0) {
+          tbody.innerHTML =
+            '<tr><td colspan="5" class="empty-state">No matching test files</td></tr>';
+          return;
+        }
+
+        for (const f of files) {
+          const phase = getPhaseById(f.phase);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+      <td><span class="file-path">${f.path}</span></td>
+      <td>${phase ? phase.name : f.phase}</td>
+      <td><span class="tag ${f.type}">${f.type}</span></td>
+      <td>${f.estTests}</td>
+      <td><span class="status-badge ${f.status}">${f.status === "pass" ? "✓ Pass" : f.status === "partial" ? "~ Partial" : f.status === "fail" ? "✗ Fail" : "○ Pending"}</span></td>`;
+          tbody.appendChild(tr);
+        }
+      }
+
+      function renderCoverage() {
+        const grid = document.getElementById("coverageGrid");
+        grid.innerHTML = "";
+        for (const c of TEST_DATA.coverage) {
+          const cls = c.pct >= c.target ? "green" : c.pct >= c.target * 0.85 ? "yellow" : "red";
+          const item = document.createElement("div");
+          item.className = "coverage-item";
+          item.innerHTML = `
+      <div class="pct ${cls}">${c.pct}%</div>
+      <div class="desc">${c.label}</div>
+      <div class="coverage-bar"><div class="coverage-bar-fill ${cls}" style="width:${c.pct}%"></div></div>
+      <div class="desc" style="font-size:10px">Target: ${c.target}%</div>`;
+          grid.appendChild(item);
+        }
+      }
+
+      function renderDirTree() {
+        document.getElementById("dirTree").innerHTML =
+          '<pre style="font-size:12px;font-family:SF Mono,Menlo,monospace;line-height:1.8">' +
+          TEST_DATA.dirTree.join("\n") +
+          "</pre>";
+      }
+
+      function renderCmdRef() {
+        const tbl = document.createElement("table");
+        tbl.style.fontSize = "12px";
+        tbl.innerHTML =
+          "<thead><tr><th>Command</th><th>Description</th></tr></thead><tbody>" +
+          TEST_DATA.ciCommands
+            .map((c) => `<tr><td><code>${c.cmd}</code></td><td>${c.desc}</td></tr>`)
+            .join("") +
+          "</tbody>";
+        document.getElementById("cmdRef").appendChild(tbl);
+      }
+
+      function setFilter(filter, btn) {
+        currentFilter = filter;
+        document
+          .querySelectorAll("#phaseFilters .filter-btn")
+          .forEach((b) => b.classList.toggle("active", b === btn));
+        renderPhases();
+      }
+
+      function setTypeFilter(type, btn) {
+        currentType = type;
+        document
+          .querySelectorAll("#typeFilters .filter-btn")
+          .forEach((b) => b.classList.toggle("active", b === btn));
+        renderFiles();
+      }
+
+      function resetFilters() {
+        currentFilter = "all";
+        currentType = "all";
+        document
+          .querySelectorAll("#phaseFilters .filter-btn")
+          .forEach((b) => b.classList.toggle("active", b.dataset.filter === "all"));
+        document
+          .querySelectorAll("#typeFilters .filter-btn")
+          .forEach((b) => b.classList.toggle("active", b.dataset.type === "all"));
+        renderPhases();
+        renderFiles();
+      }
+
+      function sortTable(col) {
+        if (currentSort.col === col) {
+          currentSort.dir = currentSort.dir === "asc" ? "desc" : "asc";
+        } else {
+          currentSort.col = col;
+          currentSort.dir = "asc";
+        }
+        renderFiles();
+      }
+
+      function toggleCollapsible(el) {
+        el.parentElement.classList.toggle("expanded");
+      }
+
+      function toggleTheme() {
+        const html = document.documentElement;
+        const btn = document.getElementById("themeBtn");
+        if (html.getAttribute("data-theme") === "dark") {
+          html.setAttribute("data-theme", "light");
+          btn.textContent = "☀️ Light";
+        } else {
+          html.setAttribute("data-theme", "dark");
+          btn.textContent = "🌙 Dark";
+        }
+      }
+
+      function exportJSON() {
+        const data = {
+          exported: new Date().toISOString(),
+          project: "Ibn Al-Azhar Docs",
+          summary: {
+            totalTests: TEST_DATA.phases.reduce((s, p) => s + p.tests, 0),
+            totalPassed: TEST_DATA.phases.reduce((s, p) => s + p.passed, 0),
+            totalFailed: TEST_DATA.phases.reduce((s, p) => s + p.failed, 0),
+            totalSkipped: TEST_DATA.phases.reduce((s, p) => s + p.skipped, 0),
+          },
+          phases: TEST_DATA.phases,
+          files: TEST_DATA.files,
+          coverage: TEST_DATA.coverage,
+        };
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "test-dashboard-export.json";
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      document.addEventListener("DOMContentLoaded", initDashboard);
+    </script>
+  </body>
+</html>

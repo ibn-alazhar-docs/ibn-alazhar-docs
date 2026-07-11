@@ -1,0 +1,1496 @@
+openapi: 3.1.0
+info:
+  title: Ibn Al-Azhar Docs API
+  version: 1.0.0
+  description: |
+    Arabic-first document processing platform for Azhar students.
+    PDF/Image → OCR → Cleanup → Markdown → Preview → Export.
+
+    ## Authentication
+    All endpoints (except health and register) require session-based auth via `next-auth`.
+    Include the session cookie in requests.
+
+    ## Rate Limiting
+    Rate-limited endpoints return `429 Too Many Requests` with `Retry-After` header.
+
+    ## Error Format
+    ```json
+    {
+      "error": {
+        "code": "ERROR_CODE",
+        "message": "Human-readable message",
+        "details": []
+      }
+    }
+    ```
+  contact:
+    name: Ibn Al-Azhar Docs
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+
+tags:
+  - name: Health
+    description: Health and readiness checks
+  - name: Auth
+    description: Authentication and registration
+  - name: Documents
+    description: Document CRUD, tags, move, restore
+  - name: Folders
+    description: Folder CRUD, tree, move, restore
+  - name: Tags
+    description: Tag management and merge
+  - name: Search
+    description: Full-text search and suggestions
+  - name: Export
+    description: Single, batch, folder, and tag exports
+  - name: Upload
+    description: File upload and processing
+  - name: Conversion
+    description: Document conversion jobs
+  - name: Profile
+    description: User profile management
+  - name: Users
+    description: Admin user management
+  - name: Share
+    description: Document sharing and public access
+  - name: Metrics
+    description: Application metrics
+
+paths:
+  /api/health:
+    get:
+      tags: [Health]
+      summary: Health check
+      operationId: getHealth
+      responses:
+        "200":
+          description: Healthy or degraded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+        "503":
+          description: Unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /api/health/live:
+    get:
+      tags: [Health]
+      summary: Liveness probe
+      operationId: getLiveness
+      responses:
+        "200":
+          description: Alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok]
+
+  /api/health/ready:
+    get:
+      tags: [Health]
+      summary: Readiness probe
+      operationId: getReadiness
+      responses:
+        "200":
+          description: Ready
+        "503":
+          description: Not ready
+
+  /api/auth/register:
+    post:
+      tags: [Auth]
+      summary: Register new user
+      operationId: registerUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:
+                  type: string
+                  minLength: 2
+                  maxLength: 100
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                  minLength: 8
+      responses:
+        "201":
+          description: User created
+        "400":
+          description: Validation error
+        "409":
+          description: Email already exists
+
+  /api/documents:
+    get:
+      tags: [Documents]
+      summary: List documents
+      operationId: listDocuments
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+        - name: folderId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+            maxLength: 200
+      responses:
+        "200":
+          description: Document list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+                  pagination:
+                    $ref: "#/components/schemas/Pagination"
+
+  /api/documents/{id}:
+    get:
+      tags: [Documents]
+      summary: Get document by ID
+      operationId: getDocument
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Document details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: "#/components/schemas/Document"
+        "404":
+          description: Not found
+    patch:
+      tags: [Documents]
+      summary: Update document title
+      operationId: updateDocument
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 500
+      responses:
+        "200":
+          description: Updated
+        "404":
+          description: Not found
+    delete:
+      tags: [Documents]
+      summary: Soft-delete document
+      operationId: deleteDocument
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+        "404":
+          description: Not found
+
+  /api/documents/{id}/restore:
+    post:
+      tags: [Documents]
+      summary: Restore deleted document
+      operationId: restoreDocument
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Restored
+        "404":
+          description: Not found
+
+  /api/documents/{id}/move:
+    post:
+      tags: [Documents]
+      summary: Move document to folder
+      operationId: moveDocument
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                folderId:
+                  type: string
+                  nullable: true
+      responses:
+        "200":
+          description: Moved
+
+  /api/documents/{id}/tags:
+    get:
+      tags: [Documents]
+      summary: Get document tags
+      operationId: getDocumentTags
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tags list
+    post:
+      tags: [Documents]
+      summary: Add tag to document
+      operationId: addDocumentTag
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tagId]
+              properties:
+                tagId:
+                  type: string
+      responses:
+        "201":
+          description: Tag added
+        "409":
+          description: Tag already attached
+
+  /api/documents/{id}/tags/{tagId}:
+    delete:
+      tags: [Documents]
+      summary: Remove tag from document
+      operationId: removeDocumentTag
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: tagId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Removed
+
+  /api/documents/bulk-tag:
+    post:
+      tags: [Documents]
+      summary: Bulk add tag to documents
+      operationId: bulkAddTag
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentIds, tagId]
+              properties:
+                documentIds:
+                  type: array
+                  items:
+                    type: string
+                tagId:
+                  type: string
+      responses:
+        "200":
+          description: Tags added
+
+  /api/documents/bulk-untag:
+    post:
+      tags: [Documents]
+      summary: Bulk remove tag from documents
+      operationId: bulkRemoveTag
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentIds, tagId]
+              properties:
+                documentIds:
+                  type: array
+                  items:
+                    type: string
+                tagId:
+                  type: string
+      responses:
+        "200":
+          description: Tags removed
+
+  /api/documents/bulk-move:
+    post:
+      tags: [Documents]
+      summary: Bulk move documents to folder
+      operationId: bulkMoveDocuments
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentIds, folderId]
+              properties:
+                documentIds:
+                  type: array
+                  items:
+                    type: string
+                folderId:
+                  type: string
+                  nullable: true
+      responses:
+        "200":
+          description: Moved
+
+  /api/documents/{id}/export:
+    post:
+      tags: [Export]
+      summary: Start async export (BullMQ worker)
+      operationId: startExport
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportRequest"
+      responses:
+        "202":
+          description: Export job queued
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [queued]
+
+  /api/documents/{id}/export/status:
+    get:
+      tags: [Export]
+      summary: Check export status
+      operationId: getExportStatus
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [md, txt, json, zip, pdf, docx, epub]
+      responses:
+        "200":
+          description: Export status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ready, processing]
+                  format:
+                    type: string
+                  ready:
+                    type: boolean
+                  downloadUrl:
+                    type: string
+
+  /api/export:
+    post:
+      tags: [Export]
+      summary: Synchronous single-document export
+      operationId: exportSingle
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SingleExportRequest"
+      responses:
+        "200":
+          description: Exported file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+
+  /api/export/batch:
+    post:
+      tags: [Export]
+      summary: Batch export multiple documents as ZIP
+      operationId: exportBatch
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BatchExportRequest"
+      responses:
+        "200":
+          description: ZIP archive
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+
+  /api/export/folder:
+    post:
+      tags: [Export]
+      summary: Export all documents in a folder
+      operationId: exportFolder
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [folderId, format]
+              properties:
+                folderId:
+                  type: string
+                format:
+                  type: string
+                  enum: [md, txt, json, zip, pdf, docx, epub]
+                profile:
+                  type: string
+                  enum: [default, academic, archive]
+      responses:
+        "200":
+          description: Exported archive
+
+  /api/export/tag:
+    post:
+      tags: [Export]
+      summary: Export all documents with a tag
+      operationId: exportByTag
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tagId, format]
+              properties:
+                tagId:
+                  type: string
+                format:
+                  type: string
+                  enum: [md, txt, json, zip, pdf, docx, epub]
+                profile:
+                  type: string
+                  enum: [default, academic, archive]
+      responses:
+        "200":
+          description: Exported archive
+
+  /api/export/{id}/{format}:
+    get:
+      tags: [Export]
+      summary: Download pre-generated export by ID and format
+      operationId: downloadExport
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [md, txt, json, zip, pdf, docx, epub]
+      responses:
+        "200":
+          description: Exported file
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        "404":
+          description: Export not found
+
+  /api/upload:
+    post:
+      tags: [Upload]
+      summary: Upload document(s) for processing
+      operationId: uploadDocuments
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items:
+                    type: string
+                    format: binary
+                folderId:
+                  type: string
+      responses:
+        "201":
+          description: Upload accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documents:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Document"
+
+  /api/conversion/list:
+    get:
+      tags: [Conversion]
+      summary: List conversion jobs
+      operationId: listConversions
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Conversion jobs
+
+  /api/conversion/start:
+    post:
+      tags: [Conversion]
+      summary: Start conversion job
+      operationId: startConversion
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [documentId]
+              properties:
+                documentId:
+                  type: string
+      responses:
+        "202":
+          description: Job queued
+
+  /api/conversion/{id}/status:
+    get:
+      tags: [Conversion]
+      summary: Check conversion status
+      operationId: getConversionStatus
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Conversion status
+
+  /api/folders:
+    get:
+      tags: [Folders]
+      summary: List folders
+      operationId: listFolders
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Folder tree
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folders:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Folder"
+    post:
+      tags: [Folders]
+      summary: Create folder
+      operationId: createFolder
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+                parentId:
+                  type: string
+                  nullable: true
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  folder:
+                    $ref: "#/components/schemas/Folder"
+
+  /api/folders/{id}:
+    get:
+      tags: [Folders]
+      summary: Get folder by ID
+      operationId: getFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Folder details
+        "404":
+          description: Not found
+    patch:
+      tags: [Folders]
+      summary: Rename folder
+      operationId: updateFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 255
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Folders]
+      summary: Soft-delete folder
+      operationId: deleteFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /api/folders/{id}/tree:
+    get:
+      tags: [Folders]
+      summary: Get folder subtree
+      operationId: getFolderTree
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Subtree
+
+  /api/folders/{id}/restore:
+    post:
+      tags: [Folders]
+      summary: Restore deleted folder
+      operationId: restoreFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Restored
+
+  /api/folders/{id}/empty:
+    post:
+      tags: [Folders]
+      summary: Empty folder (delete contents)
+      operationId: emptyFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Emptied
+
+  /api/folders/{id}/move:
+    post:
+      tags: [Folders]
+      summary: Move folder
+      operationId: moveFolder
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                parentId:
+                  type: string
+                  nullable: true
+      responses:
+        "200":
+          description: Moved
+
+  /api/folders/{id}/tags:
+    get:
+      tags: [Folders]
+      summary: Get folder tags
+      operationId: getFolderTags
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Tags
+
+  /api/tags:
+    get:
+      tags: [Tags]
+      summary: List all tags
+      operationId: listTags
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Tags list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tags:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Tag"
+    post:
+      tags: [Tags]
+      summary: Create tag
+      operationId: createTag
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                color:
+                  type: string
+                  pattern: "^#[0-9A-Fa-f]{6}$"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tag:
+                    $ref: "#/components/schemas/Tag"
+
+  /api/tags/{id}:
+    patch:
+      tags: [Tags]
+      summary: Update tag
+      operationId: updateTag
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                color:
+                  type: string
+      responses:
+        "200":
+          description: Updated
+    delete:
+      tags: [Tags]
+      summary: Delete tag
+      operationId: deleteTag
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Deleted
+
+  /api/tags/merge:
+    post:
+      tags: [Tags]
+      summary: Merge tags
+      operationId: mergeTags
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [sourceTagIds, targetTagId]
+              properties:
+                sourceTagIds:
+                  type: array
+                  items:
+                    type: string
+                targetTagId:
+                  type: string
+      responses:
+        "200":
+          description: Merged
+
+  /api/search:
+    get:
+      tags: [Search]
+      summary: Full-text search
+      operationId: search
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+            maxLength: 200
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [title, folder, all]
+            default: all
+        - name: folderId
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [UPLOADED, PROCESSING, COMPLETED, FAILED]
+        - name: tagId
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+      responses:
+        "200":
+          description: Search results
+
+  /api/search/suggest:
+    get:
+      tags: [Search]
+      summary: Search suggestions (autocomplete)
+      operationId: searchSuggest
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Suggestions
+
+  /api/profile:
+    get:
+      tags: [Profile]
+      summary: Get user profile
+      operationId: getProfile
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Profile
+    patch:
+      tags: [Profile]
+      summary: Update user profile
+      operationId: updateProfile
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+      responses:
+        "200":
+          description: Updated
+
+  /api/users:
+    get:
+      tags: [Users]
+      summary: List users (admin)
+      operationId: listUsers
+      security:
+        - sessionAuth: []
+      responses:
+        "200":
+          description: Users list
+    post:
+      tags: [Users]
+      summary: Create user (admin)
+      operationId: createUser
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, role]
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+                role:
+                  type: string
+                  enum: [ADMIN, USER]
+      responses:
+        "201":
+          description: Created
+
+  /api/share/{token}:
+    get:
+      tags: [Share]
+      summary: Access shared document via token
+      operationId: getSharedDocument
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Shared document
+        "404":
+          description: Invalid or expired token
+
+  /api/share/{token}/export/{format}:
+    get:
+      tags: [Share]
+      summary: Export shared document
+      operationId: exportSharedDocument
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: path
+          required: true
+          schema:
+            type: string
+            enum: [md, txt, json, pdf, docx, epub]
+      responses:
+        "200":
+          description: Exported file
+
+  /api/documents/{id}/share:
+    post:
+      tags: [Share]
+      summary: Create share link
+      operationId: createShareLink
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                expiresInDays:
+                  type: integer
+                  minimum: 1
+                  maximum: 365
+      responses:
+        "201":
+          description: Share link created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                  url:
+                    type: string
+                    format: uri
+
+  /api/documents/{id}/share/regenerate:
+    post:
+      tags: [Share]
+      summary: Regenerate share token
+      operationId: regenerateShareToken
+      security:
+        - sessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: New token
+
+  /api/metrics:
+    get:
+      tags: [Metrics]
+      summary: Prometheus metrics
+      operationId: getMetrics
+      responses:
+        "200":
+          description: Metrics in Prometheus format
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    sessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie
+
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        fileName:
+          type: string
+        status:
+          type: string
+          enum: [UPLOADED, PROCESSING, SPLITTING, OCR, OCR_COMPLETE, COMPLETED, FAILED]
+        pageCount:
+          type: integer
+          nullable: true
+        fileSize:
+          type: integer
+        outputFormats:
+          type: array
+          items:
+            type: string
+        folderId:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: object
+            properties:
+              tag:
+                $ref: "#/components/schemas/Tag"
+
+    Folder:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        parentId:
+          type: string
+          nullable: true
+        path:
+          type: string
+        _count:
+          type: object
+          properties:
+            documents:
+              type: integer
+            children:
+              type: integer
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        color:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+        timestamp:
+          type: string
+          format: date-time
+        uptime:
+          type: number
+        checks:
+          type: object
+          properties:
+            database:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok, error]
+                latencyMs:
+                  type: integer
+            memory:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [ok, warning, error]
+                usedMB:
+                  type: integer
+                limit:
+                  type: integer
+
+    ExportRequest:
+      type: object
+      required: [format]
+      properties:
+        format:
+          type: string
+          enum: [md, txt, json, zip, pdf, docx, epub]
+        profile:
+          type: string
+          enum: [default, academic, archive]
+          default: default
+        includeSource:
+          type: boolean
+          default: false
+
+    SingleExportRequest:
+      type: object
+      required: [documentId, format]
+      properties:
+        documentId:
+          type: string
+        format:
+          type: string
+          enum: [md, txt, json, zip, pdf, docx, epub]
+        profile:
+          type: string
+          enum: [default, academic, archive]
+        includeSource:
+          type: boolean
+        pageRange:
+          type: string
+          description: "Page range, e.g. '1-5' or '1,3,5'"
+
+    BatchExportRequest:
+      type: object
+      required: [documentIds, format]
+      properties:
+        documentIds:
+          type: array
+          items:
+            type: string
+          minItems: 1
+          maxItems: 100
+        format:
+          type: string
+          enum: [md, txt, json, zip, pdf, docx, epub]
+        profile:
+          type: string
+          enum: [default, academic, archive]
+        includeSource:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+
+  responses:
+    Unauthorized:
+      description: Not authenticated
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"

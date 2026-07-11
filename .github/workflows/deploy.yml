@@ -1,0 +1,87 @@
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        default: "production"
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ${{ github.repository }}
+
+jobs:
+  deploy:
+    name: Deploy to ${{ github.event.inputs.environment }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    environment: ${{ github.event.inputs.environment }}
+    permissions:
+      contents: read
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install SSH key
+        uses: shimataro/setup-ssh-action@v2
+        with:
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          config: |
+            Host deploy
+              HostName ${{ secrets.DEPLOY_HOST }}
+              User ${{ secrets.DEPLOY_USER }}
+              Port ${{ secrets.DEPLOY_PORT || '22' }}
+              IdentityFile ~/.ssh/id_rsa
+
+      - name: Deploy over SSH
+        env:
+          APP_DIR: ${{ secrets.DEPLOY_APP_DIR || '/app' }}
+          SERVICE: ${{ secrets.DEPLOY_COMPOSE_SERVICE || 'web' }}
+          HEALTH_URL: ${{ secrets.DEPLOY_HEALTH_URL }}
+          REGISTRY_TOKEN: ${{ secrets.DEPLOY_REGISTRY_TOKEN }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+        run: |
+          set -euo pipefail
+
+          ssh deploy bash -s <<'SSH_EOF'
+            set -euo pipefail
+
+            cd "${APP_DIR}"
+
+            # Authenticate to container registry
+            if [ -n "${REGISTRY_TOKEN}" ]; then
+              echo "${REGISTRY_TOKEN}" | docker login ghcr.io -u "${DEPLOY_USER}" --password-stdin
+            fi
+
+            # Pull the latest images
+            docker compose pull
+
+            # Apply database migrations
+            docker compose run --rm "${SERVICE}" npx prisma migrate deploy
+
+            # Restart stack with new images
+            docker compose up -d
+
+            # Wait for health endpoint
+            if [ -n "${HEALTH_URL}" ]; then
+              for i in $(seq 1 30); do
+                if curl -fsS "${HEALTH_URL}" > /dev/null 2>&1; then
+                  echo "Health check passed"
+                  exit 0
+                fi
+                sleep 3
+              done
+              echo "::error::Health check failed after deployment"
+              docker compose ps
+              exit 1
+            else
+              echo "DEPLOY_HEALTH_URL not set; skipping healthcheck"
+            fi
+SSH_EOF

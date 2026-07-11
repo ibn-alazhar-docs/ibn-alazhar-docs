@@ -1,0 +1,147 @@
+@import "tailwindcss";
+@import "./brand.css";
+@import "./reading.css";
+@import "./discovery.css";
+@import "./landing.css";
+@import "./view-transitions.css";
+
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-family-body);
+    font-size: 16px;
+    line-height: 1.6;
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    text-align: start;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    color: var(--text-primary);
+    background-color: var(--page-bg);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease;
+  }
+
+  *:focus-visible {
+    outline: 2px solid var(--ring-focus);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  /* Reset margins/padding to zero — browser defaults differ across engines.
+     Use longhands so Tailwind utilities (in @layer utilities) can override
+     without specificity wars. */
+  body,
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6,
+  p,
+  blockquote,
+  figure,
+  pre,
+  ul,
+  ol,
+  dl {
+    margin-block: 0;
+    margin-inline: 0;
+  }
+
+  /* Kill default padding on list elements used inside sidebar / nav */
+  ul,
+  ol {
+    padding-inline: 0;
+    list-style: none;
+  }
+
+  ::selection {
+    background-color: hsla(41, 96%, 40%, 0.25);
+    color: var(--text-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-line);
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--text-tertiary);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-family-display);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+}
+
+@layer utilities {
+  .min-h-screen {
+    min-height: 100dvh;
+  }
+
+  .glass {
+    background: linear-gradient(
+      135deg,
+      var(--glass-bg),
+      color-mix(in srgb, var(--glass-bg) 60%, transparent)
+    );
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-header {
+    background: linear-gradient(
+      180deg,
+      var(--surface),
+      color-mix(in srgb, var(--surface) 95%, transparent)
+    );
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--glass-border);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

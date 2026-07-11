@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+echo "🔍 Running pre-commit checks..."
+
+# 1. Secrets scan
+node scripts/secrets-scan.mjs
+
+# 2. Lint staged files (if ESLint available)
+if command -v npx &> /dev/null; then
+  npx --no-install eslint --max-warnings 0 . 2>/dev/null || true
+fi

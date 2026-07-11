@@ -1,0 +1,232 @@
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  --color-primary-50: #f0faf6;
+  --color-primary-100: #d1f2e5;
+  --color-primary-200: #a7e6cc;
+  --color-primary-300: #74d4ad;
+  --color-primary-400: #43bd8e;
+  --color-primary-500: #16a34a;
+  --color-primary-600: #16a34a;
+  --color-primary-700: #086941;
+  --color-primary-800: #065232;
+  --color-primary-900: #043e25;
+
+  --color-gold-50: #faf6eb;
+  --color-gold-100: #f5edd0;
+  --color-gold-200: #eadb9d;
+  --color-gold-300: #dfc46b;
+  --color-gold-400: #ca8a04;
+  --color-gold-500: #ca8a04;
+  --color-gold-600: #ca8a04;
+  --color-gold-700: #7e601e;
+  --color-gold-800: #5d4514;
+  --color-gold-900: #412f0c;
+
+  --color-neutral-50: #faf8f3;
+  --color-neutral-100: #f5f0e8;
+  --color-neutral-200: #e8e2d8;
+  --color-neutral-300: #d6cec2;
+  --color-neutral-400: #a89e90;
+  --color-neutral-500: #78716c;
+  --color-neutral-600: #57534e;
+  --color-neutral-700: #44403c;
+  --color-neutral-800: #292524;
+  --color-neutral-900: #1c1917;
+
+  --color-error-50: #fef2f2;
+  --color-error-100: #fee2e2;
+  --color-error-500: #ef4444;
+  --color-error-600: #dc2626;
+  --color-warning-50: #fffbeb;
+  --color-warning-500: #f59e0b;
+  --color-success-50: #f0fdf4;
+  --color-success-500: #22c55e;
+  --color-info-50: #eff6ff;
+  --color-info-500: #3b82f6;
+
+  --color-manuscript-brown: #92400e;
+
+  --font-family-cairo: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --font-family-amiri: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-family-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-family-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --font-family-mono:
+    var(--font-mono), "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+
+  --color-ring: var(--color-primary-500);
+  --ring-offset-width: 2px;
+  --ring-offset-color: var(--surface);
+
+  --color-page: var(--page-bg);
+  --color-surface: var(--surface);
+  --color-card: var(--card-bg);
+  --color-badge: var(--badge-bg);
+  --color-line: var(--border-line);
+  --color-subtle: var(--border-subtle);
+  --color-primary-color: var(--text-primary);
+  --color-secondary-color: var(--text-secondary);
+  --color-muted-color: var(--text-tertiary);
+  --color-inverse: var(--text-inverse);
+  --color-btn-primary: var(--btn-primary-bg);
+  --color-btn-primary-text: var(--btn-primary-text);
+  --color-hover: var(--hover-bg);
+  --color-active: var(--active-bg);
+  --color-overlay: var(--overlay);
+  --color-input: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-input-focus: var(--input-focus);
+  --color-success: var(--success);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-danger: var(--danger);
+  --color-danger-bg: var(--danger-bg);
+  --color-danger-border: var(--danger-border);
+  --color-info: var(--info);
+  --color-info-bg: var(--info-bg);
+  --color-gold: var(--gold);
+  --color-gold-bg: var(--gold-bg);
+  --color-gold-border: var(--gold-border);
+
+  --color-primary: var(--btn-primary-bg);
+  --color-primary-foreground: var(--btn-primary-text);
+  --color-destructive: var(--danger);
+  --color-destructive-foreground: var(--btn-primary-text);
+  --color-secondary: var(--hover-bg);
+  --color-secondary-foreground: var(--text-primary);
+  --color-background: var(--surface);
+  --color-muted: var(--hover-bg);
+}
+
+:root {
+  --page-bg: #fffdf7;
+  --surface: #fdfcfa;
+  --card-bg: #fdfcfa;
+  --border-line: #e8e2d8;
+  --border-subtle: #f0ebe3;
+  --text-primary: #1f2937;
+  --text-secondary: #57534e;
+  --text-tertiary: #78716c;
+  --text-inverse: #fffdf7;
+  --btn-primary-bg: #086941;
+  --btn-primary-text: #ffffff;
+  --btn-ghost-border: rgba(31, 41, 55, 0.12);
+  --hover-bg: rgba(31, 41, 55, 0.04);
+  --active-bg: rgba(31, 41, 55, 0.06);
+  --badge-bg: rgba(22, 163, 74, 0.1);
+  --overlay: rgba(31, 41, 55, 0.5);
+  --input-bg: #fdfcfa;
+  --input-border: #e8e2d8;
+  --input-focus: #16a34a;
+  --success: #16a34a;
+  --success-bg: #f0faf6;
+  --success-border: #a7e6cc;
+  --danger: #dc2626;
+  --danger-bg: #fef2f2;
+  --danger-border: #fecaca;
+  --info: #3b82f6;
+  --info-bg: #eff6ff;
+  --gold: #ca8a04;
+  --gold-bg: #faf6eb;
+  --gold-border: #eadb9d;
+  --icon-color: #1f2937;
+  --icon-muted: #78716c;
+  --ring-focus: #16a34a;
+  --shadow-color: 0 0 0;
+  --font-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
+  --font-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
+  --glass-bg: hsla(40, 30%, 98%, 0.7);
+  --glass-border: rgba(202, 138, 4, 0.08);
+  --glass-shadow: 0 16px 32px -8px rgba(31, 41, 55, 0.08);
+}
+
+.dark {
+  --page-bg: #1a1614;
+  --surface: #241f1c;
+  --card-bg: #2e2824;
+  --border-line: #3d3632;
+  --border-subtle: #2e2824;
+  --text-primary: #f5f0e8;
+  --text-secondary: #a8a29e;
+  --text-tertiary: #948e89;
+  --text-inverse: #1a1614;
+  --btn-primary-bg: #086941;
+  --btn-primary-text: #ffffff;
+  --btn-ghost-border: rgba(245, 240, 232, 0.1);
+  --hover-bg: rgba(245, 240, 232, 0.05);
+  --active-bg: rgba(245, 240, 232, 0.08);
+  --badge-bg: rgba(22, 163, 74, 0.15);
+  --overlay: rgba(26, 22, 20, 0.8);
+  --input-bg: #241f1c;
+  --input-border: #3d3632;
+  --input-focus: #16a34a;
+  --success: #16a34a;
+  --success-bg: rgba(22, 163, 74, 0.1);
+  --success-border: rgba(22, 163, 74, 0.2);
+  --danger: #ef4444;
+  --danger-bg: rgba(239, 68, 68, 0.1);
+  --danger-border: rgba(239, 68, 68, 0.2);
+  --info: #60a5fa;
+  --info-bg: rgba(96, 165, 250, 0.1);
+  --gold: #ca8a04;
+  --gold-bg: rgba(202, 138, 4, 0.1);
+  --gold-border: rgba(202, 138, 4, 0.2);
+  --icon-color: #f5f0e8;
+  --icon-muted: #a8a29e;
+  --ring-focus: #16a34a;
+  --shadow-color: 0 0 0;
+  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
+  --glass-bg: rgba(36, 31, 28, 0.65);
+  --glass-border: rgba(245, 240, 232, 0.08);
+  --glass-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.8);
+
+  /* Dark overrides for @theme neutral tokens (used by reading.css and others) */
+  --color-neutral-50: #1a1614;
+  --color-neutral-100: #241f1c;
+  --color-neutral-200: #2e2824;
+  --color-neutral-300: #3d3632;
+  --color-neutral-400: #57534e;
+  --color-neutral-500: #78716c;
+  --color-neutral-600: #a8a29e;
+  --color-neutral-700: #d6cec2;
+  --color-neutral-800: #f5f0e8;
+  --color-neutral-900: #faf8f3;
+  --color-gold-50: rgba(202, 138, 4, 0.08);
+  --color-gold-100: rgba(202, 138, 4, 0.12);
+  --color-gold-200: rgba(202, 138, 4, 0.18);
+  --color-gold-400: #ca8a04;
+}
+
+@layer base {
+  code,
+  pre,
+  kbd,
+  samp {
+    font-family: var(--font-family-mono);
+  }
+
+  /* Inline code gets the Manuscript Brown accent (see DESIGN.md) */
+  :not(pre) > code {
+    color: var(--color-manuscript-brown);
+  }
+}
+
+@media print {
+  body {
+    color: #000;
+    background: #fff;
+  }
+}

@@ -1,0 +1,223 @@
+@layer base {
+  /* Background utilities */
+  .bg-page {
+    background-color: var(--page-bg);
+  }
+  .bg-surface {
+    background-color: var(--surface);
+  }
+  .bg-card {
+    background-color: var(--card-bg);
+  }
+  .bg-input {
+    background-color: var(--input-bg);
+  }
+  .bg-badge {
+    background-color: var(--badge-bg);
+  }
+  .bg-hover {
+    background-color: var(--hover-bg);
+  }
+  .bg-active {
+    background-color: var(--active-bg);
+  }
+  .bg-overlay {
+    background-color: var(--overlay);
+  }
+  .bg-btn-primary {
+    background-color: var(--btn-primary-bg);
+  }
+
+  /* Border utilities */
+  .border-line {
+    border-color: var(--border-line);
+  }
+  .border-subtle {
+    border-color: var(--border-subtle);
+  }
+  .border-input-border {
+    border-color: var(--input-border);
+  }
+  .border-gold {
+    border-color: var(--gold);
+  }
+  .border-gold-dim {
+    border-color: var(--gold-border);
+  }
+  .border-primary-dim {
+    border-color: color-mix(in srgb, var(--btn-primary-bg) 12%, transparent);
+  }
+
+  /* Text utilities */
+  .text-primary-color {
+    color: var(--text-primary);
+  }
+  .text-muted-color {
+    color: var(--text-secondary);
+  }
+  .text-very-muted {
+    color: var(--text-tertiary);
+  }
+  .text-btn-primary-text {
+    color: var(--btn-primary-text);
+  }
+  .text-gold {
+    color: var(--gold);
+  }
+  .text-success {
+    color: var(--success);
+  }
+  .text-danger {
+    color: var(--danger);
+  }
+  .text-info {
+    color: var(--info);
+  }
+  .fill-icon {
+    color: var(--icon-color);
+  }
+  .placeholder-very-muted::placeholder {
+    color: var(--text-tertiary);
+  }
+
+  /* Background mixes */
+  .bg-gold-dim {
+    background-color: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+  .bg-primary-dim {
+    background-color: color-mix(in srgb, var(--btn-primary-bg) 5%, transparent);
+  }
+  .bg-success {
+    background-color: var(--success-bg);
+  }
+  .bg-danger {
+    background-color: var(--danger-bg);
+  }
+  .bg-info {
+    background-color: var(--info-bg);
+  }
+
+  /* Landing page */
+  .landing-page {
+    background-color: var(--page-bg);
+    color: var(--text-primary);
+  }
+
+  .landing-btn-primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+    transition:
+      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .landing-btn-primary:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px var(--btn-shadow-lg);
+  }
+  .landing-btn-primary:active {
+    transform: translateY(0);
+  }
+
+  /* Manuscript-inspired card */
+  .card-manuscript {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border-line);
+    border-radius: 0.75rem;
+    position: relative;
+    overflow: hidden;
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .card-manuscript::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(180deg, var(--gold), var(--btn-primary-bg));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .card-manuscript:hover::before {
+    opacity: 1;
+  }
+  .card-manuscript:hover {
+    border-color: var(--gold-border);
+    box-shadow: 0 8px 24px rgba(202, 138, 4, 0.08);
+  }
+
+  /* Signature — Islamic geometric pattern */
+  .geometric-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    width: 100%;
+    padding: 1rem 0;
+  }
+  .geometric-divider::before,
+  .geometric-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+  .geometric-star {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    color: var(--gold);
+  }
+
+  /* Display heading treatment */
+  .heading-display {
+    font-family: var(--font-family-display);
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+  }
+
+  .heading-display-sm {
+    font-family: var(--font-family-display);
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  /* Premium stat card */
+  .stat-card-premium {
+    position: relative;
+    overflow: hidden;
+    background: var(--card-bg);
+    border: 1px solid var(--border-line);
+    border-radius: 1rem;
+    transition:
+      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .stat-card-premium:hover {
+    border-color: var(--btn-primary-bg);
+    box-shadow: 0 8px 24px var(--btn-shadow);
+    transform: translateY(-2px);
+  }
+  .stat-card-premium::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    inset-inline-start: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--btn-primary-bg), var(--gold));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  .stat-card-premium:hover::before {
+    opacity: 1;
+  }
+}
