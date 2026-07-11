@@ -221,9 +221,9 @@ export async function middleware(request: NextRequest) {
   const isDev = process.env.NODE_ENV === "development";
   const cspHeader = [
     "default-src 'self'",
-    `script-src 'self' ${isDev ? "'unsafe-inline' 'unsafe-eval'" : ""}`,
+    `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""}`,
     `style-src 'self' 'unsafe-inline'`,
-    "img-src 'self' blob: data:",
+    "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com https://*.ibnalazhardocs.workers.dev",
     "font-src 'self' data:",
     "connect-src 'self' https:",
     "worker-src 'self' blob:",
