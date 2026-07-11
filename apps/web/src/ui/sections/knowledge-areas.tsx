@@ -85,9 +85,7 @@ export function KnowledgeAreas() {
                 {item.title}
               </h3>
 
-              <p className="text-sm leading-relaxed text-muted-color">
-                {item.description}
-              </p>
+              <p className="text-sm leading-relaxed text-muted-color">{item.description}</p>
             </motion.article>
           ))}
         </motion.div>
