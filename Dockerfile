@@ -28,7 +28,7 @@ COPY packages/database/package.json packages/database/package.json
 COPY packages/shared/package.json packages/shared/package.json
 COPY workers/ocr-worker/package.json workers/ocr-worker/package.json
 COPY workers/export-worker/package.json workers/export-worker/package.json
-RUN npm install -g pnpm && pnpm install --frozen-lockfile && pnpm rebuild
+RUN npm install -g pnpm && pnpm install --frozen-lockfile --child-concurrency 1 && pnpm rebuild
 
 # Generate Prisma Client
 COPY packages/database ./packages/database
@@ -148,6 +148,10 @@ CMD ["node", "--import", "tsx", "workers/export-worker/src/index.ts"]
 # -----------------------------------------------------------------------------
 FROM node:22-slim AS hf-space
 WORKDIR /app
+
+# Force serialization: prevent parallel execution of heavy apt-get and Next.js build
+COPY --from=builder /app/pnpm-workspace.yaml /tmp/dummy
+
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
