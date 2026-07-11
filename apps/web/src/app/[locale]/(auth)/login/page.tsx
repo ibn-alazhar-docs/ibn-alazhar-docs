@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/ui/metadata";
 import { LoginForm } from "@/ui/auth/login-form";
 
+export const dynamic = "force-dynamic";
+
 interface LoginPageProps {
   params: Promise<{ locale: string }>;
 }
