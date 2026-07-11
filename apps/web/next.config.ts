@@ -20,6 +20,8 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     viewTransition: true,
+    cpus: 2,
+    memoryBasedWorkersCount: true,
   },
   serverExternalPackages: ["@ibn-al-azhar-docs/pipeline", "pdfmake"],
   typescript: {
