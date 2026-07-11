@@ -63,6 +63,7 @@ fi
 
 if [ ! -f "$PGDATA/PG_VERSION" ]; then
   echo "[entrypoint] initializing PostgreSQL data directory..."
+  rm -rf "$PGDATA"/* "$PGDATA"/.* 2>/dev/null || true
   $RUN_PG "$PG_BIN/initdb -D $PGDATA --auth=trust" >/dev/null 2>&1
 fi
 echo "[entrypoint] starting PostgreSQL..."
