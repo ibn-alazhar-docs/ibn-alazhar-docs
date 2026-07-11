@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { registerSchema } from "@/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -13,18 +14,9 @@ export async function POST(request: Request) {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const validation = registerSchema.safeParse(body);
+    const validation = await parseValidatedBody(request, registerSchema);
 
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
-
-    const { name, email, password } = validation.data;
+    const { name, email, password } = validation;
 
     const user = await (async () => {
       try {

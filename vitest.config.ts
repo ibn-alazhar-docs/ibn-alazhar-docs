@@ -1,24 +1,59 @@
 import { defineConfig } from "vitest/config";
 import path from "path";
 
+const rootAlias = [
+  { find: "@", replacement: path.resolve(__dirname, "apps/web/src") },
+  {
+    find: "@ibn-al-azhar-docs/pipeline",
+    replacement: path.resolve(__dirname, "packages/pipeline/src"),
+  },
+  {
+    find: "@ibn-al-azhar-docs/database",
+    replacement: path.resolve(__dirname, "packages/database/src"),
+  },
+  { find: "zod", replacement: path.resolve(__dirname, "node_modules/zod") },
+  { find: "minio", replacement: path.resolve(__dirname, "tests/mocks/minio.ts") },
+  { find: "ioredis", replacement: path.resolve(__dirname, "tests/mocks/ioredis.ts") },
+  { find: "next/server", replacement: path.resolve(__dirname, "tests/mocks/next-server.ts") },
+  { find: /^next-intl$/, replacement: path.resolve(__dirname, "tests/mocks/next-intl.tsx") },
+  { find: "next-intl/react", replacement: path.resolve(__dirname, "tests/mocks/next-intl.tsx") },
+  { find: "next-intl/client", replacement: path.resolve(__dirname, "tests/mocks/next-intl.tsx") },
+  { find: "next-intl/server", replacement: path.resolve(__dirname, "tests/mocks/next-intl.tsx") },
+];
+
+const frontendAlias = [
+  ...rootAlias,
+  {
+    find: "next/navigation",
+    replacement: path.resolve(__dirname, "tests/mocks/next-navigation.tsx"),
+  },
+  {
+    find: "next-auth/react",
+    replacement: path.resolve(__dirname, "tests/mocks/next-auth-react.tsx"),
+  },
+];
+
 export default defineConfig({
   resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "apps/web/src"),
-      "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-      "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-      zod: path.resolve(__dirname, "node_modules/zod"),
-      minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-      ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-      "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-      "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-      "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-      "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-      "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-    },
+    alias: rootAlias,
+  },
+  // Load @prisma/client as a full native (node) module rather than letting
+  // Vite's SSR transform pipeline process it. The generated client resolves
+  // and instantiates completely via node's require path, which guarantees the
+  // full delegate surface (findFirst, aggregate, upsert, ...) the repository
+  // code relies on when it is imported from a workspace package.
+  ssr: {
+    external: ["@prisma/client"],
   },
   test: {
     globals: true,
+    deps: {
+      optimizer: {
+        ssr: {
+          exclude: ["@prisma/client"],
+        },
+      },
+    },
     server: {
       deps: {
         inline: [
@@ -64,19 +99,7 @@ export default defineConfig({
           },
         },
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname, "apps/web/src"),
-            "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-            "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-            zod: path.resolve(__dirname, "node_modules/zod"),
-            minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-            ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-            "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-            "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-          },
+          alias: rootAlias,
         },
       },
       // Integration tests
@@ -91,19 +114,7 @@ export default defineConfig({
           testTimeout: 60000,
         },
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname, "apps/web/src"),
-            "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-            "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-            zod: path.resolve(__dirname, "node_modules/zod"),
-            minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-            ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-            "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-            "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-          },
+          alias: rootAlias,
         },
       },
       // API tests
@@ -116,19 +127,7 @@ export default defineConfig({
           testTimeout: 30000,
         },
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname, "apps/web/src"),
-            "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-            "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-            zod: path.resolve(__dirname, "node_modules/zod"),
-            minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-            ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-            "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-            "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-          },
+          alias: rootAlias,
         },
       },
       // Security tests
@@ -141,19 +140,7 @@ export default defineConfig({
           testTimeout: 30000,
         },
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname, "apps/web/src"),
-            "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-            "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-            zod: path.resolve(__dirname, "node_modules/zod"),
-            minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-            ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-            "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-            "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-          },
+          alias: rootAlias,
         },
       },
       // Frontend tests (jsdom)
@@ -169,25 +156,12 @@ export default defineConfig({
             inline: ["sonner", "motion/react"],
           },
           isolateModules: true,
-          globalSetup: ["./tests/global-setup.tsx"],
         },
         esbuild: {
           jsx: "automatic",
         },
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname, "apps/web/src"),
-            "@ibn-al-azhar-docs/pipeline": path.resolve(__dirname, "packages/pipeline/src"),
-            "@ibn-al-azhar-docs/database": path.resolve(__dirname, "packages/database/src"),
-            zod: path.resolve(__dirname, "node_modules/zod"),
-            minio: path.resolve(__dirname, "tests/mocks/minio.ts"),
-            ioredis: path.resolve(__dirname, "tests/mocks/ioredis.ts"),
-            "next/server": path.resolve(__dirname, "tests/mocks/next-server.ts"),
-            "next-intl": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/react": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/client": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-            "next-intl/server": path.resolve(__dirname, "tests/mocks/next-intl.tsx"),
-          },
+          alias: frontendAlias,
         },
       },
     ],

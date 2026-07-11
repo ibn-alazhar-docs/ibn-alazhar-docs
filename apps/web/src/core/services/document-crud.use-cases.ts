@@ -1,6 +1,6 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
-import type { Prisma } from "@prisma/client";
+import type { Prisma } from "@/domain/repositories/prisma-types";
 import { AppError, NotFoundError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
 import { isAdminRole } from "@/domain/auth";

@@ -9,7 +9,7 @@ const NextIntlContext = React.createContext({
 });
 
 export function useTranslations(namespace?: string) {
-  return (key: string) => (namespace ? `${namespace}.${key}` : key);
+  return (key: string) => key;
 }
 
 export function useLocale() {

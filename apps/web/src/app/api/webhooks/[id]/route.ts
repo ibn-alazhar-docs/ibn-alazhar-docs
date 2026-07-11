@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -23,16 +24,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
 
 export const PATCH = withAuth(async (request, { session, params }) => {
   const id = params.id!;
-  const body = await request.json();
-  const parsed = updateWebhookSchema.safeParse(body);
-
-  if (!parsed.success) {
-    const firstError = parsed.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseValidatedBody(request, updateWebhookSchema);
 
   const rateLimit = await checkUserRateLimit("webhooks:update", session.user.id);
   if (!rateLimit.allowed) {
@@ -40,7 +32,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
   }
 
   try {
-    const webhook = await useCases.webhook.updateWebhook(id, session.user.id, parsed.data);
+    const webhook = await useCases.webhook.updateWebhook(id, session.user.id, parsed);
     return NextResponse.json({ webhook });
   } catch (error: unknown) {
     return handleRouteError(error, "webhooks/PATCH", "حدث خطأ");

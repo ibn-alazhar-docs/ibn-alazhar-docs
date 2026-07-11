@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
+import { isBearerAuthorized } from "@/shared/security";
 
 export const runtime = "nodejs";
 
@@ -9,10 +10,9 @@ function formatLine(name: string, value: number, help: string, type: string = "g
 
 export const GET = async (request: Request) => {
   try {
-    const authHeader = request.headers.get("authorization");
     const expectedToken = process.env.PROMETHEUS_BEARER_TOKEN;
 
-    if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
+    if (!isBearerAuthorized(request.headers.get("authorization"), expectedToken)) {
       return new NextResponse("Unauthorized", { status: 401 });
     }
 

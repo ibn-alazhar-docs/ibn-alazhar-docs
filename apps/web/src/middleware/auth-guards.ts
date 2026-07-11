@@ -3,6 +3,7 @@ import { auth } from "./auth";
 import { redirect } from "next/navigation";
 import { NextResponse, NextRequest } from "next/server";
 import { ForbiddenError } from "@/shared/errors";
+import { handleRouteError } from "@/shared/route-helpers";
 import { isAdminRole } from "@/domain/auth";
 import type { AuthSession } from "@/domain/types";
 
@@ -55,7 +56,11 @@ export function withAuth(handler: AuthenticatedHandler) {
     if (!session) return unauthorizedResponse();
 
     const params = context?.params ? await context.params : {};
-    return handler(request, { session, params });
+    try {
+      return await handler(request, { session, params });
+    } catch (error) {
+      return handleRouteError(error, "api", "تعذر تنفيذ العملية");
+    }
   };
 }
 
@@ -69,6 +74,10 @@ export function withAdminAuth(handler: AuthenticatedHandler) {
     if (!isAdminRole(session.user.role)) return forbiddenResponse();
 
     const params = context?.params ? await context.params : {};
-    return handler(request, { session, params });
+    try {
+      return await handler(request, { session, params });
+    } catch (error) {
+      return handleRouteError(error, "api", "تعذر تنفيذ العملية");
+    }
   };
 }

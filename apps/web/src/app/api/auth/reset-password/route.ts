@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { resetPasswordSchema } from "@/shared/validators/auth";
 import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -12,18 +13,9 @@ export async function POST(request: Request) {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const validation = resetPasswordSchema.safeParse(body);
+    const validation = await parseValidatedBody(request, resetPasswordSchema);
 
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
-
-    const { email, token, password } = validation.data;
+    const { email, token, password } = validation;
     const normalizedEmail = email.toLowerCase().trim();
 
     // Throws ValidationError (-> 400) for an invalid or expired token.

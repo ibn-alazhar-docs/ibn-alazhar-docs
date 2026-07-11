@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { singleExportSchema } from "@/core/services/export/validators";
@@ -8,27 +9,14 @@ import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 
 export const POST = withAuth(async (request, { session }) => {
-  const body = await request.json();
-  const parsed = singleExportSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "VALIDATION_ERROR",
-          message: "Invalid data",
-        },
-      },
-      { status: 400 },
-    );
-  }
+  const parsed = await parseValidatedBody(request, singleExportSchema);
 
   const rateLimit = await checkUserRateLimit("export:single", session.user.id);
   if (!rateLimit.allowed) {
     return rateLimitResponse(rateLimit.retryAfterMs);
   }
 
-  const { documentId, format, profile, includeSource } = parsed.data;
+  const { documentId, format, profile, includeSource } = parsed;
 
   try {
     const result = await useCases.export.exportSingle(

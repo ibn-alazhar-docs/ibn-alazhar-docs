@@ -1,7 +1,7 @@
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
 import { isAdminRole } from "@/domain/auth";
-import type { PrismaClient } from "@prisma/client";
+import type { IAnalyticsDataSource } from "@/domain/repositories/analytics.repository.interface";
 
 export interface DocumentAnalytics {
   totalDocuments: number;
@@ -37,14 +37,16 @@ export interface AnalyticsSummary {
 }
 
 export class AnalyticsUseCases {
-  constructor(private readonly prisma: PrismaClient) {}
+  constructor(private readonly dataSource: IAnalyticsDataSource) {}
 
   async getAnalytics(session: AuthSession, days: number = 30): Promise<AnalyticsSummary> {
     const admin = isAdminRole(session.user.role);
     const whereClause = admin ? { deletedAt: null } : ownedWhere({ deletedAt: null }, session);
 
+    const auditWhere = admin ? {} : { userId: session.user.id };
+
     const [documents, tags, storage] = await Promise.all([
-      this.getDocumentAnalytics(whereClause, days),
+      this.getDocumentAnalytics(whereClause, auditWhere, days),
       this.getTagAnalytics(whereClause),
       this.getStorageAnalytics(whereClause, admin),
     ]);
@@ -54,6 +56,7 @@ export class AnalyticsUseCases {
 
   private async getDocumentAnalytics(
     whereClause: Record<string, unknown>,
+    auditWhere: Record<string, unknown>,
     days: number,
   ): Promise<DocumentAnalytics> {
     const startDate = new Date();
@@ -67,17 +70,17 @@ export class AnalyticsUseCases {
       uploadsOverTime,
       recentActivity,
     ] = await Promise.all([
-      this.prisma.document.count({ where: whereClause as never }),
-      this.prisma.document.aggregate({
+      this.dataSource.document.count({ where: whereClause as never }),
+      this.dataSource.document.aggregate({
         where: whereClause as never,
         _sum: { fileSize: true },
       }),
-      this.prisma.document.groupBy({
+      this.dataSource.document.groupBy({
         by: ["status"],
         where: whereClause as never,
         _count: { status: true },
       }),
-      this.prisma.document.groupBy({
+      this.dataSource.document.groupBy({
         by: ["mimeType"],
         where: {
           ...whereClause,
@@ -87,7 +90,7 @@ export class AnalyticsUseCases {
         _sum: { fileSize: true },
       }),
       this.getUploadsOverTime(whereClause as never, days),
-      this.getRecentActivity(whereClause as never, days),
+      this.getRecentActivity(auditWhere, days),
     ]);
 
     return {
@@ -114,7 +117,7 @@ export class AnalyticsUseCases {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const uploads = await this.prisma.document.groupBy({
+    const uploads = await this.dataSource.document.groupBy({
       by: ["createdAt"],
       where: {
         ...whereClause,
@@ -144,15 +147,16 @@ export class AnalyticsUseCases {
   }
 
   private async getRecentActivity(
-    whereClause: Record<string, unknown>,
+    auditWhere: Record<string, unknown>,
     days: number,
   ): Promise<Array<{ action: string; count: number; date: string }>> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const activity = await this.prisma.auditLog.groupBy({
+    const activity = await this.dataSource.auditLog.groupBy({
       by: ["action", "createdAt"],
       where: {
+        ...auditWhere,
         createdAt: { gte: startDate },
       },
       _count: { action: true },
@@ -179,14 +183,14 @@ export class AnalyticsUseCases {
 
   private async getTagAnalytics(whereClause: Record<string, unknown>): Promise<TagAnalytics> {
     const [totalTags, topTags, unusedTags] = await Promise.all([
-      this.prisma.tag.count({ where: whereClause as never }),
-      this.prisma.tag.findMany({
+      this.dataSource.tag.count({ where: whereClause as never }),
+      this.dataSource.tag.findMany({
         where: whereClause as never,
         include: { _count: { select: { documents: true } } },
         orderBy: { documents: { _count: "desc" } },
         take: 10,
       }),
-      this.prisma.tag.count({
+      this.dataSource.tag.count({
         where: {
           ...whereClause,
           documents: { none: {} },
@@ -210,22 +214,22 @@ export class AnalyticsUseCases {
     admin: boolean,
   ): Promise<StorageAnalytics> {
     const [totalSizeResult, averageSize, largestDocs, storageByUser] = await Promise.all([
-      this.prisma.document.aggregate({
+      this.dataSource.document.aggregate({
         where: whereClause as never,
         _sum: { fileSize: true },
       }),
-      this.prisma.document.aggregate({
+      this.dataSource.document.aggregate({
         where: whereClause as never,
         _avg: { fileSize: true },
       }),
-      this.prisma.document.findMany({
+      this.dataSource.document.findMany({
         where: whereClause as never,
         select: { title: true, fileSize: true, mimeType: true },
         orderBy: { fileSize: "desc" },
         take: 5,
       }),
       admin
-        ? this.prisma.user.findMany({
+        ? this.dataSource.user.findMany({
             select: {
               id: true,
               name: true,

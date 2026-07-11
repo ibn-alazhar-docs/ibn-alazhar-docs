@@ -33,11 +33,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   secret:
     process.env.AUTH_SECRET ||
-    (process.env.NODE_ENV === "production"
-      ? (() => {
-          throw new Error("AUTH_SECRET environment variable is required in production");
-        })()
-      : "dev-only-secret-do-not-use-in-production"),
+    (process.env.NODE_ENV === "development"
+      ? "dev-only-secret-do-not-use-in-production"
+      : (() => {
+          throw new Error(
+            "AUTH_SECRET environment variable is required for any non-development environment",
+          );
+        })()),
   pages: {
     signIn: "/login",
     error: "/login",

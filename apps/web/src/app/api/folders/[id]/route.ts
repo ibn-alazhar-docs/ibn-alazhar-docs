@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -19,18 +20,9 @@ export const GET = withAuth(async (_request, { session, params }) => {
 export const PATCH = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
-    const body = await request.json();
-    const validation = renameFolderSchema.safeParse(body);
+    const validation = await parseValidatedBody(request, renameFolderSchema);
 
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
-
-    const updated = await useCases.folder.renameFolder(id, session.user.id, validation.data.name);
+    const updated = await useCases.folder.renameFolder(id, session.user.id, validation.name);
     await auditLog({
       userId: session.user.id,
       action: AUDIT_ACTIONS.FOLDER_RENAME,

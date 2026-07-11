@@ -8,7 +8,7 @@ import { useCases } from "@/core/composition-root";
 const searchParamsSchema = z
   .object({
     q: z.string().max(200).optional().default(""),
-    type: z.enum(["title", "folder", "all"]).optional().default("all"),
+    type: z.enum(["title", "folder", "content", "all"]).optional().default("all"),
     folderId: z.string().cuid().optional(),
     status: z.enum(["UPLOADED", "PROCESSING", "COMPLETED", "FAILED"]).optional(),
     tagId: z.string().cuid().optional(),

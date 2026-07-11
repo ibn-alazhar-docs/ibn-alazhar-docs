@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -17,28 +18,20 @@ export const GET = withAuth(async (_request, { session }) => {
 
 export const POST = withAuth(async (request, { session }) => {
   try {
-    const body = await request.json();
-    const validation = createTagSchema.safeParse(body);
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
+    const validation = await parseValidatedBody(request, createTagSchema);
 
     const rateLimit = await checkUserRateLimit("tags:create", session.user.id);
     if (!rateLimit.allowed) {
       return rateLimitResponse(rateLimit.retryAfterMs);
     }
 
-    const tag = await useCases.tag.createTag(validation.data.name, validation.data.color, session);
+    const tag = await useCases.tag.createTag(validation.name, validation.color, session);
     await auditLog({
       userId: session.user.id,
       action: AUDIT_ACTIONS.TAG_CREATE,
       entity: "tag",
       entityId: tag.id,
-      metadata: { name: validation.data.name },
+      metadata: { name: validation.name },
       ipAddress: request.headers.get("x-forwarded-for") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,
     });

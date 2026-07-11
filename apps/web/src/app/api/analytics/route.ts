@@ -2,10 +2,9 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
-import { AnalyticsUseCases } from "@/core/services/analytics.use-cases";
-import { prisma } from "@/transport/db";
+import { useCases } from "@/core/composition-root";
 
-const analyticsUseCases = new AnalyticsUseCases(prisma);
+const analyticsUseCases = useCases.analytics;
 
 export const GET = withAuth(async (request, { session }) => {
   const rl = await checkUserRateLimit("analytics:query", session.user.id);

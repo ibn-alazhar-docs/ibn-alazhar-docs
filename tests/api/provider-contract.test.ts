@@ -219,6 +219,25 @@ vi.mock("@/core/composition-root", () => ({
     },
     profile: { updateProfile: mockUpdateProfile, deleteAccount: mockDeleteAccount },
     uploadDocument: { execute: mockUploadExecute },
+    analytics: {
+      getAnalytics: vi.fn().mockResolvedValue({
+        documents: {
+          totalDocuments: 0,
+          totalSize: 0,
+          documentsByStatus: [],
+          documentsByMimeType: [],
+          uploadsOverTime: [],
+          recentActivity: [],
+        },
+        tags: { totalTags: 0, topTags: [], unusedTags: 0 },
+        storage: {
+          totalStorageUsed: 0,
+          averageFileSize: 0,
+          largestDocuments: [],
+          storageByUser: [],
+        },
+      }),
+    },
   },
 }));
 
@@ -388,7 +407,10 @@ describe("Provider Contract — Public Endpoint Response Shapes", () => {
 
   it("GET /api/actuator/info → 200", async () => {
     const { GET } = await import("@/app/api/actuator/info/route");
-    const res = await GET();
+    const req = new Request("http://localhost/api/actuator/info", {
+      headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN}` },
+    });
+    const res = await GET(req as any);
     expect(res.status).toBe(200);
   });
 

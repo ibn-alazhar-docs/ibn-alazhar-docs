@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { z } from "zod";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -20,18 +21,9 @@ export const PATCH = withAuth(async (request, { session }) => {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const validation = profileUpdateSchema.safeParse(body);
+    const validation = await parseValidatedBody(request, profileUpdateSchema);
 
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
-
-    const user = await useCases.profile.updateProfile(session.user.id, validation.data.name);
+    const user = await useCases.profile.updateProfile(session.user.id, validation.name);
 
     return NextResponse.json({ user });
   } catch (error: unknown) {
@@ -46,17 +38,9 @@ export const DELETE = withAuth(async (request, { session }) => {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    const body = await request.json();
-    const parsed = deleteAccountSchema.safeParse(body);
+    const parsed = await parseValidatedBody(request, deleteAccountSchema);
 
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "كلمة المرور مطلوبة" } },
-        { status: 400 },
-      );
-    }
-
-    await useCases.profile.deleteAccount(session.user.id, parsed.data.password);
+    await useCases.profile.deleteAccount(session.user.id, parsed.password);
 
     return NextResponse.json({ success: true });
   } catch (error: unknown) {

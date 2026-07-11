@@ -32,6 +32,7 @@ import { ShareAccessUseCase } from "./services/share-access.use-case";
 import { DocumentDownloadUseCase } from "./services/document-download.use-case";
 import { WebhookUseCases } from "./services/webhook.use-cases";
 import { BookmarkUseCases } from "./services/bookmark.use-cases";
+import { AnalyticsUseCases } from "./services/analytics.use-cases";
 import { PasswordResetUseCases } from "./services/password-reset.use-cases";
 
 // Repositories — all created from the single PrismaClient instance
@@ -103,4 +104,5 @@ export const useCases = {
   documentDownload: documentDownloadUseCase,
   webhook: new WebhookUseCases(webhookRepository),
   bookmark: new BookmarkUseCases(bookmarkRepository),
+  analytics: new AnalyticsUseCases(prisma),
 } as const;

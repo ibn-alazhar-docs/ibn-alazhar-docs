@@ -22,8 +22,10 @@ describe("Actuator API", () => {
 
   describe("GET /api/actuator/info", () => {
     it("returns app info with 200", async () => {
-      const req = createApiRequest("/api/actuator/info");
-      const res = await getActuatorInfo();
+      const req = createApiRequest("/api/actuator/info", {
+        headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN}` },
+      });
+      const res = await getActuatorInfo(req as any);
       const json = await res.json();
 
       expect(res.status).toBe(200);
@@ -35,7 +37,10 @@ describe("Actuator API", () => {
     });
 
     it("sets no-store cache header", async () => {
-      const res = await getActuatorInfo();
+      const req = createApiRequest("/api/actuator/info", {
+        headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN}` },
+      });
+      const res = await getActuatorInfo(req as any);
       expect(res.headers.get("Cache-Control")).toBe("no-store");
     });
   });

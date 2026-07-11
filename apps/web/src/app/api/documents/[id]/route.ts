@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { documentUpdateSchema } from "@/shared/validators/document";
@@ -23,21 +24,12 @@ export const GET = withAuth(async (_request, { session, params }) => {
 export const PATCH = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
-    const body = await request.json();
-
-    const validation = documentUpdateSchema.safeParse(body);
-    if (!validation.success) {
-      const firstError = validation.error.issues[0];
-      return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-        { status: 400 },
-      );
-    }
+    const validation = await parseValidatedBody(request, documentUpdateSchema);
 
     const updated = await useCases.documentCrud.updateDocument(
       id,
       session.user.id,
-      validation.data,
+      validation,
     );
 
     await auditLog({
@@ -45,7 +37,7 @@ export const PATCH = withAuth(async (request, { session, params }) => {
       action: AUDIT_ACTIONS.DOCUMENT_UPDATE,
       entity: "document",
       entityId: id,
-      metadata: { fields: Object.keys(validation.data) },
+      metadata: { fields: Object.keys(validation) },
       ipAddress:
         request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,

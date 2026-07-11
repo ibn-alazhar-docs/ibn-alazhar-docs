@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { z } from "zod";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
@@ -13,18 +14,9 @@ const moveSchema = z
 
 export const PATCH = withAuth(async (request, { session, params }) => {
   const id = params.id!;
-  const body = await request.json();
+  const validation = await parseValidatedBody(request, moveSchema);
 
-  const validation = moveSchema.safeParse(body);
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "بيانات غير صحيحة" } },
-      { status: 400 },
-    );
-  }
-
-  const { folderId } = validation.data;
+  const { folderId } = validation;
 
   const rateLimit = await checkUserRateLimit("documents:move", session.user.id);
   if (!rateLimit.allowed) {

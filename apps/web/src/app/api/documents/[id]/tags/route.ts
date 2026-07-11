@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseValidatedBody } from "@/shared/validation";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
@@ -18,18 +19,9 @@ export const GET = withAuth(async (_request, { session, params }) => {
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
-  const body = await request.json();
-  const validation = addTagToDocumentSchema.safeParse(body);
+  const validation = await parseValidatedBody(request, addTagToDocumentSchema);
 
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "Invalid data" } },
-      { status: 400 },
-    );
-  }
-
-  const { tagId } = validation.data;
+  const { tagId } = validation;
 
   const rateLimit = await checkUserRateLimit("documents:tags", session.user.id);
   if (!rateLimit.allowed) {
@@ -51,18 +43,9 @@ export const POST = withAuth(async (request, { session, params }) => {
 
 export const PUT = withAuth(async (request, { session, params }) => {
   const id = params.id!;
-  const body = await request.json();
-  const validation = setDocumentTagsSchema.safeParse(body);
+  const validation = await parseValidatedBody(request, setDocumentTagsSchema);
 
-  if (!validation.success) {
-    const firstError = validation.error.issues[0];
-    return NextResponse.json(
-      { error: { code: "VALIDATION_ERROR", message: firstError?.message || "Invalid data" } },
-      { status: 400 },
-    );
-  }
-
-  const { tagIds } = validation.data;
+  const { tagIds } = validation;
 
   const rateLimit = await checkUserRateLimit("documents:tags", session.user.id);
   if (!rateLimit.allowed) {
