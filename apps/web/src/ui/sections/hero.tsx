@@ -81,7 +81,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         <motion.div
           className="max-w-3xl"
           variants={containerVariants}
-          initial="hidden"
+          initial="visible"
           animate="visible"
         >
           <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3">
