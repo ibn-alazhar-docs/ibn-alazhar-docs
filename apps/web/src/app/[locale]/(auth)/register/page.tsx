@@ -50,7 +50,7 @@ export default async function RegisterPage(props: RegisterPageProps) {
           {t("signIn")}
         </Link>
       </p>
-      <RegisterForm />
+      <RegisterForm showGoogle={!!process.env.GOOGLE_CLIENT_ID} />
     </div>
   );
 }

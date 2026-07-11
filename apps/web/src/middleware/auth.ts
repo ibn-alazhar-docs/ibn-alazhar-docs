@@ -63,23 +63,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      // SECURITY (H1): must remain false. When true, a Google account whose
-      // email matches an existing (unverified) credentials account is
-      // auto-linked, enabling account takeover. With false, the adapter only
-      // links when the existing account's email is verified.
-      allowDangerousEmailAccountLinking: false,
-      authorization: {
-        params: {
-          prompt: "consent",
-          access_type: "offline",
-          response_type: "code",
-          scope: "openid email profile https://www.googleapis.com/auth/drive.file",
-        },
-      },
-    }),
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            // SECURITY (H1): must remain false. When true, a Google account whose
+            // email matches an existing (unverified) credentials account is
+            // auto-linked, enabling account takeover. With false, the adapter only
+            // links when the existing account's email is verified.
+            allowDangerousEmailAccountLinking: false,
+            authorization: {
+              params: {
+                prompt: "consent",
+                access_type: "offline",
+                response_type: "code",
+                scope: "openid email profile https://www.googleapis.com/auth/drive.file",
+              },
+            },
+          }),
+        ]
+      : []),
     Credentials({
       name: "Credentials",
       credentials: {

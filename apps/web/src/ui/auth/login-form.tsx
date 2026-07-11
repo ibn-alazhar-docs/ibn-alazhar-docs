@@ -16,15 +16,12 @@ interface ActionState {
   };
 }
 
-export function LoginForm() {
+export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
   const t = useTranslations("auth");
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
 
-  // Only show Google sign-in when a Google OAuth client id is configured.
-  // Without it the provider is inactive and the button would fail.
-  const showGoogle = Boolean(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID);
 
   const [state, submitAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
