@@ -109,13 +109,13 @@
 }
 
 :root {
-  --page-bg: #f7f6f2;
-  --surface: #faf9f6;
-  --card-bg: #faf9f6;
+  --page-bg: #f4f1ea;
+  --surface: #f8f6f0;
+  --card-bg: #f8f6f0;
   --border-line: #e8e2d8;
-  --border-subtle: #f0ebe3;
-  --text-primary: #1f2937;
-  --text-secondary: #57534e;
+  --border-subtle: #efebe2;
+  --text-primary: #2c2826;
+  --text-secondary: #5a5551;
   --text-tertiary: #78716c;
   --text-inverse: #fffdf7;
   --btn-primary-bg: #086941;

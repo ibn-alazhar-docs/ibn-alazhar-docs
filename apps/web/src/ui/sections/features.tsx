@@ -49,12 +49,12 @@ export function Features() {
           viewport={{ once: true, margin: "-10px" }}
           className="mb-16 flex items-center gap-3"
         >
-          <span
+          <h2
             id="features-title"
-            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-tertiary uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-color uppercase"
           >
             {t("title")}
-          </span>
+          </h2>
         </motion.div>
 
         <motion.div

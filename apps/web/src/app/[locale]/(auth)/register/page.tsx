@@ -5,6 +5,8 @@ import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/ui/metadata";
 import { RegisterForm } from "@/ui/auth/register-form";
 
+export const dynamic = "force-dynamic";
+
 interface RegisterPageProps {
   params: Promise<{ locale: string }>;
 }

@@ -56,7 +56,7 @@ export function KnowledgeAreas() {
         >
           <h2
             id="how-it-works-title"
-            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-tertiary uppercase"
+            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-color uppercase"
           >
             {t("title")}
           </h2>
