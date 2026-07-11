@@ -80,7 +80,7 @@ export function Features() {
                 {item.title}
               </h3>
 
-              <p className="max-w-lg text-sm leading-relaxed text-secondary group-hover:text-primary-color transition-colors duration-300">
+              <p className="max-w-lg text-sm leading-relaxed text-muted-color">
                 {item.description}
               </p>
             </motion.article>
