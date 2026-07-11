@@ -50,7 +50,7 @@ export default async function LoginPage(props: LoginPageProps) {
           {t("signUp")}
         </Link>
       </p>
-      <LoginForm />
+      <LoginForm showGoogle={!!process.env.GOOGLE_CLIENT_ID} />
     </div>
   );
 }

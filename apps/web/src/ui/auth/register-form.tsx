@@ -17,7 +17,7 @@ interface ActionState {
   };
 }
 
-export function RegisterForm() {
+export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
   const t = useTranslations("auth");
   const router = useRouter();
 
@@ -190,24 +190,28 @@ export function RegisterForm() {
         </button>
       </div>
 
-      <div className="relative my-6">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-line" />
-        </div>
-        <div className="relative flex justify-center text-sm">
-          <span className="bg-card px-3 text-xs text-very-muted font-medium">{t("or")}</span>
-        </div>
-      </div>
+      {showGoogle && (
+        <>
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-line" />
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-card px-3 text-xs text-very-muted font-medium">{t("or")}</span>
+            </div>
+          </div>
 
-      <button
-        type="button"
-        onClick={() => signIn("google", { redirectTo: "/dashboard" })}
-        disabled={isPending}
-        className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
-      >
-        <FcGoogle className="h-5 w-5" />
-        {isPending ? t("registering") : t("continueWithGoogle")}
-      </button>
+          <button
+            type="button"
+            onClick={() => signIn("google", { redirectTo: "/dashboard" })}
+            disabled={isPending}
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
+          >
+            <FcGoogle className="h-5 w-5" />
+            {isPending ? t("registering") : t("continueWithGoogle")}
+          </button>
+        </>
+      )}
 
       <p className="text-center text-xs text-very-muted">{t("tagline")}</p>
     </form>
