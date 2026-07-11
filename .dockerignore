@@ -88,8 +88,8 @@ infrastructure/
 docker-compose*.yml
 Dockerfile*
 .dockerignore
-supervisord.conf
-scripts/docker-entrypoint.sh
+!supervisord.conf
+!scripts/docker-entrypoint.sh
 
 # Monitoring
 monitoring/
