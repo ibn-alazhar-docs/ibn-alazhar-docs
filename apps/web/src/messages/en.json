@@ -21,7 +21,7 @@
   "section": {
     "hero": {
       "eyebrow": "Ibn Al-Azhar Docs",
-      "title": "Academic Document Digitization for Al-Azhar Scholars",
+      "title": "Academic Document Digitization",
       "subtitle": "Upload historical manuscripts, academic papers, or PDFs. We extract, refine, and structure them into fully editable, formatted academic documents.",
       "cta": "Get Started",
       "dashboardCTA": "Go to Dashboard"
@@ -73,7 +73,7 @@
   },
   "footer": {
     "copyright": "Ibn Al-Azhar Docs © 2026",
-    "tagline": "From Al-Azhar"
+    "tagline": "For Academic Research"
   },
   "common": {
     "loading": "Loading...",
