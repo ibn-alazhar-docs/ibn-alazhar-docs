@@ -67,7 +67,7 @@ if [ ! -f "$PGDATA/PG_VERSION" ]; then
   $RUN_PG "$PG_BIN/initdb -D $PGDATA --auth=trust" >/dev/null 2>&1
 fi
 echo "[entrypoint] starting PostgreSQL..."
-$RUN_PG "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l $APP_DATA/pg.log start" >/dev/null 2>&1 || true
+$RUN_PG "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l /tmp/pg.log start" >/dev/null 2>&1 || true
 
 # Wait for Postgres
 for i in $(seq 1 30); do
