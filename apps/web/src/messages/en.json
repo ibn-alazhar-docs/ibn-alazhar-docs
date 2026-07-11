@@ -20,54 +20,54 @@
   },
   "section": {
     "hero": {
-      "eyebrow": "Ibn Al-Azhar Docs",
-      "title": "Academic Document Digitization",
-      "subtitle": "Upload historical manuscripts, academic papers, or PDFs. We extract, refine, and structure them into fully editable, formatted academic documents.",
-      "cta": "Get Started",
+      "eyebrow": "Your File Conversion Platform",
+      "title": "Smart Document Conversion & OCR",
+      "subtitle": "Upload your PDFs or images, and we'll instantly extract the text and convert them into fully editable formats like Word or Markdown.",
+      "cta": "Start Converting",
       "dashboardCTA": "Go to Dashboard"
     },
     "knowledgeAreas": {
-      "title": "Academic Workflow Methodology",
+      "title": "How It Works",
       "items": [
         {
-          "title": "Manuscript Upload",
-          "description": "Drag and drop your historical scans, books, or papers (PDF, JPG, PNG)."
+          "title": "Upload Files",
+          "description": "Drag and drop any PDF, JPG, or PNG file to begin the conversion process."
         },
         {
-          "title": "Text Analysis & Refinement",
-          "description": "High-fidelity OCR with automated spelling and text cleaning built for Arabic vocabulary."
+          "title": "Text Extraction",
+          "description": "High-fidelity OCR technology extracts and refines text automatically."
         },
         {
-          "title": "Structured Export",
-          "description": "Download instantly as fully formatted Word or Markdown files ready for citation."
+          "title": "Export Formats",
+          "description": "Download your converted documents instantly in formats like Word or Markdown."
         }
       ]
     },
     "features": {
-      "title": "Built for Serious Academic Research",
+      "title": "Why Choose Our Platform?",
       "items": [
         {
-          "title": "Secure Research",
-          "description": "End-to-end encryption. Your research manuscripts and documents remain entirely private."
+          "title": "Fast & Accurate",
+          "description": "Convert files in seconds while maintaining the highest accuracy in text extraction."
         },
         {
-          "title": "Bespoke OCR",
-          "description": "High-fidelity bilingual character recognition optimized for complex Arabic and Latin typography."
+          "title": "Arabic Language Support",
+          "description": "Advanced optical character recognition specially optimized for complex Arabic text."
         },
         {
-          "title": "Open Access Initiative",
-          "description": "A non-profit, waqf-inspired academic platform supporting global research with no subscription barriers."
+          "title": "Flexible Exports",
+          "description": "Multiple export options tailored to your needs, from plain text to fully formatted Word docs."
         },
         {
-          "title": "Preserved Layouts",
-          "description": "Get structured Word documents preserving layouts, ready for immediate citation and editing."
+          "title": "Secure & Private",
+          "description": "End-to-end encryption ensures your files and data remain completely private and secure."
         }
       ]
     },
     "cta": {
-      "title": "Transform Your Documents Now",
-      "subtitle": "Upload any supported file and get a polished Word document in seconds.",
-      "button": "Begin Processing",
+      "title": "Transform Your Documents Today",
+      "subtitle": "Upload your file and get a polished, editable document in seconds.",
+      "button": "Start Converting",
       "dashboardCTA": "Go to Dashboard"
     }
   },
