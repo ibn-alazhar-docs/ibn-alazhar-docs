@@ -1,0 +1,74 @@
+{
+  "root": true,
+  "env": {
+    "browser": true,
+    "es2022": true,
+    "node": true
+  },
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended", "prettier"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": "latest",
+    "sourceType": "module",
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "plugins": ["@typescript-eslint"],
+  "rules": {
+    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-explicit-any": "error",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "prefer-const": "error",
+    "no-var": "error"
+  },
+  "overrides": [
+    {
+      "files": ["tests/**/*.test.ts", "tests/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off",
+        "@typescript-eslint/no-unused-vars": "off",
+        "no-console": "off",
+        "prefer-const": "off"
+      }
+    },
+    {
+      "files": ["apps/web/src/core/services/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+      }
+    },
+    {
+      "files": ["apps/web/src/ui/**/*.{ts,tsx}"],
+      "rules": {
+        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+      }
+    },
+    {
+      "files": ["apps/web/src/domain/**/*.ts"],
+      "rules": {
+        "no-restricted-imports": [
+          "error",
+          {
+            "patterns": ["@/app*", "@/ui*", "@/core*", "@/middleware*", "@/transport*"]
+          }
+        ]
+      }
+    }
+  ],
+  "ignorePatterns": [
+    "node_modules",
+    ".next",
+    "dist",
+    "build",
+    "out",
+    "coverage",
+    "playwright-report",
+    "test-results",
+    "archive",
+    "00_Inbox",
+    "09_Archive",
+    ".agents",
+    ".specify"
+  ]
+}

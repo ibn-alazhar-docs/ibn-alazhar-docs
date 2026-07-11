@@ -1,0 +1,20 @@
+{
+  "name": "@ibn-al-azhar-docs/export-worker",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "start": "tsx --env-file=../../.env src/index.ts"
+  },
+  "dependencies": {
+    "@ibn-al-azhar-docs/database": "workspace:*",
+    "@ibn-al-azhar-docs/pipeline": "workspace:*",
+    "@ibn-al-azhar-docs/shared": "workspace:*",
+    "tsx": "^4.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,1336 @@
+{
+  "numTotalTestSuites": 58,
+  "numPassedTestSuites": 58,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 134,
+  "numPassedTests": 134,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1783071971782,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should successfully register a new user",
+          "status": "passed",
+          "title": "should successfully register a new user",
+          "duration": 919.5138270000025,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return validation error for missing fields",
+          "status": "passed",
+          "title": "should return validation error for missing fields",
+          "duration": 3.245437999998103,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return validation error for invalid email",
+          "status": "passed",
+          "title": "should return validation error for invalid email",
+          "duration": 2.4682670000038343,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return validation error for weak password",
+          "status": "passed",
+          "title": "should return validation error for weak password",
+          "duration": 2.408238000003621,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return validation error for mismatched passwords",
+          "status": "passed",
+          "title": "should return validation error for mismatched passwords",
+          "duration": 2.83587599999737,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return conflict if email already exists",
+          "status": "passed",
+          "title": "should return conflict if email already exists",
+          "duration": 14.825437000006787,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Auth API - /api/auth/register", "POST /api/auth/register"],
+          "fullName": "Auth API - /api/auth/register POST /api/auth/register should return conflict for deleted user (no auto-reactivation)",
+          "status": "passed",
+          "title": "should return conflict for deleted user (no auto-reactivation)",
+          "duration": 2.2675749999907566,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043569,
+      "endTime": 1783072044517.2676,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/auth.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Conversion API", "POST /api/conversion/start"],
+          "fullName": "Conversion API POST /api/conversion/start returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 6.36483700000008,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "POST /api/conversion/start"],
+          "fullName": "Conversion API POST /api/conversion/start returns 400 for missing documentId",
+          "status": "passed",
+          "title": "returns 400 for missing documentId",
+          "duration": 8.691235000000233,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "POST /api/conversion/start"],
+          "fullName": "Conversion API POST /api/conversion/start returns 404 for document not owned by user",
+          "status": "passed",
+          "title": "returns 404 for document not owned by user",
+          "duration": 13.015355999999883,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "POST /api/conversion/start"],
+          "fullName": "Conversion API POST /api/conversion/start returns 200 and starts conversion",
+          "status": "passed",
+          "title": "returns 200 and starts conversion",
+          "duration": 3.0955650000005335,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "GET /api/conversion/list"],
+          "fullName": "Conversion API GET /api/conversion/list returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 0.6927810000006502,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "GET /api/conversion/list"],
+          "fullName": "Conversion API GET /api/conversion/list returns paginated conversion jobs",
+          "status": "passed",
+          "title": "returns paginated conversion jobs",
+          "duration": 2.4597450000001118,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "GET /api/conversion/list"],
+          "fullName": "Conversion API GET /api/conversion/list respects page and limit params",
+          "status": "passed",
+          "title": "respects page and limit params",
+          "duration": 1.4414269999997487,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Conversion API", "GET /api/conversion/list"],
+          "fullName": "Conversion API GET /api/conversion/list includes Cache-Control header",
+          "status": "passed",
+          "title": "includes Cache-Control header",
+          "duration": 0.7975960000003397,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072048693,
+      "endTime": 1783072048730.7976,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/conversion.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Documents API", "GET /api/documents"],
+          "fullName": "Documents API GET /api/documents returns documents for the user",
+          "status": "passed",
+          "title": "returns documents for the user",
+          "duration": 16.39702099999704,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "GET /api/documents"],
+          "fullName": "Documents API GET /api/documents returns 401 when unauthorized",
+          "status": "passed",
+          "title": "returns 401 when unauthorized",
+          "duration": 0.9795540000050096,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "GET /api/documents/[id]"],
+          "fullName": "Documents API GET /api/documents/[id] returns a specific document",
+          "status": "passed",
+          "title": "returns a specific document",
+          "duration": 2.5018639999907464,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "GET /api/documents/[id]"],
+          "fullName": "Documents API GET /api/documents/[id] returns 404 for non-existent document",
+          "status": "passed",
+          "title": "returns 404 for non-existent document",
+          "duration": 17.519321999992826,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "GET /api/documents/[id]"],
+          "fullName": "Documents API GET /api/documents/[id] prevents accessing another user's document",
+          "status": "passed",
+          "title": "prevents accessing another user's document",
+          "duration": 2.803062000006321,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "PATCH /api/documents/[id]"],
+          "fullName": "Documents API PATCH /api/documents/[id] updates a document",
+          "status": "passed",
+          "title": "updates a document",
+          "duration": 4.625987999999779,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "PATCH /api/documents/[id]"],
+          "fullName": "Documents API PATCH /api/documents/[id] validates input",
+          "status": "passed",
+          "title": "validates input",
+          "duration": 2.489402000006521,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "DELETE /api/documents/[id]"],
+          "fullName": "Documents API DELETE /api/documents/[id] deletes a document",
+          "status": "passed",
+          "title": "deletes a document",
+          "duration": 2.009411999999429,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "PATCH /api/documents/[id]/move"],
+          "fullName": "Documents API PATCH /api/documents/[id]/move moves a document to a folder",
+          "status": "passed",
+          "title": "moves a document to a folder",
+          "duration": 3.57548100000713,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "PATCH /api/documents/[id]/restore"],
+          "fullName": "Documents API PATCH /api/documents/[id]/restore restores a deleted document",
+          "status": "passed",
+          "title": "restores a deleted document",
+          "duration": 2.289173999990453,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Tags endpoints"],
+          "fullName": "Documents API Tags endpoints GET tags for a document",
+          "status": "passed",
+          "title": "GET tags for a document",
+          "duration": 4.356306000001496,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Tags endpoints"],
+          "fullName": "Documents API Tags endpoints POST add a tag to a document",
+          "status": "passed",
+          "title": "POST add a tag to a document",
+          "duration": 2.5154959999927087,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Tags endpoints"],
+          "fullName": "Documents API Tags endpoints PUT replace tags on a document",
+          "status": "passed",
+          "title": "PUT replace tags on a document",
+          "duration": 3.1191910000052303,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Tags endpoints"],
+          "fullName": "Documents API Tags endpoints DELETE tag from document",
+          "status": "passed",
+          "title": "DELETE tag from document",
+          "duration": 1.6693559999985155,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Bulk endpoints"],
+          "fullName": "Documents API Bulk endpoints POST bulk-move",
+          "status": "passed",
+          "title": "POST bulk-move",
+          "duration": 3.1982260000077076,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Bulk endpoints"],
+          "fullName": "Documents API Bulk endpoints POST bulk-tag",
+          "status": "passed",
+          "title": "POST bulk-tag",
+          "duration": 2.705935000005411,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Documents API", "Bulk endpoints"],
+          "fullName": "Documents API Bulk endpoints POST bulk-untag",
+          "status": "passed",
+          "title": "POST bulk-untag",
+          "duration": 1.9286189999984344,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072044064,
+      "endTime": 1783072044140.9287,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/documents.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export"],
+          "fullName": "Export API Routes POST /api/export should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 6.781457999997656,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export"],
+          "fullName": "Export API Routes POST /api/export should return 400 for invalid input",
+          "status": "passed",
+          "title": "should return 400 for invalid input",
+          "duration": 9.957664000001387,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export"],
+          "fullName": "Export API Routes POST /api/export should return 404 for document not owned by user",
+          "status": "passed",
+          "title": "should return 404 for document not owned by user",
+          "duration": 15.060787999987951,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export"],
+          "fullName": "Export API Routes POST /api/export should return 200 and zip file for valid request (zip)",
+          "status": "passed",
+          "title": "should return 200 and zip file for valid request (zip)",
+          "duration": 32.697010999996564,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export"],
+          "fullName": "Export API Routes POST /api/export should return 200 and zip file for valid single export",
+          "status": "passed",
+          "title": "should return 200 and zip file for valid single export",
+          "duration": 9.801890000002459,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/batch"],
+          "fullName": "Export API Routes POST /api/export/batch should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.1468020000029355,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/batch"],
+          "fullName": "Export API Routes POST /api/export/batch should return 400 for invalid input",
+          "status": "passed",
+          "title": "should return 400 for invalid input",
+          "duration": 2.890708999999333,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/batch"],
+          "fullName": "Export API Routes POST /api/export/batch should return 404 if a document is not owned by user",
+          "status": "passed",
+          "title": "should return 404 if a document is not owned by user",
+          "duration": 2.4972649999981513,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/batch"],
+          "fullName": "Export API Routes POST /api/export/batch should return 400 if format is not zip",
+          "status": "passed",
+          "title": "should return 400 if format is not zip",
+          "duration": 2.2434309999953257,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/batch"],
+          "fullName": "Export API Routes POST /api/export/batch should return 200 and zip file for valid batch export",
+          "status": "passed",
+          "title": "should return 200 and zip file for valid batch export",
+          "duration": 9.668944000004558,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/folder"],
+          "fullName": "Export API Routes POST /api/export/folder should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 0.7773019999876851,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/folder"],
+          "fullName": "Export API Routes POST /api/export/folder should return 404 for folder not owned by user",
+          "status": "passed",
+          "title": "should return 404 for folder not owned by user",
+          "duration": 2.5991330000106245,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/folder"],
+          "fullName": "Export API Routes POST /api/export/folder should return 400 if format is not zip",
+          "status": "passed",
+          "title": "should return 400 if format is not zip",
+          "duration": 1.0473959999944782,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/folder"],
+          "fullName": "Export API Routes POST /api/export/folder should return 200 and zip file for valid folder export",
+          "status": "passed",
+          "title": "should return 200 and zip file for valid folder export",
+          "duration": 5.798758999997517,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/tag"],
+          "fullName": "Export API Routes POST /api/export/tag should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 0.6103659999935189,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/tag"],
+          "fullName": "Export API Routes POST /api/export/tag should return 404 for tag not owned by user",
+          "status": "passed",
+          "title": "should return 404 for tag not owned by user",
+          "duration": 1.8825329999963287,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/tag"],
+          "fullName": "Export API Routes POST /api/export/tag should return 400 if format is not zip",
+          "status": "passed",
+          "title": "should return 400 if format is not zip",
+          "duration": 1.4684899999992922,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Export API Routes", "POST /api/export/tag"],
+          "fullName": "Export API Routes POST /api/export/tag should return 200 and zip file for valid tag export",
+          "status": "passed",
+          "title": "should return 200 and zip file for valid tag export",
+          "duration": 3.7278729999961797,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043207,
+      "endTime": 1783072043320.7278,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/export.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders"],
+          "fullName": "Folders API GET /api/folders should return folders for authenticated user",
+          "status": "passed",
+          "title": "should return folders for authenticated user",
+          "duration": 21.96962300001178,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders"],
+          "fullName": "Folders API GET /api/folders should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.8106110000080662,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders"],
+          "fullName": "Folders API GET /api/folders should return folders with a specific parentId",
+          "status": "passed",
+          "title": "should return folders with a specific parentId",
+          "duration": 3.8870680000109132,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "POST /api/folders"],
+          "fullName": "Folders API POST /api/folders should create a folder",
+          "status": "passed",
+          "title": "should create a folder",
+          "duration": 7.431360999995377,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "POST /api/folders"],
+          "fullName": "Folders API POST /api/folders should return 400 for validation errors",
+          "status": "passed",
+          "title": "should return 400 for validation errors",
+          "duration": 4.673473999995622,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "POST /api/folders"],
+          "fullName": "Folders API POST /api/folders should return 404 if parent folder does not exist",
+          "status": "passed",
+          "title": "should return 404 if parent folder does not exist",
+          "duration": 35.407483000002685,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "POST /api/folders"],
+          "fullName": "Folders API POST /api/folders should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.3878659999900265,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders/[id]"],
+          "fullName": "Folders API GET /api/folders/[id] should return a folder",
+          "status": "passed",
+          "title": "should return a folder",
+          "duration": 2.685593999995035,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders/[id]"],
+          "fullName": "Folders API GET /api/folders/[id] should return 404 if folder not found or belongs to another user",
+          "status": "passed",
+          "title": "should return 404 if folder not found or belongs to another user",
+          "duration": 3.7520020000083605,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "GET /api/folders/[id]"],
+          "fullName": "Folders API GET /api/folders/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.1552499999961583,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "PATCH /api/folders/[id]"],
+          "fullName": "Folders API PATCH /api/folders/[id] should rename a folder",
+          "status": "passed",
+          "title": "should rename a folder",
+          "duration": 3.063888999997289,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "PATCH /api/folders/[id]"],
+          "fullName": "Folders API PATCH /api/folders/[id] should return 404 if trying to rename another user's folder",
+          "status": "passed",
+          "title": "should return 404 if trying to rename another user's folder",
+          "duration": 2.421825000012177,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "PATCH /api/folders/[id]"],
+          "fullName": "Folders API PATCH /api/folders/[id] should return 400 for validation errors",
+          "status": "passed",
+          "title": "should return 400 for validation errors",
+          "duration": 1.3889320000016596,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "PATCH /api/folders/[id]"],
+          "fullName": "Folders API PATCH /api/folders/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 0.692414999997709,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "DELETE /api/folders/[id]"],
+          "fullName": "Folders API DELETE /api/folders/[id] should delete a folder",
+          "status": "passed",
+          "title": "should delete a folder",
+          "duration": 3.279087000002619,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "DELETE /api/folders/[id]"],
+          "fullName": "Folders API DELETE /api/folders/[id] should return 404 if trying to delete another user's folder",
+          "status": "passed",
+          "title": "should return 404 if trying to delete another user's folder",
+          "duration": 1.2280610000016168,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Folders API", "DELETE /api/folders/[id]"],
+          "fullName": "Folders API DELETE /api/folders/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.6282689999934519,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043553,
+      "endTime": 1783072043652.6282,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/folders.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Health API"],
+          "fullName": "Health API returns 200 OK",
+          "status": "passed",
+          "title": "returns 200 OK",
+          "duration": 12.3965019999996,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072046976,
+      "endTime": 1783072046988.3965,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/health.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Profile API", "PATCH /api/profile"],
+          "fullName": "Profile API PATCH /api/profile returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 6.4621619999961695,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "PATCH /api/profile"],
+          "fullName": "Profile API PATCH /api/profile returns 400 for empty name",
+          "status": "passed",
+          "title": "returns 400 for empty name",
+          "duration": 8.784783000010066,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "PATCH /api/profile"],
+          "fullName": "Profile API PATCH /api/profile returns 400 for name too short",
+          "status": "passed",
+          "title": "returns 400 for name too short",
+          "duration": 1.8910470000118949,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "PATCH /api/profile"],
+          "fullName": "Profile API PATCH /api/profile updates the user name",
+          "status": "passed",
+          "title": "updates the user name",
+          "duration": 2.699124999999185,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "DELETE /api/profile"],
+          "fullName": "Profile API DELETE /api/profile returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 3.1255699999892386,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "DELETE /api/profile"],
+          "fullName": "Profile API DELETE /api/profile returns 400 for missing password",
+          "status": "passed",
+          "title": "returns 400 for missing password",
+          "duration": 2.9001310000021476,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "DELETE /api/profile"],
+          "fullName": "Profile API DELETE /api/profile returns 401 for wrong password",
+          "status": "passed",
+          "title": "returns 401 for wrong password",
+          "duration": 4.027690999995684,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Profile API", "DELETE /api/profile"],
+          "fullName": "Profile API DELETE /api/profile soft-deletes user account",
+          "status": "passed",
+          "title": "soft-deletes user account",
+          "duration": 520.1953009999997,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043507,
+      "endTime": 1783072044058.1953,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/profile.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should return unauthorized if not logged in",
+          "status": "passed",
+          "title": "should return unauthorized if not logged in",
+          "duration": 4.389879999998811,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should return validation error if query is too short",
+          "status": "passed",
+          "title": "should return validation error if query is too short",
+          "duration": 15.343540999998368,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should successfully search documents by title",
+          "status": "passed",
+          "title": "should successfully search documents by title",
+          "duration": 3.436965999997483,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should respect ownership (user cannot see other users' documents)",
+          "status": "passed",
+          "title": "should respect ownership (user cannot see other users' documents)",
+          "duration": 3.2713980000007723,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should allow admin to search all documents",
+          "status": "passed",
+          "title": "should allow admin to search all documents",
+          "duration": 2.3378929999998945,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search"],
+          "fullName": "Search API GET /api/search should filter by folder type",
+          "status": "passed",
+          "title": "should filter by folder type",
+          "duration": 1.9670579999983602,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search/suggest"],
+          "fullName": "Search API GET /api/search/suggest should return unauthorized if not logged in",
+          "status": "passed",
+          "title": "should return unauthorized if not logged in",
+          "duration": 0.5839930000001914,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search/suggest"],
+          "fullName": "Search API GET /api/search/suggest should return empty array if query is too short",
+          "status": "passed",
+          "title": "should return empty array if query is too short",
+          "duration": 1.9942119999977876,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search/suggest"],
+          "fullName": "Search API GET /api/search/suggest should return suggestions for matching documents",
+          "status": "passed",
+          "title": "should return suggestions for matching documents",
+          "duration": 2.1343699999997625,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Search API", "GET /api/search/suggest"],
+          "fullName": "Search API GET /api/search/suggest should respect ownership for suggestions",
+          "status": "passed",
+          "title": "should respect ownership for suggestions",
+          "duration": 1.0072130000007746,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072060725,
+      "endTime": 1783072060762.0073,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/search.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Share API", "POST /api/documents/[id]/share"],
+          "fullName": "Share API POST /api/documents/[id]/share should create a share link for a completed document",
+          "status": "passed",
+          "title": "should create a share link for a completed document",
+          "duration": 34.10454000000027,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "POST /api/documents/[id]/share"],
+          "fullName": "Share API POST /api/documents/[id]/share should fail to create share link if unauthorized",
+          "status": "passed",
+          "title": "should fail to create share link if unauthorized",
+          "duration": 1.996093000008841,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "POST /api/documents/[id]/share"],
+          "fullName": "Share API POST /api/documents/[id]/share should fail to create share link if user doesn't own document",
+          "status": "passed",
+          "title": "should fail to create share link if user doesn't own document",
+          "duration": 18.51158099999884,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "POST /api/documents/[id]/share"],
+          "fullName": "Share API POST /api/documents/[id]/share should fail to create share link if document is not ready",
+          "status": "passed",
+          "title": "should fail to create share link if document is not ready",
+          "duration": 5.3505889999942156,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "POST /api/documents/[id]/share"],
+          "fullName": "Share API POST /api/documents/[id]/share should reject invalid expiration date",
+          "status": "passed",
+          "title": "should reject invalid expiration date",
+          "duration": 4.665078000005451,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/documents/[id]/share"],
+          "fullName": "Share API GET /api/documents/[id]/share should return shared: false if no share link exists",
+          "status": "passed",
+          "title": "should return shared: false if no share link exists",
+          "duration": 2.1163500000111526,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/documents/[id]/share"],
+          "fullName": "Share API GET /api/documents/[id]/share should return share info if share link exists",
+          "status": "passed",
+          "title": "should return share info if share link exists",
+          "duration": 1.4691600000078324,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/documents/[id]/share"],
+          "fullName": "Share API GET /api/documents/[id]/share should fail if unauthorized",
+          "status": "passed",
+          "title": "should fail if unauthorized",
+          "duration": 0.7921479999931762,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "DELETE /api/documents/[id]/share"],
+          "fullName": "Share API DELETE /api/documents/[id]/share should delete existing share link",
+          "status": "passed",
+          "title": "should delete existing share link",
+          "duration": 2.696868999992148,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "DELETE /api/documents/[id]/share"],
+          "fullName": "Share API DELETE /api/documents/[id]/share should fail to delete if no share link exists",
+          "status": "passed",
+          "title": "should fail to delete if no share link exists",
+          "duration": 2.0564379999996163,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/share/[token] (Public)"],
+          "fullName": "Share API GET /api/share/[token] (Public) should return document details for valid token",
+          "status": "passed",
+          "title": "should return document details for valid token",
+          "duration": 30.344668999998248,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/share/[token] (Public)"],
+          "fullName": "Share API GET /api/share/[token] (Public) should return 404 for non-existent token",
+          "status": "passed",
+          "title": "should return 404 for non-existent token",
+          "duration": 0.8469069999991916,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/share/[token] (Public)"],
+          "fullName": "Share API GET /api/share/[token] (Public) should return 410 for expired token",
+          "status": "passed",
+          "title": "should return 410 for expired token",
+          "duration": 1.0353639999957522,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/share/[token] (Public)"],
+          "fullName": "Share API GET /api/share/[token] (Public) should return 404 if document is deleted",
+          "status": "passed",
+          "title": "should return 404 if document is deleted",
+          "duration": 0.9708580000005895,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Share API", "GET /api/share/[token] (Public)"],
+          "fullName": "Share API GET /api/share/[token] (Public) should return 404 if document is not completed",
+          "status": "passed",
+          "title": "should return 404 if document is not completed",
+          "duration": 0.9568870000075549,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043635,
+      "endTime": 1783072043744.9568,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/share.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags"],
+          "fullName": "Tags API GET /api/tags should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 17.281125999987125,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags"],
+          "fullName": "Tags API GET /api/tags should return user's tags",
+          "status": "passed",
+          "title": "should return user's tags",
+          "duration": 12.57447300000058,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags"],
+          "fullName": "Tags API GET /api/tags should return all tags for ADMIN",
+          "status": "passed",
+          "title": "should return all tags for ADMIN",
+          "duration": 2.868359000000055,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "POST /api/tags"],
+          "fullName": "Tags API POST /api/tags should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 2.8823669999983395,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "POST /api/tags"],
+          "fullName": "Tags API POST /api/tags should create a tag",
+          "status": "passed",
+          "title": "should create a tag",
+          "duration": 6.43980599999486,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "POST /api/tags"],
+          "fullName": "Tags API POST /api/tags should return 400 for invalid data",
+          "status": "passed",
+          "title": "should return 400 for invalid data",
+          "duration": 3.2100569999893196,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "POST /api/tags"],
+          "fullName": "Tags API POST /api/tags should return 409 if tag name already exists for user",
+          "status": "passed",
+          "title": "should return 409 if tag name already exists for user",
+          "duration": 19.0963109999866,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "POST /api/tags"],
+          "fullName": "Tags API POST /api/tags should return 400 if user exceeds max tags (50)",
+          "status": "passed",
+          "title": "should return 400 if user exceeds max tags (50)",
+          "duration": 5.866238999995403,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags/[id]"],
+          "fullName": "Tags API GET /api/tags/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 1.30477499999688,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags/[id]"],
+          "fullName": "Tags API GET /api/tags/[id] should return a tag if owned by user",
+          "status": "passed",
+          "title": "should return a tag if owned by user",
+          "duration": 1.8988739999913378,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags/[id]"],
+          "fullName": "Tags API GET /api/tags/[id] should return 404 if tag owned by another user",
+          "status": "passed",
+          "title": "should return 404 if tag owned by another user",
+          "duration": 2.1813990000082413,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "GET /api/tags/[id]"],
+          "fullName": "Tags API GET /api/tags/[id] should return 200 for ADMIN even if owned by another user",
+          "status": "passed",
+          "title": "should return 200 for ADMIN even if owned by another user",
+          "duration": 7.105579000010039,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "PATCH /api/tags/[id]"],
+          "fullName": "Tags API PATCH /api/tags/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 0.8351679999905173,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "PATCH /api/tags/[id]"],
+          "fullName": "Tags API PATCH /api/tags/[id] should update a tag if owned by user",
+          "status": "passed",
+          "title": "should update a tag if owned by user",
+          "duration": 2.38782399999036,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "PATCH /api/tags/[id]"],
+          "fullName": "Tags API PATCH /api/tags/[id] should return 404 if trying to update someone else's tag",
+          "status": "passed",
+          "title": "should return 404 if trying to update someone else's tag",
+          "duration": 1.2516259999974864,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "PATCH /api/tags/[id]"],
+          "fullName": "Tags API PATCH /api/tags/[id] should return 409 if new name already exists for user",
+          "status": "passed",
+          "title": "should return 409 if new name already exists for user",
+          "duration": 1.2653279999940423,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "DELETE /api/tags/[id]"],
+          "fullName": "Tags API DELETE /api/tags/[id] should return 401 if unauthorized",
+          "status": "passed",
+          "title": "should return 401 if unauthorized",
+          "duration": 0.6093140000011772,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "DELETE /api/tags/[id]"],
+          "fullName": "Tags API DELETE /api/tags/[id] should soft-delete a tag if owned by user",
+          "status": "passed",
+          "title": "should soft-delete a tag if owned by user",
+          "duration": 1.4454689999984112,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Tags API", "DELETE /api/tags/[id]"],
+          "fullName": "Tags API DELETE /api/tags/[id] should return 404 if trying to delete someone else's tag",
+          "status": "passed",
+          "title": "should return 404 if trying to delete someone else's tag",
+          "duration": 1.179256000003079,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072043609,
+      "endTime": 1783072043702.1792,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/tags.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Users API (admin)", "GET /api/users"],
+          "fullName": "Users API (admin) GET /api/users returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 4.108227000000625,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "GET /api/users"],
+          "fullName": "Users API (admin) GET /api/users returns 403 if not admin",
+          "status": "passed",
+          "title": "returns 403 if not admin",
+          "duration": 2.281095999998797,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "GET /api/users"],
+          "fullName": "Users API (admin) GET /api/users returns paginated users for admin",
+          "status": "passed",
+          "title": "returns paginated users for admin",
+          "duration": 5.77242699999988,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "GET /api/users"],
+          "fullName": "Users API (admin) GET /api/users respects page and limit params",
+          "status": "passed",
+          "title": "respects page and limit params",
+          "duration": 3.181644000000233,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "PATCH /api/users"],
+          "fullName": "Users API (admin) PATCH /api/users returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 1.9242130000020552,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "PATCH /api/users"],
+          "fullName": "Users API (admin) PATCH /api/users returns 403 if not admin",
+          "status": "passed",
+          "title": "returns 403 if not admin",
+          "duration": 1.4430240000001504,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "PATCH /api/users"],
+          "fullName": "Users API (admin) PATCH /api/users returns 400 for invalid body",
+          "status": "passed",
+          "title": "returns 400 for invalid body",
+          "duration": 4.321951000001718,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "PATCH /api/users"],
+          "fullName": "Users API (admin) PATCH /api/users updates user role",
+          "status": "passed",
+          "title": "updates user role",
+          "duration": 2.558458999999857,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "PATCH /api/users"],
+          "fullName": "Users API (admin) PATCH /api/users prevents self-role change",
+          "status": "passed",
+          "title": "prevents self-role change",
+          "duration": 12.196911999999429,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "DELETE /api/users"],
+          "fullName": "Users API (admin) DELETE /api/users returns 401 if unauthorized",
+          "status": "passed",
+          "title": "returns 401 if unauthorized",
+          "duration": 0.8472619999993185,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "DELETE /api/users"],
+          "fullName": "Users API (admin) DELETE /api/users returns 403 if not admin",
+          "status": "passed",
+          "title": "returns 403 if not admin",
+          "duration": 1.1827889999985928,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "DELETE /api/users"],
+          "fullName": "Users API (admin) DELETE /api/users returns 400 for missing userId",
+          "status": "passed",
+          "title": "returns 400 for missing userId",
+          "duration": 1.6332299999994575,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "DELETE /api/users"],
+          "fullName": "Users API (admin) DELETE /api/users soft-deletes user",
+          "status": "passed",
+          "title": "soft-deletes user",
+          "duration": 2.564667999999074,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Users API (admin)", "DELETE /api/users"],
+          "fullName": "Users API (admin) DELETE /api/users prevents self-deletion",
+          "status": "passed",
+          "title": "prevents self-deletion",
+          "duration": 1.484372999999323,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1783072060557,
+      "endTime": 1783072060604.4844,
+      "status": "passed",
+      "message": "",
+      "name": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/tests/api/users.test.ts"
+    }
+  ]
+}
