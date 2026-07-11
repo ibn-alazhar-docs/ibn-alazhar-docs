@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { buildFolderTree, type FolderNode } from "@/core/folder-tree";
+import { apiFetch } from "@/shared/api";
 
 export function useFolders() {
   const [folders, setFolders] = useState<FolderNode[]>([]);
@@ -9,7 +10,7 @@ export function useFolders() {
 
   const loadFolders = useCallback(async () => {
     try {
-      const response = await fetch("/api/folders");
+      const response = await apiFetch("/api/folders");
       if (!response.ok) return;
       const data = await response.json();
       setFolders(buildFolderTree(data.folders, null));
@@ -25,7 +26,7 @@ export function useFolders() {
   }, [loadFolders]);
 
   async function createFolder(name: string, parentId: string | null): Promise<void> {
-    const response = await fetch("/api/folders", {
+    const response = await apiFetch("/api/folders", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, parentId }),

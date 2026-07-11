@@ -11,6 +11,7 @@ import { Card } from "@/ui/card";
 import { Button } from "@/ui/button";
 import { Badge } from "@/ui/badge";
 import { ConfirmDialog } from "@/ui/confirm-dialog";
+import { apiFetch } from "@/shared/api";
 
 interface User {
   id: string;
@@ -32,7 +33,7 @@ export default function UsersPage() {
 
   async function loadUsers() {
     try {
-      const res = await fetch("/api/users");
+      const res = await apiFetch("/api/users");
       if (!res.ok) {
         if (res.status === 403) {
           setError(t("forbidden"));
@@ -56,7 +57,7 @@ export default function UsersPage() {
   async function toggleRole(userId: string, currentRole: string) {
     const newRole = currentRole === "ADMIN" ? "STUDENT" : "ADMIN";
     try {
-      const res = await fetch("/api/users", {
+      const res = await apiFetch("/api/users", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, role: newRole }),
@@ -70,7 +71,7 @@ export default function UsersPage() {
 
   async function performDelete(userId: string) {
     try {
-      const res = await fetch("/api/users", {
+      const res = await apiFetch("/api/users", {
         method: "DELETE",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),

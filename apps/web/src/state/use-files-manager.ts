@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import type { Doc } from "@/ui/files/document-table";
+import { apiFetch } from "@/shared/api";
 
 interface ActiveJob {
   jobId: string;
@@ -154,7 +155,7 @@ export function useFilesManager(): UseFilesManagerReturn {
 
   async function handleMoveSubmit(folderId: string | null) {
     try {
-      const res = await fetch("/api/documents/bulk-move", {
+      const res = await apiFetch("/api/documents/bulk-move", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentIds: Array.from(selectedDocs), folderId }),
@@ -171,7 +172,7 @@ export function useFilesManager(): UseFilesManagerReturn {
 
   async function handleBulkTag(tagId: string) {
     try {
-      const res = await fetch("/api/documents/bulk-tag", {
+      const res = await apiFetch("/api/documents/bulk-tag", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentIds: Array.from(selectedDocs), tagId }),
@@ -250,7 +251,7 @@ export function useFilesManager(): UseFilesManagerReturn {
   async function handleBulkExport() {
     const ids = Array.from(selectedDocs);
     try {
-      const res = await fetch("/api/export/batch", {
+      const res = await apiFetch("/api/export/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ documentIds: ids, format: "zip", profile: "archive" }),

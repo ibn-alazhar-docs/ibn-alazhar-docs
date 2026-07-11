@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { resetPasswordSchema } from "@/shared/validators/auth";
+import { apiFetch } from "@/shared/api";
 
 interface ActionState {
   error: string | null;
@@ -58,7 +59,7 @@ export function ResetPasswordForm() {
           return { error: null, success: false, fieldErrors };
         }
 
-        const response = await fetch("/api/auth/reset-password", {
+        const response = await apiFetch("/api/auth/reset-password", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

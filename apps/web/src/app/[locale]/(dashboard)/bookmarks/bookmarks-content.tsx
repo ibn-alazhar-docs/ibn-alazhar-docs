@@ -9,6 +9,7 @@ import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
 import { BookmarkButton } from "@/ui/documents/bookmark-button";
 import { FileTextIcon, BookmarkIcon } from "@/ui/icons";
+import { apiFetch } from "@/shared/api";
 
 interface BookmarkItem {
   id: string;
@@ -40,7 +41,7 @@ export function BookmarksContent() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/bookmarks?limit=100");
+        const res = await apiFetch("/api/bookmarks?limit=100");
         if (res.ok) {
           const data = await res.json();
           setBookmarks(data.bookmarks);

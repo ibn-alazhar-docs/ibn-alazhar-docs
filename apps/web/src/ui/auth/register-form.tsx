@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { registerSchema } from "@/shared/validators/auth";
+import { apiFetch } from "@/shared/api";
 
 interface ActionState {
   error: string | null;
@@ -54,7 +55,7 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
         }
 
         // Post to /api/auth/register
-        const response = await fetch("/api/auth/register", {
+        const response = await apiFetch("/api/auth/register", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

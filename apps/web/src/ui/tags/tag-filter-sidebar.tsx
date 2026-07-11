@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { TagWithCount } from "./types";
+import { apiFetch } from "@/shared/api";
 
 interface TagFilterSidebarProps {
   selectedTagIds: string[];
@@ -17,7 +18,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
 
   const fetchTags = useCallback(async () => {
     try {
-      const res = await fetch("/api/tags");
+      const res = await apiFetch("/api/tags");
       if (res.ok) {
         const data = await res.json();
         setTags(data.tags);
