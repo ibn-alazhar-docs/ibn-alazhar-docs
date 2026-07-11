@@ -16,7 +16,7 @@ export const CATEGORY_LABELS: Record<string, Record<string, string>> = {
 export const CATEGORY_DESCRIPTIONS: Record<string, Record<string, string>> = {
   introduction: {
     ar: "مستندات تعريفية بالمنصة ورؤيتها ومنهجية العمل، تمنح القارئ فهمًا متكاملاً لأساسيات ابن الأزهر دوكس.",
-    en: "Introductory documents about the platform, its vision, and work methodology, giving readers a comprehensive understanding of Ibn Al-Azhar Docs foundations.",
+    en: "Introductory documents about the platform, its vision, and methodology, giving the reader a comprehensive understanding of the basics of Ibn Al-Azhar Docs.",
   },
   organization: {
     ar: "نظام تصنيف المعرفة وتنظيم المحتوى، يشرح كيفية هيكلة المواد العلمية وتصنيفها وتنظيمها في المكتبة.",
