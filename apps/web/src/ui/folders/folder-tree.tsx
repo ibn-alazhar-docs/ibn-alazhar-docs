@@ -81,7 +81,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         <h3 className="text-sm font-semibold text-muted-color">{t("title")}</h3>
         <button
           type="button"
-          className="text-sm font-medium text-[var(--success)] hover:text-[var(--success)]"
+          className="text-sm font-medium text-success hover:text-success"
           onClick={() => {
             setCreateParentId(null);
             setShowCreateDialog(true);
@@ -95,7 +95,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
         type="button"
         className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-start transition-colors ${
           selectedFolderId === null
-            ? "bg-[var(--success-bg)] text-[var(--success)]"
+            ? "bg-success-bg text-success"
             : "text-primary-color hover:bg-hover"
         }`}
         onClick={() => onSelectFolder(null)}
@@ -132,7 +132,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
           <p className="text-sm text-muted-color">{t("empty")}</p>
           <button
             type="button"
-            className="mt-2 text-sm font-medium text-[var(--success)] hover:text-[var(--success)]"
+            className="mt-2 text-sm font-medium text-success hover:text-success"
             onClick={() => {
               setCreateParentId(null);
               setShowCreateDialog(true);

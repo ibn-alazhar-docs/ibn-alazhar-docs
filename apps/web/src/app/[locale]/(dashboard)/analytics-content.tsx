@@ -68,7 +68,7 @@ function BarChart({
     <div className="space-y-3">
       {data.map((item) => (
         <div key={item.label} className="flex items-center gap-3">
-          <span className="text-xs text-[var(--text-secondary)] w-24 truncate text-start shrink-0">
+          <span className="text-xs text-secondary-color w-24 truncate text-start shrink-0">
             {item.label}
           </span>
           <div className="flex-1 h-5 bg-[var(--hover-bg)] rounded-full overflow-hidden">
@@ -80,7 +80,7 @@ function BarChart({
               }}
             />
           </div>
-          <span className="text-xs font-semibold text-[var(--text-primary)] w-8 text-end shrink-0">
+          <span className="text-xs font-semibold text-primary-color w-8 text-end shrink-0">
             {item.value}
           </span>
         </div>
@@ -103,7 +103,7 @@ function StatCard({
   accentColor?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-[var(--border-line)] bg-[var(--card-bg)] p-5 shadow-[var(--shadow-sm)]">
+    <div className="relative overflow-hidden rounded-xl border border-line bg-[var(--card-bg)] p-5 shadow-[var(--shadow-sm)]">
       <div
         className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl opacity-60"
         style={{
@@ -117,19 +117,19 @@ function StatCard({
           className="flex h-8 w-8 items-center justify-center rounded-lg"
           style={{ background: "var(--badge-bg)" }}
         >
-          <Icon className="h-4 w-4 text-[var(--success)]" />
+          <Icon className="h-4 w-4 text-success" />
         </span>
-        <span className="text-xs font-semibold uppercase tracking-widest text-[var(--text-tertiary)]">
+        <span className="text-xs font-semibold uppercase tracking-widest text-muted-color">
           {label}
         </span>
       </div>
       <div
-        className="text-2xl font-bold text-[var(--text-primary)]"
+        className="text-2xl font-bold text-primary-color"
         style={{ fontFamily: "var(--font-display)" }}
       >
         {value}
       </div>
-      {sub && <div className="text-xs text-[var(--text-tertiary)] mt-1">{sub}</div>}
+      {sub && <div className="text-xs text-muted-color mt-1">{sub}</div>}
     </div>
   );
 }
@@ -202,16 +202,14 @@ export function AnalyticsContent() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[var(--text-primary)]">
-            {t("title")}
-          </h1>
-          <p className="text-sm text-[var(--text-secondary)] mt-1">{t("subtitle")}</p>
+          <h1 className="text-2xl font-bold tracking-tight text-primary-color">{t("title")}</h1>
+          <p className="text-sm text-secondary-color mt-1">{t("subtitle")}</p>
         </div>
         <div className="flex items-center gap-2">
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="h-9 px-3 text-xs border border-[var(--border-line)] rounded-lg bg-[var(--input-bg)] text-[var(--text-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--input-focus)]"
+            className="h-9 px-3 text-xs border border-line rounded-lg bg-input text-primary-color focus:outline-none focus:ring-2 focus:ring-input-focus"
           >
             <option value={7}>{t("period7")}</option>
             <option value={30}>{t("period30")}</option>
@@ -267,7 +265,7 @@ export function AnalyticsContent() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <BarChartIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              <BarChartIcon className="h-4 w-4 text-secondary-color" />
               {t("charts.status")}
             </CardTitle>
           </CardHeader>
@@ -295,7 +293,7 @@ export function AnalyticsContent() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <FileTextIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              <FileTextIcon className="h-4 w-4 text-secondary-color" />
               {t("charts.dailyUploads")}
             </CardTitle>
           </CardHeader>
@@ -309,11 +307,11 @@ export function AnalyticsContent() {
                   return (
                     <div key={item.date} className="flex-1 flex flex-col items-center gap-1">
                       <div
-                        className="w-full bg-[var(--success)] rounded-t-sm transition-all duration-500 hover:opacity-80"
+                        className="w-full bg-success rounded-t-sm transition-all duration-500 hover:opacity-80"
                         style={{ height: `${Math.max(height, 4)}%`, opacity: 0.75 }}
                         title={`${item.date}: ${item.count}`}
                       />
-                      <span className="text-[9px] text-[var(--text-tertiary)]">
+                      <span className="text-[9px] text-muted-color">
                         {new Date(item.date).getDate()}/{new Date(item.date).getMonth() + 1}
                       </span>
                     </div>
@@ -328,7 +326,7 @@ export function AnalyticsContent() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <TagsIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              <TagsIcon className="h-4 w-4 text-secondary-color" />
               {t("charts.topTags")}
             </CardTitle>
           </CardHeader>
@@ -347,7 +345,7 @@ export function AnalyticsContent() {
         <Card>
           <CardHeader>
             <CardTitle className="text-sm flex items-center gap-2">
-              <HardDriveIcon className="h-4 w-4 text-[var(--text-secondary)]" />
+              <HardDriveIcon className="h-4 w-4 text-secondary-color" />
               {t("charts.largestDocuments")}
             </CardTitle>
           </CardHeader>
@@ -356,9 +354,9 @@ export function AnalyticsContent() {
               {(data?.storage.largestDocuments ?? []).map((doc) => (
                 <div
                   key={doc.title}
-                  className="flex items-center justify-between py-2 border-b border-[var(--border-line)] last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-line last:border-0"
                 >
-                  <span className="text-xs text-[var(--text-primary)] truncate max-w-[60%]">
+                  <span className="text-xs text-primary-color truncate max-w-[60%]">
                     {doc.title}
                   </span>
                   <Badge variant="secondary" className="text-[10px]">

@@ -101,8 +101,8 @@ export default function UsersPage() {
     return (
       <Container>
         <Section padding="md">
-          <div className="rounded-xl border border-[var(--danger)]/20 bg-[var(--danger-bg)] p-6 text-center">
-            <p className="text-[var(--danger)]">{error}</p>
+          <div className="rounded-xl border border-danger/20 bg-danger-bg p-6 text-center">
+            <p className="text-danger">{error}</p>
           </div>
         </Section>
       </Container>
@@ -127,7 +127,7 @@ export default function UsersPage() {
               </Card>
               <Card className="p-4">
                 <p className="text-xs text-very-muted uppercase tracking-wide">{t("admins")}</p>
-                <p className="text-2xl font-bold text-[var(--success)] mt-1">{admins}</p>
+                <p className="text-2xl font-bold text-success mt-1">{admins}</p>
               </Card>
               <Card className="p-4">
                 <p className="text-xs text-very-muted uppercase tracking-wide">{t("students")}</p>
@@ -190,7 +190,7 @@ export default function UsersPage() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="text-[var(--danger)] hover:bg-[var(--danger-bg)] hover:text-[var(--danger)]"
+                              className="text-danger hover:bg-danger-bg hover:text-danger"
                               onClick={() => setDeletingUserId(user.id)}
                             >
                               {t("delete")}

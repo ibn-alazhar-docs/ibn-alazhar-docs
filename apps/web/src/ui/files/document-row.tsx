@@ -39,7 +39,7 @@ function DocumentRowActions({
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
             title={tCommon("share")}
             aria-label={tCommon("share")}
           >
@@ -52,7 +52,7 @@ function DocumentRowActions({
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => onStartEdit(doc)}
-            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
             title={tCommon("edit")}
             aria-label={tCommon("edit")}
           >
@@ -66,7 +66,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={() => onSaveEdit(doc.id)}
-              className="rounded-lg bg-[var(--success-bg)] p-1.5 text-[var(--success)] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+              className="rounded-lg bg-success-bg p-1.5 text-success transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
               title={tCommon("save")}
               aria-label={tCommon("save")}
             >
@@ -77,7 +77,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onCancelEdit}
-              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--success)]"
+              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
               title={tCommon("cancel")}
               aria-label={tCommon("cancel")}
             >
@@ -90,7 +90,7 @@ function DocumentRowActions({
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={() => onDelete(doc.id)}
-          className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--danger)]"
+          className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           title={tCommon("delete")}
           aria-label={tCommon("delete")}
         >
@@ -172,7 +172,7 @@ export const DocumentRow = memo(function DocumentRow({
             }}
             onBlur={() => onSaveEdit(doc.id)}
             autoFocus
-            className="w-full rounded border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-[var(--success)]"
+            className="w-full rounded border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-success"
           />
         ) : (
           <div
@@ -188,7 +188,7 @@ export const DocumentRow = memo(function DocumentRow({
             {doc.status === "COMPLETED" && (
               <a
                 href={`/${locale}/preview/${doc.id}`}
-                className="inline-block shrink-0 rounded-full bg-[var(--success-bg)] px-2 py-0.5 text-xs font-medium text-[var(--success)] transition-colors hover:bg-[var(--success)] hover:text-[var(--btn-primary-text)]"
+                className="inline-block shrink-0 rounded-full bg-success-bg px-2 py-0.5 text-xs font-medium text-success transition-colors hover:bg-success hover:text-btn-primary-text"
               >
                 {tCommon("view")}
               </a>

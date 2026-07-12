@@ -35,7 +35,7 @@ export function BookmarkButton({
       onClick={handleToggle}
       disabled={toggleBookmark.isPending}
       className={`rounded-lg p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--warning)] ${
-        isBookmarked ? "text-[var(--warning)]" : "text-muted-color hover:text-[var(--warning)]"
+        isBookmarked ? "text-warning-500" : "text-muted-color hover:text-warning-500"
       }`}
       title={isBookmarked ? t("removeBookmark") : t("addBookmark")}
       aria-label={isBookmarked ? t("removeBookmark") : t("addBookmark")}

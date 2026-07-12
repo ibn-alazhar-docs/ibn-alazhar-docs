@@ -26,11 +26,10 @@ interface BookmarkItem {
 }
 
 function getStatusColor(status: string): string {
-  if (status === "COMPLETED") return "bg-[var(--success-bg)] text-[var(--success)]";
-  if (status === "FAILED") return "bg-[var(--danger-bg)] text-[var(--danger)]";
-  if (status.startsWith("OCR") || status === "SPLITTING")
-    return "bg-[var(--info-bg)] text-[var(--info)]";
-  return "bg-[var(--badge-bg)] text-[var(--text-muted)]";
+  if (status === "COMPLETED") return "bg-success-bg text-success";
+  if (status === "FAILED") return "bg-danger-bg text-danger";
+  if (status.startsWith("OCR") || status === "SPLITTING") return "bg-info-bg text-info";
+  return "bg-badge text-muted-color";
 }
 
 export function BookmarksContent() {
@@ -96,7 +95,7 @@ export function BookmarksContent() {
                   className="flex items-center justify-between rounded-xl border border-line bg-card p-4 transition-colors hover:bg-badge"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[var(--info-bg)] text-[var(--info)]">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-info-bg text-info">
                       <FileTextIcon className="h-5 w-5" />
                     </div>
                     <div>

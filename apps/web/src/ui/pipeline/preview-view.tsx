@@ -119,11 +119,11 @@ export function PreviewView({ jobId }: PreviewViewProps) {
 
   if (error) {
     return (
-      <div className="bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] p-6 rounded-lg text-center">
+      <div className="bg-danger-bg border border-danger/20 text-danger p-6 rounded-lg text-center">
         <p className="text-lg font-medium mb-2">{error}</p>
         <button
           onClick={() => window.location.reload()}
-          className="text-sm text-[var(--danger)] underline hover:no-underline"
+          className="text-sm text-danger underline hover:no-underline"
         >
           {t("retry")}
         </button>
@@ -169,7 +169,7 @@ export function PreviewView({ jobId }: PreviewViewProps) {
               </h1>
             ),
             h2: ({ children }) => (
-              <h2 className="text-2xl font-bold mt-10 mb-4 text-[var(--success)] leading-normal">
+              <h2 className="text-2xl font-bold mt-10 mb-4 text-success leading-normal">
                 {children}
               </h2>
             ),
@@ -201,7 +201,7 @@ export function PreviewView({ jobId }: PreviewViewProps) {
             a: ({ href, children }) => (
               <a
                 href={href}
-                className="text-[var(--info)] hover:underline"
+                className="text-info hover:underline"
                 target="_blank"
                 rel="noopener noreferrer"
               >

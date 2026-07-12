@@ -166,7 +166,7 @@ export default function TagsPage() {
             {/* Error */}
             {error && (
               <div
-                className="p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)]"
+                className="p-3 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger"
                 role="alert"
                 aria-live="polite"
               >
@@ -281,7 +281,7 @@ export default function TagsPage() {
                               type="text"
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
-                              className="px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+                              className="px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
                               autoFocus
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") handleRename(tag.id);
@@ -303,7 +303,7 @@ export default function TagsPage() {
                               <>
                                 <button
                                   type="button"
-                                  className="text-xs text-[var(--success)] hover:underline"
+                                  className="text-xs text-success hover:underline"
                                   onClick={() => handleRename(tag.id)}
                                 >
                                   {tCommon("save")}
@@ -338,7 +338,7 @@ export default function TagsPage() {
                                 </button>
                                 <button
                                   type="button"
-                                  className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80"
+                                  className="text-xs text-danger hover:text-danger/80"
                                   onClick={() => setDeletingTagId(tag.id)}
                                 >
                                   {tCommon("delete")}
@@ -370,7 +370,7 @@ export default function TagsPage() {
                       <label className="block text-sm font-medium text-primary-color mb-1">
                         {t("mergeSource")}
                       </label>
-                      <div className="px-3 py-2 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)]">
+                      <div className="px-3 py-2 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger">
                         {tags.find((t) => t.id === mergingId)?.name}
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export default function TagsPage() {
                       <select
                         value={mergeTargetId}
                         onChange={(e) => setMergeTargetId(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+                        className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-success"
                       >
                         <option value="">{t("mergeTarget")}</option>
                         {tags

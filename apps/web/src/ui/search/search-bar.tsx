@@ -125,7 +125,7 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
           onFocus={() => setShowSuggestions(true)}
           onKeyDown={handleKeyDown}
           placeholder={placeholder || t("placeholder")}
-          className="w-full px-4 py-2 ps-10 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--success)] text-sm"
+          className="w-full px-4 py-2 ps-10 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-success text-sm"
           role="combobox"
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"

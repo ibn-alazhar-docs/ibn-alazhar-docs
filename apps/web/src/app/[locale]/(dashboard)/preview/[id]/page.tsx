@@ -108,7 +108,7 @@ export default function PreviewPage() {
             </button>
             <button
               onClick={() => setIsExportModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-medium bg-[var(--success)] text-[var(--btn-primary-text)] rounded-md hover:opacity-90 transition-colors"
+              className="px-3 py-1.5 text-xs font-medium bg-success text-btn-primary-text rounded-md hover:opacity-90 transition-colors"
             >
               {tExportModal("button")}
             </button>

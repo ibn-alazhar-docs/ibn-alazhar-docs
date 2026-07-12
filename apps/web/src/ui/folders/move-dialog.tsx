@@ -46,7 +46,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
       <div key={folder.id}>
         <div
           className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
-            isSelected ? "bg-[var(--success-bg)] text-[var(--success)]" : "text-primary-color"
+            isSelected ? "bg-success-bg text-success" : "text-primary-color"
           }`}
           style={{ paddingInlineStart: `${level * 16 + 12}px` }}
           onClick={() => setSelectedFolderId(folder.id)}
@@ -96,9 +96,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
                 {/* Root option */}
                 <div
                   className={`flex items-center gap-2 px-3 py-2 cursor-pointer hover:bg-hover transition-colors border-b border-line ${
-                    selectedFolderId === null
-                      ? "bg-[var(--success-bg)] text-[var(--success)]"
-                      : "text-primary-color"
+                    selectedFolderId === null ? "bg-success-bg text-success" : "text-primary-color"
                   }`}
                   onClick={() => setSelectedFolderId(null)}
                 >

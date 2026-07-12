@@ -239,7 +239,7 @@ export default function ConversionsPage() {
                                 <div className="w-24">
                                   <div className="h-2 bg-badge rounded-full overflow-hidden">
                                     <div
-                                      className="h-full bg-[var(--success)] transition-all duration-500"
+                                      className="h-full bg-success transition-all duration-500"
                                       style={{
                                         width: `${job.progress > 0 ? Math.max(5, job.progress) : 5}%`,
                                       }}
@@ -250,9 +250,7 @@ export default function ConversionsPage() {
                                   </span>
                                 </div>
                               ) : job.status === "COMPLETED" ? (
-                                <span className="text-xs text-[var(--success)] font-medium">
-                                  100%
-                                </span>
+                                <span className="text-xs text-success font-medium">100%</span>
                               ) : (
                                 <span className="text-xs text-very-muted">—</span>
                               )}
