@@ -101,8 +101,9 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
             name="name"
             aria-invalid={!!state.fieldErrors?.name}
             aria-describedby={state.fieldErrors?.name ? "name-error" : undefined}
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder={t("namePlaceholder")}
+            dir="ltr"
           />
           {state.fieldErrors?.name && (
             <p className="mt-1.5 text-xs text-danger" id="name-error" role="alert">
@@ -122,7 +123,7 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
             dir="ltr"
             aria-invalid={!!state.fieldErrors?.email}
             aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder={t("emailPlaceholder")}
           />
           {state.fieldErrors?.email && (
@@ -146,7 +147,7 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
             dir="ltr"
             aria-invalid={!!state.fieldErrors?.password}
             aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder="••••••••"
           />
           {state.fieldErrors?.password && (
@@ -172,7 +173,7 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
             aria-describedby={
               state.fieldErrors?.confirmPassword ? "confirmPassword-error" : undefined
             }
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder="••••••••"
           />
           {state.fieldErrors?.confirmPassword && (

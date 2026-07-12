@@ -3,8 +3,8 @@ import type { PipelineConfig, ProcessingJob, ExportRequest } from "../types";
 import { JOB_QUEUES, JOB_TIMEOUTS, JOB_CONCURRENCY } from "../types";
 import { getConnection } from "./connection";
 
-type JobHandler = (job: ProcessingJob) => Promise<void>;
-type ExportHandler = (req: ExportRequest) => Promise<void>;
+export type JobHandler<T> = (job: Job<T>) => Promise<void>;
+export type JobFailedHandler<T> = (job: Job<T>, error: Error, queueName: string) => Promise<void>;
 
 export function getRetryConfigForQueue(queueName: string) {
   const baseConfig = {
@@ -30,61 +30,87 @@ export function getDefaultJobOptions(queueName: string) {
   return {};
 }
 
-function makeWorkerHandler(handler: JobHandler) {
-  return async (job: Job<ProcessingJob>) => {
-    await job.updateProgress(0);
-    try {
-      await handler(job.data);
-      await job.updateProgress(100);
-    } catch (error) {
-      await job.updateProgress(0);
-      throw error;
-    }
-  };
-}
-
 function createBaseWorker<T>(
   queueName: string,
   config: PipelineConfig,
-  handler: (job: Job<T>) => Promise<void>,
+  handler: JobHandler<T>,
+  onFailed?: JobFailedHandler<T>,
 ) {
   const concurrency = JOB_CONCURRENCY[queueName] ?? 1;
   const timeout = JOB_TIMEOUTS[queueName as keyof typeof JOB_TIMEOUTS] ?? 60_000;
-  return new Worker<T>(queueName, handler, {
-    connection: getConnection(config) as unknown as import("bullmq").ConnectionOptions,
-    concurrency,
-    lockDuration: Math.max(timeout, 60_000),
-    lockRenewTime: 15_000,
-    stalledInterval: 30_000,
-    removeOnComplete: { count: 100 },
-    removeOnFail: { count: 50 },
-  });
+  const worker = new Worker<T>(
+    queueName,
+    async (bullJob) => {
+      await bullJob.updateProgress(0);
+      await handler(bullJob as Job<T>);
+      await bullJob.updateProgress(100);
+    },
+    {
+      connection: getConnection(config) as unknown as import("bullmq").ConnectionOptions,
+      concurrency,
+      lockDuration: Math.max(timeout, 60_000),
+      lockRenewTime: 15_000,
+      stalledInterval: 30_000,
+      removeOnComplete: { count: 100 },
+      removeOnFail: { count: 50 },
+    },
+  );
+
+  if (onFailed) {
+    worker.on("failed", (job, error) => {
+      if (job) {
+        void onFailed(job as Job<T>, error, queueName);
+      }
+    });
+  }
+
+  return worker;
 }
 
-export function createValidationWorker(config: PipelineConfig, handler: JobHandler) {
-  return createBaseWorker(JOB_QUEUES.VALIDATION, config, makeWorkerHandler(handler));
+export function createValidationWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ProcessingJob>,
+  onFailed?: JobFailedHandler<ProcessingJob>,
+) {
+  return createBaseWorker(JOB_QUEUES.VALIDATION, config, handler, onFailed);
 }
 
-export function createSplittingWorker(config: PipelineConfig, handler: JobHandler) {
-  return createBaseWorker(JOB_QUEUES.SPLITTING, config, makeWorkerHandler(handler));
+export function createSplittingWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ProcessingJob>,
+  onFailed?: JobFailedHandler<ProcessingJob>,
+) {
+  return createBaseWorker(JOB_QUEUES.SPLITTING, config, handler, onFailed);
 }
 
-export function createOcrWorker(config: PipelineConfig, handler: JobHandler) {
-  return createBaseWorker(JOB_QUEUES.OCR, config, makeWorkerHandler(handler));
+export function createOcrWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ProcessingJob>,
+  onFailed?: JobFailedHandler<ProcessingJob>,
+) {
+  return createBaseWorker(JOB_QUEUES.OCR, config, handler, onFailed);
 }
 
-export function createCleaningWorker(config: PipelineConfig, handler: JobHandler) {
-  return createBaseWorker(JOB_QUEUES.CLEANING, config, makeWorkerHandler(handler));
+export function createCleaningWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ProcessingJob>,
+  onFailed?: JobFailedHandler<ProcessingJob>,
+) {
+  return createBaseWorker(JOB_QUEUES.CLEANING, config, handler, onFailed);
 }
 
-export function createGenerationWorker(config: PipelineConfig, handler: JobHandler) {
-  return createBaseWorker(JOB_QUEUES.GENERATION, config, makeWorkerHandler(handler));
+export function createGenerationWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ProcessingJob>,
+  onFailed?: JobFailedHandler<ProcessingJob>,
+) {
+  return createBaseWorker(JOB_QUEUES.GENERATION, config, handler, onFailed);
 }
 
-export function createExportWorker(config: PipelineConfig, handler: ExportHandler) {
-  return createBaseWorker(JOB_QUEUES.EXPORT, config, async (job: Job<ExportRequest>) => {
-    await job.updateProgress(0);
-    await handler(job.data);
-    await job.updateProgress(100);
-  });
+export function createExportWorker(
+  config: PipelineConfig,
+  handler: JobHandler<ExportRequest>,
+  onFailed?: JobFailedHandler<ExportRequest>,
+) {
+  return createBaseWorker(JOB_QUEUES.EXPORT, config, handler, onFailed);
 }

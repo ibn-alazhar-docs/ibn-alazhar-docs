@@ -116,6 +116,8 @@ model Document {
   pageRange   String?
   outputFormats String[] @default([])
   outputKeys    Json?
+  errorCode    String?
+  errorMessage String?
   language    String    @default("ar")
   isRtl       Boolean   @default(true)
 

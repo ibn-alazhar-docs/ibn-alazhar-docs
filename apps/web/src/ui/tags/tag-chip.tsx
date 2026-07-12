@@ -22,7 +22,7 @@ export function TagChip({
   selected = false,
   className,
 }: TagChipProps) {
-  const sizeClasses = size === "sm" ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1";
+  const sizeClasses = size === "sm" ? "text-xs px-2 py-1" : "text-sm px-3 py-1.5";
 
   return (
     <span
@@ -45,7 +45,7 @@ export function TagChip({
       {onRemove && (
         <button
           type="button"
-          className="ms-0.5 hover:opacity-60 transition-opacity"
+          className="ms-1 rounded-full p-0.5 hover:opacity-60 transition-opacity"
           onClick={(e) => {
             e.stopPropagation();
             onRemove();

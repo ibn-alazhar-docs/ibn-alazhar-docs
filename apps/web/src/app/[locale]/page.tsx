@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { generatePageMetadata } from "@/ui/metadata";
 import { auth } from "@/middleware/auth";
-import { PublicHeader } from "@/ui/layout/public-header";
-import { PublicFooter } from "@/ui/layout/public-footer";
 import { Hero } from "@/ui/sections/hero";
 import { KnowledgeAreas } from "@/ui/sections/knowledge-areas";
 import { Features } from "@/ui/sections/features";
@@ -28,24 +26,13 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 export default async function HomePage({ params }: HomePageProps) {
   const { locale } = await params;
 
-  const [tNav, tFooter, tHero] = await Promise.all([
-    getTranslations({ locale, namespace: "nav" }),
-    getTranslations({ locale, namespace: "footer" }),
-    getTranslations({ locale, namespace: "section.hero" }),
-  ]);
+  const [tHero] = await Promise.all([getTranslations({ locale, namespace: "section.hero" })]);
 
   const session = await auth();
   const isLoggedIn = !!session?.user;
 
   return (
     <div className="landing-page min-h-screen overflow-x-hidden">
-      <PublicHeader
-        locale={locale}
-        signInLabel={tNav("signIn")}
-        signUpLabel={tNav("signUp")}
-        mainNavLabel={tNav("mainNav")}
-        isLoggedIn={isLoggedIn}
-      />
       <main id="main-content">
         <Hero
           locale={locale}
@@ -62,7 +49,6 @@ export default async function HomePage({ params }: HomePageProps) {
         <Features />
         <CTASection isLoggedIn={isLoggedIn} />
       </main>
-      <PublicFooter locale={locale} tagline={tFooter("tagline")} copyright={tFooter("copyright")} />
     </div>
   );
 }

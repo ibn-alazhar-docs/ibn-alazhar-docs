@@ -6,7 +6,7 @@ interface SkeletonProps {
 }
 
 export function Skeleton({ className }: SkeletonProps) {
-  return <div className={cn("animate-pulse rounded-md bg-muted", className)} />;
+  return <div className={cn("animate-pulse rounded-lg bg-muted", className)} />;
 }
 
 export function SkeletonTable({ rows = 5, className }: SkeletonProps & { rows?: number }) {

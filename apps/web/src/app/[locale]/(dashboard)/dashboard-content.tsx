@@ -134,7 +134,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
                   <Link
                     key={doc.id}
                     href={`/preview/${doc.id}`}
-                    className="group flex items-center gap-3 rounded-lg border border-line bg-[var(--page-bg)] p-3 transition-all hover:border-[var(--gold-border)] hover:shadow-sm hover:bg-[var(--hover-bg)]"
+                    className="group flex items-center gap-3 rounded-lg border border-line bg-[var(--page-bg)] p-4 transition-all hover:border-[var(--gold-border)] hover:shadow-sm hover:bg-[var(--hover-bg)]"
                   >
                     <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-badge">
                       <FileTextIcon
@@ -149,7 +149,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
                       <div className="mt-1 flex items-center gap-2">
                         <Badge
                           variant={statusVariantMap[doc.status] ?? "secondary"}
-                          className="text-[10px] px-1.5 py-0"
+                          className="text-[10px] px-2 py-0.5"
                         >
                           {tDocs(`status.${doc.status}` as unknown as "title")}
                         </Badge>

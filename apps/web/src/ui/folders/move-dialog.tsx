@@ -45,7 +45,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
     return (
       <div key={folder.id}>
         <div
-          className={`flex items-center gap-2 px-3 py-1.5 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
             isSelected ? "bg-success-bg text-success" : "text-primary-color"
           }`}
           style={{ paddingInlineStart: `${level * 16 + 12}px` }}
@@ -66,7 +66,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
   return (
     <Portal>
       <div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+        className="fixed inset-0 bg-overlay flex items-center justify-center p-4 z-[100]"
         role="dialog"
         aria-modal="true"
         onKeyDown={(e) => {
@@ -76,7 +76,7 @@ export function MoveDialog({ selectedCount, onSubmit, onClose }: MoveDialogProps
           if (e.target === e.currentTarget) onClose();
         }}
       >
-        <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4">
+        <div className="bg-card max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line shadow-lg">
           <div className="p-6">
             <h2 className="text-lg font-semibold text-primary-color mb-2">{t("moveTitle")}</h2>
             <p className="text-sm text-muted-color mb-4">

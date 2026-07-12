@@ -5,6 +5,8 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
 
   if (msg.includes("OCR_QUOTA_EXCEEDED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_QUOTA_EXCEEDED" };
+  if (msg.includes("ALL_OCR_PROVIDERS_FAILED"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
   if (msg.includes("PDF_ENCRYPTED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_ENCRYPTED" };
   if (msg.includes("PDF_CORRUPT"))
@@ -21,6 +23,8 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "FILE_TOO_LARGE" };
   if (msg.includes("INVALID_TYPE"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "INVALID_TYPE" };
+  if (msg.includes("UNSUPPORTED_FORMAT"))
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "INVALID_TYPE" };
 
   if (msg.includes("OCR_UPLOAD_FAILED"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "OCR_UPLOAD_FAILED" };
@@ -33,9 +37,9 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
   if (msg.includes("rateLimit") || msg.includes("quota") || msg.includes("429"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "RATE_LIMITED" };
   if (msg.includes("Redis") || msg.includes("redis"))
-    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "REDIS_ERROR" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "REDIS_UNAVAILABLE" };
   if (msg.includes("MinIO") || msg.includes("minio") || msg.includes("storage"))
-    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "STORAGE_ERROR" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "UPLOAD_STORAGE_UNAVAILABLE" };
 
   if (msg.includes("JOB_TIMEOUT"))
     return { category: FAILURE_CATEGORIES.FATAL, code: "JOB_TIMEOUT" };

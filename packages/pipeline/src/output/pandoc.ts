@@ -7,6 +7,8 @@ import type { CleanedText } from "../types";
 
 const execFileAsync = promisify(execFile);
 
+type DocxInput = CleanedText | { markdown?: string; cleaned?: string };
+
 async function pandocConvert(markdownText: string, format: string): Promise<Buffer> {
   const tempDir = await mkdtemp(path.join(tmpdir(), `pandoc-${format}-`));
   try {
@@ -27,12 +29,12 @@ async function pandocConvert(markdownText: string, format: string): Promise<Buff
   }
 }
 
-export async function generateDocx(cleanedText: CleanedText): Promise<Buffer> {
-  const markdownText = cleanedText.markdown || cleanedText.cleaned;
+export async function generateDocx(input: DocxInput): Promise<Buffer> {
+  const markdownText = input.markdown || input.cleaned || "";
   return pandocConvert(markdownText, "docx");
 }
 
-export async function generateEpub(cleanedText: CleanedText): Promise<Buffer> {
-  const markdownText = cleanedText.markdown || cleanedText.cleaned;
+export async function generateEpub(input: DocxInput): Promise<Buffer> {
+  const markdownText = input.markdown || input.cleaned || "";
   return pandocConvert(markdownText, "epub");
 }

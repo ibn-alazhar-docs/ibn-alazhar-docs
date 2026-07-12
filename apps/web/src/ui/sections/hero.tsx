@@ -42,7 +42,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-32 sm:pt-40 pb-16">
+    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-24 sm:pt-32 pb-16">
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <motion.div
@@ -77,7 +77,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         </svg>
       </div>
 
-      <div className="mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-start justify-center px-6 pt-12 pb-8">
+      <div className="mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-start justify-center px-6 pb-8">
         <motion.div
           className="max-w-3xl"
           variants={containerVariants}

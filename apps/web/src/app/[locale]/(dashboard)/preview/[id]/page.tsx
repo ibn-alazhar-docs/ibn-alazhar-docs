@@ -9,6 +9,7 @@ import { PreviewView } from "@/ui/pipeline/preview-view";
 import { ExportModal } from "@/ui/pipeline/export-modal";
 import { ShareModal } from "@/ui/pipeline/share-modal";
 import { ShareIcon } from "@/ui/icons";
+import { PageTransition } from "@/ui/page-transition";
 
 interface JobInfo {
   fileName: string;
@@ -81,52 +82,54 @@ export default function PreviewPage() {
   }
 
   return (
-    <div className="min-h-screen bg-badge flex flex-col">
-      {/* Toolbar */}
-      <PreviewToolbar jobId={id} fileName={jobInfo?.fileName ?? "document"} onBack={handleBack} />
+    <PageTransition>
+      <div className="min-h-screen bg-page flex flex-col">
+        {/* Toolbar */}
+        <PreviewToolbar jobId={id} fileName={jobInfo?.fileName ?? "document"} onBack={handleBack} />
 
-      {/* Preview Content */}
-      <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-        <div className="bg-card rounded-xl border border-line p-6 sm:p-10 shadow-sm">
-          <PreviewView jobId={id} />
-        </div>
-      </div>
-
-      {/* Footer */}
-      <div className="border-t border-line bg-card py-4 px-4">
-        <div className="max-w-4xl mx-auto flex items-center justify-between">
-          <span className="text-xs text-very-muted">
-            {tApp("name")} — {t("previewDocument")}
-          </span>
-          <div className="flex gap-2">
-            <button
-              onClick={() => setIsShareModalOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium bg-badge border border-line text-primary-color rounded-md hover:bg-line transition-colors"
-            >
-              <ShareIcon className="h-3.5 w-3.5" />
-              {tShareModal("title")}
-            </button>
-            <button
-              onClick={() => setIsExportModalOpen(true)}
-              className="px-3 py-1.5 text-xs font-medium bg-success text-btn-primary-text rounded-md hover:opacity-90 transition-colors"
-            >
-              {tExportModal("button")}
-            </button>
+        {/* Preview Content */}
+        <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
+          <div className="bg-card rounded-xl border border-line p-6 sm:p-10 shadow-sm">
+            <PreviewView jobId={id} />
           </div>
         </div>
+
+        {/* Footer */}
+        <div className="border-t border-line bg-card py-4 px-4">
+          <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <span className="min-w-0 truncate text-xs text-very-muted">
+              {tApp("name")} — {t("previewDocument")}
+            </span>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsShareModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-badge border border-line text-primary-color rounded-lg hover:bg-line transition-colors"
+              >
+                <ShareIcon className="h-3.5 w-3.5" />
+                {tShareModal("title")}
+              </button>
+              <button
+                onClick={() => setIsExportModalOpen(true)}
+                className="px-3 py-2 text-xs font-medium bg-success text-btn-primary-text rounded-lg hover:opacity-90 transition-colors"
+              >
+                {tExportModal("button")}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <ExportModal
+          documentId={id}
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+        />
+
+        <ShareModal
+          documentId={id}
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+        />
       </div>
-
-      <ExportModal
-        documentId={id}
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-      />
-
-      <ShareModal
-        documentId={id}
-        isOpen={isShareModalOpen}
-        onClose={() => setIsShareModalOpen(false)}
-      />
-    </div>
+    </PageTransition>
   );
 }

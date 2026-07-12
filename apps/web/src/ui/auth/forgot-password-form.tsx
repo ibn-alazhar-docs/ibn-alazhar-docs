@@ -63,7 +63,7 @@ export function ForgotPasswordForm() {
     return (
       <div className="mt-8">
         <div
-          className="rounded-xl border border-success/20 bg-success/5 p-4"
+          className="rounded-lg border border-success/20 bg-success-bg p-4"
           role="alert"
           aria-live="polite"
         >
@@ -85,7 +85,7 @@ export function ForgotPasswordForm() {
     <form className="mt-8 space-y-5 text-start" action={submitAction}>
       {state.error && (
         <div
-          className="rounded-xl border border-danger/20 bg-danger/5 p-4"
+          className="rounded-lg border border-danger/20 bg-danger-bg p-4"
           role="alert"
           aria-live="polite"
         >
@@ -102,7 +102,7 @@ export function ForgotPasswordForm() {
           autoComplete="email"
           aria-invalid={!!state.fieldErrors?.email}
           aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-          className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+          className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
           placeholder={t("emailPlaceholder")}
         />
         {state.fieldErrors?.email && (

@@ -18,7 +18,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
       </div>
 
       {/* Manuscript card */}
-      <div className="card-manuscript w-full max-w-md rounded-2xl bg-card p-8 shadow-xl sm:p-10">
+      <div className="card-manuscript w-full max-w-md rounded-xl bg-card p-8 shadow-lg sm:p-10">
         {children}
       </div>
     </main>

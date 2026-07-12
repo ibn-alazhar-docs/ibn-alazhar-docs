@@ -2,17 +2,7 @@
 
 import { usePathname, Link } from "@/i18n/navigation";
 import { cn } from "@/ui/cn";
-import { useSyncExternalStore, type ReactNode } from "react";
-
-const emptySubscribe = () => () => {};
-
-function useHydrated() {
-  return useSyncExternalStore(
-    emptySubscribe,
-    () => true,
-    () => false,
-  );
-}
+import type { ReactNode } from "react";
 
 interface NavLinkProps {
   href: string;
@@ -23,13 +13,11 @@ interface NavLinkProps {
 
 export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
   const pathname = usePathname();
-  const hydrated = useHydrated();
 
-  const isActive = hydrated
-    ? href === "/" || href === ""
+  const isActive =
+    href === "/" || href === ""
       ? pathname === "/" || pathname === ""
-      : pathname === href || pathname.startsWith(href + "/")
-    : false;
+      : pathname === href || pathname.startsWith(href + "/");
 
   function handleClick() {
     if (onNavigate) {

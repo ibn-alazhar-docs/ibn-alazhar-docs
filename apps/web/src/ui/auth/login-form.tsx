@@ -67,7 +67,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
     <form className="mt-8 space-y-5 text-start" action={submitAction} noValidate>
       {isRegistered && !state.error && (
         <div
-          className="rounded-xl border border-success/20 bg-success/5 p-4"
+          className="rounded-lg border border-success/20 bg-success-bg p-4"
           role="alert"
           aria-live="polite"
         >
@@ -97,7 +97,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
             dir="ltr"
             aria-invalid={!!state.fieldErrors?.email}
             aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder={t("emailPlaceholder")}
           />
           {state.fieldErrors?.email && (
@@ -126,7 +126,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
             dir="ltr"
             aria-invalid={!!state.fieldErrors?.password}
             aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
-            className="w-full rounded-xl border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
             placeholder={t("passwordPlaceholder")}
           />
           {state.fieldErrors?.password && (

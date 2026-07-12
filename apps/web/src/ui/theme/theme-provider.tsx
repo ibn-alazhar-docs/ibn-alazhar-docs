@@ -32,7 +32,6 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 
 function applyTheme(resolved: ResolvedTheme) {
   const root = document.documentElement;
-  root.setAttribute("data-theme", resolved);
   if (resolved === "dark") {
     root.classList.add("dark");
   } else {

@@ -5,6 +5,7 @@ import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos } from "@/core/composition-root";
 import { ERROR_CODES, LIMITS, UI_TIMING } from "@/shared/constants";
 import { StreamService } from "@/core/services/stream.service";
+import { logger } from "@/shared/logger";
 
 export const GET = withAuth(async (request, { session }) => {
   const rateLimitResult = await checkRateLimit("/api/stream", request);
@@ -123,11 +124,12 @@ export const GET = withAuth(async (request, { session }) => {
                 StreamService.handleCompletion(jobId, prismaStatus.stage, send, close);
               }
             }
-          } catch {
+          } catch (pollErr) {
+            logger.warn({ jobId, error: String(pollErr) }, "[stream] poll failed");
             send(
               JSON.stringify({
                 type: "warning",
-                message: "طابور المعالجة غير متاح — تُجرى المحاكاة محلياً",
+                message: "تعذر التحقق من حالة المعالجة مؤقتًا. سنعيد المحاولة تلقائيًا.",
               }),
             );
           }

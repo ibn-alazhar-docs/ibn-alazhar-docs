@@ -1,4 +1,9 @@
-import { loadConfig, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
+import {
+  loadConfig,
+  enqueueValidation,
+  classifyError,
+  recordJobFailure,
+} from "@ibn-al-azhar-docs/pipeline";
 import { unlink, writeFile } from "node:fs/promises";
 
 import { join } from "node:path";
@@ -8,6 +13,8 @@ import type { IDocumentRepository } from "@/domain/repositories/document.reposit
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
 import { NotFoundError } from "@/shared/errors";
+import { AppError } from "@/shared/errors";
+import { ERROR_CODES } from "@/shared/constants";
 
 export class UploadDocumentUseCase {
   constructor(
@@ -31,7 +38,18 @@ export class UploadDocumentUseCase {
       }
     }
 
-    await this.storage.ensureBucket();
+    // Storage availability is checked before any file is written or any DB row
+    // is created, so a failure here leaves no orphaned resources.
+    try {
+      await this.storage.ensureBucket();
+    } catch (err) {
+
+      throw new AppError(
+        "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
+        ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
+        503,
+      );
+    }
 
     const jobId = randomUUID();
     const fileName = file.name;
@@ -67,7 +85,7 @@ export class UploadDocumentUseCase {
         pageRange: pageRange || null,
       });
     } catch (error) {
-      // If DB insert fails, cleanup the S3 object to prevent orphaned files
+      // If DB insert fails, cleanup the S3 object to prevent orphaned files.
       await this.storage.deleteFile(storageKey).catch(() => {});
       throw error;
     }
@@ -86,7 +104,41 @@ export class UploadDocumentUseCase {
       createdAt: new Date().toISOString(),
       pageRange: pageRange || undefined,
     };
-    await enqueueValidation(config, job);
+
+    try {
+      await enqueueValidation(config, job);
+    } catch (err) {
+      // Best-effort: schedule a delayed retry. If this also fails (e.g. Redis
+      // still down) we fall through to a recoverable FAILED state.
+      try {
+        await enqueueValidation(config, job, { delay: 15_000 });
+        return document;
+      } catch {
+        // The file is stored and the document row exists, so we keep both and
+        // mark the doc FAILED (recoverable). The user can retry from the UI via
+        // the reprocess endpoint, which re-enqueues validation without re-upload.
+        const error = err instanceof Error ? err : new Error(String(err));
+        const { code } = classifyError(error);
+        await this.documentRepository
+          .update(document.id, userId, {
+            status: "FAILED",
+            errorCode: code,
+            errorMessage: error.message,
+          })
+          .catch(() => {});
+        await recordJobFailure(
+          config,
+          "pipeline-validation",
+          { id: job.id, data: job, attemptsMade: 1 },
+          error,
+        ).catch(() => {});
+        throw new AppError(
+          "تم رفع الملف لكن تعذر بدء المعالجة. سيتم إعادة المحاولة تلقائيًا.",
+          ERROR_CODES.UPLOAD_ENQUEUE_FAILED,
+          202,
+        );
+      }
+    }
 
     return document;
   }

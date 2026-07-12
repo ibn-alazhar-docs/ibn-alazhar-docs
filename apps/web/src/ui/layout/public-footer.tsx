@@ -17,7 +17,10 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
   const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
 
   return (
-    <footer className="border-t border-line bg-page">
+    <footer
+      className="border-t border-line bg-page"
+      style={{ viewTransitionName: "public-footer" }}
+    >
       <div className="geometric-divider py-6">
         <GeometricStar className="geometric-star h-4 w-4" />
       </div>

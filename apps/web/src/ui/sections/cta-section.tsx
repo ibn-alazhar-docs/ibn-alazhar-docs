@@ -36,15 +36,15 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="max-w-2xl relative z-10"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-[#f5f0e8]/15 bg-[#f5f0e8]/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[#eab308] uppercase">
-            {t("title")}
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-100/15 bg-neutral-100/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-gold-400 uppercase">
+            {t("eyebrow")}
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[#f5f0e8] sm:text-5xl lg:text-6xl drop-shadow-md">
+          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-inverse sm:text-5xl lg:text-6xl drop-shadow-md">
             {t("title")}
           </h2>
 
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[#f5f0e8]/75 sm:text-lg">
+          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-inverse/75 sm:text-lg">
             {t("subtitle")}
           </p>
 

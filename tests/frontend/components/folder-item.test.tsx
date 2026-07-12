@@ -129,6 +129,6 @@ describe("FolderItem (component)", () => {
       />,
     );
     const row = screen.getByText("S").closest("div")!;
-    expect(row.className).toContain("bg-[var(--success-bg)]");
+    expect(row.className).toContain("bg-success-bg");
   });
 });
