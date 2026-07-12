@@ -3,7 +3,10 @@
 import { useState, useRef, useEffect } from "react";
 import { apiFetch } from "@/shared/api";
 
-const MAX_SIZE = 5 * 1024 * 1024 * 1024;
+// MUST stay in sync with MAX_UPLOAD_SIZE_MB (server-side validator). A client
+// gate far above the server limit produces late, confusing "file too large"
+// failures after the upload has already streamed. Default server limit is 200MB.
+const MAX_SIZE = 200 * 1024 * 1024;
 
 interface UseFileUploadOptions {
   folderId?: string | null;

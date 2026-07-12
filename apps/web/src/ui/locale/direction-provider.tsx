@@ -1,15 +1,13 @@
-"use client";
+import type { ReactNode } from "react";
 
-import { useLocale } from "next-intl";
-import { useEffect } from "react";
+interface DirectionProviderProps {
+  children: ReactNode;
+}
 
-export function DirectionProvider({ children }: { children: React.ReactNode }) {
-  const locale = useLocale();
-
-  useEffect(() => {
-    document.documentElement.dir = locale === "ar" ? "rtl" : "ltr";
-    document.documentElement.lang = locale;
-  }, [locale]);
-
+// `dir`/`lang` are set server-side on <html> (root layout) and reinforced by the
+// pre-paint inline script in <head>. A client-side post-hydration write would
+// cause a redundant RTL reflow (esp. on locale switch), so this provider is now a
+// pass-through. Locale switches re-render the server layout with the new dir.
+export function DirectionProvider({ children }: DirectionProviderProps) {
   return <>{children}</>;
 }

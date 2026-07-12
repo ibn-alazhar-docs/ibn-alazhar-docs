@@ -1,4 +1,4 @@
-import { ShareIcon, EditIcon, CheckIcon, CloseIcon, TrashIcon } from "@/ui/icons";
+import { ShareIcon, EditIcon, CheckIcon, CloseIcon, TrashIcon, RefreshIcon } from "@/ui/icons";
 
 export {
   ShareIcon,
@@ -6,4 +6,5 @@ export {
   CheckIcon as SaveIcon,
   CloseIcon as CancelIcon,
   TrashIcon as DeleteIcon,
+  RefreshIcon as RetryIcon,
 };

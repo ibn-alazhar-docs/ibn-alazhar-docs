@@ -1,7 +1,7 @@
 export function getCsrfToken(): string | null {
   if (typeof document === "undefined") return null;
   const match = document.cookie.match(new RegExp("(^| )csrf_token=([^;]+)"));
-  return match ? match[2] : null;
+  return match ? (match[2] ?? null) : null;
 }
 
 export async function apiFetch(input: RequestInfo | URL, init?: RequestInit): Promise<Response> {

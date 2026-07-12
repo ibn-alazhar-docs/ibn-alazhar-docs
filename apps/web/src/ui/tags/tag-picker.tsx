@@ -87,7 +87,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
   };
 
   return (
-    <div className="bg-card rounded-xl border border-line p-4">
+    <div className="bg-card rounded-xl border border-line p-6">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-sm font-semibold text-primary-color">{t("addTag")}</h3>
         {onClose && (
@@ -195,14 +195,14 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
           <div className="flex gap-2">
             <button
               type="button"
-              className="px-3 py-1.5 text-xs font-medium text-primary-color hover:bg-hover rounded-lg"
+              className="px-3 py-2 text-xs font-medium text-primary-color hover:bg-hover rounded-lg"
               onClick={() => setIsCreating(false)}
             >
               {tCommon("cancel")}
             </button>
             <button
               type="button"
-              className="px-3 py-1.5 text-xs font-medium text-btn-primary-text bg-success hover:opacity-90 rounded-lg"
+              className="px-3 py-2 text-xs font-medium text-btn-primary-text bg-success hover:opacity-90 rounded-lg"
               onClick={handleCreateTag}
             >
               {tCommon("save")}

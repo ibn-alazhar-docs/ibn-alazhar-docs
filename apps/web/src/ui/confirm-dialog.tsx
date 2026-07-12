@@ -78,13 +78,13 @@ export function ConfirmDialog({
         aria-labelledby={titleId}
         data-testid="confirm-dialog"
       >
-        <div className="absolute inset-0 bg-black/40" onClick={() => !isLoading && onCancel()} />
-        <div className="relative z-10 mx-4 w-full max-w-md rounded-xl border border-line bg-card p-6 shadow-xl">
+        <div className="absolute inset-0 bg-overlay" onClick={() => !isLoading && onCancel()} />
+        <div className="relative z-10 mx-4 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-card p-6 shadow-lg">
           <h3 id={titleId} className="text-lg font-semibold text-primary-color">
             {title}
           </h3>
           <p className="mt-2 text-sm text-muted-color">{message}</p>
-          <div className="mt-6 flex items-center justify-end gap-3">
+          <div className="mt-6 flex items-center justify-end gap-4">
             <Button
               type="button"
               onClick={onCancel}

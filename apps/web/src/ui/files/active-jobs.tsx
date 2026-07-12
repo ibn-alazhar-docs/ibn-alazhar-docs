@@ -27,8 +27,8 @@ export function ActiveJobs({ jobs, completedIds, locale, onMarkComplete }: Activ
       <div className="mt-4 space-y-4">
         {jobs.map((job) => (
           <div key={job.jobId} className="bg-card rounded-xl border border-line p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h4 className="ms-4 truncate font-medium text-primary-color">{job.fileName}</h4>
+            <div className="mb-4 flex items-center justify-between gap-4">
+              <h4 className="truncate font-medium text-primary-color">{job.fileName}</h4>
               <span className="shrink-0 font-mono text-xs text-very-muted">
                 {job.jobId.slice(0, 8)}...
               </span>

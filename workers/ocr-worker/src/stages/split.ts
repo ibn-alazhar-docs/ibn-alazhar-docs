@@ -1,4 +1,4 @@
-import { readFile, rm } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 
 import {
   createSplittingWorker,
@@ -6,49 +6,65 @@ import {
   enqueueOcr,
   uploadBuffer,
   validatePdf,
+  classifyError,
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
+import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatus, parsePageRange } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
-export function registerSplittingStage(config: PipelineConfig): void {
-  createSplittingWorker(config, async (job: ProcessingJob) => {
-    logger.info(`[split] Processing job ${job.id}: ${job.fileName}`);
+export function registerSplittingStage(
+  config: PipelineConfig,
+  onFailed?: (job: Job<ProcessingJob>, error: Error, queueName: string) => Promise<void>,
+): void {
+  createSplittingWorker(
+    config,
+    async (job: Job<ProcessingJob>) => {
+      const data = job.data;
+      const jobLogger = logger.child({
+        jobId: data.id,
+        documentId: data.documentId,
+        stage: "split",
+      });
+      jobLogger.info(`[split] Processing job ${data.id}: ${data.fileName}`);
 
-    try {
-      await updateDocStatus(job.documentId, "SPLITTING");
+      try {
+        await updateDocStatus(data.documentId, "SPLITTING");
 
-      const fileBuffer = await downloadDocumentBuffer(job.storageKey, job.userId, config);
+        const fileBuffer = await downloadDocumentBuffer(data.storageKey, data.userId, config);
+        const validation = validatePdf(fileBuffer, data.mimeType, data.fileSize);
+        if (!validation.valid) {
+          const code = (validation.errorCode as string) || "PDF_CORRUPT";
+          jobLogger.warn({ code }, `[split] Invalid file for ${data.id}`);
+          throw new Error(`${code}: ${validation.error}`);
+        }
 
-      const validation = validatePdf(fileBuffer, job.mimeType, job.fileSize);
-      if (!validation.valid) {
-        await updateDocStatus(job.documentId, "FAILED");
-        throw new Error(`${validation.errorCode}: ${validation.error}`);
-      }
+        let storedPagesCount = 0;
 
-      let storedPagesCount = 0;
+        if (data.mimeType === "application/pdf") {
+          const splitResult = await splitPdfPages(
+            fileBuffer,
+            config.ocr.dpi,
+            config.ocr.preprocess,
+          );
+          jobLogger.info(`[split] Split into ${splitResult.pageCount} pages for ${data.id}`);
 
-      if (job.mimeType === "application/pdf") {
-        const splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi, config.ocr.preprocess);
-        logger.info(`[split] Split into ${splitResult.pageCount} pages for ${job.id}`);
-
-        try {
           let selectedPaths = splitResult.pagePaths;
-          if (job.pageRange) {
-            const selectedPages = parsePageRange(job.pageRange, splitResult.pageCount);
+          if (data.pageRange) {
+            const selectedPages = parsePageRange(data.pageRange, splitResult.pageCount);
             if (selectedPages.length > 0) {
               selectedPaths = selectedPages
                 .map((pNum) => splitResult.pagePaths[pNum - 1]!)
                 .filter(Boolean);
-              logger.info(
-                `[split] Filtered pages using range "${job.pageRange}" (selected ${selectedPaths.length}/${splitResult.pageCount} pages)`,
+              jobLogger.info(
+                `[split] Filtered pages using range "${data.pageRange}" (selected ${selectedPaths.length}/${splitResult.pageCount} pages)`,
               );
             }
           }
 
           storedPagesCount = selectedPaths.length;
-          await updateDocStatus(job.documentId, "SPLITTING", { pageCount: storedPagesCount });
+          await updateDocStatus(data.documentId, "SPLITTING", { pageCount: storedPagesCount });
 
           const CONCURRENCY = 5;
           for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
@@ -56,36 +72,35 @@ export function registerSplittingStage(config: PipelineConfig): void {
             await Promise.all(
               batch.map(async (pagePath, batchIdx) => {
                 const pageNum = i + batchIdx + 1;
-                const pageKey = `${config.paths.pages}/${job.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+                const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
                 const imgBuf = await readFile(pagePath);
                 await uploadBuffer(config, pageKey, imgBuf, "image/png");
               }),
             );
           }
 
-          logger.info(`[split] Stored ${storedPagesCount} page images for ${job.id}`);
-        } finally {
-          await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
+          jobLogger.info(`[split] Stored ${storedPagesCount} page images for ${data.id}`);
+        } else {
+          storedPagesCount = 1;
+          jobLogger.info(`[split] Input is an image, skipping split for ${data.id}`);
+          await updateDocStatus(data.documentId, "SPLITTING", { pageCount: 1 });
+          const pageKey = `${config.paths.pages}/${data.id}/page-001.png`;
+          await uploadBuffer(config, pageKey, fileBuffer, "image/png");
+          jobLogger.info(`[split] Stored 1 page image for ${data.id}`);
         }
-      } else {
-        storedPagesCount = 1;
-        logger.info(`[split] Input is an image, skipping split for ${job.id}`);
-        await updateDocStatus(job.documentId, "SPLITTING", { pageCount: 1 });
-        const pageKey = `${config.paths.pages}/${job.id}/page-001.png`;
-        await uploadBuffer(config, pageKey, fileBuffer, "image/png");
-        logger.info(`[split] Stored 1 page image for ${job.id}`);
+
+        await enqueueOcr(config, { ...data, status: "ocr", progress: 0 });
+        jobLogger.info(`[split] Enqueued OCR for ${data.id}`);
+      } catch (err) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        const { category } = classifyError(error);
+        jobLogger.error({ error: error.message, category }, `[split] Failed for ${data.id}`);
+        if (category !== "transient") {
+          await job.discard().catch(() => {});
+        }
+        throw error;
       }
-
-      await enqueueOcr(config, {
-        ...job,
-        status: "ocr",
-        progress: 0,
-      });
-
-      logger.info(`[split] Enqueued OCR for ${job.id}`);
-    } catch (err) {
-      await updateDocStatus(job.documentId, "FAILED");
-      throw err;
-    }
-  });
+    },
+    onFailed,
+  );
 }

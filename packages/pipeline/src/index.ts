@@ -1,5 +1,6 @@
 export * from "./types";
 export * from "./config";
+export type { Job } from "bullmq";
 export * from "./storage";
 export * from "./queue";
 export * from "./ocr";

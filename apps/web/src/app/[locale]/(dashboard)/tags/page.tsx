@@ -166,7 +166,7 @@ export default function TagsPage() {
             {/* Error */}
             {error && (
               <div
-                className="p-3 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger"
+                className="p-4 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger"
                 role="alert"
                 aria-live="polite"
               >
@@ -180,20 +180,20 @@ export default function TagsPage() {
             {/* Create form */}
             {isCreating && (
               <Card className="p-6">
-                <h3 className="text-sm font-semibold text-primary-color mb-3">{t("createNew")}</h3>
+                <h3 className="text-sm font-semibold text-primary-color mb-4">{t("createNew")}</h3>
                 <Input
                   type="text"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
                   placeholder={t("namePlaceholder")}
-                  className="mb-3"
+                  className="mb-4"
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleCreate();
                     if (e.key === "Escape") setIsCreating(false);
                   }}
                 />
-                <div className="flex gap-1 mb-3">
+                <div className="flex gap-2 mb-4">
                   {TAG_COLORS.map((color) => (
                     <button
                       key={color}
@@ -281,7 +281,7 @@ export default function TagsPage() {
                               type="text"
                               value={editName}
                               onChange={(e) => setEditName(e.target.value)}
-                              className="px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
+                              className="px-3 py-2 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
                               autoFocus
                               onKeyDown={(e) => {
                                 if (e.key === "Enter") handleRename(tag.id);
@@ -356,8 +356,8 @@ export default function TagsPage() {
 
             {/* Merge dialog */}
             {mergingId && (
-              <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                <Card className="shadow-xl w-full max-w-md mx-4 p-6">
+              <div className="fixed inset-0 bg-overlay flex items-center justify-center p-4 z-[100]">
+                <Card className="max-h-[90vh] w-full max-w-md overflow-y-auto shadow-xl p-6">
                   <h2 className="text-lg font-semibold text-primary-color mb-2">
                     {t("mergeTitle")}
                   </h2>
@@ -370,7 +370,7 @@ export default function TagsPage() {
                       <label className="block text-sm font-medium text-primary-color mb-1">
                         {t("mergeSource")}
                       </label>
-                      <div className="px-3 py-2 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger">
+                      <div className="px-4 py-2 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger">
                         {tags.find((t) => t.id === mergingId)?.name}
                       </div>
                     </div>
@@ -382,7 +382,7 @@ export default function TagsPage() {
                       <select
                         value={mergeTargetId}
                         onChange={(e) => setMergeTargetId(e.target.value)}
-                        className="w-full px-3 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-success"
+                        className="w-full px-4 py-2 text-sm border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-success"
                       >
                         <option value="">{t("mergeTarget")}</option>
                         {tags

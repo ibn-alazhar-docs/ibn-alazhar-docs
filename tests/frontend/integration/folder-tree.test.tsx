@@ -98,6 +98,6 @@ describe("FolderTree integration (component ↔ useFolders ↔ /api/folders)", (
     render(<Harness />);
     const row = await screen.findByText("محاضرات");
     fireEvent.click(row);
-    expect(row.closest("div")!.className).toContain("bg-[var(--success-bg)]");
+    expect(row.closest("div")!.className).toContain("bg-success-bg");
   });
 });

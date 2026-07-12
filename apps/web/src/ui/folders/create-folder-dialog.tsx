@@ -52,14 +52,14 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
   return (
     <Portal>
       <div
-        className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100]"
+        className="fixed inset-0 bg-overlay flex items-center justify-center p-4 z-[100]"
         role="dialog"
         aria-modal="true"
         onClick={(e) => {
           if (e.target === e.currentTarget) onClose();
         }}
       >
-        <div className="bg-card border border-line rounded-xl shadow-xl w-full max-w-md mx-4">
+        <div className="bg-card max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line shadow-lg">
           <div className="p-6">
             <h2 className="text-lg font-semibold text-primary-color mb-4">{t("createNew")}</h2>
 

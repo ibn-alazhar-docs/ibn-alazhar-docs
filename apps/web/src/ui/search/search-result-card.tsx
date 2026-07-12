@@ -67,8 +67,8 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
   }, [result.createdAt, locale]);
 
   return (
-    <Card className="hover:border-primary/50 transition-colors duration-200">
-      <CardContent className="p-5 flex flex-col md:flex-row gap-4 items-start justify-between">
+    <Card className="p-6 hover:border-primary/50 transition-colors duration-200">
+      <CardContent className="p-0 flex flex-col md:flex-row gap-4 items-start justify-between">
         <div className="flex-1 space-y-2">
           <div className="flex items-center gap-2 flex-wrap">
             <Link
@@ -82,7 +82,7 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
 
           {result.searchPreview ? (
             <p
-              className="text-sm text-foreground/80 bg-muted/30 p-2.5 rounded border border-line/35 font-mono text-xs leading-relaxed"
+              className="text-sm text-foreground/80 bg-muted/30 p-2 rounded-lg border border-line/35 font-mono text-xs leading-relaxed"
               dangerouslySetInnerHTML={{ __html: result.searchPreview }}
             />
           ) : (
@@ -104,7 +104,7 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
 
         <Link
           href={`/${locale}/preview/${result.id}`}
-          className="self-end md:self-center bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-md transition-colors whitespace-nowrap"
+          className="self-end md:self-center bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-medium px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
         >
           {tCommon("view")}
         </Link>

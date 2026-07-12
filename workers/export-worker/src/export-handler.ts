@@ -5,126 +5,130 @@ import {
   generateMarkdown,
   generateTxt,
   generateJson,
-  recordFailedJob,
-  categorizeFailure,
+  classifyError,
   uploadExportBuffer,
   type ExportRequest,
-  type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
+import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { prisma } from "@ibn-al-azhar-docs/database";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 const config = loadConfig();
 
-export function registerExportHandler(): void {
-  createExportWorker(config, async (req: ExportRequest) => {
-    logger.info(`[export] Processing ${req.format} export for job ${req.jobId}`);
+export function registerExportHandler(
+  onFailed?: (job: Job<ExportRequest>, error: Error, queueName: string) => Promise<void>,
+): void {
+  createExportWorker(
+    config,
+    async (job: Job<ExportRequest>) => {
+      const req = job.data;
+      const jobLogger = logger.child({
+        jobId: req.jobId,
+        documentId: req.documentId,
+        stage: "export",
+        format: req.format,
+      });
+      jobLogger.info(`[export] Processing ${req.format} export for job ${req.jobId}`);
 
-    try {
-      const cleanedBuffer = await downloadFile(config, req.textKey);
-      const cleanedData = JSON.parse(cleanedBuffer.toString("utf-8"));
-      const rawText: string = cleanedData.text;
+      try {
+        const cleanedBuffer = await downloadFile(config, req.textKey);
+        const cleanedData = JSON.parse(cleanedBuffer.toString("utf-8"));
+        const rawText: string = cleanedData.text;
 
-      const result = generateMarkdown(rawText, { pageCount: req.pageCount });
+        const result = generateMarkdown(rawText, { pageCount: req.pageCount });
 
-      let outputBuffer: Buffer;
-      let contentType: string;
-      let outputKey: string;
+        let outputBuffer: Buffer;
+        let contentType: string;
+        let outputKey: string;
 
-      switch (req.format) {
-        case "md": {
-          outputBuffer = Buffer.from(result.markdown, "utf-8");
-          contentType = "text/markdown";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.md`;
-          break;
+        switch (req.format) {
+          case "md": {
+            outputBuffer = Buffer.from(result.markdown, "utf-8");
+            contentType = "text/markdown";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.md`;
+            break;
+          }
+          case "txt": {
+            outputBuffer = Buffer.from(generateTxt(result), "utf-8");
+            contentType = "text/plain";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.txt`;
+            break;
+          }
+          case "json": {
+            outputBuffer = Buffer.from(generateJson(result), "utf-8");
+            contentType = "application/json";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.json`;
+            break;
+          }
+          case "docx": {
+            const { generateDocx } = await import("@ibn-al-azhar-docs/pipeline");
+            outputBuffer = await generateDocx(result);
+            contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.docx`;
+            break;
+          }
+          case "epub": {
+            const { generateEpub } = await import("@ibn-al-azhar-docs/pipeline");
+            outputBuffer = await generateEpub(result);
+            contentType = "application/epub+zip";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.epub`;
+            break;
+          }
+          case "pdf": {
+            const { generatePdf } = await import("@ibn-al-azhar-docs/pipeline");
+            outputBuffer = await generatePdf(result, req.options);
+            contentType = "application/pdf";
+            outputKey = `${config.paths.exports}/${req.jobId}/export.pdf`;
+            break;
+          }
+          default:
+            throw new Error(`UNSUPPORTED_FORMAT: ${req.format}`);
         }
-        case "txt": {
-          outputBuffer = Buffer.from(generateTxt(result), "utf-8");
-          contentType = "text/plain";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.txt`;
-          break;
+
+        let account = null;
+        if (req.options?.destination === "drive") {
+          account = await prisma.account.findFirst({
+            where: { userId: req.userId, provider: "google" },
+          });
         }
-        case "json": {
-          outputBuffer = Buffer.from(generateJson(result), "utf-8");
-          contentType = "application/json";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.json`;
-          break;
+
+        outputKey = await uploadExportBuffer(
+          config,
+          req.userId,
+          outputBuffer,
+          `export.${req.format}`,
+          contentType,
+          account,
+          req.options?.destination === "drive",
+        );
+
+        const doc = await prisma.document.findUnique({ where: { id: req.jobId } });
+        if (doc) {
+          const keys = (doc.outputKeys as Record<string, string>) || {};
+          keys[req.format] = outputKey;
+          await prisma.document.update({
+            where: { id: req.jobId },
+            data: { outputKeys: keys },
+          });
         }
-        case "docx": {
-          const { generateDocx } = await import("@ibn-al-azhar-docs/pipeline");
-          outputBuffer = await generateDocx(result);
-          contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.docx`;
-          break;
+
+        jobLogger.info(`[export] Completed ${req.format} export for ${req.jobId}`);
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        const { category } = classifyError(error);
+        jobLogger.error(
+          { error: error.message, category },
+          `[export] Failed ${req.format} export for ${req.jobId}:`,
+        );
+
+        // Transient (network/storage/redis) errors are retried by BullMQ.
+        // Permanent errors (unsupported format, corrupt input) skip retries.
+        if (category !== "transient") {
+          await job.discard().catch(() => {});
         }
-        case "epub": {
-          const { generateEpub } = await import("@ibn-al-azhar-docs/pipeline");
-          outputBuffer = await generateEpub(result);
-          contentType = "application/epub+zip";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.epub`;
-          break;
-        }
-        case "pdf": {
-          const { generatePdf } = await import("@ibn-al-azhar-docs/pipeline");
-          outputBuffer = await generatePdf(result, req.options);
-          contentType = "application/pdf";
-          outputKey = `${config.paths.exports}/${req.jobId}/export.pdf`;
-          break;
-        }
-        default:
-          throw new Error(`UNSUPPORTED_FORMAT: ${req.format}`);
+        throw error;
       }
-
-      let account = null;
-      if (req.options?.destination === "drive") {
-        account = await prisma.account.findFirst({
-          where: { userId: req.userId, provider: "google" },
-        });
-      }
-
-      outputKey = await uploadExportBuffer(
-        config,
-        req.userId,
-        outputBuffer,
-        `export.${req.format}`,
-        contentType,
-        account,
-        req.options?.destination === "drive",
-      );
-
-      const doc = await prisma.document.findUnique({ where: { id: req.jobId } });
-      if (doc) {
-        const keys = (doc.outputKeys as Record<string, string>) || {};
-        keys[req.format] = outputKey;
-        await prisma.document.update({
-          where: { id: req.jobId },
-          data: { outputKeys: keys },
-        });
-      }
-
-      logger.info(`[export] Completed ${req.format} export for ${req.jobId}`);
-    } catch (error: unknown) {
-      const errMessage = error instanceof Error ? error.message : String(error);
-      const { category } = categorizeFailure(
-        error instanceof Error ? error : new Error(errMessage),
-      );
-      logger.error({ errMessage }, `[export] Failed ${req.format} export for ${req.jobId}:`);
-
-      if (category === "fatal" || category === "permanent") {
-        await recordFailedJob(config, {
-          jobId: `${req.jobId}_${req.format}`,
-          queue: "pipeline:export",
-          originalData: req,
-          error: errMessage,
-          errorCode: "EXPORT_FAILED",
-          failureCategory: category,
-          attempts: 1,
-          lastAttemptAt: new Date().toISOString(),
-          failedAt: new Date().toISOString(),
-        } as FailedJob);
-      }
-
-      throw error instanceof Error ? error : new Error(errMessage);
-    }
-  });
+    },
+    onFailed,
+  );
 }

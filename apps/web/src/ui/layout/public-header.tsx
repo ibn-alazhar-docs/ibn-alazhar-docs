@@ -20,9 +20,13 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
   const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
 
   return (
-    <header role="banner" className="glass-header fixed inset-x-0 top-0 z-50">
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-        <Link href="/" className="flex items-center gap-3 no-underline">
+    <header
+      role="banner"
+      className="glass-header fixed inset-x-0 top-0 z-50"
+      style={{ viewTransitionName: "public-header" }}
+    >
+      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+        <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
           <Image
             src="/logo.png"
             alt={brand}
@@ -31,11 +35,11 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             className="h-10 w-auto"
             priority
           />
-          <span className="heading-display-sm text-sm font-bold tracking-tight text-primary-color">
+          <span className="heading-display-sm hidden truncate text-sm font-bold tracking-tight text-primary-color sm:inline">
             {brand}
           </span>
         </Link>
-        <nav aria-label={t("mainNav")} className="flex items-center gap-1">
+        <nav aria-label={t("mainNav")} className="flex items-center gap-2">
           <LocaleToggle />
           <ThemeToggle />
           {isLoggedIn ? (

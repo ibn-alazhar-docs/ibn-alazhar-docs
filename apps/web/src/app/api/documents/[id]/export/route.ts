@@ -106,6 +106,6 @@ export const POST = withAuth(async (request, { session, params }) => {
 
     return NextResponse.json({ success: true, jobId, message: "Export job enqueued" });
   } catch (error: unknown) {
-    return handleRouteError(error, "documents/export/POST", "حدث خطأ");
+    return handleRouteError(error, "documents/export/POST", "تعذر إنشاء التصدير. حاول مرة أخرى.");
   }
 });

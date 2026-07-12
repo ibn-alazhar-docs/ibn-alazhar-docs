@@ -40,7 +40,7 @@ export default async function JourneysIndexPage({ params }: JourneysIndexPagePro
             href={`/${locale}/docs`}
             className="text-sm font-medium text-muted-color no-underline transition-colors hover:text-primary-color"
           >
-            {locale === "ar" ? "← العودة إلى المكتبة" : "← Back to Library"}
+            {locale === "ar" ? "→ العودة إلى المكتبة" : "← Back to Library"}
           </a>
         </div>
 

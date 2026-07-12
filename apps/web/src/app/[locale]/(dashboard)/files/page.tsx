@@ -28,10 +28,10 @@ export default function FilesPage() {
     <PageTransition>
       <Container>
         <Section padding="md">
-          <div className="flex gap-6">
+          <div className="flex flex-col gap-6 lg:flex-row">
             {/* Sidebar */}
-            <div className="w-64 shrink-0">
-              <Card className="sticky top-4 space-y-6 p-4">
+            <div className="w-full lg:w-64 shrink-0">
+              <Card className="space-y-6 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
                 <FolderTree
                   selectedFolderId={fm.selectedFolderId}
                   onSelectFolder={fm.handleFolderSelect}

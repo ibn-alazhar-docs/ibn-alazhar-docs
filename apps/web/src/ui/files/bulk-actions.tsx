@@ -26,7 +26,7 @@ export function BulkActions({
   tDocs,
 }: BulkActionsProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex flex-wrap items-center gap-2">
       <span className="text-sm text-muted-color">
         {selectedCount} {tCommon("selected")}
       </span>
@@ -34,13 +34,13 @@ export function BulkActions({
       <div className="relative">
         <button
           type="button"
-          className="rounded-lg bg-info px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
+          className="rounded-lg bg-info px-3 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90"
           onClick={onToggleBulkTagPicker}
         >
           {tDocs("addTags")}
         </button>
         {showBulkTagPicker && (
-          <div className="absolute end-0 top-full z-10 mt-2 w-64 shadow-lg">
+          <div className="absolute end-0 top-full z-50 mt-2 w-64 shadow-lg">
             <TagPicker
               selectedTagIds={[]}
               onTagsChange={(ids) => {
@@ -55,21 +55,21 @@ export function BulkActions({
 
       <button
         type="button"
-        className="rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
+        className="rounded-lg bg-success px-3 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90"
         onClick={onBulkMove}
       >
         {tDocs("moveToFolder")}
       </button>
       <button
         type="button"
-        className="rounded-lg bg-warning-500 px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
+        className="rounded-lg bg-warning-500 px-3 py-2 text-sm font-medium text-btn-primary-text hover:opacity-90"
         onClick={onBulkExport}
       >
         {tDocs("exportSelected")}
       </button>
       <button
         type="button"
-        className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-80"
+        className="rounded-lg bg-danger px-3 py-2 text-sm font-medium text-btn-primary-text hover:opacity-80"
         onClick={onCancelSelection}
       >
         {tDocs("cancelSelection")}

@@ -16,7 +16,7 @@ export function Breadcrumbs({ breadcrumbs, onNavigate }: BreadcrumbsProps) {
   const t = useTranslations("folders");
 
   return (
-    <nav className="flex items-center gap-1 text-sm text-muted-color mb-4">
+    <nav className="flex flex-wrap items-center gap-1 text-sm text-muted-color mb-4">
       <button
         type="button"
         className="hover:text-success transition-colors"
@@ -27,7 +27,7 @@ export function Breadcrumbs({ breadcrumbs, onNavigate }: BreadcrumbsProps) {
 
       {breadcrumbs.map((crumb, index) => (
         <span key={crumb.id} className="flex items-center gap-1">
-          <span className="text-very-muted">›</span>
+          <span className="text-very-muted inline-block rtl:rotate-180">›</span>
           <button
             type="button"
             className={`hover:text-success transition-colors ${

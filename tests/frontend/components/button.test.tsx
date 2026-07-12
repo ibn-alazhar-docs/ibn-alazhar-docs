@@ -38,8 +38,8 @@ describe("Button (component)", () => {
     render(<Button size={size}>s</Button>);
     const cls = screen.getByRole("button").className;
     if (size === "sm") expect(cls).toContain("h-9");
-    if (size === "lg") expect(cls).toContain("h-11");
-    if (size === "icon") expect(cls).toContain("w-10");
+    if (size === "lg") expect(cls).toContain("h-12");
+    if (size === "icon") expect(cls).toContain("h-11 w-11");
   });
 
   it("is disabled and sets aria-disabled when disabled", () => {

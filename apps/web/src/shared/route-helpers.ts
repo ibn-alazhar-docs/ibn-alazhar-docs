@@ -82,6 +82,56 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
     message: "يجب ربط حساب Google لرفع الملفات",
     status: 400,
   },
+  [ERROR_CODES.UPLOAD_FILE_TOO_LARGE]: {
+    code: ERROR_CODES.UPLOAD_FILE_TOO_LARGE,
+    message: "الملف أكبر من الحد المسموح. يرجى تقليل الحجم أو تقسيم الملف.",
+    status: 400,
+  },
+  [ERROR_CODES.UPLOAD_UNSUPPORTED_TYPE]: {
+    code: ERROR_CODES.UPLOAD_UNSUPPORTED_TYPE,
+    message: "نوع الملف غير مدعوم. ارفع ملف PDF أو صورة (JPG/PNG).",
+    status: 400,
+  },
+  [ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE]: {
+    code: ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
+    message: "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
+    status: 503,
+  },
+  [ERROR_CODES.UPLOAD_TIMEOUT]: {
+    code: ERROR_CODES.UPLOAD_TIMEOUT,
+    message: "انتهت مهلة الرفع. يرجى المحاولة مرة أخرى.",
+    status: 408,
+  },
+  [ERROR_CODES.UPLOAD_ENQUEUE_FAILED]: {
+    code: ERROR_CODES.UPLOAD_ENQUEUE_FAILED,
+    message: "تم رفع الملف لكن تعذر بدء المعالجة. سيتم إعادة المحاولة تلقائيًا.",
+    status: 202,
+  },
+  [ERROR_CODES.OCR_ENGINE_FAILED]: {
+    code: ERROR_CODES.OCR_ENGINE_FAILED,
+    message: "تعذر التعرف على النص في هذا الملف. قد يكون الملف تالفًا أو غير مدعوم.",
+    status: 422,
+  },
+  [ERROR_CODES.SEARCH_INDEX_FAILED]: {
+    code: ERROR_CODES.SEARCH_INDEX_FAILED,
+    message: "اكتملت المعالجة ولكن فشل تحديث البحث. يمكنك إعادة المحاولة لاحقًا.",
+    status: 200,
+  },
+  [ERROR_CODES.EXPORT_GENERATION_FAILED]: {
+    code: ERROR_CODES.EXPORT_GENERATION_FAILED,
+    message: "تعذر توليد هذا التنسيق. يمكنك إعادة المحاولة أو اختيار تنسيق آخر.",
+    status: 422,
+  },
+  [ERROR_CODES.REDIS_UNAVAILABLE]: {
+    code: ERROR_CODES.REDIS_UNAVAILABLE,
+    message: "خدمة الطابور غير متاحة مؤقتًا. ستُستأنف المعالجة تلقائيًا.",
+    status: 503,
+  },
+  [ERROR_CODES.DB_CONNECTION_FAILED]: {
+    code: ERROR_CODES.DB_CONNECTION_FAILED,
+    message: "تعذر الاتصال بقاعدة البيانات مؤقتًا. حاول مرة أخرى.",
+    status: 503,
+  },
 };
 
 export function handleRouteError(error: unknown, route: string, fallbackMessage: string) {

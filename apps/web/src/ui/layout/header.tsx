@@ -31,7 +31,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
       className="glass-header sticky top-0 z-30"
       style={{ viewTransitionName: "dashboard-header" }}
     >
-      <div className="mx-auto flex h-16 max-w-full items-center justify-between gap-4 px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-3">
           <button
             type="button"
@@ -54,7 +54,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
           )}
         </div>
 
-        <div className="hidden flex-1 max-w-xl md:block mx-8">
+        <div className="hidden flex-1 max-w-xl md:block mx-6">
           <SearchBar onSearch={(query) => router.push(`/search?q=${encodeURIComponent(query)}`)} />
         </div>
 
@@ -64,7 +64,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
           <ThemeToggle />
           <button
             onClick={() => signOut({ callbackUrl: `/${locale}` })}
-            className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold text-muted-color transition-all hover:bg-danger/5 hover:text-danger"
+            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-semibold text-muted-color transition-all hover:bg-danger/5 hover:text-danger"
             aria-label={tCommon("logout")}
           >
             <LogoutIcon className="h-4 w-4" />

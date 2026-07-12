@@ -258,10 +258,12 @@ export default async function SharePage({ params }: SharePageProps) {
   const dir = data.document.isRtl ? "rtl" : "ltr";
 
   return (
-    <div className="min-h-screen bg-page" dir={dir}>
+    <div className="min-h-screen overflow-x-hidden bg-page" dir={dir}>
       <header className="border-b border-line bg-surface">
-        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-          <h1 className="text-lg font-bold text-primary-color">{data.document.title}</h1>
+        <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-3 px-4 py-3">
+          <h1 className="min-w-0 break-words text-lg font-bold text-primary-color">
+            {data.document.title}
+          </h1>
           <div className="flex gap-2">
             {data.metadata.exportFormats.includes("md") && (
               <a
@@ -307,7 +309,7 @@ export default async function SharePage({ params }: SharePageProps) {
             {data.metadata.tags.map((tag) => (
               <span
                 key={tag.name}
-                className="px-2 py-1 text-xs rounded-full text-white"
+                className="px-2 py-1 text-xs rounded-full text-white bg-black/15 border border-white/20"
                 style={{ backgroundColor: tag.color }}
               >
                 {tag.name}

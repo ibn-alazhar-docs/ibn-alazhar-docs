@@ -7,8 +7,8 @@ interface PageTransitionProps {
 
 export function PageTransition({ children }: PageTransitionProps) {
   return (
-    <ViewTransition enter="fade-in" exit="fade-out" default="none">
-      {children}
+    <ViewTransition name="page-content" enter="fade-in" exit="fade-out" default="none">
+      <div className="min-h-[calc(100dvh-4rem)]">{children}</div>
     </ViewTransition>
   );
 }

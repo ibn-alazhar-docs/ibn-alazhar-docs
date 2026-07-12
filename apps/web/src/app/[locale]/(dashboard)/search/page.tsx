@@ -114,7 +114,7 @@ export default function SearchPage() {
             <div className="flex gap-6 flex-col md:flex-row">
               {/* Sidebar */}
               <div className="w-full md:w-64 shrink-0 order-2 md:order-1">
-                <Card className="p-4 sticky top-4">
+                <Card className="p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
                   <TagFilterSidebar
                     selectedTagIds={selectedTagIds}
                     onTagsChange={setSelectedTagIds}

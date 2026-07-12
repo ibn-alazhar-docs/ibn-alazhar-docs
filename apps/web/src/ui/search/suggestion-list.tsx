@@ -27,7 +27,7 @@ export function SuggestionList({
   const t = useTranslations("search");
   return (
     <div
-      className="absolute top-full mt-1 w-full bg-card rounded-lg shadow-lg border border-line py-1 z-10"
+      className="absolute top-full mt-1 z-50 w-full rounded-lg border border-line bg-card py-1 shadow-lg"
       role="listbox"
       aria-label={t("suggestionsLabel")}
     >

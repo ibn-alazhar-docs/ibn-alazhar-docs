@@ -17,6 +17,13 @@ export {
 } from "./enqueue";
 export { getJobStatus, getQueueMetrics, getAllQueueMetrics, getStuckJobs } from "./metrics";
 export {
+  recordJobFailure,
+  classifyError,
+  getJobAttempts,
+  isFinalAttempt,
+  type JobLike,
+} from "./job-error";
+export {
   getRetryConfigForQueue,
   getDefaultJobOptions,
   createValidationWorker,

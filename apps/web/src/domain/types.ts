@@ -53,6 +53,8 @@ export interface UpdateDocumentInput {
   pageRange?: string | null;
   outputFormats?: string[];
   outputKeys?: Record<string, unknown> | null;
+  errorCode?: string | null;
+  errorMessage?: string | null;
   deletedAt?: Date | null;
 }
 

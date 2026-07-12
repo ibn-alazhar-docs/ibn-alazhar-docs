@@ -235,11 +235,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
           </CardHeader>
           <CardContent>
             {!showDeleteConfirm ? (
-              <Button
-                variant="destructive"
-                className="bg-transparent border border-danger/40 text-danger hover:bg-danger hover:text-white"
-                onClick={() => setShowDeleteConfirm(true)}
-              >
+              <Button variant="destructive-outline" onClick={() => setShowDeleteConfirm(true)}>
                 {t("deleteAccount")}
               </Button>
             ) : (

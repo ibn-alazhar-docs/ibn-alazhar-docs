@@ -107,13 +107,17 @@ export default function ConversionsPage() {
             </div>
 
             {/* Search by Job ID */}
-            <form onSubmit={handleSearch} className="flex gap-3">
+            <form
+              onSubmit={handleSearch}
+              className="flex flex-col gap-3 sm:flex-row sm:items-center"
+            >
               <Input
                 type="text"
                 value={jobId}
                 onChange={(e) => setJobId(e.target.value)}
                 placeholder={tConv("searchPlaceholder")}
                 dir="ltr"
+                className="flex-1 min-w-0"
               />
               <Button type="submit">{tConv("searchButton")}</Button>
             </form>
@@ -125,7 +129,7 @@ export default function ConversionsPage() {
                   <span className="text-xs text-very-muted font-mono">{jobId}</span>
                 </div>
                 <ConversionStatus jobId={jobId} />
-                <div className="mt-4 pt-4 border-t border-line flex gap-2">
+                <div className="mt-4 flex flex-wrap gap-2 pt-4 border-t border-line">
                   <Button asChild>
                     <a href={`/${locale}/preview/${encodeURIComponent(jobId)}`}>
                       {tPreview("previewDocument")}
@@ -293,7 +297,7 @@ export default function ConversionsPage() {
                     variant="outline"
                     size="sm"
                   >
-                    ←
+                    <span className="rtl:rotate-180">←</span>
                   </Button>
                   <span className="text-xs text-muted-color">
                     {page} / {totalPages}
@@ -304,7 +308,7 @@ export default function ConversionsPage() {
                     variant="outline"
                     size="sm"
                   >
-                    →
+                    <span className="rtl:rotate-180">→</span>
                   </Button>
                 </div>
               )}

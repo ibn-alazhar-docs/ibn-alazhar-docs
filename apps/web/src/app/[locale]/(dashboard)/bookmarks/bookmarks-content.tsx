@@ -78,7 +78,7 @@ export function BookmarksContent() {
           )}
 
           {!loading && bookmarks.length === 0 && (
-            <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-gold/20 bg-card py-20 text-center">
+            <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-gold/20 bg-card py-20 text-center">
               <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
                 <BookmarkIcon className="h-8 w-8" />
               </div>

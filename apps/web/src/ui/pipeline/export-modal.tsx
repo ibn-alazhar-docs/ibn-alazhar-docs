@@ -69,10 +69,10 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         }}
       >
         <div
-          className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+          className="absolute inset-0 bg-overlay backdrop-blur-sm transition-opacity"
           onClick={onClose}
         />
-        <div className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-line bg-card shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-card shadow-lg animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
           <div className="border-b border-line bg-badge/50 px-6 py-4">
             <h3 className="text-xl font-bold text-primary-color flex items-center gap-2">
@@ -89,7 +89,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                 <select
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                  className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
                   <option value="searchable-pdf">{t("formatSearchablePdf")}</option>
                   <option value="pdf">{t("formatPdf")}</option>
@@ -111,7 +111,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   <select
                     value={fontSize}
                     onChange={(e) => setFontSize(e.target.value)}
-                    className="w-full appearance-none rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                    className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                   >
                     <option value="small">{t("small")}</option>
                     <option value="medium">{t("medium")}</option>
@@ -132,7 +132,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   value={watermark}
                   onChange={(e) => setWatermark(e.target.value)}
                   placeholder={t("watermarkPlaceholder")}
-                  className="w-full rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
+                  className="w-full rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
                 />
               </div>
             )}
@@ -145,7 +145,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   value={pageRange}
                   onChange={(e) => setPageRange(e.target.value)}
                   placeholder={t("pageRangePlaceholder")}
-                  className="w-full rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
+                  className="w-full rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
                 />
               </div>
             )}
@@ -156,7 +156,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                 <select
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
-                  className="w-full appearance-none rounded-xl border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                  className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
                   <option value="download">{t("download")}</option>
                   <option value="drive">{t("drive")}</option>
@@ -173,7 +173,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
             <button
               type="button"
               onClick={onClose}
-              className="rounded-xl px-5 py-2.5 text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color"
+              className="rounded-lg px-5 py-2.5 text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color"
             >
               {t("cancel")}
             </button>
@@ -181,7 +181,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
               type="button"
               onClick={handleExport}
               disabled={loading}
-              className="flex items-center gap-2 rounded-xl px-6 py-2.5 text-sm font-bold text-white transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20"
+              className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-bold text-btn-primary-text transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20"
             >
               {loading ? (
                 <>

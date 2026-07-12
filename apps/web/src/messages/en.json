@@ -65,6 +65,7 @@
       ]
     },
     "cta": {
+      "eyebrow": "Get Started",
       "title": "Transform Your Documents Today",
       "subtitle": "Upload your file and get a polished, editable document in seconds.",
       "button": "Start Converting",
@@ -163,8 +164,8 @@
       "uploadButton": "Upload & Process",
       "progress": "Processing...",
       "errorInvalidType": "Unsupported format. Upload a PDF or image.",
-      "errorTooLarge": "File exceeds the maximum size.",
-      "errorUploadFailed": "Upload failed. Try again."
+      "errorTooLarge": "File exceeds the maximum size (200MB). Reduce the size or split it.",
+      "errorUploadFailed": "Upload failed. You can retry."
     },
     "status": {
       "pending": "Queued",

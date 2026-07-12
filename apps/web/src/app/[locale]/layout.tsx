@@ -4,7 +4,6 @@ import { NextIntlClientProvider } from "next-intl";
 import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
-import { cairo, amiri } from "@/ui/fonts";
 import { ThemeWrapper } from "@/ui/theme/theme-wrapper";
 import { generatePageMetadata } from "@/ui/metadata";
 import { Toaster } from "sonner";
@@ -54,7 +53,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   };
 
   return (
-    <div className={`${amiri.variable} ${cairo.variable}`}>
+    <div>
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:bg-[var(--color-primary-600)] focus:text-white focus:px-4 focus:py-2 focus:rounded"

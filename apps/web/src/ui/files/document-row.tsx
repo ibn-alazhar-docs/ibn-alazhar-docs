@@ -5,8 +5,16 @@ import { TagChip } from "@/ui/tags/tag-chip";
 import { motion } from "motion/react";
 import { useState, memo } from "react";
 import { ShareModal } from "@/ui/pipeline/share-modal";
-import { ShareIcon, EditIcon, SaveIcon, CancelIcon, DeleteIcon } from "./document-row-icons";
+import {
+  ShareIcon,
+  EditIcon,
+  SaveIcon,
+  CancelIcon,
+  DeleteIcon,
+  RetryIcon,
+} from "./document-row-icons";
 import { Badge } from "@/ui/badge";
+import { apiFetch } from "@/shared/api";
 
 interface DocumentRowActionsProps {
   doc: Doc;
@@ -28,7 +36,23 @@ function DocumentRowActions({
   tCommon,
 }: DocumentRowActionsProps) {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [retrying, setRetrying] = useState(false);
   const isEditing = editingDocId === doc.id;
+
+  const handleRetry = async () => {
+    if (retrying) return;
+    setRetrying(true);
+    try {
+      const res = await apiFetch(`/api/documents/${doc.id}/reprocess`, { method: "POST" });
+      if (res.ok) {
+        window.location.reload();
+        return;
+      }
+      setRetrying(false);
+    } catch {
+      setRetrying(false);
+    }
+  };
 
   return (
     <td className="whitespace-nowrap px-3 py-2">
@@ -39,7 +63,7 @@ function DocumentRowActions({
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
             title={tCommon("share")}
             aria-label={tCommon("share")}
           >
@@ -52,7 +76,7 @@ function DocumentRowActions({
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => onStartEdit(doc)}
-            className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
             title={tCommon("edit")}
             aria-label={tCommon("edit")}
           >
@@ -66,7 +90,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={() => onSaveEdit(doc.id)}
-              className="rounded-lg bg-success-bg p-1.5 text-success transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+              className="rounded-lg bg-success-bg p-2 text-success transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
               title={tCommon("save")}
               aria-label={tCommon("save")}
             >
@@ -77,7 +101,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onCancelEdit}
-              className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+              className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
               title={tCommon("cancel")}
               aria-label={tCommon("cancel")}
             >
@@ -85,12 +109,26 @@ function DocumentRowActions({
             </motion.button>
           </>
         )}
+        {doc.status === "FAILED" && (
+          <motion.button
+            whileHover={{ scale: 1.1, color: "var(--success)" }}
+            whileTap={{ scale: 0.9 }}
+            type="button"
+            disabled={retrying}
+            onClick={handleRetry}
+            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50"
+            title={tCommon("retry")}
+            aria-label={tCommon("retry")}
+          >
+            <RetryIcon />
+          </motion.button>
+        )}
         <motion.button
           whileHover={{ scale: 1.1, color: "var(--danger)" }}
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={() => onDelete(doc.id)}
-          className="rounded-lg p-1.5 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
           title={tCommon("delete")}
           aria-label={tCommon("delete")}
         >
@@ -172,7 +210,7 @@ export const DocumentRow = memo(function DocumentRow({
             }}
             onBlur={() => onSaveEdit(doc.id)}
             autoFocus
-            className="w-full rounded border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-success"
+            className="w-full rounded-lg border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-success"
           />
         ) : (
           <div
@@ -182,7 +220,7 @@ export const DocumentRow = memo(function DocumentRow({
             {doc.title}
           </div>
         )}
-        <div className="mt-0.5 flex flex-col gap-1">
+        <div className="mt-1 flex flex-col gap-1">
           <div className="flex items-center gap-2">
             <span className="truncate text-xs text-very-muted">{doc.fileName}</span>
             {doc.status === "COMPLETED" && (

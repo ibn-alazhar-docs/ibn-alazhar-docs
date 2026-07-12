@@ -209,7 +209,7 @@ export function AnalyticsContent() {
           <select
             value={days}
             onChange={(e) => setDays(Number(e.target.value))}
-            className="h-9 px-3 text-xs border border-line rounded-lg bg-input text-primary-color focus:outline-none focus:ring-2 focus:ring-input-focus"
+            className="h-9 px-4 text-xs border border-line rounded-lg bg-input text-primary-color focus:outline-none focus:ring-2 focus:ring-input-focus"
           >
             <option value={7}>{t("period7")}</option>
             <option value={30}>{t("period30")}</option>
@@ -298,7 +298,7 @@ export function AnalyticsContent() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-1 h-32">
+            <div className="flex items-end gap-2 h-32">
               {(() => {
                 const series = data?.documents.uploadsOverTime ?? [];
                 const maxCount = Math.max(1, ...series.map((d) => d.count));
