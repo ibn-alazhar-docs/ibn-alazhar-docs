@@ -12,8 +12,12 @@ export function loadConfig(): PipelineConfig {
         try {
           const parsed = new URL(rawEndpoint);
           endpoint = parsed.hostname;
-          port = Number(parsed.port) || port;
           useSSL = parsed.protocol === "https:";
+          if (parsed.port) {
+            port = Number(parsed.port);
+          } else if (!process.env.S3_PORT && !process.env.MINIO_PORT) {
+            port = useSSL ? 443 : 80;
+          }
         } catch {
           // fallback to raw
         }
