@@ -4,8 +4,6 @@ import { createWriteStream } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
-import { pipeline } from "node:stream/promises";
-import { Readable } from "node:stream";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
@@ -42,10 +40,8 @@ export class UploadDocumentUseCase {
       .slice(0, 200);
     const tempPath = join(tmpdir(), `${jobId}_${safeName}`);
 
-    await pipeline(
-      Readable.fromWeb(file.stream() as import("stream/web").ReadableStream),
-      createWriteStream(tempPath),
-    );
+    const buffer = Buffer.from(await file.arrayBuffer());
+    await require("node:fs/promises").writeFile(tempPath, buffer);
 
     const storageKey = this.storage.uploadKey(userId, jobId, safeName);
 
