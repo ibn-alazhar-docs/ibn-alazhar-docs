@@ -38,7 +38,7 @@ export function ActiveJobs({ jobs, completedIds, locale, onMarkComplete }: Activ
               <div className="mt-4 border-t border-line pt-4">
                 <a
                   href={`/${locale}/preview/${job.jobId}`}
-                  className="inline-block rounded-lg bg-[var(--success)] px-4 py-2 text-sm font-medium text-[var(--btn-primary-text)] transition-colors hover:opacity-90"
+                  className="inline-block rounded-lg bg-success px-4 py-2 text-sm font-medium text-btn-primary-text transition-colors hover:opacity-90"
                 >
                   {tPreview("previewAndExport")}
                 </a>

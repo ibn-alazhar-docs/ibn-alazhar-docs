@@ -107,7 +107,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}
         placeholder={`${tCommon("search")}...`}
-        className="w-full px-3 py-2 text-sm border border-line rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+        className="w-full px-3 py-2 text-sm border border-line rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-success"
       />
 
       {/* Selected tags */}
@@ -145,7 +145,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
                   type="button"
                   className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
                     selectedTagIds.includes(tag.id)
-                      ? "bg-[var(--success-bg)] text-[var(--success)]"
+                      ? "bg-success-bg text-success"
                       : "hover:bg-hover text-primary-color"
                   }`}
                   onClick={() => toggleTag(tag.id)}
@@ -166,13 +166,13 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
       {/* Create new tag */}
       {isCreating ? (
         <div className="mt-3 border-t border-line pt-3">
-          {error && <div className="mb-2 text-xs text-[var(--danger)]">{error}</div>}
+          {error && <div className="mb-2 text-xs text-danger">{error}</div>}
           <input
             type="text"
             value={newTagName}
             onChange={(e) => setNewTagName(e.target.value)}
             placeholder={t("namePlaceholder")}
-            className="w-full px-3 py-2 text-sm border border-line rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+            className="w-full px-3 py-2 text-sm border border-line rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-success"
             autoFocus
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCreateTag();
@@ -202,7 +202,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
             </button>
             <button
               type="button"
-              className="px-3 py-1.5 text-xs font-medium text-[var(--btn-primary-text)] bg-[var(--success)] hover:opacity-90 rounded-lg"
+              className="px-3 py-1.5 text-xs font-medium text-btn-primary-text bg-success hover:opacity-90 rounded-lg"
               onClick={handleCreateTag}
             >
               {tCommon("save")}
@@ -212,7 +212,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
       ) : (
         <button
           type="button"
-          className="mt-3 w-full px-3 py-2 text-sm font-medium text-[var(--success)] hover:bg-[var(--success-bg)] rounded-lg border border-dashed border-[var(--success)]/30 transition-colors"
+          className="mt-3 w-full px-3 py-2 text-sm font-medium text-success hover:bg-success-bg rounded-lg border border-dashed border-success/30 transition-colors"
           onClick={() => setIsCreating(true)}
         >
           + {t("createNew")}

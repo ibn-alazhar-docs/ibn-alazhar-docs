@@ -109,7 +109,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
       </motion.div>
 
       {error && (
-        <div className="bg-[var(--danger-bg)] border border-[var(--danger)]/20 text-[var(--danger)] px-4 py-3 rounded-lg text-sm">
+        <div className="bg-danger-bg border border-danger/20 text-danger px-4 py-3 rounded-lg text-sm">
           {error.startsWith("pipeline.") || error.startsWith("common.")
             ? t(error.replace("pipeline.upload.", ""))
             : error}
@@ -120,7 +120,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         <div className="space-y-2">
           <div className="h-2 bg-badge rounded-full overflow-hidden">
             <div
-              className="h-full bg-[var(--success)] transition-all duration-300"
+              className="h-full bg-success transition-all duration-300"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -133,7 +133,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={!file || uploading}
-        className="w-full bg-[var(--success)] text-[var(--btn-primary-text)] rounded-lg px-6 py-3 font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+        className="w-full bg-success text-btn-primary-text rounded-lg px-6 py-3 font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
         data-testid="upload-button"
       >
         {uploading ? t("uploading") : t("uploadButton")}

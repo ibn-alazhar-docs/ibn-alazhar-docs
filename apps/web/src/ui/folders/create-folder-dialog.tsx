@@ -67,7 +67,7 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
               <div
                 role="alert"
                 aria-live="polite"
-                className="mb-4 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)]"
+                className="mb-4 p-3 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger"
               >
                 {error}
               </div>
@@ -91,7 +91,7 @@ export function CreateFolderDialog({ onSubmit, onClose }: CreateFolderDialogProp
                     setError(null);
                   }}
                   placeholder={t("namePlaceholder")}
-                  className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--success)]"
+                  className="w-full px-3 py-2 border border-line rounded-lg focus:outline-none focus:ring-2 focus:ring-success"
                   autoFocus
                 />
               </div>

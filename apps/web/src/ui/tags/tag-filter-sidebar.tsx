@@ -77,7 +77,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
         {selectedTagIds.length > 0 && (
           <button
             type="button"
-            className="text-xs text-[var(--danger)] hover:text-[var(--danger)]/80"
+            className="text-xs text-danger hover:text-danger/80"
             onClick={clearAll}
             data-testid="tag-clear-all"
           >
@@ -95,7 +95,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
               type="button"
               className={`w-full flex items-center gap-2 px-3 py-3 rounded-lg text-sm transition-colors ${
                 isSelected
-                  ? "bg-[var(--success-bg)] text-[var(--success)] font-medium"
+                  ? "bg-success-bg text-success font-medium"
                   : "text-primary-color hover:bg-hover"
               }`}
               onClick={() => toggleTag(tag.id)}

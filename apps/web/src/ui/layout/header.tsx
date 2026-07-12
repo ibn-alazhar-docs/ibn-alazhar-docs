@@ -6,6 +6,8 @@ import { Link } from "@/i18n/navigation";
 import { signOut } from "next-auth/react";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
 import { LocaleToggle } from "@/ui/locale/locale-toggle";
+import { SearchBar } from "@/ui/search/search-bar";
+import { useRouter } from "@/i18n/navigation";
 import { MenuIcon, CloseIcon, LogoutIcon } from "@/ui/icons";
 
 interface HeaderProps {
@@ -19,6 +21,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
   const tUi = useTranslations("ui");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const router = useRouter();
 
   const isAdmin = role === "ADMIN";
 
@@ -49,6 +52,10 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
               Admin
             </span>
           )}
+        </div>
+
+        <div className="hidden flex-1 max-w-xl md:block mx-8">
+          <SearchBar onSearch={(query) => router.push(`/search?q=${encodeURIComponent(query)}`)} />
         </div>
 
         <div className="flex items-center gap-1">

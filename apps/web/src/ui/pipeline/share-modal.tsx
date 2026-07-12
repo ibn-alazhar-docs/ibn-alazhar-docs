@@ -151,7 +151,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
             >
               {/* Header */}
               <div className="border-b border-line px-6 py-4 flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--success-bg)] text-[var(--success)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-success-bg text-success">
                   <GlobeIcon className="h-5 w-5" />
                 </div>
                 <h3 className="text-lg font-semibold text-primary-color">{t("title")}</h3>
@@ -161,7 +161,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
               <div className="p-6">
                 {error && (
                   <div
-                    className="mb-4 p-3 bg-[var(--danger-bg)] border border-[var(--danger)]/20 rounded-lg text-sm text-[var(--danger)] text-start"
+                    className="mb-4 p-3 bg-danger-bg border border-danger/20 rounded-lg text-sm text-danger text-start"
                     dir="auto"
                   >
                     {error}
@@ -170,7 +170,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
 
                 {fetching ? (
                   <div className="flex h-32 items-center justify-center">
-                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-[var(--success)] border-t-transparent" />
+                    <div className="h-6 w-6 animate-spin rounded-full border-2 border-success border-t-transparent" />
                   </div>
                 ) : shared ? (
                   <div className="space-y-6">
@@ -195,8 +195,8 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                           onClick={handleCopy}
                           className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
                             copied
-                              ? "bg-[var(--success)] text-white"
-                              : "bg-[var(--success-bg)] text-[var(--success)] hover:bg-[var(--success)] hover:text-white"
+                              ? "bg-success text-white"
+                              : "bg-success-bg text-success hover:bg-success hover:text-white"
                           }`}
                         >
                           {copied ? t("copied") : t("copyLink")}
@@ -208,7 +208,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                       <button
                         onClick={handleRevokeLink}
                         disabled={loading}
-                        className="flex items-center gap-2 text-sm font-medium text-[var(--danger)] hover:text-[var(--danger)]/80 disabled:opacity-50 transition-colors"
+                        className="flex items-center gap-2 text-sm font-medium text-danger hover:text-danger/80 disabled:opacity-50 transition-colors"
                       >
                         <TrashIcon className="h-4 w-4" />
                         {t("revokeLink")}
@@ -233,7 +233,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                             onClick={() => setExpiresIn(opt.value as "7" | "30" | "never")}
                             className={`rounded-xl border py-2 text-sm font-medium transition-colors ${
                               expiresIn === opt.value
-                                ? "border-[var(--success)] bg-[var(--success-bg)] text-[var(--success)]"
+                                ? "border-success bg-success-bg text-success"
                                 : "border-line bg-card text-muted-color hover:bg-badge hover:text-primary-color"
                             }`}
                           >
@@ -248,7 +248,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                       whileTap={{ scale: 0.98 }}
                       onClick={handleCreateLink}
                       disabled={loading}
-                      className="w-full rounded-xl bg-[var(--success)] py-3 text-sm font-semibold text-white shadow-md hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                      className="w-full rounded-xl bg-success py-3 text-sm font-semibold text-white shadow-md hover:opacity-90 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
                     >
                       {loading ? (
                         <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

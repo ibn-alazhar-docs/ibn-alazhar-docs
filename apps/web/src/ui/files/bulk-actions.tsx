@@ -34,7 +34,7 @@ export function BulkActions({
       <div className="relative">
         <button
           type="button"
-          className="rounded-lg bg-[var(--info)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
+          className="rounded-lg bg-info px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
           onClick={onToggleBulkTagPicker}
         >
           {tDocs("addTags")}
@@ -55,21 +55,21 @@ export function BulkActions({
 
       <button
         type="button"
-        className="rounded-lg bg-[var(--success)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
+        className="rounded-lg bg-success px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
         onClick={onBulkMove}
       >
         {tDocs("moveToFolder")}
       </button>
       <button
         type="button"
-        className="rounded-lg bg-[var(--warning)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-90"
+        className="rounded-lg bg-warning-500 px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-90"
         onClick={onBulkExport}
       >
         {tDocs("exportSelected")}
       </button>
       <button
         type="button"
-        className="rounded-lg bg-[var(--danger)] px-3 py-1.5 text-sm font-medium text-[var(--btn-primary-text)] hover:opacity-80"
+        className="rounded-lg bg-danger px-3 py-1.5 text-sm font-medium text-btn-primary-text hover:opacity-80"
         onClick={onCancelSelection}
       >
         {tDocs("cancelSelection")}

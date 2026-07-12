@@ -102,7 +102,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
       <div className="rounded-2xl border border-line bg-card p-6">
         <div className="mb-6 flex items-center justify-between">
           <Heading level={3}>{t("ranges") || "Split Document"}</Heading>
-          <div className="rounded-lg bg-[var(--badge-bg)] px-3 py-1 text-sm font-semibold text-primary-color">
+          <div className="rounded-lg bg-badge px-3 py-1 text-sm font-semibold text-primary-color">
             {t("totalPages")}: {numPages}
           </div>
         </div>
@@ -126,11 +126,11 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
                   <label className="mb-1.5 block text-xs font-medium text-very-muted uppercase tracking-wider">
                     {t("from") || "From"}
                   </label>
-                  <div className="flex items-center bg-card border border-line rounded-lg overflow-hidden transition-all focus-within:border-[var(--success)] focus-within:ring-1 focus-within:ring-[var(--success)]">
+                  <div className="flex items-center bg-card border border-line rounded-lg overflow-hidden transition-all focus-within:border-success focus-within:ring-1 focus-within:ring-success">
                     <button
                       type="button"
                       onClick={() => updateRange(range.id, "from", range.from - 1)}
-                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-primary-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={range.from <= 1 || numPages === 0}
                     >
                       -
@@ -147,7 +147,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
                     <button
                       type="button"
                       onClick={() => updateRange(range.id, "from", range.from + 1)}
-                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-primary-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={range.from >= Math.max(1, numPages) || numPages === 0}
                     >
                       +
@@ -158,11 +158,11 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
                   <label className="mb-1.5 block text-xs font-medium text-very-muted uppercase tracking-wider">
                     {t("to") || "To"}
                   </label>
-                  <div className="flex items-center bg-card border border-line rounded-lg overflow-hidden transition-all focus-within:border-[var(--success)] focus-within:ring-1 focus-within:ring-[var(--success)]">
+                  <div className="flex items-center bg-card border border-line rounded-lg overflow-hidden transition-all focus-within:border-success focus-within:ring-1 focus-within:ring-success">
                     <button
                       type="button"
                       onClick={() => updateRange(range.id, "to", range.to - 1)}
-                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-primary-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={range.to <= 1 || numPages === 0}
                     >
                       -
@@ -179,7 +179,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
                     <button
                       type="button"
                       onClick={() => updateRange(range.id, "to", range.to + 1)}
-                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-[var(--text-primary)] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="shrink-0 px-3 py-1.5 text-lg font-medium text-muted-color hover:bg-hover hover:text-primary-color transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       disabled={range.to >= Math.max(1, numPages) || numPages === 0}
                     >
                       +
@@ -192,7 +192,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
 
           <button
             onClick={addRange}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-3 text-sm font-medium text-[var(--text-primary)] transition-colors hover:border-[var(--btn-primary-bg)] hover:text-[var(--btn-primary-bg)]"
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-line py-3 text-sm font-medium text-primary-color transition-colors hover:border-[var(--btn-primary-bg)] hover:text-[var(--btn-primary-bg)]"
           >
             <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path
@@ -216,7 +216,7 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
           </button>
           <button
             onClick={onCancel}
-            className="w-full rounded-xl border border-line bg-page py-3 text-sm font-bold text-[var(--text-primary)] transition-colors hover:bg-hover"
+            className="w-full rounded-xl border border-line bg-page py-3 text-sm font-bold text-primary-color transition-colors hover:bg-hover"
           >
             {t("cancel") || "Cancel"}
           </button>

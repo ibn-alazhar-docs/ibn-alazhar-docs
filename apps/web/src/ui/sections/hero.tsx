@@ -92,7 +92,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
 
           <motion.h1
             variants={itemVariants}
-            className="heading-display text-balance text-4xl font-bold leading-[1.15] tracking-tight text-[var(--text-primary)] sm:text-5xl md:text-6xl lg:text-7xl"
+            className="heading-display text-balance text-4xl font-bold leading-[1.15] tracking-tight text-primary-color sm:text-5xl md:text-6xl lg:text-7xl"
           >
             {title || t("title")}
           </motion.h1>
@@ -103,7 +103,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
 
           <motion.p
             variants={itemVariants}
-            className="max-w-xl text-balance text-base leading-relaxed text-[var(--text-secondary)] sm:text-lg"
+            className="max-w-xl text-balance text-base leading-relaxed text-secondary-color sm:text-lg"
           >
             {subtitle || t("subtitle")}
           </motion.p>

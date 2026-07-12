@@ -31,7 +31,7 @@ const colorMap: Record<TextColor, string> = {
   default: "text-primary-color",
   muted: "text-muted-color",
   primary: "text-primary-color",
-  error: "text-[var(--danger)]",
+  error: "text-danger",
 };
 
 export function Text({

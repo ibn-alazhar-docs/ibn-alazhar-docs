@@ -84,16 +84,14 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       {/* Progress Bar */}
       <div className="h-3 bg-badge rounded-full overflow-hidden">
         <div
-          className={`h-full transition-all duration-500 ${isFailed ? "bg-[var(--danger)]" : "bg-[var(--success)]"}`}
+          className={`h-full transition-all duration-500 ${isFailed ? "bg-danger" : "bg-success"}`}
           style={{ width: `${barWidth}%` }}
         />
       </div>
 
       {/* Status Text */}
       <div className="text-center">
-        <p
-          className={`text-lg font-medium ${isFailed ? "text-[var(--danger)]" : "text-[var(--success)]"}`}
-        >
+        <p className={`text-lg font-medium ${isFailed ? "text-danger" : "text-success"}`}>
           {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {!isCompleted && !isFailed && (
@@ -114,10 +112,10 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
                   isDone
-                    ? "bg-[var(--success)] text-[var(--btn-primary-text)]"
+                    ? "bg-success text-btn-primary-text"
                     : isActive
-                      ? "bg-[var(--success-bg)] text-[var(--success)] border-2 border-[var(--success)]"
-                      : "bg-[var(--badge-bg)] text-[var(--text-muted)]"
+                      ? "bg-success-bg text-success border-2 border-success"
+                      : "bg-badge text-muted-color"
                 }`}
               >
                 {isDone ? "✓" : isActive ? "●" : i + 1}
@@ -127,7 +125,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
                   isDone
                     ? "text-muted-color"
                     : isActive
-                      ? "text-[var(--success)] font-medium"
+                      ? "text-success font-medium"
                       : "text-very-muted"
                 }`}
               >

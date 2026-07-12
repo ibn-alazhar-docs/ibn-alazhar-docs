@@ -99,10 +99,10 @@ export function SettingsContent({ user }: SettingsContentProps) {
         {/* Page Header */}
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
+            <h1 className="text-3xl font-bold tracking-tight text-primary-color">
               {tNav("settings")}
             </h1>
-            <p className="mt-1 text-sm text-[var(--text-secondary)]">{t("profileDescription")}</p>
+            <p className="mt-1 text-sm text-secondary-color">{t("profileDescription")}</p>
           </div>
           {isAdmin && (
             <Badge variant="success" className="ms-auto shrink-0">
@@ -113,7 +113,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
 
         {/* Success Alert */}
         {saved && (
-          <div className="flex items-center gap-3 rounded-xl bg-[var(--success-bg)] border border-[var(--success-border)] p-4 text-[var(--success)] text-sm font-medium">
+          <div className="flex items-center gap-3 rounded-xl bg-success-bg border border-success-border p-4 text-success text-sm font-medium">
             <span>✓</span>
             {t("saved")}
           </div>
@@ -121,7 +121,7 @@ export function SettingsContent({ user }: SettingsContentProps) {
 
         {/* Error Alert */}
         {error && (
-          <div className="flex items-center gap-3 rounded-xl bg-[var(--danger-bg)] border border-[var(--danger-border)] p-4 text-[var(--danger)] text-sm font-medium">
+          <div className="flex items-center gap-3 rounded-xl bg-danger-bg border border-danger-border p-4 text-danger text-sm font-medium">
             <span>✕</span>
             {error}
           </div>
@@ -228,25 +228,23 @@ export function SettingsContent({ user }: SettingsContentProps) {
         </Card>
 
         {/* Danger Zone */}
-        <Card className="border-[var(--danger)]/30 bg-[var(--danger-bg)]">
+        <Card className="border-danger/30 bg-danger-bg">
           <CardHeader>
-            <CardTitle className="text-[var(--danger)]">{t("dangerZone")}</CardTitle>
+            <CardTitle className="text-danger">{t("dangerZone")}</CardTitle>
             <CardDescription>{t("dangerZoneDescription")}</CardDescription>
           </CardHeader>
           <CardContent>
             {!showDeleteConfirm ? (
               <Button
                 variant="destructive"
-                className="bg-transparent border border-[var(--danger)]/40 text-[var(--danger)] hover:bg-[var(--danger)] hover:text-white"
+                className="bg-transparent border border-danger/40 text-danger hover:bg-danger hover:text-white"
                 onClick={() => setShowDeleteConfirm(true)}
               >
                 {t("deleteAccount")}
               </Button>
             ) : (
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <p className="text-sm text-[var(--text-secondary)] flex-1">
-                  {t("deleteAccountConfirm")}
-                </p>
+                <p className="text-sm text-secondary-color flex-1">{t("deleteAccountConfirm")}</p>
                 <div className="flex gap-2">
                   <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
                     {deleting ? t("deleting") : tCommon("confirm")}

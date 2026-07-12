@@ -49,7 +49,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             <>
               <Link
                 href="/login"
-                className="px-4 py-2 text-xs font-semibold tracking-[0.06em] text-[var(--text-secondary)] no-underline transition-colors hover:text-[var(--text-primary)]"
+                className="px-4 py-2 text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color"
               >
                 {signInLabel || t("signIn")}
               </Link>

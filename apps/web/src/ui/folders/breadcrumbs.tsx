@@ -19,7 +19,7 @@ export function Breadcrumbs({ breadcrumbs, onNavigate }: BreadcrumbsProps) {
     <nav className="flex items-center gap-1 text-sm text-muted-color mb-4">
       <button
         type="button"
-        className="hover:text-[var(--success)] transition-colors"
+        className="hover:text-success transition-colors"
         onClick={() => onNavigate(null)}
       >
         {t("allFilesBreadcrumb")}
@@ -30,7 +30,7 @@ export function Breadcrumbs({ breadcrumbs, onNavigate }: BreadcrumbsProps) {
           <span className="text-very-muted">›</span>
           <button
             type="button"
-            className={`hover:text-[var(--success)] transition-colors ${
+            className={`hover:text-success transition-colors ${
               index === breadcrumbs.length - 1 ? "text-primary-color font-medium" : ""
             }`}
             onClick={() => onNavigate(crumb.id)}
