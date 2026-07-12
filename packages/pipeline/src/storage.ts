@@ -8,7 +8,7 @@ const logger = baseLogger.child({ module: "storage" });
 const PDF_HEADER_PATTERN = /^%PDF-\d+\.\d+/;
 const PDF_TRAILER_PATTERN = /%%EOF\s*$/;
 const PDF_ENCRYPT_PATTERN = /\/Encrypt\s+\d+\s+\d+\s+R/;
-const MAX_FILE_SIZE = 100 * 1024 * 1024;
+const MAX_FILE_SIZE = 200 * 1024 * 1024;
 
 const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff]);
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
@@ -101,7 +101,7 @@ export function validatePdf(
     details.size = buffer.length;
     return {
       valid: false,
-      error: `File exceeds maximum size of 100MB`,
+      error: `File exceeds maximum size of 200MB`,
       errorCode: "FILE_TOO_LARGE",
       details,
     };
@@ -263,7 +263,7 @@ export async function uploadBuffer(
 
 export async function downloadFile(config: PipelineConfig, key: string): Promise<Buffer> {
   const mc = getStorageClient(config);
-  const MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024;
+  const MAX_DOWNLOAD_SIZE = 200 * 1024 * 1024;
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
     let totalSize = 0;

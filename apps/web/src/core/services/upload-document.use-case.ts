@@ -1,6 +1,6 @@
 import { loadConfig, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
-import { unlink } from "node:fs/promises";
-import { createWriteStream } from "node:fs";
+import { unlink, writeFile } from "node:fs/promises";
+
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
@@ -41,7 +41,7 @@ export class UploadDocumentUseCase {
     const tempPath = join(tmpdir(), `${jobId}_${safeName}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    await require("node:fs/promises").writeFile(tempPath, buffer);
+    await writeFile(tempPath, buffer);
 
     const storageKey = this.storage.uploadKey(userId, jobId, safeName);
 

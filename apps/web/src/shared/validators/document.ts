@@ -11,7 +11,7 @@ export const documentUpdateSchema = z
 const CUID_REGEX = /^c[a-z0-9]{23,29}$/i;
 const PAGE_RANGE_REGEX = /^\d+(-\d+)?$/;
 const ALLOWED_UPLOAD_TYPES = ["application/pdf", "image/jpeg", "image/png"];
-const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 50);
+const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 200);
 
 export const uploadMetadataSchema = z
   .object({
