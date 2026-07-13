@@ -3,7 +3,7 @@ import { ROLE } from "@/domain/auth";
 
 export const loginSchema = z
   .object({
-    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح").transform(v => v.trim().toLowerCase()),
     password: z
       .string()
       .min(1, "كلمة المرور مطلوبة")
@@ -17,8 +17,9 @@ export const registerSchema = z
       .string()
       .min(1, "الاسم مطلوب")
       .min(2, "يجب أن يكون الاسم حرفين على الأقل")
-      .max(100, "الاسم طويل جداً"),
-    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+      .max(100, "الاسم طويل جداً")
+      .transform((v) => v.trim()),
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح").transform(v => v.trim().toLowerCase()),
     password: z
       .string()
       .min(1, "كلمة المرور مطلوبة")
@@ -63,13 +64,13 @@ export const adminUserDeleteSchema = z
 
 export const forgotPasswordSchema = z
   .object({
-    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح").transform(v => v.trim().toLowerCase()),
   })
   .strip();
 
 export const resetPasswordSchema = z
   .object({
-    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح"),
+    email: z.string().min(1, "البريد الإلكتروني مطلوب").email("البريد الإلكتروني غير صالح").transform(v => v.trim().toLowerCase()),
     token: z.string().min(1, "رمز التحقق مطلوب"),
     password: z
       .string()

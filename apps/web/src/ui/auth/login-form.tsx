@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { loginSchema } from "@/shared/validators/auth";
+import { preCheckLogin } from "./actions";
 
 interface ActionState {
   error: string | null;
@@ -44,6 +45,17 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
           return { error: null, fieldErrors };
         }
 
+        // Pre-check for lockouts and rate limits since NextAuth swallows custom errors
+        const preCheck = await preCheckLogin(email);
+        if (preCheck.error) {
+          if (preCheck.error === "AccountLocked") {
+            return { error: t("accountLocked"), isLocked: true };
+          }
+          if (preCheck.error === "IpRateLimit") {
+            return { error: t("ipRateLimit"), isLocked: true };
+          }
+        }
+
         const result = await signIn("credentials", {
           email,
           password,
@@ -51,6 +63,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
           redirectTo: "/dashboard",
         });
 
+        // Fallback for custom errors if NextAuth ever starts supporting them
         if (result?.error === "AccountLocked") {
           return { error: t("accountLocked"), isLocked: true };
         }
