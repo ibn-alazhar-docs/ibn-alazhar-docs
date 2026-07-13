@@ -72,6 +72,7 @@ vi.mock("@/core/services/export/metadata", () => ({
 }));
 
 import { WebhookUseCases } from "@/core/services/webhook.use-cases";
+import { AutoTagUseCases } from "@/core/services/auto-tag.use-cases";
 import { StreamService } from "@/core/services/stream.service";
 import { AnalyticsUseCases } from "@/core/services/analytics.use-cases";
 import {
@@ -517,7 +518,7 @@ describe("WebhookUseCases", () => {
       const result = await useCases.testWebhook("wh-1", "user-1");
 
       expect(result.success).toBe(false);
-      expect(result.error).toContain("Connection refused");
+      expect(result.error).toBe("WEBHOOK_DELIVERY_FAILED");
     });
 
     it("sends correct HMAC signature header", async () => {
@@ -2124,6 +2125,99 @@ describe("Zip builder", () => {
       mdFiles.forEach((name) => {
         expect(name).not.toContain("/");
       });
+    });
+  });
+
+  function makeDocumentRepo() {
+    return {
+      findDocumentById: vi.fn(),
+    } as unknown as import("@/domain/repositories/document.repository.interface").IDocumentRepository;
+  }
+
+  function makeTagRepo() {
+    return {
+      findMany: vi.fn(),
+    } as unknown as import("@/domain/repositories/tag.repository.interface").ITagRepository;
+  }
+
+  describe("AutoTagUseCases", () => {
+    let documentRepo: ReturnType<typeof makeDocumentRepo>;
+    let tagRepo: ReturnType<typeof makeTagRepo>;
+    let useCases: AutoTagUseCases;
+
+    beforeEach(() => {
+      documentRepo = makeDocumentRepo();
+      tagRepo = makeTagRepo();
+      useCases = new AutoTagUseCases(documentRepo, tagRepo);
+    });
+
+    it("throws when the document does not exist", async () => {
+      documentRepo.findDocumentById.mockResolvedValue(null);
+      await expect(useCases.suggestTags("missing", makeSession())).rejects.toThrow();
+    });
+
+    it("suggests existing tags that match the document title or description", async () => {
+      documentRepo.findDocumentById.mockResolvedValue({
+        title: "تقرير مالي شهري",
+        description: null,
+        originalName: "report.pdf",
+        fileName: "report.pdf",
+        tags: [],
+      });
+      tagRepo.findMany.mockResolvedValue([
+        { id: "t1", name: "مالي", color: "#16A34A" },
+        { id: "t2", name: "تقرير", color: "#16A34A" },
+        { id: "t3", name: "قانوني", color: "#16A34A" },
+      ]);
+
+      const result = await useCases.suggestTags("doc-1", makeSession());
+      const names = result.map((s) => s.name);
+
+      expect(names).toContain("مالي");
+      expect(names).toContain("تقرير");
+      expect(names).not.toContain("قانوني");
+    });
+
+    it("does not suggest tags already applied to the document", async () => {
+      documentRepo.findDocumentById.mockResolvedValue({
+        title: "تقرير مالي",
+        description: null,
+        originalName: "x.pdf",
+        fileName: "x.pdf",
+        tags: [{ tag: { id: "t1", name: "مالي", color: "#16A34A" } }],
+      });
+      tagRepo.findMany.mockResolvedValue([{ id: "t1", name: "مالي", color: "#16A34A" }]);
+
+      const result = await useCases.suggestTags("doc-1", makeSession());
+      expect(result.find((s) => s.name === "مالي")).toBeUndefined();
+    });
+
+    it("proposes new candidate tags from prominent words when no tag matches", async () => {
+      documentRepo.findDocumentById.mockResolvedValue({
+        title: "عقد إيجار مبنى",
+        description: "عقد إيجار سنوي",
+        originalName: "x.pdf",
+        fileName: "x.pdf",
+        tags: [],
+      });
+      tagRepo.findMany.mockResolvedValue([]);
+
+      const result = await useCases.suggestTags("doc-1", makeSession());
+      expect(result.some((s) => s.type === "new")).toBe(true);
+    });
+
+    it("scopes tag suggestions to the user when not admin", async () => {
+      documentRepo.findDocumentById.mockResolvedValue({
+        title: "مالي",
+        description: null,
+        originalName: "x.pdf",
+        fileName: "x.pdf",
+        tags: [],
+      });
+      tagRepo.findMany.mockResolvedValue([]);
+
+      await useCases.suggestTags("doc-1", makeSession("STUDENT"));
+      expect(tagRepo.findMany).toHaveBeenCalledWith({ userId: "user-1", deletedAt: null });
     });
   });
 });
