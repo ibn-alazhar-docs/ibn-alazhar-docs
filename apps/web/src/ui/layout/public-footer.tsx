@@ -45,7 +45,7 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
             <p className="mt-2 text-xs text-very-muted">{tagline || t("tagline")}</p>
           </div>
           <div className="flex flex-col items-start gap-2 sm:items-end">
-            <p className="text-xs text-very-muted">&copy; {copyright || t("copyright")}</p>
+            <p className="text-xs text-very-muted">{copyright || t("copyright")}</p>
           </div>
         </div>
       </div>

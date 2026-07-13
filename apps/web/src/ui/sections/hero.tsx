@@ -48,12 +48,12 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         <motion.div
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_left,_var(--gold)_0%,_transparent_55%)] opacity-[0.05]"
           animate={{ scale: [1, 1.05, 1], opacity: [0.05, 0.07, 0.05] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 8, repeat: 1, ease: "easeInOut" }}
         />
         <motion.div
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--btn-primary-bg)_0%,_transparent_55%)] opacity-[0.04]"
           animate={{ scale: [1, 1.08, 1], opacity: [0.04, 0.06, 0.04] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+          transition={{ duration: 10, repeat: 1, ease: "easeInOut", delay: 1 }}
         />
 
         <div className="absolute -right-16 top-10 opacity-[0.025] sm:-right-32 sm:top-0 sm:opacity-[0.05]">

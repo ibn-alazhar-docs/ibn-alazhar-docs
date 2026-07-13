@@ -1,9 +1,87 @@
 import { Client as MinioClient } from "minio";
-import type { PipelineConfig, StorageObject } from "./types";
-import { stat } from "node:fs/promises";
+import type { PipelineConfig, StorageObject, StorageDriver } from "./types";
+import { getStorageDriver } from "./config";
+import { stat, mkdir, writeFile, readFile, rm, access } from "node:fs/promises";
+import { constants as fsConstants } from "node:fs";
+import { join, normalize, isAbsolute, dirname } from "node:path";
+import { pipeline as streamPipeline } from "node:stream/promises";
+import { createReadStream, createWriteStream } from "node:fs";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "storage" });
+
+function getDriver(config: PipelineConfig): StorageDriver {
+  return config.storage?.driver ?? getStorageDriver();
+}
+
+/**
+ * Resolve a storage key to an absolute, sandboxed local path under the
+ * configured local root. Guards against path-traversal in keys.
+ */
+function localPath(config: PipelineConfig, key: string): string {
+  const root = config.storage?.localDir || "/data";
+  const normalized = normalize(key).replace(/^(\.\.(\/|\\|$))+/, "");
+  const full = isAbsolute(normalized) ? normalized : join(root, normalized);
+  // Ensure the resolved path stays within root.
+  if (full !== root && !full.startsWith(root + "/") && !full.startsWith(root + "\\")) {
+    throw new Error(`Invalid storage key (escapes root): ${key}`);
+  }
+  return full;
+}
+
+async function localEnsureRoot(config: PipelineConfig): Promise<void> {
+  await mkdir(config.storage.localDir || "/data", { recursive: true });
+}
+
+async function localUploadFile(
+  config: PipelineConfig,
+  key: string,
+  filePath: string,
+  contentType: string,
+): Promise<StorageObject> {
+  const dest = localPath(config, key);
+  await mkdir(dirname(dest), { recursive: true });
+  await rm(dest, { force: true });
+  await streamPipeline(createReadStream(filePath), createWriteStream(dest));
+  let size = 0;
+  try {
+    size = (await stat(dest)).size;
+  } catch {
+    size = 0;
+  }
+  return { bucket: "local", key, size, contentType };
+}
+
+async function localUploadBuffer(
+  config: PipelineConfig,
+  key: string,
+  buffer: Buffer,
+  contentType: string,
+): Promise<StorageObject> {
+  const dest = localPath(config, key);
+  await mkdir(dirname(dest), { recursive: true });
+  await writeFile(dest, buffer);
+  return { bucket: "local", key, size: buffer.length, contentType };
+}
+
+async function localDownloadFile(config: PipelineConfig, key: string): Promise<Buffer> {
+  const dest = localPath(config, key);
+  return readFile(dest);
+}
+
+async function localDeleteFile(config: PipelineConfig, key: string): Promise<void> {
+  const dest = localPath(config, key);
+  await rm(dest, { force: true });
+}
+
+async function localFileExists(config: PipelineConfig, key: string): Promise<boolean> {
+  try {
+    await access(localPath(config, key), fsConstants.F_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const PDF_HEADER_PATTERN = /^%PDF-\d+\.\d+/;
 const PDF_TRAILER_PATTERN = /%%EOF\s*$/;
@@ -197,6 +275,10 @@ export function validatePdf(
 }
 
 export async function ensureBucket(config: PipelineConfig, retryDelay?: number): Promise<void> {
+  if (getDriver(config) === "local") {
+    await localEnsureRoot(config);
+    return;
+  }
   const mc = getStorageClient(config);
   const maxRetries = 10;
 
@@ -224,6 +306,9 @@ export async function uploadFile(
   filePath: string,
   contentType: string,
 ): Promise<StorageObject> {
+  if (getDriver(config) === "local") {
+    return localUploadFile(config, key, filePath, contentType);
+  }
   const mc = getStorageClient(config);
   await mc.fPutObject(config.minio.bucket, key, filePath, {
     "Content-Type": contentType,
@@ -249,6 +334,9 @@ export async function uploadBuffer(
   buffer: Buffer,
   contentType: string,
 ): Promise<StorageObject> {
+  if (getDriver(config) === "local") {
+    return localUploadBuffer(config, key, buffer, contentType);
+  }
   const mc = getStorageClient(config);
   await mc.putObject(config.minio.bucket, key, buffer, buffer.length, {
     "Content-Type": contentType,
@@ -262,6 +350,9 @@ export async function uploadBuffer(
 }
 
 export async function downloadFile(config: PipelineConfig, key: string): Promise<Buffer> {
+  if (getDriver(config) === "local") {
+    return localDownloadFile(config, key);
+  }
   const mc = getStorageClient(config);
   const MAX_DOWNLOAD_SIZE = 100 * 1024 * 1024;
   return new Promise((resolve, reject) => {
@@ -290,16 +381,29 @@ export async function getPresignedUrl(
   key: string,
   expirySeconds: number = 3600,
 ): Promise<string> {
+  if (getDriver(config) === "local") {
+    // Local driver serves files through the web app's own routes, so a
+    // presigned URL is unnecessary. Return a placeholder; callers that rely
+    // on presigned URLs are not used in local-storage mode.
+    return `local://${key}`;
+  }
   const mc = getStorageClient(config);
   return mc.presignedGetObject(config.minio.bucket, key, expirySeconds);
 }
 
 export async function deleteFile(config: PipelineConfig, key: string): Promise<void> {
+  if (getDriver(config) === "local") {
+    await localDeleteFile(config, key);
+    return;
+  }
   const mc = getStorageClient(config);
   await mc.removeObject(config.minio.bucket, key);
 }
 
 export async function fileExists(config: PipelineConfig, key: string): Promise<boolean> {
+  if (getDriver(config) === "local") {
+    return localFileExists(config, key);
+  }
   const mc = getStorageClient(config);
   try {
     await mc.statObject(config.minio.bucket, key);
@@ -314,6 +418,40 @@ export async function cleanupOrphanedFiles(
   prefix: string,
   maxAgeMs: number,
 ): Promise<number> {
+  if (getDriver(config) === "local") {
+    // Best-effort local cleanup: walk the prefix dir and remove stale files.
+    try {
+      const base = localPath(config, prefix);
+      const now = Date.now();
+      let removed = 0;
+      const walk = async (dir: string): Promise<void> => {
+        let entries;
+        try {
+          entries = await import("node:fs/promises").then((m) =>
+            m.readdir(dir, { withFileTypes: true }),
+          );
+        } catch {
+          return;
+        }
+        for (const entry of entries) {
+          const full = join(dir, entry.name);
+          if (entry.isDirectory()) {
+            await walk(full);
+          } else if (entry.isFile()) {
+            const age = now - (await stat(full)).mtimeMs;
+            if (age > maxAgeMs) {
+              await rm(full, { force: true }).catch(() => {});
+              removed++;
+            }
+          }
+        }
+      };
+      await walk(base);
+      return removed;
+    } catch {
+      return 0;
+    }
+  }
   const mc = getStorageClient(config);
   const stream = mc.listObjects(config.minio.bucket, prefix, true);
   const now = Date.now();

@@ -1,7 +1,15 @@
-import type { PipelineConfig, OcrEngineType } from "./types";
+import type { PipelineConfig, OcrEngineType, StorageDriver } from "./types";
+
+export function getStorageDriver(): StorageDriver {
+  return process.env.STORAGE_DRIVER === "local" ? "local" : "s3";
+}
 
 export function loadConfig(): PipelineConfig {
   return {
+    storage: {
+      driver: getStorageDriver(),
+      localDir: process.env.STORAGE_LOCAL_DIR || "/data",
+    },
     minio: (() => {
       const rawEndpoint = process.env.S3_ENDPOINT ?? process.env.MINIO_ENDPOINT ?? "localhost";
       let endpoint = rawEndpoint;
