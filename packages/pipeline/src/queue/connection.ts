@@ -106,13 +106,32 @@ export async function closeQueueConnections(): Promise<void> {
 /**
  * Health probe for the Redis dependency. Returns `false` (never throws) so it
  * can be safely composed into liveness/readiness and actuator endpoints.
+ *
+ * Uses a short-lived, isolated connection with a hard timeout — we must NEVER
+ * hang the health endpoint (or block startup) when Redis is unreachable. The
+ * shared singleton connection is intentionally not used here because it keeps
+ * retrying in the background and its in-flight `ping()` would not resolve until
+ * its retry budget is exhausted.
  */
 export async function isRedisHealthy(config: PipelineConfig): Promise<boolean> {
+  const probe = new IORedis({
+    host: config.redis.host,
+    port: config.redis.port,
+    password: config.redis.password,
+    tls: config.redis.tls ? {} : undefined,
+    lazyConnect: true,
+    connectTimeout: 1500,
+    maxRetriesPerRequest: 1,
+    retryStrategy: () => null,
+  });
   try {
-    const conn = getConnection(config);
-    const pong = await conn.ping();
-    return pong === "PONG";
+    const ping = probe.ping();
+    const timeout = new Promise<"TIMEOUT">((resolve) => setTimeout(() => resolve("TIMEOUT"), 2000));
+    const result = await Promise.race([ping, timeout]);
+    return result === "PONG";
   } catch {
     return false;
+  } finally {
+    probe.disconnect().catch(() => {});
   }
 }

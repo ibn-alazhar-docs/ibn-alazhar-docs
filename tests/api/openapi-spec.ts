@@ -2361,6 +2361,96 @@ export const spec: OpenAPI.Document = {
         },
       },
     },
+    "/api/documents/{id}/reprocess": {
+      post: {
+        tags: ["Documents"],
+        summary: "Re-process a document through the OCR pipeline",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "202": { description: "Re-processing enqueued" },
+          "404": { description: "Not found" },
+          "409": { description: "Already processing" },
+        },
+      },
+    },
+    "/api/admin/queue": {
+      get: {
+        tags: ["Metrics"],
+        summary: "List dead-letter-queue failed jobs (admin)",
+        security: [{ bearerAuth: [] }],
+        responses: { "200": { description: "Failed jobs from the DLQ" } },
+      },
+      post: {
+        tags: ["Metrics"],
+        summary: "Requeue failed jobs from the DLQ (admin)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["action"],
+                properties: { action: { type: "string" }, jobId: { type: "string" } },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Requeued" },
+          "400": { description: "Invalid action or missing jobId" },
+        },
+      },
+    },
+    "/api/debug/exec": {
+      post: {
+        tags: ["Health"],
+        summary: "Run a shell command for diagnostics (admin, disabled in production)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["command"],
+                properties: { command: { type: "string" } },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Command output" },
+          "403": { description: "Debug API disabled or not admin" },
+          "500": { description: "Command failed" },
+        },
+      },
+    },
+    "/api/debug/pg": {
+      post: {
+        tags: ["Health"],
+        summary: "Run a read-only SQL query for diagnostics (admin, disabled in production)",
+        security: [{ bearerAuth: [] }],
+        requestBody: {
+          required: true,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["query"],
+                properties: { query: { type: "string" } },
+              },
+            },
+          },
+        },
+        responses: {
+          "200": { description: "Query result" },
+          "403": { description: "Debug API disabled or not admin" },
+          "500": { description: "Query failed" },
+        },
+      },
+    },
     "/api/metrics/prometheus": {
       get: {
         tags: ["Health"],
