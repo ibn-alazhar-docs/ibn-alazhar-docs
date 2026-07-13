@@ -120,7 +120,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 RUN python3 -m venv /opt/ocr-venv && \
-    /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract
+    /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy
 
 ENV PATH="/opt/ocr-venv/bin:$PATH"
 
@@ -171,6 +171,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 python3-pip python3-venv \
     make g++ \
     libcairo2 libpango-1.0-0 libjpeg62-turbo libgif7 librsvg2-2 \
+    libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
     tesseract-ocr tesseract-ocr-ara ocrmypdf ghostscript poppler-utils \
     pandoc curl wget openssl \
     && rm -rf /var/lib/apt/lists/*
@@ -186,7 +187,7 @@ RUN npm install -g prisma@6.5.0
 
 # Python venv for OCR helpers
 RUN python3 -m venv /opt/ocr-venv \
-    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract
+    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy
 ENV PATH="/opt/ocr-venv/bin:$PATH"
 
 # Copy built web (standalone) + sources needed by workers/pipeline/database

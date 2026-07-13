@@ -28,6 +28,14 @@ PROMETHEUS_BEARER_TOKEN="${PROMETHEUS_BEARER_TOKEN:-hf-internal-metrics}"
 export STORAGE_DRIVER="${STORAGE_DRIVER:-local}"
 export STORAGE_LOCAL_DIR="${STORAGE_LOCAL_DIR:-/data}"
 
+# ---- OCR engine ------------------------------------------------------------
+# The bundled image only ships the local Tesseract engine. Surya/cloud engines
+# require heavy model downloads or API keys and are not installed here, so force
+# the local engine and point the Python helper at the bundled OCR venv.
+export OCR_PROVIDER="${OCR_PROVIDER:-tesseract}"
+export OCR_CLOUD_ENABLED="${OCR_CLOUD_ENABLED:-false}"
+export SURYA_PYTHON_PATH="${SURYA_PYTHON_PATH:-/opt/ocr-venv/bin/python}"
+
 # ---- Public URL (auto-detect on Hugging Face) -------------------------------
 if [ -n "${SPACE_HOST:-}" ]; then
   APP_URL="https://${SPACE_HOST}"
