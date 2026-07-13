@@ -61,12 +61,29 @@ export class UploadDocumentUseCase {
     const tempPath = join(tmpdir(), `${jobId}_${safeName}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    await writeFile(tempPath, buffer);
+    try {
+      await writeFile(tempPath, buffer);
+    } catch (err) {
+      const cause = err instanceof Error ? err : new Error(String(err));
+      logger.error({ error: cause.message, userId }, "Temp file write failed during upload");
+      throw new AppError("تعذر تجهيز الملف للرفع. حاول مرة أخرى.", ERROR_CODES.UPLOAD_FAILED, 500);
+    }
 
     const storageKey = this.storage.uploadKey(userId, jobId, safeName);
 
     try {
       await this.storage.uploadFile(storageKey, tempPath, file.type);
+    } catch (err) {
+      const cause = err instanceof Error ? err : new Error(String(err));
+      logger.error(
+        { error: cause.message, userId, storageKey },
+        "Storage write failed during upload",
+      );
+      throw new AppError(
+        "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
+        ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
+        503,
+      );
     } finally {
       await unlink(tempPath).catch(() => {});
     }

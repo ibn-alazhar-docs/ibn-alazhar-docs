@@ -1,5 +1,5 @@
 export { categorizeFailure } from "./categorize";
-export { getConnection, getQueue, closeQueueConnections } from "./connection";
+export { getConnection, getQueue, closeQueueConnections, isRedisHealthy } from "./connection";
 export { setupDlq, recordFailedJob, getFailedJobs, cleanupFailedJob } from "./dlq";
 export {
   createValidationQueue,

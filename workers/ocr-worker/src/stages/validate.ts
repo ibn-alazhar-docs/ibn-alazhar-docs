@@ -48,7 +48,7 @@ export function registerValidationStage(
         // the centralized `failed` listener marks FAILED only after exhaustion.
         // Permanent/fatal errors skip the retry cycle via discard().
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

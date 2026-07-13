@@ -1,6 +1,7 @@
 import { Queue } from "bullmq";
 import IORedis from "ioredis";
 import type { PipelineConfig } from "../types";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 // WHY: Singleton connection — BullMQ creates a new connection per Queue instance.
 // Multiple connections would exhaust Redis maxclients on small VPS instances.
@@ -40,9 +41,21 @@ export function getConnection(config: PipelineConfig): IORedis {
         // job-level retry strategies, not per-command retries.
         maxRetriesPerRequest: null,
         retryStrategy: (times: number) => {
-          if (times > 5) return null;
+          if (times > 5) {
+            logger.error(
+              { host: config.redis.host, port: config.redis.port },
+              "[redis] Connection retries exhausted — queues unavailable",
+            );
+            return null;
+          }
           return Math.min(1000 * 2 ** times, 10000);
         },
+      });
+      // WHY: ioredis emits an `error` event when a connection drops; without a
+      // listener Node treats it as an unhandled exception and can crash the
+      // worker. We log and let BullMQ's retry/backoff handle recovery.
+      connection.on("error", (err: Error) => {
+        logger.warn({ error: err.message }, "[redis] Connection error");
       });
       lastRedisHost = config.redis.host;
       lastRedisPort = config.redis.port;
@@ -87,5 +100,19 @@ export async function closeQueueConnections(): Promise<void> {
   if (connection) {
     await connection.quit();
     connection = null;
+  }
+}
+
+/**
+ * Health probe for the Redis dependency. Returns `false` (never throws) so it
+ * can be safely composed into liveness/readiness and actuator endpoints.
+ */
+export async function isRedisHealthy(config: PipelineConfig): Promise<boolean> {
+  try {
+    const conn = getConnection(config);
+    const pong = await conn.ping();
+    return pong === "PONG";
+  } catch {
+    return false;
   }
 }

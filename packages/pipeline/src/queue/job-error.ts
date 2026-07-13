@@ -1,5 +1,5 @@
 import type { PipelineConfig, FailedJob } from "../types";
-import { categorizeFailure } from "./categorize";
+import { categorizeFailure, sanitizeErrorMessage } from "./categorize";
 import { recordFailedJob } from "./dlq";
 
 /**
@@ -32,6 +32,26 @@ export function classifyError(error: unknown): {
 }
 
 /**
+ * Resolve the final error code written to the document + DLQ. When a transient
+ * failure has exhausted every retry, we surface RETRY_EXHAUSTED so the UI can
+ * offer a manual retry (rather than a raw provider error the user can't act on).
+ */
+export function resolveFinalErrorCode(
+  error: unknown,
+  job: JobLike,
+): {
+  code: string;
+  category: "transient" | "permanent" | "fatal";
+} {
+  const err = error instanceof Error ? error : new Error(String(error));
+  const { category, code } = categorizeFailure(err);
+  if (isFinalAttempt(job) && category === "transient") {
+    return { code: "RETRY_EXHAUSTED", category: "transient" };
+  }
+  return { code, category };
+}
+
+/**
  * Persist a failed job to the Dead-Letter Queue with correct attempt count,
  * failure category and a sanitized (non-stack-trace) error message. Always
  * resolves — a DLQ persistence failure must never mask the original error.
@@ -43,12 +63,12 @@ export async function recordJobFailure(
   error: unknown,
 ): Promise<void> {
   const err = error instanceof Error ? error : new Error(String(error));
-  const { category, code } = categorizeFailure(err);
+  const { category, code } = resolveFinalErrorCode(error, job);
   const failed: FailedJob = {
     jobId: job.id ?? "unknown",
     queue: queueName,
     originalData: job.data,
-    error: err.message,
+    error: sanitizeErrorMessage(err.message),
     errorCode: code as FailedJob["errorCode"],
     failureCategory: category,
     attempts: getJobAttempts(job),
