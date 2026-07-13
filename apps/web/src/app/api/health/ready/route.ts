@@ -50,6 +50,23 @@ async function checkRedis(): Promise<{ status: string; latencyMs: number }> {
 async function checkStorage(): Promise<{ status: string; latencyMs: number }> {
   const start = Date.now();
   try {
+    // In local filesystem mode there is no S3/MinIO service to probe — verify
+    // the configured local root is present and writable instead.
+    if ((process.env.STORAGE_DRIVER || "s3") === "local") {
+      const { access, writeFile, unlink, mkdir } = await import("node:fs/promises");
+      const { dirname } = await import("node:path");
+      const root = process.env.STORAGE_LOCAL_DIR || "/data";
+      try {
+        await access(root);
+      } catch {
+        await mkdir(root, { recursive: true });
+      }
+      const probe = `${root}/.health-${process.pid}-${Date.now()}.tmp`;
+      await writeFile(probe, "ok");
+      await unlink(probe);
+      return { status: "healthy", latencyMs: Date.now() - start };
+    }
+
     const endpoint = process.env.S3_ENDPOINT || "http://localhost:9000";
     const parsedUrl = new URL(endpoint);
     if (!["http:", "https:"].includes(parsedUrl.protocol)) {
