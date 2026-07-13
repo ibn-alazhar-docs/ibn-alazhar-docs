@@ -6,25 +6,32 @@ echo "  Ibn Al-Azhar Docs — HuggingFace Spaces"
 echo "  Starting all services..."
 echo "═══════════════════════════════════════════════════"
 
-# ── Step 1: Start MinIO (local S3-compatible storage) ──────────────
-echo "[1/5] Starting MinIO on :9000..."
-MINIO_ROOT_USER="${S3_ACCESS_KEY_ID:-minioadmin}" \
-MINIO_ROOT_PASSWORD="${S3_SECRET_ACCESS_KEY:-minioadmin}" \
-minio server /data/minio --address ":9000" --console-address ":9001" &
-MINIO_PID=$!
+# ── Step 1: Start MinIO (optional local S3-compatible storage) ────
+# MinIO is only needed when STORAGE_DRIVER=s3. In local-storage mode
+# (default on HF Spaces) files live on the persistent /data volume, so
+# MinIO is skipped entirely to save resources. If S3 mode is requested we
+# start it best-effort and never block boot on its failure.
+if [ "${STORAGE_DRIVER:-s3}" != "local" ]; then
+  echo "[1/5] Starting MinIO on :9000..."
+  MINIO_ROOT_USER="${S3_ACCESS_KEY_ID:-minioadmin}" \
+  MINIO_ROOT_PASSWORD="${S3_SECRET_ACCESS_KEY:-minioadmin}" \
+  minio server /data/minio --address ":9000" --console-address ":9001" &
+  MINIO_PID=$!
 
-# Wait for MinIO to be ready
-for i in $(seq 1 30); do
-    if curl -sf http://localhost:9000/minio/health/live > /dev/null 2>&1; then
-        echo "[1/5] MinIO is ready ✓"
-        break
-    fi
-    if [ "$i" = "30" ]; then
-        echo "[1/5] MinIO failed to start after 30s"
-        exit 1
-    fi
-    sleep 1
-done
+  for i in $(seq 1 30); do
+      if curl -sf http://localhost:9000/minio/health/live > /dev/null 2>&1; then
+          echo "[1/5] MinIO is ready ✓"
+          break
+      fi
+      if [ "$i" = "30" ]; then
+          echo "[1/5] MinIO failed to start — continuing without it (S3 uploads may fail)"
+      fi
+      sleep 1
+  done
+else
+  echo "[1/5] Local filesystem storage enabled (STORAGE_DRIVER=local) — MinIO skipped"
+  MINIO_PID=""
+fi
 
 # ── Step 2: Run database migrations (with retry for Neon cold start) ──
 echo "[2/5] Running database migrations..."

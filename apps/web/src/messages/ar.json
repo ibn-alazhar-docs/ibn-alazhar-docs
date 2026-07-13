@@ -304,7 +304,9 @@
     "deleteConfirmDesc": "هل أنت متأكد من حذف هذا المستند نهائياً؟ لا يمكن التراجع عن هذه الخطوة.",
     "totalPages": "إجمالي الصفحات",
     "range": "نطاق",
-    "selectAria": "تحديد {title}"
+    "selectAria": "تحديد {title}",
+    "showSidebar": "إظهار الفلاتر",
+    "hideSidebar": "إخفاء الفلاتر"
   },
   "search": {
     "title": "البحث",

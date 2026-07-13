@@ -12,19 +12,19 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate overflow-hidden bg-[#1c1917]">
+    <section className="relative isolate overflow-hidden bg-[var(--surface)]">
       {/* Decorative Background Elements */}
       <div className="pointer-events-none absolute inset-0" aria-hidden="true">
         <motion.div
           className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_60%)] opacity-[0.06]"
           animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 10, repeat: 1, ease: "easeInOut" }}
         />
         <div className="absolute -left-20 -top-20 opacity-[0.04]">
           <GeometricStar className="h-64 w-64 text-[var(--gold)]" />
         </div>
         <div className="absolute -bottom-20 -right-20 opacity-[0.04]">
-          <GeometricStar className="h-48 w-48 text-[#1a1614]" />
+          <GeometricStar className="h-48 w-48 text-[var(--text-tertiary)]" />
         </div>
       </div>
 
@@ -36,15 +36,15 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="max-w-2xl relative z-10"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-neutral-100/15 bg-neutral-100/[0.08] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-gold-400 uppercase">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-gold uppercase">
             {t("eyebrow")}
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[#fffdf7] sm:text-5xl lg:text-6xl drop-shadow-md">
+          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-primary-color sm:text-5xl lg:text-6xl">
             {t("title")}
           </h2>
 
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[#fffdf7]/75 sm:text-lg">
+          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-muted-color sm:text-lg">
             {t("subtitle")}
           </p>
 

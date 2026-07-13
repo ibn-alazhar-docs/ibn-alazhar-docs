@@ -5,6 +5,8 @@ export { ERROR_CODES, FAILURE_CATEGORIES } from "@ibn-al-azhar-docs/shared";
 
 export type OcrEngineType = "gemini" | "surya" | "tesseract" | "google";
 
+export type StorageDriver = "s3" | "local";
+
 export interface OcrPageResult {
   number: number;
   text: string;
@@ -26,6 +28,10 @@ export interface OcrEngineResult {
 }
 
 export interface PipelineConfig {
+  storage: {
+    driver: StorageDriver;
+    localDir: string;
+  };
   minio: {
     endpoint: string;
     port: number;

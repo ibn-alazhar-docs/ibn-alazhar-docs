@@ -130,6 +130,10 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=7860
 ENV HOSTNAME="0.0.0.0"
+# Use local filesystem storage backed by the persistent /data volume.
+# This removes the in-container MinIO dependency (single-container Spaces).
+ENV STORAGE_DRIVER=local
+ENV STORAGE_LOCAL_DIR=/data
 
 # HF Spaces health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
