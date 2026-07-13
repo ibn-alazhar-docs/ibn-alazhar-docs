@@ -28,6 +28,7 @@ const { mockUploadExecute, mockHandleRouteError, mockValidateUploadFile, mockSaf
 vi.mock("@/shared/validators/document", () => ({
   validateUploadFile: mockValidateUploadFile,
   uploadMetadataSchema: { safeParse: mockSafeParse },
+  MAX_UPLOAD_SIZE_MB: 50,
 }));
 
 vi.mock("@/shared/route-helpers", () => ({
