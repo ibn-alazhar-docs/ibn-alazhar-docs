@@ -74,10 +74,7 @@
   --color-badge: var(--badge-bg);
   --color-line: var(--border-line);
   --color-subtle: var(--border-subtle);
-  --color-primary-color: var(--text-primary);
-  --color-secondary-color: var(--text-secondary);
-  --color-muted-color: var(--text-tertiary);
-  --color-inverse: var(--text-inverse);
+  /* Moved text color mappings to explicit utility layer below to avoid Tailwind 4 palette merging issues */
   --color-btn-primary: var(--btn-primary-bg);
   --color-btn-primary-text: var(--btn-primary-text);
   --color-hover: var(--hover-bg);
@@ -221,6 +218,21 @@
   /* Inline code gets the Manuscript Brown accent (see DESIGN.md) */
   :not(pre) > code {
     color: var(--color-manuscript-brown);
+  }
+}
+
+@layer utilities {
+  .text-primary-color {
+    color: var(--text-primary);
+  }
+  .text-secondary-color {
+    color: var(--text-secondary);
+  }
+  .text-muted-color {
+    color: var(--text-tertiary);
+  }
+  .text-inverse {
+    color: var(--text-inverse);
   }
 }
 
