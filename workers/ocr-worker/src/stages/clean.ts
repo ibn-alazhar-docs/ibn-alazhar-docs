@@ -54,7 +54,7 @@ export function registerCleaningStage(
         const { category } = classifyError(error);
         jobLogger.error({ error: error.message, category }, `[clean] Failed for ${data.id}`);
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

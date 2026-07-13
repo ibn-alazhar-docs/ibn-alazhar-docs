@@ -1,8 +1,34 @@
 import { NextResponse } from "next/server";
+import { headers } from "next/headers";
 import { logger, generateRequestId } from "@/shared/logger";
 import { getErrorMessage, getErrorStatusCode } from "@/shared/errors";
 import { MAX_FOLDER_DEPTH } from "@/shared/validators/folder";
 import { ERROR_CODES } from "@/shared/constants";
+
+export interface RouteErrorContext {
+  userId?: string;
+  requestId?: string;
+  durationMs?: number;
+  fileName?: string;
+  fileSize?: number;
+  documentId?: string;
+  jobId?: string;
+}
+
+/**
+ * Reuse the request id that the middleware already assigned (or a proxy sent)
+ * so the id returned to the client matches the one in our structured logs.
+ */
+async function resolveRequestId(provided?: string): Promise<string> {
+  if (provided) return provided;
+  try {
+    const incoming = (await headers()).get("x-request-id");
+    if (incoming) return incoming;
+  } catch {
+    // headers() is unavailable outside a request scope — fall through.
+  }
+  return generateRequestId();
+}
 
 const ERROR_MESSAGES: Record<string, { code: string; message: string; status: number }> = {
   [ERROR_CODES.NOT_FOUND]: { code: ERROR_CODES.NOT_FOUND, message: "غير موجود", status: 404 },
@@ -134,12 +160,30 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
   },
 };
 
-export function handleRouteError(error: unknown, route: string, fallbackMessage: string) {
-  const requestId = generateRequestId();
+export async function handleRouteError(
+  error: unknown,
+  route: string,
+  fallbackMessage: string,
+  context: RouteErrorContext = {},
+) {
+  const requestId = await resolveRequestId(context.requestId);
   const code = getErrorMessage(error);
   const mapped = ERROR_MESSAGES[code];
 
-  logger.error({ requestId, route, error, errorCode: code }, `[${route}] Failed:`);
+  const childLogger = logger.child({ requestId, userId: context.userId });
+  childLogger.error(
+    {
+      route,
+      errorCode: code,
+      error: error instanceof Error ? error.message : String(error),
+      durationMs: context.durationMs,
+      fileName: context.fileName,
+      fileSize: context.fileSize,
+      documentId: context.documentId,
+      jobId: context.jobId,
+    },
+    `[${route}] Failed:`,
+  );
 
   if (mapped) {
     // `error.message` here is the curated, user-facing domain message (e.g.

@@ -2,6 +2,7 @@ import {
   closeQueueConnections,
   recordJobFailure,
   classifyError,
+  isFinalAttempt,
   type ExportRequest,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
@@ -26,6 +27,19 @@ const onExportFailed = async (
 ): Promise<void> => {
   const data = job.data;
   const { code } = classifyError(error);
+
+  // BullMQ fires `failed` on every attempt. Avoid persisting a (duplicate)
+  // DLQ entry / error code until retries are exhausted — the source document
+  // stays COMPLETED and usable, and only the final failure is recorded so the
+  // UI can offer a per-format retry.
+  if (!isFinalAttempt(job)) {
+    logger.warn(
+      { jobId: data.jobId, documentId: data.documentId, code, attemptsMade: job.attemptsMade },
+      `[export] Transient export failure (retry scheduled) for ${data.jobId}: ${code}`,
+    );
+    return;
+  }
+
   await prisma.document
     .update({ where: { id: data.documentId }, data: { errorCode: code } })
     .catch(() => {});

@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { readFile, rm } from "node:fs/promises";
 
 import {
   createSplittingWorker,
@@ -67,19 +67,24 @@ export function registerSplittingStage(
           await updateDocStatus(data.documentId, "SPLITTING", { pageCount: storedPagesCount });
 
           const CONCURRENCY = 5;
-          for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
-            const batch = selectedPaths.slice(i, i + CONCURRENCY);
-            await Promise.all(
-              batch.map(async (pagePath, batchIdx) => {
-                const pageNum = i + batchIdx + 1;
-                const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-                const imgBuf = await readFile(pagePath);
-                await uploadBuffer(config, pageKey, imgBuf, "image/png");
-              }),
-            );
+          try {
+            for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
+              const batch = selectedPaths.slice(i, i + CONCURRENCY);
+              await Promise.all(
+                batch.map(async (pagePath, batchIdx) => {
+                  const pageNum = i + batchIdx + 1;
+                  const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+                  const imgBuf = await readFile(pagePath);
+                  await uploadBuffer(config, pageKey, imgBuf, "image/png");
+                }),
+              );
+            }
+            jobLogger.info(`[split] Stored ${storedPagesCount} page images for ${data.id}`);
+          } finally {
+            // Always reclaim the per-job temp dir so successful runs don't
+            // silently exhaust tmpfs with pdf-split-* directories.
+            await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
           }
-
-          jobLogger.info(`[split] Stored ${storedPagesCount} page images for ${data.id}`);
         } else {
           storedPagesCount = 1;
           jobLogger.info(`[split] Input is an image, skipping split for ${data.id}`);
@@ -96,7 +101,7 @@ export function registerSplittingStage(
         const { category } = classifyError(error);
         jobLogger.error({ error: error.message, category }, `[split] Failed for ${data.id}`);
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

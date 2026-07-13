@@ -164,7 +164,7 @@ export function registerGenerationStage(
         const { category } = classifyError(error);
         jobLogger.error({ error: error.message, category }, `[generate] Failed for ${data.id}`);
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

@@ -102,13 +102,18 @@ export function registerExportHandler(
           req.options?.destination === "drive",
         );
 
-        const doc = await prisma.document.findUnique({ where: { id: req.jobId } });
+        const doc = await prisma.document.findUnique({
+          where: { id: req.jobId },
+          select: { outputKeys: true },
+        });
         if (doc) {
           const keys = (doc.outputKeys as Record<string, string>) || {};
           keys[req.format] = outputKey;
           await prisma.document.update({
             where: { id: req.jobId },
-            data: { outputKeys: keys },
+            // Clear any prior failure code so a retried-then-succeeded format
+            // doesn't keep showing a stale error in the UI.
+            data: { outputKeys: keys, errorCode: null, errorMessage: null },
           });
         }
 
@@ -124,7 +129,7 @@ export function registerExportHandler(
         // Transient (network/storage/redis) errors are retried by BullMQ.
         // Permanent errors (unsupported format, corrupt input) skip retries.
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

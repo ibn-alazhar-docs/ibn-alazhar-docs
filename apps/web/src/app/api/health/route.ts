@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
+import { loadConfig, isRedisHealthy } from "@ibn-al-azhar-docs/pipeline";
 
 interface HealthStatus {
   status: "healthy" | "degraded" | "unhealthy";
@@ -7,6 +8,7 @@ interface HealthStatus {
   uptime: number;
   checks: {
     database: { status: "ok" | "error"; latencyMs?: number };
+    redis: { status: "ok" | "error"; latencyMs?: number };
     memory: { status: "ok" | "warning" | "error"; usedMB: number; limit: number };
     workers: { ocr: "ok" | "unknown"; export: "ok" | "unknown" };
   };
@@ -15,6 +17,7 @@ interface HealthStatus {
 export async function GET(): Promise<NextResponse> {
   const checks: HealthStatus["checks"] = {
     database: { status: "error" },
+    redis: { status: "error" },
     memory: { status: "ok", usedMB: 0, limit: 512 },
     workers: { ocr: "unknown", export: "unknown" },
   };
@@ -31,6 +34,15 @@ export async function GET(): Promise<NextResponse> {
     };
   }
 
+  // Probe Redis (queue) dependency — never throws.
+  const redisStart = Date.now();
+  try {
+    const ok = await isRedisHealthy(loadConfig());
+    checks.redis = { status: ok ? "ok" : "error", latencyMs: Date.now() - redisStart };
+  } catch {
+    checks.redis = { status: "error", latencyMs: Date.now() - redisStart };
+  }
+
   // Probe system memory limits
   const mem = process.memoryUsage();
   const usedMB = Math.round(mem.rss / 1024 / 1024);
@@ -41,8 +53,14 @@ export async function GET(): Promise<NextResponse> {
   };
 
   // Aggregate service statuses
-  const allOk = checks.database.status === "ok" && checks.memory.status === "ok";
-  const anyError = checks.database.status === "error" || checks.memory.status === "error";
+  const allOk =
+    checks.database.status === "ok" &&
+    checks.redis.status === "ok" &&
+    checks.memory.status === "ok";
+  const anyError =
+    checks.database.status === "error" ||
+    checks.redis.status === "error" ||
+    checks.memory.status === "error";
 
   const overall: HealthStatus["status"] = anyError ? "unhealthy" : allOk ? "healthy" : "degraded";
 

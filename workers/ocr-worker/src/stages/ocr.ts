@@ -14,7 +14,7 @@ import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function registerOcrStage(
   config: PipelineConfig,
-  onFailed?: (job: Job<ProcessingJob>, error: Error) => Promise<void>,
+  onFailed?: (job: Job<ProcessingJob>, error: Error, queueName: string) => Promise<void>,
 ): void {
   createOcrWorker(
     config,
@@ -66,11 +66,17 @@ export function registerOcrStage(
         }
 
         const { minConfidence } = config.ocr;
-        if (typeof result.confidence === "number" && result.confidence < minConfidence) {
+        const lowConfidence =
+          typeof result.confidence === "number" && result.confidence < minConfidence;
+        if (lowConfidence) {
           jobLogger.warn(
             { confidence: result.confidence, minConfidence },
             `[ocr] Low-confidence OCR result for ${data.id} (code: OCR_LOW_CONFIDENCE) — proceeding with degradation`,
           );
+          // Graceful degradation: flag for human review but keep processing.
+          await updateDocStatus(data.documentId, "OCR_PROCESSING", {
+            needsReview: true,
+          }).catch(() => {});
         }
 
         const ocrKey = `${config.paths.ocrResults}/${data.id}/text.json`;
@@ -99,7 +105,7 @@ export function registerOcrStage(
         // FAILED only after exhaustion. Permanent/fatal engine failures skip
         // retries via discard().
         if (category !== "transient") {
-          await job.discard().catch(() => {});
+          job.discard();
         }
         throw error;
       }

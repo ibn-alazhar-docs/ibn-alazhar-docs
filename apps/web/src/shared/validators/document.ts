@@ -22,18 +22,24 @@ export const uploadMetadataSchema = z
 
 export function validateUploadFile(
   file: File | null,
-): { valid: true } | { valid: false; error: string; status: number } {
+): { valid: true } | { valid: false; error: string; status: number; code: string } {
   if (!file) {
-    return { valid: false, error: "لم يُرفع أي ملف", status: 400 };
+    return { valid: false, error: "لم يُرفق أي ملف", status: 400, code: "VALIDATION_ERROR" };
   }
   if (!ALLOWED_UPLOAD_TYPES.includes(file.type)) {
-    return { valid: false, error: "نوع الملف غير مدعوم. ارفع PDF أو JPG أو PNG", status: 400 };
+    return {
+      valid: false,
+      error: "نوع الملف غير مدعوم. ارفع ملف PDF أو صورة (JPG/PNG).",
+      status: 400,
+      code: "UPLOAD_UNSUPPORTED_TYPE",
+    };
   }
   if (file.size > MAX_UPLOAD_SIZE_MB * 1024 * 1024) {
     return {
       valid: false,
-      error: `حجم الملف يتجاوز الحد المسموح (${MAX_UPLOAD_SIZE_MB}MB)`,
+      error: `الملف أكبر من الحد المسموح (${MAX_UPLOAD_SIZE_MB}MB). يرجى تقليل الحجم أو تقسيم الملف.`,
       status: 400,
+      code: "UPLOAD_FILE_TOO_LARGE",
     };
   }
   return { valid: true };

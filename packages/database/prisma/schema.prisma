@@ -120,6 +120,9 @@ model Document {
   errorMessage String?
   language    String    @default("ar")
   isRtl       Boolean   @default(true)
+  // Set when OCR confidence fell below the configured threshold. The document
+  // still completes (graceful degradation) but is flagged for human review.
+  needsReview Boolean   @default(false)
 
   // Search fields (managed via raw SQL, not Prisma)
   // searchVector  tsvector (in PostgreSQL)
