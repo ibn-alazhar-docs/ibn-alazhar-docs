@@ -1,4 +1,5 @@
 export { categorizeFailure } from "./categorize";
+export { sendAlert, type AlertInput, type AlertSeverity } from "../alerts";
 export { getConnection, getQueue, closeQueueConnections, isRedisHealthy } from "./connection";
 export { setupDlq, recordFailedJob, getFailedJobs, cleanupFailedJob } from "./dlq";
 export {

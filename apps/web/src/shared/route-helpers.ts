@@ -148,6 +148,11 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
     message: "تعذر توليد هذا التنسيق. يمكنك إعادة المحاولة أو اختيار تنسيق آخر.",
     status: 422,
   },
+  [ERROR_CODES.WEBHOOK_DELIVERY_FAILED]: {
+    code: ERROR_CODES.WEBHOOK_DELIVERY_FAILED,
+    message: "تعذر توصيل الاختبار إلى الرابط. تأكد من أن الرابط متاح ويستجيب.",
+    status: 502,
+  },
   [ERROR_CODES.REDIS_UNAVAILABLE]: {
     code: ERROR_CODES.REDIS_UNAVAILABLE,
     message: "خدمة الطابور غير متاحة مؤقتًا. ستُستأنف المعالجة تلقائيًا.",

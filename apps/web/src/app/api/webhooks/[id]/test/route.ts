@@ -14,8 +14,19 @@ export const POST = withAuth(async (_request, { session, params }) => {
 
   try {
     const result = await useCases.webhook.testWebhook(id, session.user.id);
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "WEBHOOK_DELIVERY_FAILED",
+            message: "تعذر توصيل الاختبار إلى الرابط. تأكد من أن الرابط متاح ويستجيب.",
+          },
+        },
+        { status: 502 },
+      );
+    }
     return NextResponse.json(result);
   } catch (error: unknown) {
-    return handleRouteError(error, "webhooks/test/POST", "حدث خطأ");
+    return handleRouteError(error, "webhooks/test/POST", "حدث خطأ", { userId: session.user.id });
   }
 });
