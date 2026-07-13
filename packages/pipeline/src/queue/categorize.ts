@@ -25,9 +25,10 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_QUOTA_EXCEEDED" };
   if (msg.includes("ALL_OCR_PROVIDERS_FAILED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
-  // A genuinely empty document yields no text — retrying will not help.
+  // A genuinely empty document yields no text — but it can be transient
+  // (blank scan, provider hiccup) so retry rather than hard-fail.
   if (msg.includes("OCR_NO_TEXT"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_NO_TEXT" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "OCR_NO_TEXT" };
   if (msg.includes("PDF_ENCRYPTED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_ENCRYPTED" };
   if (msg.includes("PDF_CORRUPT"))
@@ -78,12 +79,16 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
   if (msg.includes("rateLimit") || msg.includes("quota") || msg.includes("429"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "RATE_LIMITED" };
   if (msg.includes("Redis") || msg.includes("redis"))
-    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "REDIS_UNAVAILABLE" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "REDIS_ERROR" };
   if (msg.includes("MinIO") || msg.includes("minio"))
-    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "UPLOAD_STORAGE_UNAVAILABLE" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "STORAGE_ERROR" };
   // Generic storage failures: transient unless clearly a permanent config issue.
-  if (msg.includes("STORAGE_ERROR") || msg.includes("STORAGE_UNAVAILABLE"))
-    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "UPLOAD_STORAGE_UNAVAILABLE" };
+  if (
+    msg.includes("STORAGE_ERROR") ||
+    msg.includes("STORAGE_UNAVAILABLE") ||
+    msg.includes("storage")
+  )
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "STORAGE_ERROR" };
   if (msg.includes("DB_CONNECTION") || msg.includes("PrismaClient"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "DB_CONNECTION_FAILED" };
   if (msg.includes("SEARCH_INDEX_FAILED"))

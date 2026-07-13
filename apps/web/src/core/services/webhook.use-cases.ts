@@ -142,9 +142,15 @@ export class WebhookUseCases {
         statusCode: response.status,
       };
     } catch (error) {
+      // Never return the raw upstream error (host, ENOTFOUND, etc.) to the
+      // client — surface a stable code; detail is logged server-side.
+      logger.warn(
+        { url: webhook.url, error: error instanceof Error ? error.message : String(error) },
+        "[webhook] Test delivery failed",
+      );
       return {
         success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
+        error: "WEBHOOK_DELIVERY_FAILED",
       };
     }
   }

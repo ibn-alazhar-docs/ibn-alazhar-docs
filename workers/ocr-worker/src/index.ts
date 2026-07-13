@@ -5,6 +5,7 @@ import {
   recordJobFailure,
   classifyError,
   isFinalAttempt,
+  sendAlert,
   type ProcessingJob,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
@@ -116,6 +117,15 @@ async function main() {
       }
       if (stuck.length > 0) {
         logger.info(`[sweeper] Recovered ${stuck.length} stuck document(s)`);
+        sendAlert({
+          severity: "warning",
+          code: "RETRY_EXHAUSTED",
+          message: `[sweeper] Recovered ${stuck.length} document(s) stuck in processing`,
+          context: {
+            ids: stuck.map((d) => d.id),
+            stages: stuck.map((d) => d.status),
+          },
+        });
       }
     } catch (err) {
       logger.warn({ error: err instanceof Error ? err.message : String(err) }, "[sweeper] Failed");

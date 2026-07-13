@@ -1,6 +1,10 @@
 import type { PipelineConfig, FailedJob } from "../types";
 import { categorizeFailure, sanitizeErrorMessage } from "./categorize";
 import { recordFailedJob } from "./dlq";
+import { sendAlert } from "../alerts";
+import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+
+const logger = baseLogger.child({ module: "job-error" });
 
 /**
  * Minimal shape of a BullMQ Job we need for failure bookkeeping. Typed
@@ -80,7 +84,21 @@ export async function recordJobFailure(
   } catch (dlqErr) {
     // Never let a DLQ write failure escalate — log and continue so the
     // original job failure is still observable upstream.
-    // eslint-disable-next-line no-console
-    console.error("[job-error] Failed to record DLQ entry:", dlqErr);
+    logger.warn({ err: dlqErr }, "[job-error] Failed to record DLQ entry");
+  }
+
+  // Page on real failures: permanent (unrecoverable) or retries exhausted.
+  if (category === "permanent" || code === "RETRY_EXHAUSTED") {
+    sendAlert({
+      severity: category === "permanent" ? "critical" : "warning",
+      code: failed.errorCode,
+      message: `Job ${failed.jobId} (${queueName}) failed: ${failed.error}`,
+      context: {
+        queue: queueName,
+        jobId: failed.jobId,
+        failureCategory: failed.failureCategory,
+        attempts: failed.attempts,
+      },
+    });
   }
 }

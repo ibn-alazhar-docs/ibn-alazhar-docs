@@ -4,6 +4,7 @@ import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos } from "@/core/composition-root";
 import { loadConfig, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
+import { Prisma } from "@prisma/client";
 import { ERROR_CODES } from "@/shared/constants";
 
 /**
@@ -45,15 +46,37 @@ export const POST = withAuth(async (request, { session, params }) => {
       );
     }
 
-    // Reset to a clean, pre-processing state. The source object is reused.
-    await repos.document.update(id, session.user.id, {
-      status: "UPLOADED",
-      errorCode: null,
-      errorMessage: null,
-      outputKeys: null,
-      outputFormats: [],
-      pageCount: null,
-    });
+    // Atomic reset: only proceeds if the document is still FAILED/UPLOADED.
+    // Guards against two concurrent retry calls (TOCTOU) both resetting and
+    // enqueuing. If a concurrent call won the race, this affects 0 rows.
+    const reset = await repos.document.updateMany(
+      {
+        id,
+        userId: session.user.id,
+        deletedAt: null,
+        status: { in: ["FAILED", "UPLOADED"] },
+      },
+      {
+        status: "UPLOADED",
+        errorCode: null,
+        errorMessage: null,
+        outputKeys: Prisma.JsonNull,
+        outputFormats: [],
+        pageCount: null,
+        needsReview: false,
+      },
+    );
+    if (reset.count === 0) {
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.CONFLICT,
+            message: "تم بدء المعالجة بالفعل من طلب آخر",
+          },
+        },
+        { status: 409 },
+      );
+    }
 
     const config = loadConfig();
     await enqueueValidation(config, {

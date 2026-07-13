@@ -35,6 +35,12 @@ export function registerExportHandler(
         const cleanedData = JSON.parse(cleanedBuffer.toString("utf-8"));
         const rawText: string = cleanedData.text;
 
+        // Genuinely empty source text can't produce a useful export and won't
+        // improve on retry — fail fast with a permanent, classified error.
+        if (!rawText || rawText.trim().length === 0) {
+          throw new Error("EXPORT_FORMAT_FAILED: empty source text");
+        }
+
         const result = generateMarkdown(rawText, { pageCount: req.pageCount });
 
         let outputBuffer: Buffer;
