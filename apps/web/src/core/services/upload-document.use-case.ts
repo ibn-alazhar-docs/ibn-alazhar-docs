@@ -15,6 +15,7 @@ import type { IStorageRepository } from "@/domain/repositories/storage.repositor
 import { NotFoundError } from "@/shared/errors";
 import { AppError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
+import { logger } from "@/shared/logger";
 
 export class UploadDocumentUseCase {
   constructor(
@@ -43,7 +44,8 @@ export class UploadDocumentUseCase {
     try {
       await this.storage.ensureBucket();
     } catch (err) {
-
+      const cause = err instanceof Error ? err : new Error(String(err));
+      logger.error({ error: cause.message }, "Storage unavailable during upload");
       throw new AppError(
         "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
         ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
@@ -118,6 +120,7 @@ export class UploadDocumentUseCase {
         // mark the doc FAILED (recoverable). The user can retry from the UI via
         // the reprocess endpoint, which re-enqueues validation without re-upload.
         const error = err instanceof Error ? err : new Error(String(err));
+        logger.error({ error: error.message }, "Enqueue failed during upload");
         const { code } = classifyError(error);
         await this.documentRepository
           .update(document.id, userId, {
