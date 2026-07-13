@@ -9,13 +9,14 @@ import { ROLE } from "@/domain/auth";
 import { LIMITS } from "@/shared/constants";
 import { checkIpRateLimit, getClientIp } from "@/clients/redis";
 import { CredentialsSignin } from "next-auth";
+import { logger } from "@/shared/logger";
 
 class AccountLockedError extends CredentialsSignin {
-  code = "AccountLocked";
+  override code = "AccountLocked";
 }
 
 class IpRateLimitError extends CredentialsSignin {
-  code = "IpRateLimit";
+  override code = "IpRateLimit";
 }
 
 declare module "next-auth" {
@@ -110,10 +111,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Enforce per-IP rate limit to prevent brute force
         if (req instanceof Request) {
           const ip = getClientIp(req);
-          console.log(`[AUTH] Login attempt for ${email} from IP: ${ip}`);
+          logger.info({ email, ip }, "[AUTH] Login attempt");
           const rateLimitResult = await checkIpRateLimit("auth:login", ip, 5, 60_000);
           if (!rateLimitResult.allowed) {
-            console.log(`[AUTH] IP Rate limit exceeded for IP: ${ip}`);
+            logger.warn({ ip }, "[AUTH] IP Rate limit exceeded");
             await auditLog({
               userId: "system",
               action: AUDIT_ACTIONS.LOGIN_FAILED,
@@ -141,15 +142,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         });
 
         if (!user) {
-          console.log(`[AUTH] User not found: ${email}`);
+          logger.info({ email }, "[AUTH] User not found");
           return null;
         }
         if (user.deletedAt) {
-          console.log(`[AUTH] User deleted: ${email}`);
+          logger.info({ email }, "[AUTH] User deleted");
           return null;
         }
         if (!user.passwordHash) {
-          console.log(`[AUTH] User has no password hash: ${email}`);
+          logger.info({ email }, "[AUTH] User has no password hash");
           return null;
         }
 
@@ -157,7 +158,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (user.lockedAt) {
           const lockoutEnd = user.lockedAt.getTime() + LIMITS.LOCKOUT_DURATION_MS;
           if (Date.now() < lockoutEnd) {
-            console.log(`[AUTH] Account locked: ${email}`);
+            logger.warn({ email }, "[AUTH] Account locked");
             await auditLog({
               userId: user.id,
               action: AUDIT_ACTIONS.LOGIN_LOCKED,
@@ -177,12 +178,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
           const newAttempts = user.failedLoginAttempts + 1;
-          console.log(`[AUTH] Invalid password for ${email}. Attempt: ${newAttempts}`);
+          logger.info({ email, attempts: newAttempts }, "[AUTH] Invalid password");
           const updateData: { failedLoginAttempts: number; lockedAt?: Date } = {
             failedLoginAttempts: newAttempts,
           };
           if (newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS) {
-            console.log(`[AUTH] Account locked due to max attempts: ${email}`);
+            logger.warn({ email }, "[AUTH] Account locked due to max attempts");
             updateData.lockedAt = new Date();
           }
           await prisma.user.update({

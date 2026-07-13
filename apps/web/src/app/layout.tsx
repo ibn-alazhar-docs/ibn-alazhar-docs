@@ -8,7 +8,9 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-const siteUrl = "https://ibnalazhar-docs.vercel.app";
+const siteUrl =
+  process.env.APP_URL ||
+  (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ibnalazhar-docs.hf.space");
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -72,7 +74,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
           }}
         />
       </head>
-      <body className={`${firaCode.variable} ${cairo.variable} ${amiri.variable} bg-page animated-bg min-h-screen antialiased`}>
+      <body className={`${firaCode.variable} ${cairo.variable} ${amiri.variable} bg-page min-h-screen antialiased`}>
         {children}
       </body>
     </html>

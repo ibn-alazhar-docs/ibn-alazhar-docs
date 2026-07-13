@@ -40,11 +40,11 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
             {t("eyebrow")}
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-inverse sm:text-5xl lg:text-6xl drop-shadow-md">
+          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-[#fffdf7] sm:text-5xl lg:text-6xl drop-shadow-md">
             {t("title")}
           </h2>
 
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-inverse/75 sm:text-lg">
+          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-[#fffdf7]/75 sm:text-lg">
             {t("subtitle")}
           </p>
 

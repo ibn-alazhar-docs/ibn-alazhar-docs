@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import type { Doc } from "@/ui/files/document-table";
 import { apiFetch } from "@/shared/api";
+import { logger } from "@/shared/logger";
 
 interface ActiveJob {
   jobId: string;
@@ -89,18 +90,21 @@ export function useFilesManager(): UseFilesManagerReturn {
           // Restore active jobs that are still processing on the backend
           const processingStatuses = ["UPLOADED", "VALIDATING", "SPLITTING", "OCR_PROCESSING", "CLEANING", "GENERATING"];
           const serverActiveJobs = data.documents
-            .filter((d: any) => processingStatuses.includes(d.status))
-            .map((d: any) => ({ jobId: d.id, fileName: d.originalName || d.fileName || d.title }));
+            .filter((d: { status: string }) => processingStatuses.includes(d.status))
+            .map((d: { id: string; status: string; originalName?: string; fileName?: string; title?: string }) => ({
+              jobId: d.id,
+              fileName: d.originalName || d.fileName || d.title,
+            }));
 
           setActiveJobs((prev) => {
             const currentIds = new Set(prev.map((j) => j.jobId));
-            const newJobs = serverActiveJobs.filter((j: any) => !currentIds.has(j.jobId));
+            const newJobs = serverActiveJobs.filter((j: { jobId: string }) => !currentIds.has(j.jobId));
             if (newJobs.length === 0) return prev;
             return [...newJobs, ...prev];
           });
         }
       } catch {
-        console.error("Failed to load documents");
+        logger.error("Failed to load documents");
       } finally {
         setLoadingDocs(false);
       }
@@ -120,7 +124,7 @@ export function useFilesManager(): UseFilesManagerReturn {
         setBreadcrumbs(data.breadcrumbs || []);
       }
     } catch {
-      console.error("Failed to load breadcrumbs");
+      logger.error("Failed to load breadcrumbs");
     }
   }, []);
 
@@ -179,7 +183,29 @@ export function useFilesManager(): UseFilesManagerReturn {
         loadDocuments(selectedFolderId);
       }
     } catch {
-      console.error("Failed to move documents");
+      logger.error("Failed to move documents");
+    }
+  }
+
+  async function handleDeleteDocument(id: string) {
+    // Optimistic update
+    const previousDocs = [...documents];
+    setDocuments((prev) => prev.filter((d) => d.id !== id));
+    
+    try {
+      const res = await apiFetch(`/api/documents/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const body = await res.text();
+        logger.error({ status: res.status, body }, "Delete failed");
+        // Revert on failure
+        setDocuments(previousDocs);
+      }
+    } catch (err) {
+      logger.error({ err }, "Failed to delete document");
+      // Revert on failure
+      setDocuments(previousDocs);
     }
   }
 
@@ -195,7 +221,7 @@ export function useFilesManager(): UseFilesManagerReturn {
         loadDocuments(selectedFolderId);
       }
     } catch {
-      console.error("Failed to tag documents");
+      logger.error("Failed to tag documents");
     }
   }
 
@@ -209,13 +235,14 @@ export function useFilesManager(): UseFilesManagerReturn {
           next.delete(docId);
           return next;
         });
-        loadDocuments(selectedFolderId);
+        // Optimistic update
+        setDocuments((prev) => prev.filter((d) => d.id !== docId));
       } else {
         const body = await res.json().catch(() => null);
-        console.error("Delete failed:", res.status, body);
+        logger.error({ status: res.status, body }, "Delete failed");
       }
     } catch (err) {
-      console.error("Failed to delete document:", err);
+      logger.error({ err }, "Failed to delete document");
     } finally {
       setIsDeleting(false);
       setDeletingDocId(null);
@@ -227,24 +254,57 @@ export function useFilesManager(): UseFilesManagerReturn {
     setEditTitle(doc.title);
   }
 
+  async function handleUpdateTitle(id: string, newTitle: string) {
+    // Optimistic update
+    const previousDocs = [...documents];
+    setDocuments((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, title: newTitle } : d))
+    );
+
+    try {
+      const res = await apiFetch(`/api/documents/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle }),
+      });
+      if (!res.ok) {
+        // Revert on failure
+        setDocuments(previousDocs);
+      }
+    } catch {
+      logger.error("Failed to update title");
+      // Revert on failure
+      setDocuments(previousDocs);
+    }
+  }
+
   async function saveEditTitle(docId: string) {
     if (!editTitle.trim()) return;
+    const newTitle = editTitle.trim();
+    const previousDocs = [...documents];
+    
+    // Optimistic update
+    setDocuments((prev) =>
+      prev.map((d) => (d.id === docId ? { ...d, title: newTitle } : d)),
+    );
+    
+    setEditingDocId(null);
+    setEditTitle("");
+
     try {
       const res = await apiFetch(`/api/documents/${docId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: editTitle.trim() }),
+        body: JSON.stringify({ title: newTitle }),
       });
-      if (res.ok) {
-        setDocuments((prev) =>
-          prev.map((d) => (d.id === docId ? { ...d, title: editTitle.trim() } : d)),
-        );
+      
+      if (!res.ok) {
+        logger.error("Failed to update title: response not ok");
+        setDocuments(previousDocs); // Revert
       }
     } catch {
-      console.error("Failed to update title");
-    } finally {
-      setEditingDocId(null);
-      setEditTitle("");
+      logger.error("Failed to update title");
+      setDocuments(previousDocs); // Revert
     }
   }
 

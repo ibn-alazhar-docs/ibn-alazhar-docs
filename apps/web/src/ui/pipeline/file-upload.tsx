@@ -69,7 +69,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="border-2 border-dashed border-line rounded-lg p-8 text-center cursor-pointer transition-colors"
+        className="border-2 border-dashed border-line rounded-lg p-5 sm:p-8 text-center cursor-pointer transition-colors"
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {

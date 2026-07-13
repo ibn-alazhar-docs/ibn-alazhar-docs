@@ -42,25 +42,23 @@ export function Features() {
     <section className="relative" aria-labelledby="features-title">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_70%)] opacity-[0.03] blur-[80px] pointer-events-none -z-10" />
 
-      <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-28">
         <motion.div
-          initial={{ opacity: 1, x: 0 }}
-          whileInView={{ opacity: 1, x: 0 }}
+          initial={{ opacity: 0, y: 10 }}
+          whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10px" }}
-          className="mb-16 flex items-center gap-3"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="mb-16"
         >
-          <h2
-            id="features-title"
-            className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-color uppercase"
-          >
+          <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-color uppercase">
             {t("title")}
-          </h2>
+          </span>
         </motion.div>
 
         <motion.div
-          initial="visible"
+          initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-10px" }}
+          viewport={{ once: true, amount: 0.05 }}
           transition={{ staggerChildren: 0.15 }}
           className="grid grid-cols-1 gap-6 md:grid-cols-2"
         >

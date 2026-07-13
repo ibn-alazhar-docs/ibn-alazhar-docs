@@ -42,7 +42,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
   const isRtl = locale === "ar";
 
   return (
-    <section className="relative isolate min-h-[90dvh] overflow-hidden bg-[var(--page-bg)] pt-24 sm:pt-32 pb-16">
+    <section className="relative isolate min-h-[auto] overflow-hidden bg-[var(--page-bg)] pt-24 sm:pt-32 pb-16 sm:min-h-[90dvh]">
       {/* Dynamic Background */}
       <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
         <motion.div
@@ -56,8 +56,8 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
           transition={{ duration: 10, repeat: Infinity, ease: "easeInOut", delay: 1 }}
         />
 
-        <div className="absolute -right-20 top-10 opacity-[0.04] sm:-right-32 sm:top-0 sm:opacity-[0.06]">
-          <GeometricStar className="h-[400px] w-[400px] sm:h-[600px] sm:w-[600px] text-[var(--gold)]" />
+        <div className="absolute -right-16 top-10 opacity-[0.025] sm:-right-32 sm:top-0 sm:opacity-[0.05]">
+          <GeometricStar className="h-[280px] w-[280px] sm:h-[600px] sm:w-[600px] text-[var(--gold)]" />
         </div>
 
         <div className="absolute bottom-40 left-10 opacity-[0.03] hidden sm:block">
@@ -77,11 +77,11 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         </svg>
       </div>
 
-      <div className="mx-auto flex min-h-[60dvh] max-w-6xl flex-col items-start justify-center px-6 pb-8">
+      <div className="mx-auto flex min-h-[auto] max-w-6xl flex-col items-start justify-center px-6 pb-8 sm:min-h-[60dvh]">
         <motion.div
           className="max-w-3xl"
           variants={containerVariants}
-          initial="visible"
+          initial="hidden"
           animate="visible"
         >
           <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3">
@@ -92,7 +92,8 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
 
           <motion.h1
             variants={itemVariants}
-            className="heading-display text-balance text-4xl font-bold leading-[1.15] tracking-tight text-primary-color sm:text-5xl md:text-6xl lg:text-7xl"
+            className="heading-display text-balance text-3xl font-bold leading-[1.15] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+            style={{ color: "var(--text-primary)" }}
           >
             {title || t("title")}
           </motion.h1>
@@ -103,7 +104,8 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
 
           <motion.p
             variants={itemVariants}
-            className="max-w-xl text-balance text-base leading-relaxed text-secondary-color sm:text-lg"
+            className="max-w-xl text-balance text-base leading-relaxed sm:text-lg"
+            style={{ color: "var(--text-secondary)" }}
           >
             {subtitle || t("subtitle")}
           </motion.p>
