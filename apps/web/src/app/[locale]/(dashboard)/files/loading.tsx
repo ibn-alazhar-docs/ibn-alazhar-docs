@@ -1,14 +1,16 @@
 import { SkeletonTable } from "@/ui/skeleton";
 import { Container } from "@/ui/container";
+import { Section } from "@/ui/section";
 import { Card } from "@/ui/card";
 
 export default function FilesLoading() {
   return (
     <Container>
-      <div className="flex flex-col gap-6 p-6 lg:flex-row">
-        {/* Sidebar — reserves the same w-64 column as the real page */}
-        <div className="w-full shrink-0 lg:w-64">
-          <Card className="space-y-6 p-4">
+      <Section padding="md">
+        <div className="flex flex-col gap-6 lg:flex-row">
+          {/* Sidebar — reserves the same w-64 column as the real page */}
+          <div className="w-full shrink-0 lg:w-64">
+            <Card className="space-y-6 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
             <div className="space-y-2">
               <div className="h-4 w-24 animate-pulse rounded bg-muted" />
               {Array.from({ length: 4 }).map((_, i) => (
@@ -38,7 +40,7 @@ export default function FilesLoading() {
           </div>
           <SkeletonTable rows={8} />
         </div>
-      </div>
+      </Section>
     </Container>
   );
 }

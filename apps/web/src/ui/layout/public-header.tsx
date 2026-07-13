@@ -53,13 +53,13 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             <>
               <Link
                 href="/login"
-                className="px-4 py-2 text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color"
+                className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
               >
                 {signInLabel || t("signIn")}
               </Link>
               <Link
                 href="/register"
-                className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-[0.08em] no-underline"
+                className="landing-btn-primary inline-flex items-center gap-1 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-[0.08em] no-underline whitespace-nowrap"
               >
                 {signUpLabel || t("signUp")}
               </Link>

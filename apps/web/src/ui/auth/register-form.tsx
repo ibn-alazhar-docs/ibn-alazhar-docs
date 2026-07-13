@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { signIn } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { registerSchema } from "@/shared/validators/auth";
@@ -20,7 +20,9 @@ interface ActionState {
 
 export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const [state, submitAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
@@ -205,12 +207,15 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
 
           <button
             type="button"
-            onClick={() => signIn("google", { redirectTo: "/dashboard" })}
-            disabled={isPending}
+            onClick={() => {
+              setGoogleLoading(true);
+              signIn("google", { redirectTo: `/${locale}/dashboard` });
+            }}
+            disabled={isPending || googleLoading}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="h-5 w-5" />
-            {isPending ? t("registering") : t("continueWithGoogle")}
+            {googleLoading ? t("signingUp") : t("continueWithGoogle")}
           </button>
         </>
       )}
