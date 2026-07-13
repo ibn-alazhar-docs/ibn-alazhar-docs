@@ -78,7 +78,7 @@ export interface CleanOptions {
 
 export const DEFAULT_OPTIONS: CleanOptions = {
   normalizeUnicode: true,
-  normalizeArabic: false, // MANDATE: Do not blindly normalize Arabic letters
+  normalizeArabic: true,
   removeTashkeel: false,
   removeTatweel: true,
   normalizeDigits: false,

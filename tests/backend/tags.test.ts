@@ -59,10 +59,22 @@ vi.mock("@/transport/db", () => {
   };
 });
 
-vi.mock("@/shared/logger", () => ({
-  logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn(), debug: vi.fn() },
-  generateRequestId: () => "test-request-id",
-}));
+vi.mock("@/shared/logger", () => {
+  const baseLogger = {
+    error: vi.fn(),
+    info: vi.fn(),
+    warn: vi.fn(),
+    debug: vi.fn(),
+  };
+  const logger = {
+    ...baseLogger,
+    child: vi.fn(() => ({ ...baseLogger, child: vi.fn(() => logger) })),
+  };
+  return {
+    logger,
+    generateRequestId: () => "test-request-id",
+  };
+});
 
 // ─── Imports (run after hoisted mocks) ─────────────────────────────────────────
 
