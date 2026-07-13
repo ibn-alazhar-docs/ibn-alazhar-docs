@@ -14,6 +14,29 @@ const deleteAccountSchema = z
   })
   .strip();
 
+export const GET = withAuth(async (request, { session }) => {
+  try {
+    const rateLimitResult = await checkUserRateLimit("account:view", session.user.id);
+    if (!rateLimitResult.allowed) {
+      return rateLimitResponse(rateLimitResult.retryAfterMs);
+    }
+
+    const user = await useCases.profile.getProfile(session.user.id);
+    return NextResponse.json(
+      { profile: user },
+      { headers: { "Cache-Control": "private, no-store" } },
+    );
+  } catch (error: unknown) {
+    if (error instanceof AppError) {
+      return NextResponse.json(
+        { error: { code: error.code, message: error.message } },
+        { status: error.statusCode },
+      );
+    }
+    return handleRouteError(error, "profile", "تعذر جلب البيانات");
+  }
+});
+
 export const PATCH = withAuth(async (request, { session }) => {
   try {
     const rateLimitResult = await checkUserRateLimit("account:update", session.user.id);

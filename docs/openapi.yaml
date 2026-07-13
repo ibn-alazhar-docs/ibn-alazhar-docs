@@ -1152,33 +1152,6 @@ paths:
       responses:
         "200":
           description: Users list
-    post:
-      tags: [Users]
-      summary: Create user (admin)
-      operationId: createUser
-      security:
-        - sessionAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [name, email, password, role]
-              properties:
-                name:
-                  type: string
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-                role:
-                  type: string
-                  enum: [ADMIN, USER]
-      responses:
-        "201":
-          description: Created
 
   /api/share/{token}:
     get:

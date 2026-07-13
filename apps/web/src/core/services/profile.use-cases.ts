@@ -6,6 +6,14 @@ import type { IUserRepository } from "@/domain/repositories/user.repository.inte
 export class ProfileUseCases {
   constructor(private readonly userRepository: IUserRepository) {}
 
+  async getProfile(userId: string) {
+    const user = await this.userRepository.findById(userId);
+    if (!user) throw new NotFoundError();
+    // Exclude passwordHash from the returned user object
+    const { passwordHash, ...safeUser } = user;
+    return safeUser;
+  }
+
   async updateProfile(userId: string, name: string) {
     return this.userRepository.update(userId, { name });
   }
