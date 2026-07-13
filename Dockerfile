@@ -143,7 +143,8 @@ CMD ["node", "--import", "tsx", "workers/export-worker/src/index.ts"]
 
 # -----------------------------------------------------------------------------
 # Target: hf-space — Self-contained image for Hugging Face Spaces (FREE)
-# Bundles PostgreSQL, Redis, MinIO, web, ocr-worker, export-worker
+# Bundles PostgreSQL, Redis, web, ocr-worker, export-worker.
+# Storage defaults to local filesystem on /data; MinIO is optional (STORAGE_DRIVER=s3).
 # All data persists on /data (HF persistent volume)
 # -----------------------------------------------------------------------------
 FROM node:22-slim AS hf-space
@@ -156,6 +157,11 @@ COPY --from=builder /app/pnpm-workspace.yaml /tmp/dummy
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV LANG=C.UTF-8
+
+# Storage backend: local filesystem on the persistent /data volume (default).
+# Set STORAGE_DRIVER=s3 to use the bundled MinIO server instead.
+ENV STORAGE_DRIVER=local
+ENV STORAGE_LOCAL_DIR=/data
 
 # System deps: DB, cache, object storage, process manager, OCR/export tooling
 RUN apt-get update && apt-get install -y --no-install-recommends \

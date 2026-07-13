@@ -20,6 +20,14 @@ ADMIN_PASSWORD="${ADMIN_PASSWORD:-AdminPassword123!}"
 AUTH_SECRET="${AUTH_SECRET:-change-me-in-hf-secrets-please-0000000000}"
 PROMETHEUS_BEARER_TOKEN="${PROMETHEUS_BEARER_TOKEN:-hf-internal-metrics}"
 
+# ---- Storage backend -----------------------------------------------------
+# Default to local filesystem storage on the persistent /data volume. This
+# removes the in-container MinIO dependency (single-container Spaces) and is
+# the most reliable option for Hugging Face. Set STORAGE_DRIVER=s3 to use the
+# bundled MinIO server instead.
+export STORAGE_DRIVER="${STORAGE_DRIVER:-local}"
+export STORAGE_LOCAL_DIR="${STORAGE_LOCAL_DIR:-/data}"
+
 # ---- Public URL (auto-detect on Hugging Face) -------------------------------
 if [ -n "${SPACE_HOST:-}" ]; then
   APP_URL="https://${SPACE_HOST}"
@@ -88,14 +96,21 @@ for i in $(seq 1 30); do
 done
 
 # ---- 3) MinIO (S3-compatible object storage) --------------------------------
-echo "[entrypoint] starting MinIO..."
-minio server "$MINIO_DATA" --address 127.0.0.1:9000 --console-address 127.0.0.1:9001 >"$APP_DATA/minio.log" 2>&1 &
-for i in $(seq 1 60); do
-  if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null 2>&1; then break; fi
-  sleep 1
-done
-mc alias set local http://127.0.0.1:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1
-mc mb -p "local/$S3_BUCKET" >/dev/null 2>&1 || true
+# Only started when STORAGE_DRIVER=s3. In local-storage mode (default on HF
+# Spaces) files live on the persistent /data volume, so MinIO is skipped.
+if [ "$STORAGE_DRIVER" = "s3" ]; then
+  echo "[entrypoint] starting MinIO (STORAGE_DRIVER=s3)..."
+  minio server "$MINIO_DATA" --address 127.0.0.1:9000 --console-address 127.0.0.1:9001 >"$APP_DATA/minio.log" 2>&1 &
+  for i in $(seq 1 60); do
+    if curl -fsS http://127.0.0.1:9000/minio/health/live >/dev/null 2>&1; then break; fi
+    sleep 1
+  done
+  mc alias set local http://127.0.0.1:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1
+  mc mb -p "local/$S3_BUCKET" >/dev/null 2>&1 || true
+else
+  echo "[entrypoint] local filesystem storage enabled (STORAGE_DRIVER=${STORAGE_DRIVER}) — MinIO skipped"
+  mkdir -p "$STORAGE_LOCAL_DIR/uploads" "$STORAGE_LOCAL_DIR/exports" "$STORAGE_LOCAL_DIR/ocr-text" "$STORAGE_LOCAL_DIR/tmp"
+fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
 echo "[entrypoint] applying database migrations..."
