@@ -146,6 +146,7 @@ paths:
       operationId: listDocuments
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: page
           in: query
@@ -191,6 +192,7 @@ paths:
       operationId: getDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -215,6 +217,7 @@ paths:
       operationId: updateDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -243,6 +246,7 @@ paths:
       operationId: deleteDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -262,6 +266,7 @@ paths:
       operationId: restoreDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -281,6 +286,7 @@ paths:
       operationId: moveDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -308,6 +314,7 @@ paths:
       operationId: getDocumentTags
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -323,6 +330,7 @@ paths:
       operationId: addDocumentTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -352,6 +360,7 @@ paths:
       operationId: removeDocumentTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -374,6 +383,7 @@ paths:
       operationId: bulkAddTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -399,6 +409,7 @@ paths:
       operationId: bulkRemoveTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -424,6 +435,7 @@ paths:
       operationId: bulkMoveDocuments
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -450,6 +462,7 @@ paths:
       operationId: startExport
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -483,6 +496,7 @@ paths:
       operationId: getExportStatus
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -520,6 +534,7 @@ paths:
       operationId: exportSingle
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -542,6 +557,7 @@ paths:
       operationId: exportBatch
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -564,6 +580,7 @@ paths:
       operationId: exportFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -591,6 +608,7 @@ paths:
       operationId: exportByTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -618,6 +636,7 @@ paths:
       operationId: downloadExport
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -648,6 +667,7 @@ paths:
       operationId: uploadDocuments
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -683,6 +703,7 @@ paths:
       operationId: listConversions
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Conversion jobs
@@ -694,6 +715,7 @@ paths:
       operationId: startConversion
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -715,6 +737,7 @@ paths:
       operationId: getConversionStatus
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -732,6 +755,7 @@ paths:
       operationId: listFolders
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Folder tree
@@ -750,6 +774,7 @@ paths:
       operationId: createFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -783,6 +808,7 @@ paths:
       operationId: getFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -800,6 +826,7 @@ paths:
       operationId: updateFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -826,6 +853,7 @@ paths:
       operationId: deleteFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -843,6 +871,7 @@ paths:
       operationId: getFolderTree
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -860,6 +889,7 @@ paths:
       operationId: restoreFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -877,6 +907,7 @@ paths:
       operationId: emptyFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -894,6 +925,7 @@ paths:
       operationId: moveFolder
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -921,6 +953,7 @@ paths:
       operationId: getFolderTags
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -938,6 +971,7 @@ paths:
       operationId: listTags
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Tags list
@@ -956,6 +990,7 @@ paths:
       operationId: createTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -989,6 +1024,7 @@ paths:
       operationId: updateTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -1015,6 +1051,7 @@ paths:
       operationId: deleteTag
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -1032,6 +1069,7 @@ paths:
       operationId: mergeTags
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1057,6 +1095,7 @@ paths:
       operationId: search
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: q
           in: query
@@ -1103,6 +1142,7 @@ paths:
       operationId: searchSuggest
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: q
           in: query
@@ -1120,6 +1160,7 @@ paths:
       operationId: getProfile
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Profile
@@ -1129,6 +1170,7 @@ paths:
       operationId: updateProfile
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1149,6 +1191,7 @@ paths:
       operationId: listUsers
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Users list
@@ -1198,6 +1241,7 @@ paths:
       operationId: createShareLink
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -1235,6 +1279,7 @@ paths:
       operationId: regenerateShareToken
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -1265,6 +1310,7 @@ paths:
       operationId: reprocessDocument
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       parameters:
         - name: id
           in: path
@@ -1286,6 +1332,7 @@ paths:
       operationId: listFailedJobs
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       responses:
         "200":
           description: Failed jobs from the DLQ
@@ -1295,6 +1342,7 @@ paths:
       operationId: requeueFailedJobs
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1321,6 +1369,7 @@ paths:
       operationId: debugExec
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1346,6 +1395,7 @@ paths:
       operationId: debugPg
       security:
         - sessionAuth: []
+        - ApiKeyAuth: []
       requestBody:
         required: true
         content:
@@ -1364,6 +1414,32 @@ paths:
         "500":
           description: Query failed
 
+  /api/test/fixtures:
+    get:
+      tags: [Debug]
+      summary: Get stable fixtures for E2E testing
+      operationId: getFixtures
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: Fixture IDs
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  documentId:
+                    type: string
+                  folderId:
+                    type: string
+                  tagId:
+                    type: string
+                  shareToken:
+                    type: string
+                  conversionJobId:
+                    type: string
+
 components:
   securitySchemes:
     sessionAuth:
@@ -1371,6 +1447,11 @@ components:
       in: cookie
       name: next-auth.session-token
       description: NextAuth session cookie
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: x-api-key
+      description: Testing harness API key
 
   schemas:
     Document:

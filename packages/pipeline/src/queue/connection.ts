@@ -132,6 +132,6 @@ export async function isRedisHealthy(config: PipelineConfig): Promise<boolean> {
   } catch {
     return false;
   } finally {
-    probe.disconnect().catch(() => {});
+    probe.disconnect();
   }
 }
