@@ -1,9 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { signIn } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { useRouter, Link } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { loginSchema } from "@/shared/validators/auth";
@@ -20,9 +20,11 @@ interface ActionState {
 
 export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const isRegistered = searchParams.get("registered") === "true";
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const [state, submitAction, isPending] = useActionState<ActionState, FormData>(
     async (_prevState, formData) => {
@@ -180,12 +182,15 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
 
           <button
             type="button"
-            onClick={() => signIn("google", { redirectTo: "/dashboard" })}
-            disabled={isPending || state.isLocked}
+            onClick={() => {
+              setGoogleLoading(true);
+              signIn("google", { redirectTo: `/${locale}/dashboard` });
+            }}
+            disabled={isPending || state.isLocked || googleLoading}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="h-5 w-5" />
-            {isPending ? t("loggingIn") : t("continueWithGoogle")}
+            {googleLoading ? t("loggingIn") : t("continueWithGoogle")}
           </button>
         </>
       )}
