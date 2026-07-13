@@ -110,8 +110,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         // Enforce per-IP rate limit to prevent brute force
         if (req instanceof Request) {
           const ip = getClientIp(req);
+          console.log(`[AUTH] Login attempt for ${email} from IP: ${ip}`);
           const rateLimitResult = await checkIpRateLimit("auth:login", ip, 5, 60_000);
           if (!rateLimitResult.allowed) {
+            console.log(`[AUTH] IP Rate limit exceeded for IP: ${ip}`);
             await auditLog({
               userId: "system",
               action: AUDIT_ACTIONS.LOGIN_FAILED,
@@ -138,12 +140,24 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           },
         });
 
-        if (!user || user.deletedAt || !user.passwordHash) return null;
+        if (!user) {
+          console.log(`[AUTH] User not found: ${email}`);
+          return null;
+        }
+        if (user.deletedAt) {
+          console.log(`[AUTH] User deleted: ${email}`);
+          return null;
+        }
+        if (!user.passwordHash) {
+          console.log(`[AUTH] User has no password hash: ${email}`);
+          return null;
+        }
 
         // Check lockout
         if (user.lockedAt) {
           const lockoutEnd = user.lockedAt.getTime() + LIMITS.LOCKOUT_DURATION_MS;
           if (Date.now() < lockoutEnd) {
+            console.log(`[AUTH] Account locked: ${email}`);
             await auditLog({
               userId: user.id,
               action: AUDIT_ACTIONS.LOGIN_LOCKED,
@@ -163,10 +177,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const valid = await bcrypt.compare(password, user.passwordHash);
         if (!valid) {
           const newAttempts = user.failedLoginAttempts + 1;
+          console.log(`[AUTH] Invalid password for ${email}. Attempt: ${newAttempts}`);
           const updateData: { failedLoginAttempts: number; lockedAt?: Date } = {
             failedLoginAttempts: newAttempts,
           };
           if (newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS) {
+            console.log(`[AUTH] Account locked due to max attempts: ${email}`);
             updateData.lockedAt = new Date();
           }
           await prisma.user.update({

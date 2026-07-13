@@ -1,0 +1,17 @@
+{
+  "name": "مستندات ابن الأزهر",
+  "short_name": "Ibn Al-Azhar Docs",
+  "description": "منصة ذكية لتحويل واستخراج النصوص",
+  "start_url": "/ar/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#b59954",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
