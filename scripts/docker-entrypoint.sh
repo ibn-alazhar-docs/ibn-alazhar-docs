@@ -114,9 +114,12 @@ fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
 echo "[entrypoint] applying database migrations..."
-prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5 || true
+if ! prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5; then
+  echo "[entrypoint] migrate deploy failed — falling back to prisma db push"
+  prisma db push --schema=/app/packages/database/prisma/schema.prisma --accept-data-loss 2>&1 | tail -5 || true
+fi
 echo "[entrypoint] seeding database (idempotent)..."
-node /app/node_modules/.bin/tsx /app/packages/database/prisma/seed.ts 2>&1 | tail -5 || true
+node --import tsx /app/packages/database/prisma/seed.ts 2>&1 | tail -10 || true
 
 # ---- 5) Hand off to supervisord (web + workers) -----------------------------
 echo "[entrypoint] starting application (web + workers) via supervisord..."
