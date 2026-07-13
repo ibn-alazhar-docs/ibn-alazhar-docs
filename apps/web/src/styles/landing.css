@@ -48,13 +48,7 @@
     border-color: color-mix(in srgb, var(--btn-primary-bg) 12%, transparent);
   }
 
-  /* Text utilities */
-  .text-primary-color {
-    color: var(--text-primary);
-  }
-  .text-muted-color {
-    color: var(--text-secondary);
-  }
+  /* Text utilities not handled by brand.css utilities */
   .text-very-muted {
     color: var(--text-tertiary);
   }
