@@ -1,6 +1,7 @@
 export {
   checkRateLimit,
   checkUserRateLimit,
+  checkIpRateLimit,
   getClientIp,
   rateLimitResponse,
   cleanupExpiredEntries,

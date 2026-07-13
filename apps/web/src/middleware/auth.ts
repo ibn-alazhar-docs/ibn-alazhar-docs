@@ -7,6 +7,16 @@ import { prisma } from "@/transport/db";
 import { auditLog, AUDIT_ACTIONS } from "./audit";
 import { ROLE } from "@/domain/auth";
 import { LIMITS } from "@/shared/constants";
+import { checkIpRateLimit, getClientIp } from "@/clients/redis";
+import { CredentialsSignin } from "next-auth";
+
+class AccountLockedError extends CredentialsSignin {
+  code = "AccountLocked";
+}
+
+class IpRateLimitError extends CredentialsSignin {
+  code = "IpRateLimit";
+}
 
 declare module "next-auth" {
   interface Session {
@@ -91,11 +101,27 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
+      async authorize(credentials, req) {
         if (!credentials?.email || !credentials?.password) return null;
 
         const email = credentials.email as string;
         const password = credentials.password as string;
+
+        // Enforce per-IP rate limit to prevent brute force
+        if (req instanceof Request) {
+          const ip = getClientIp(req);
+          const rateLimitResult = await checkIpRateLimit("auth:login", ip, 5, 60_000);
+          if (!rateLimitResult.allowed) {
+            await auditLog({
+              userId: "system",
+              action: AUDIT_ACTIONS.LOGIN_FAILED,
+              entity: "ip",
+              entityId: ip,
+              metadata: { email, reason: "ip_rate_limit_exceeded" },
+            });
+            throw new IpRateLimitError();
+          }
+        }
 
         const user = await prisma.user.findUnique({
           where: { email },
@@ -125,7 +151,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               entityId: user.id,
               metadata: { email, remainingMs: lockoutEnd - Date.now() },
             });
-            return null;
+            throw new AccountLockedError();
           }
           // Lockout expired — reset
           await prisma.user.update({
@@ -159,6 +185,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
               locked: newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS,
             },
           });
+
+          if (newAttempts >= LIMITS.MAX_FAILED_LOGIN_ATTEMPTS) {
+            throw new AccountLockedError();
+          }
           return null;
         }
 
