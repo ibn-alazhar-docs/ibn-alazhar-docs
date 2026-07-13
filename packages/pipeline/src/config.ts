@@ -76,8 +76,18 @@ export function loadConfig(): PipelineConfig {
       dpi: Number(process.env.OCR_DPI ?? 300),
       language: process.env.OCR_LANGUAGE ?? "ar",
       maxRetries: Number(process.env.OCR_MAX_RETRIES ?? 3),
-      provider: (process.env.OCR_PROVIDER as OcrEngineType) ?? "gemini",
-      providers: (process.env.OCR_PROVIDERS?.split(",") as OcrEngineType[]) ?? ["gemini"],
+      provider: (process.env.OCR_PROVIDER as OcrEngineType) ?? "surya",
+      providers: (() => {
+        const parsed = (process.env.OCR_PROVIDERS ?? "")
+          .split(",")
+          .map((p) => p.trim())
+          .filter((p) => p.length > 0);
+        const base = (parsed.length > 0 ? parsed : ["surya", "tesseract"]) as OcrEngineType[];
+        if (process.env.OCR_CLOUD_ENABLED === "true" && !base.includes("gemini")) {
+          base.push("gemini");
+        }
+        return base;
+      })(),
       // Minimum mean confidence (0..1) for an OCR result to be accepted. Below
       // this the OcrManager retries with the next provider (confidence-gated
       // fallback). 0 disables gating (legacy strict-first behaviour).

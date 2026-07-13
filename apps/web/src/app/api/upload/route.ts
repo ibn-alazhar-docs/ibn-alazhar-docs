@@ -3,11 +3,13 @@ import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { useCases } from "@/core/composition-root";
-import { uploadMetadataSchema, validateUploadFile } from "@/shared/validators/document";
+import {
+  uploadMetadataSchema,
+  validateUploadFile,
+  MAX_UPLOAD_SIZE_MB,
+} from "@/shared/validators/document";
 import { DashboardService } from "@/core/services/dashboard.service";
 import { ERROR_CODES } from "@/shared/constants";
-
-const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 200);
 
 function validateRequest(
   file: File | null,
@@ -19,6 +21,10 @@ function validateRequest(
       data: { file: File; metadata: { folderId?: string | null; pageRange?: string | null } };
     }
   | { valid: false; error: string; status: number; code: string } {
+  if (!file) {
+    return { valid: false, error: "لم يُرفق أي ملف", status: 400, code: "VALIDATION_ERROR" };
+  }
+
   const fileValidation = validateUploadFile(file);
   if (!fileValidation.valid) {
     return {
