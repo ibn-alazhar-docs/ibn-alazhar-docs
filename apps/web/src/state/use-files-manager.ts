@@ -85,6 +85,19 @@ export function useFilesManager(): UseFilesManagerReturn {
         if (res.ok) {
           const data = await res.json();
           setDocuments(data.documents);
+          
+          // Restore active jobs that are still processing on the backend
+          const processingStatuses = ["UPLOADED", "VALIDATING", "SPLITTING", "OCR_PROCESSING", "CLEANING", "GENERATING"];
+          const serverActiveJobs = data.documents
+            .filter((d: any) => processingStatuses.includes(d.status))
+            .map((d: any) => ({ jobId: d.id, fileName: d.originalName || d.fileName || d.title }));
+
+          setActiveJobs((prev) => {
+            const currentIds = new Set(prev.map((j) => j.jobId));
+            const newJobs = serverActiveJobs.filter((j: any) => !currentIds.has(j.jobId));
+            if (newJobs.length === 0) return prev;
+            return [...newJobs, ...prev];
+          });
         }
       } catch {
         console.error("Failed to load documents");
@@ -189,7 +202,7 @@ export function useFilesManager(): UseFilesManagerReturn {
   async function confirmDelete(docId: string) {
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/documents/${docId}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/documents/${docId}`, { method: "DELETE" });
       if (res.ok) {
         setSelectedDocs((prev) => {
           const next = new Set(prev);
@@ -217,7 +230,7 @@ export function useFilesManager(): UseFilesManagerReturn {
   async function saveEditTitle(docId: string) {
     if (!editTitle.trim()) return;
     try {
-      const res = await fetch(`/api/documents/${docId}`, {
+      const res = await apiFetch(`/api/documents/${docId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: editTitle.trim() }),

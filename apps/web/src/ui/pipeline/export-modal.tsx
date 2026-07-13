@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { toast } from "sonner";
 import { ExportIcon, ChevronDownIcon, SpinnerIcon } from "@/ui/icons";
 import { Portal } from "@/ui/portal";
+import { apiFetch } from "@/shared/api";
 
 interface ExportModalProps {
   documentId: string;
@@ -26,7 +27,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
   async function handleExport() {
     setLoading(true);
     try {
-      const res = await fetch(`/api/documents/${documentId}/export`, {
+      const res = await apiFetch(`/api/documents/${documentId}/export`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

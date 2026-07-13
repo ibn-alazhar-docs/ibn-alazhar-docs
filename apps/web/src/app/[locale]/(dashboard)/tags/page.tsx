@@ -88,7 +88,7 @@ export default function TagsPage() {
     if (!editName.trim()) return;
 
     try {
-      const res = await fetch(`/api/tags/${id}`, {
+      const res = await apiFetch(`/api/tags/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: editName.trim(), color: editColor }),
@@ -112,7 +112,7 @@ export default function TagsPage() {
 
   const performDelete = async (id: string) => {
     try {
-      const res = await fetch(`/api/tags/${id}`, { method: "DELETE" });
+      const res = await apiFetch(`/api/tags/${id}`, { method: "DELETE" });
       if (res.ok) {
         setTags(tags.filter((tag) => tag.id !== id));
       }

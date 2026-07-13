@@ -41,10 +41,11 @@ export function useFolders() {
   }
 
   async function renameFolder(folderId: string, newName: string): Promise<void> {
-    const response = await fetch(`/api/folders/${folderId}`, {
+    if (!newName.trim()) return;
+    const response = await apiFetch(`/api/folders/${folderId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: newName }),
+      body: JSON.stringify({ name: newName.trim() }),
     });
 
     if (!response.ok) {
@@ -56,7 +57,7 @@ export function useFolders() {
   }
 
   async function deleteFolder(folderId: string): Promise<void> {
-    const response = await fetch(`/api/folders/${folderId}`, {
+    const response = await apiFetch(`/api/folders/${folderId}`, {
       method: "DELETE",
     });
 
@@ -69,7 +70,7 @@ export function useFolders() {
   }
 
   async function moveFolder(folderId: string, newParentId: string | null): Promise<void> {
-    const response = await fetch(`/api/folders/${folderId}/move`, {
+    const response = await apiFetch(`/api/folders/${folderId}/move`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ parentId: newParentId }),
