@@ -49,16 +49,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({ message: "أُنشئ الحساب", userId: user.id }, { status: 201 });
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        error: {
-          code: "INTERNAL_SERVER_ERROR",
-          message: error?.message || "حدث خطأ",
-          stack: error?.stack,
-        },
-      },
-      { status: 500 },
-    );
+  } catch (error: unknown) {
+    return handleRouteError(error, "/api/auth/register", "حدث خطأ أثناء إنشاء الحساب");
   }
 }
