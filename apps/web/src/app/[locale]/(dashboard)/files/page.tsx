@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import { useTranslations, useLocale } from "next-intl";
 import { Container } from "@/ui/container";
 import { PageTransition } from "@/ui/page-transition";
@@ -23,15 +25,30 @@ export default function FilesPage() {
   const tDocs = useTranslations("documents");
   const locale = useLocale();
   const fm = useFilesManager();
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   return (
     <PageTransition>
       <Container>
         <Section padding="md">
           <div className="flex flex-col gap-6 lg:flex-row">
-            {/* Sidebar */}
+            {/* Sidebar – collapsible on mobile, always shown on lg+ */}
             <div className="w-full lg:w-64 shrink-0">
-              <Card className="space-y-6 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto">
+              {/* Mobile toggle */}
+              <button
+                type="button"
+                onClick={() => setShowMobileSidebar((p) => !p)}
+                className="mb-3 flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-muted-color hover:bg-hover transition-colors lg:hidden"
+              >
+                <FolderIcon className="h-4 w-4" />
+                {showMobileSidebar ? tDocs("hideSidebar") || "إخفاء الفلاتر" : tDocs("showSidebar") || "إظهار الفلاتر"}
+              </button>
+              <Card
+                className={[
+                  "space-y-6 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto",
+                  showMobileSidebar ? "block" : "hidden lg:block",
+                ].join(" ")}
+              >
                 <FolderTree
                   selectedFolderId={fm.selectedFolderId}
                   onSelectFolder={fm.handleFolderSelect}

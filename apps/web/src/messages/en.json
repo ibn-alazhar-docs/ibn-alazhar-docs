@@ -16,7 +16,8 @@
     "signIn": "Sign in",
     "signUp": "Create account",
     "mainNav": "Menu",
-    "bookmarks": "Bookmarks"
+    "bookmarks": "Bookmarks",
+    "breadcrumbLibrary": "Library"
   },
   "section": {
     "hero": {

@@ -47,26 +47,27 @@ export function KnowledgeAreas() {
     <section className="relative" aria-labelledby="how-it-works-title">
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--btn-primary-bg)_0%,_transparent_60%)] opacity-[0.03] blur-[100px] pointer-events-none -z-10" />
 
-      <div className="mx-auto max-w-6xl px-6 py-28 sm:py-32">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-32">
         <motion.div
-          initial={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: "-10px" }}
-          className="mb-16 flex items-center gap-3"
+          transition={{ duration: 0.4, ease: "easeOut" }}
+          className="mb-16"
         >
-          <h2
+          <span
             id="how-it-works-title"
             className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-muted-color uppercase"
           >
             {t("title")}
-          </h2>
+          </span>
         </motion.div>
 
         <motion.div
           variants={containerVariants}
-          initial="visible"
+          initial="hidden"
           whileInView="visible"
-          viewport={{ once: true, margin: "-10px" }}
+          viewport={{ once: true, amount: 0.05 }}
           className="grid grid-cols-1 gap-6 sm:grid-cols-3"
         >
           {items.map((item, index) => (

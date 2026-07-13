@@ -99,7 +99,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             <span className="text-sm font-semibold text-primary-color bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
               {progress > 0 ? `${Math.round(progress)}%` : "0%"}
             </span>
-            {stage === "OCR_PROCESSING" && (
+            {stage === "ocr" && (
               <p className="text-[11px] text-muted-color animate-pulse mt-1">
                 (قد تستغرق هذه الخطوة بضع دقائق حسب حجم الملف)
               </p>

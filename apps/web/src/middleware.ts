@@ -223,13 +223,14 @@ export async function middleware(request: NextRequest) {
     "default-src 'self'",
     `script-src 'self' 'unsafe-inline' ${isDev ? "'unsafe-eval'" : ""}`,
     `style-src 'self' 'unsafe-inline'`,
-    "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com https://*.ibnalazhardocs.workers.dev",
+    "img-src 'self' blob: data: https://*.r2.cloudflarestorage.com https://*.ibnalazhardocs.workers.dev https://lh3.googleusercontent.com",
     "font-src 'self' data:",
-    "connect-src 'self' https:",
-    "worker-src 'self' blob:",
+    `connect-src 'self' https: ${isDev ? "http://localhost:* ws://localhost:*" : ""}`.trim(),
+    "frame-src 'none'",
     "frame-ancestors 'none'",
     "base-uri 'self'",
-    "form-action 'self'",
+    "form-action 'self' https://accounts.google.com",
+    "object-src 'none'",
   ].join("; ");
   response.headers.set("Content-Security-Policy", cspHeader);
   response.headers.set("X-Content-Type-Options", "nosniff");

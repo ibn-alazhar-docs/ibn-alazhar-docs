@@ -39,12 +39,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const t = await getTranslations({ locale, namespace: "a11y" });
 
+  const appUrl =
+    process.env.APP_URL ||
+    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ibnalazhar-docs.hf.space");
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
     name: "Ibn Al-Azhar Docs",
     description: "Document processing and text search",
-    url: `https://ibnalazhar-docs.vercel.app/${locale}`,
+    url: `${appUrl}/${locale}`,
     inLanguage: locale === "ar" ? "ar" : "en",
     publisher: {
       "@type": "Organization",
