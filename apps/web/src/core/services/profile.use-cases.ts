@@ -10,6 +10,7 @@ export class ProfileUseCases {
     const user = await this.userRepository.findById(userId);
     if (!user) throw new NotFoundError();
     // Exclude passwordHash from the returned user object
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { passwordHash, ...safeUser } = user;
     return safeUser;
   }
