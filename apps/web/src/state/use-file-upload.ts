@@ -77,6 +77,15 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
     setError(null);
 
     try {
+      // Fail fast with a clear message if backend dependencies (DB/Redis/storage)
+      // are down, instead of streaming the whole file and only discovering the
+      // failure on the server.
+      const health = await fetch("/api/health/ready", { cache: "no-store" });
+      if (!health.ok) {
+        setError("servicesUnavailable");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("file", file);
       if (folderId) {

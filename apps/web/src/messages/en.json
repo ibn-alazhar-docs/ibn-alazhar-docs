@@ -168,7 +168,8 @@
       "progress": "Processing...",
       "errorInvalidType": "Unsupported format. Upload a PDF or image.",
       "errorTooLarge": "File exceeds the maximum size (50MB). Reduce the size or split it.",
-      "errorUploadFailed": "Upload failed. You can retry."
+      "errorUploadFailed": "Upload failed. You can retry.",
+      "servicesUnavailable": "Services are unavailable right now. Ensure the database and processing worker are running, then try again."
     },
     "status": {
       "pending": "Queued",
@@ -477,7 +478,11 @@
     "cancel": "Cancel",
     "successCreate": "Link created",
     "successRevoke": "Link revoked",
-    "error": "An error occurred"
+    "error": "An error occurred",
+    "notReady": "Document is not ready to share",
+    "notReadyHint": "Sharing becomes available once processing completes.",
+    "failed": "Document processing failed",
+    "failedHint": "Retry from the documents list, then share it."
   },
   "discovery": {
     "library": "Library",

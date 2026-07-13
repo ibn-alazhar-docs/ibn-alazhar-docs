@@ -128,6 +128,7 @@ export default function PreviewPage() {
           documentId={id}
           isOpen={isShareModalOpen}
           onClose={() => setIsShareModalOpen(false)}
+          documentStatus={jobInfo?.status}
         />
       </div>
     </PageTransition>

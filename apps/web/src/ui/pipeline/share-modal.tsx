@@ -12,9 +12,10 @@ interface ShareModalProps {
   documentId: string;
   isOpen: boolean;
   onClose: () => void;
+  documentStatus?: string;
 }
 
-export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
+export function ShareModal({ documentId, isOpen, onClose, documentStatus }: ShareModalProps) {
   const t = useTranslations("shareModal");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -23,6 +24,9 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [expiresIn, setExpiresIn] = useState<"7" | "30" | "never">("never");
   const [error, setError] = useState<string | null>(null);
+
+  const isReady = documentStatus === "COMPLETED";
+  const isFailed = documentStatus === "FAILED";
 
   useEffect(() => {
     if (isOpen) {
@@ -215,6 +219,31 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
                         {t("revokeLink")}
                       </button>
                     </div>
+                  </div>
+                ) : !isReady ? (
+                  <div className="space-y-4">
+                    <div
+                      className={`p-3 rounded-lg text-sm text-start border ${
+                        isFailed
+                          ? "bg-danger-bg border-danger/20 text-danger"
+                          : "bg-badge border-line text-muted-color"
+                      }`}
+                      dir="auto"
+                    >
+                      <p className="font-medium">{isFailed ? t("failed") : t("notReady")}</p>
+                      <p className="mt-1 text-xs opacity-90">
+                        {isFailed ? t("failedHint") : t("notReadyHint")}
+                      </p>
+                    </div>
+                    <motion.button
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleCreateLink}
+                      disabled
+                      className="w-full rounded-lg bg-success py-3 text-sm font-semibold text-btn-primary-text shadow-md opacity-50 cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      <LinkIcon className="h-4 w-4" />
+                      {t("createLink")}
+                    </motion.button>
                   </div>
                 ) : (
                   <div className="space-y-6">
