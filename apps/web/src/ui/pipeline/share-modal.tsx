@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { LinkIcon, TrashIcon, GlobeIcon, ClockIcon } from "@/ui/icons";
 import { UI_TIMING } from "@/shared/constants";
 import { Portal } from "@/ui/portal";
+import { apiFetch } from "@/shared/api";
 
 interface ShareModalProps {
   documentId: string;
@@ -68,7 +69,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
       } as const;
       const expiration = expirationMap[expiresIn];
 
-      const res = await fetch(`/api/documents/${documentId}/share`, {
+      const res = await apiFetch(`/api/documents/${documentId}/share`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ expiration }),
@@ -97,7 +98,7 @@ export function ShareModal({ documentId, isOpen, onClose }: ShareModalProps) {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/documents/${documentId}/share`, {
+      const res = await apiFetch(`/api/documents/${documentId}/share`, {
         method: "DELETE",
       });
 
