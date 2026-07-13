@@ -31,21 +31,29 @@ function ensureCsrfCookie(response: NextResponse, request: NextRequest): NextRes
   return response;
 }
 
-// Routes that require authentication
-const protectedRoutes = [
-  "/dashboard",
-  "/files",
-  "/folders",
-  "/tags",
-  "/search",
-  "/conversions",
-  "/settings",
-  "/preview",
-  "/users",
+// Pages that are publicly accessible WITHOUT authentication. Everything else
+// (any dashboard/authenticated route) requires a session. Using an allowlist
+// instead of a blocklist means a newly added protected route can never be
+// accidentally left public.
+const publicPagePrefixes = [
+  "/",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/share",
+  "/docs",
+  "/journeys",
 ];
 
 // Routes that should NOT be accessible when logged in
 const guestOnlyRoutes = ["/login", "/register"];
+
+function isPublicPage(pathnameWithoutLocale: string): boolean {
+  return publicPagePrefixes.some(
+    (prefix) => pathnameWithoutLocale === prefix || pathnameWithoutLocale.startsWith(prefix + "/"),
+  );
+}
 
 function getLocaleFromRequest(request: NextRequest): string {
   // Check Accept-Language header
@@ -195,13 +203,10 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${targetLocale}/dashboard`, request.url));
   }
 
-  // If NOT logged in and trying to access protected routes (and not on auth page), redirect to login
-  if (
-    !isLoggedIn &&
-    protectedRoutes.some(
-      (route) => pathnameWithoutLocale === route || pathnameWithoutLocale.startsWith(route + "/"),
-    )
-  ) {
+  // If NOT logged in and trying to access a non-public route, redirect to login.
+  // The (dashboard) layout also enforces auth via requireAuth(), so this is
+  // defense-in-depth that additionally avoids rendering/flashing protected shells.
+  if (!isLoggedIn && !isPublicPage(pathnameWithoutLocale)) {
     const targetLocale = locale || getLocaleFromRequest(request);
     return NextResponse.redirect(new URL(`/${targetLocale}/login`, request.url));
   }

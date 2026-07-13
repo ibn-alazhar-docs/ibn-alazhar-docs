@@ -86,19 +86,36 @@ export function useFilesManager(): UseFilesManagerReturn {
         if (res.ok) {
           const data = await res.json();
           setDocuments(data.documents);
-          
+
           // Restore active jobs that are still processing on the backend
-          const processingStatuses = ["UPLOADED", "VALIDATING", "SPLITTING", "OCR_PROCESSING", "CLEANING", "GENERATING"];
+          const processingStatuses = [
+            "UPLOADED",
+            "VALIDATING",
+            "SPLITTING",
+            "OCR_PROCESSING",
+            "CLEANING",
+            "GENERATING",
+          ];
           const serverActiveJobs = data.documents
             .filter((d: { status: string }) => processingStatuses.includes(d.status))
-            .map((d: { id: string; status: string; originalName?: string; fileName?: string; title?: string }) => ({
-              jobId: d.id,
-              fileName: d.originalName || d.fileName || d.title,
-            }));
+            .map(
+              (d: {
+                id: string;
+                status: string;
+                originalName?: string;
+                fileName?: string;
+                title?: string;
+              }) => ({
+                jobId: d.id,
+                fileName: d.originalName || d.fileName || d.title,
+              }),
+            );
 
           setActiveJobs((prev) => {
             const currentIds = new Set(prev.map((j) => j.jobId));
-            const newJobs = serverActiveJobs.filter((j: { jobId: string }) => !currentIds.has(j.jobId));
+            const newJobs = serverActiveJobs.filter(
+              (j: { jobId: string }) => !currentIds.has(j.jobId),
+            );
             if (newJobs.length === 0) return prev;
             return [...newJobs, ...prev];
           });
@@ -133,6 +150,17 @@ export function useFilesManager(): UseFilesManagerReturn {
     loadBreadcrumbs(selectedFolderId);
     setSelectedDocs(new Set());
   }, [selectedFolderId, selectedTagIds, loadDocuments, loadBreadcrumbs]);
+
+  // Poll while there are active (processing) jobs so the UI reflects progress,
+  // completion, or failure even when the SSE stream is interrupted. Cleared
+  // automatically once no jobs remain to avoid needless traffic.
+  useEffect(() => {
+    if (activeJobs.length === 0) return;
+    const interval = setInterval(() => {
+      loadDocuments(selectedFolderId);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, [activeJobs.length, selectedFolderId, loadDocuments]);
 
   function handleUploadStart(jobId: string, fileName: string) {
     setActiveJobs((prev) => [{ jobId, fileName }, ...prev]);
@@ -187,28 +215,6 @@ export function useFilesManager(): UseFilesManagerReturn {
     }
   }
 
-  async function handleDeleteDocument(id: string) {
-    // Optimistic update
-    const previousDocs = [...documents];
-    setDocuments((prev) => prev.filter((d) => d.id !== id));
-    
-    try {
-      const res = await apiFetch(`/api/documents/${id}`, {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        const body = await res.text();
-        logger.error({ status: res.status, body }, "Delete failed");
-        // Revert on failure
-        setDocuments(previousDocs);
-      }
-    } catch (err) {
-      logger.error({ err }, "Failed to delete document");
-      // Revert on failure
-      setDocuments(previousDocs);
-    }
-  }
-
   async function handleBulkTag(tagId: string) {
     try {
       const res = await apiFetch("/api/documents/bulk-tag", {
@@ -254,40 +260,14 @@ export function useFilesManager(): UseFilesManagerReturn {
     setEditTitle(doc.title);
   }
 
-  async function handleUpdateTitle(id: string, newTitle: string) {
-    // Optimistic update
-    const previousDocs = [...documents];
-    setDocuments((prev) =>
-      prev.map((d) => (d.id === id ? { ...d, title: newTitle } : d))
-    );
-
-    try {
-      const res = await apiFetch(`/api/documents/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newTitle }),
-      });
-      if (!res.ok) {
-        // Revert on failure
-        setDocuments(previousDocs);
-      }
-    } catch {
-      logger.error("Failed to update title");
-      // Revert on failure
-      setDocuments(previousDocs);
-    }
-  }
-
   async function saveEditTitle(docId: string) {
     if (!editTitle.trim()) return;
     const newTitle = editTitle.trim();
     const previousDocs = [...documents];
-    
+
     // Optimistic update
-    setDocuments((prev) =>
-      prev.map((d) => (d.id === docId ? { ...d, title: newTitle } : d)),
-    );
-    
+    setDocuments((prev) => prev.map((d) => (d.id === docId ? { ...d, title: newTitle } : d)));
+
     setEditingDocId(null);
     setEditTitle("");
 
@@ -297,7 +277,7 @@ export function useFilesManager(): UseFilesManagerReturn {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title: newTitle }),
       });
-      
+
       if (!res.ok) {
         logger.error("Failed to update title: response not ok");
         setDocuments(previousDocs); // Revert

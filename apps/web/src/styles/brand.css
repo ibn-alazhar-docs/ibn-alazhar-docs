@@ -119,7 +119,7 @@
   --border-subtle: #f0f0f0;
   --text-primary: #171717;
   --text-secondary: #525252;
-  --text-tertiary: #737373;
+  --text-tertiary: #5f5f5f;
   --text-inverse: #fffdf7;
   --btn-primary-bg: #086941;
   --btn-primary-text: #ffffff;
@@ -163,7 +163,7 @@
   --border-subtle: #171717;
   --text-primary: #fafafa;
   --text-secondary: #a3a3a3;
-  --text-tertiary: #737373;
+  --text-tertiary: #8c8c8c;
   --text-inverse: #1a1614;
   --btn-primary-bg: #086941;
   --btn-primary-text: #ffffff;
@@ -244,19 +244,33 @@
   }
 
   .animated-bg {
-    background: linear-gradient(-45deg, var(--page-bg), var(--success-bg), var(--gold-bg), var(--page-bg));
+    background: linear-gradient(
+      -45deg,
+      var(--page-bg),
+      var(--success-bg),
+      var(--gold-bg),
+      var(--page-bg)
+    );
     background-size: 400% 400%;
     animation: gradientBG 15s ease infinite;
   }
 
   @keyframes gradientBG {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
   }
 
   .hover-lift {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    transition:
+      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .hover-lift:hover {
@@ -269,8 +283,12 @@
   }
 
   @keyframes pulseGlow {
-    0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4); }
-    100% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
+    0% {
+      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+    }
+    100% {
+      box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+    }
   }
 }
 

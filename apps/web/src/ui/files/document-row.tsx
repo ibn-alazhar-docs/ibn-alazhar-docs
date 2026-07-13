@@ -139,6 +139,7 @@ function DocumentRowActions({
         documentId={doc.id}
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
+        documentStatus={doc.status}
       />
     </td>
   );
