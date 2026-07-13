@@ -58,7 +58,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:static lg:translate-x-0 lg:pt-0",
+          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:pt-0",
           isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full lg:!translate-x-0",
         )}
         style={{ viewTransitionName: "dashboard-sidebar" }}
