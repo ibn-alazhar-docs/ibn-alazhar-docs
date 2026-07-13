@@ -34,6 +34,7 @@ import { WebhookUseCases } from "./services/webhook.use-cases";
 import { BookmarkUseCases } from "./services/bookmark.use-cases";
 import { AnalyticsUseCases } from "./services/analytics.use-cases";
 import { PasswordResetUseCases } from "./services/password-reset.use-cases";
+import { AutoTagUseCases } from "./services/auto-tag.use-cases";
 
 // Repositories — all created from the single PrismaClient instance
 const userRepository = new UserRepository(prisma);
@@ -105,4 +106,5 @@ export const useCases = {
   webhook: new WebhookUseCases(webhookRepository),
   bookmark: new BookmarkUseCases(bookmarkRepository),
   analytics: new AnalyticsUseCases(prisma),
+  autoTag: new AutoTagUseCases(documentRepository, tagRepository),
 } as const;

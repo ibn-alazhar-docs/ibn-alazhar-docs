@@ -1,7 +1,9 @@
 {
   "app": {
     "name": "Ibn Al-Azhar Docs",
-    "tagline": "Documents, elevated for research."
+    "tagline": "Documents, elevated for research.",
+    "loadingPreview": "Loading preview…",
+    "previewDocument": "Preview document"
   },
   "nav": {
     "home": "Dashboard",
@@ -11,13 +13,36 @@
     "search": "Search",
     "conversions": "Processing",
     "settings": "Settings",
+    "analytics": "Analytics",
     "users": "Users",
     "admin": "Admin",
     "signIn": "Sign in",
     "signUp": "Create account",
     "mainNav": "Menu",
     "bookmarks": "Bookmarks",
-    "breadcrumbLibrary": "Library"
+    "breadcrumbLibrary": "Library",
+    "arabic": "Arabic",
+    "dangerZone": "Danger zone",
+    "dangerZoneDescription": "Irreversible actions",
+    "dark": "Dark",
+    "deleteAccount": "Delete account",
+    "deleteAccountConfirm": "Permanently delete this account?",
+    "deleting": "Deleting…",
+    "email": "Email",
+    "english": "English",
+    "error": "Error",
+    "language": "Language",
+    "languageDescription": "Change the interface language",
+    "light": "Light",
+    "name": "Name",
+    "profile": "Profile",
+    "profileDescription": "Your account settings",
+    "role": "Role",
+    "saved": "Saved",
+    "saving": "Saving…",
+    "theme": "Theme",
+    "themeDescription": "Change the interface appearance",
+    "user": "User"
   },
   "section": {
     "hero": {
@@ -111,7 +136,81 @@
     "results": "results",
     "seconds": "seconds",
     "settings": "Settings",
-    "share": "Share"
+    "share": "Share",
+    "addBookmark": "Add bookmark",
+    "addTag": "Add tag",
+    "admin": "Admin",
+    "admins": "Admins",
+    "allFiles": "All files",
+    "arabic": "Arabic",
+    "collapse": "Collapse",
+    "colorLabel": "Color label",
+    "create": "Create",
+    "createButton": "Create",
+    "createError": "Could not create",
+    "createNew": "Create new",
+    "createSuccess": "Created",
+    "createdAt": "Created at",
+    "dangerZone": "Danger zone",
+    "dangerZoneDescription": "Irreversible actions",
+    "dark": "Dark",
+    "deleteAccount": "Delete account",
+    "deleteAccountConfirm": "Permanently delete this account?",
+    "deleteConfirm": "Confirm deletion",
+    "deleteConfirmTitle": "Confirm deletion",
+    "deleteError": "Could not delete",
+    "deleteSuccess": "Deleted",
+    "deleteTitle": "Delete",
+    "deleting": "Deleting…",
+    "email": "Email",
+    "empty": "Empty",
+    "english": "English",
+    "expand": "Expand",
+    "forbidden": "Forbidden",
+    "language": "Language",
+    "languageDescription": "Change the interface language",
+    "light": "Light",
+    "loadError": "Failed to load",
+    "makeAdmin": "Make admin",
+    "manage": "Manage",
+    "merge": "Merge",
+    "mergeButton": "Merge",
+    "mergeDescription": "Merge a tag into another",
+    "mergeSource": "Source tag",
+    "mergeTarget": "Target tag",
+    "mergeTitle": "Merge tags",
+    "moveError": "Could not move",
+    "moveSuccess": "Moved",
+    "moveTitle": "Move",
+    "moveTo": "Move to",
+    "name": "Name",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter name",
+    "nameRequired": "Name is required",
+    "nameTooLong": "Name is too long",
+    "noFolders": "No folders",
+    "noTags": "No tags",
+    "profile": "Profile",
+    "profileDescription": "Your account settings",
+    "removeAdmin": "Remove admin",
+    "removeBookmark": "Remove bookmark",
+    "rename": "Rename",
+    "role": "Role",
+    "roleToggleError": "Could not change role",
+    "root": "Root",
+    "saved": "Saved",
+    "saving": "Saving…",
+    "students": "Students",
+    "switchConfirm": "Confirm switch",
+    "switchMessage": "The language will be switched",
+    "switchTitle": "Switch language",
+    "tagline": "Your documents, searchable and actionable.",
+    "theme": "Theme",
+    "themeDescription": "Change the interface appearance",
+    "title": "Title",
+    "toggle": "Toggle",
+    "total": "Total",
+    "user": "User"
   },
   "auth": {
     "loginTitle": "Sign in",
@@ -157,7 +256,8 @@
     "emailRequired": "Email is required",
     "nameRequired": "Name is required",
     "passwordRequired": "Password is required",
-    "or": "or"
+    "or": "or",
+    "signingUp": "Signing up…"
   },
   "pipeline": {
     "upload": {
@@ -198,7 +298,8 @@
       "previewDocument": "Preview",
       "downloadMd": "Download .md",
       "downloadTxt": "Download .txt",
-      "downloadJson": "Download .json"
+      "downloadJson": "Download .json",
+      "conversions": "Processing"
     },
     "exportModal": {
       "title": "Advanced Export",
@@ -226,7 +327,9 @@
       "formatDocx": "Word (DOCX)",
       "formatEpub": "EPUB",
       "formatMd": "Markdown",
-      "formatTxt": "Plain Text (TXT)"
+      "formatTxt": "Plain Text (TXT)",
+      "loadingPreview": "Loading preview…",
+      "previewDocument": "Preview document"
     }
   },
   "folders": {
@@ -258,7 +361,9 @@
     "collapse": "Collapse",
     "expand": "Expand",
     "createSuccess": "Folder created",
-    "moveSuccess": "Folder moved"
+    "moveSuccess": "Folder moved",
+    "deleteSuccess": "Folder deleted",
+    "moveError": "Could not move folder"
   },
   "documents": {
     "title": "Documents",
@@ -307,7 +412,56 @@
     "range": "Range",
     "selectAria": "Select {title}",
     "showSidebar": "Show filters",
-    "hideSidebar": "Hide filters"
+    "hideSidebar": "Hide filters",
+    "charts": {
+      "dailyUploads": "Daily uploads",
+      "largestDocuments": "Largest documents",
+      "status": "Status",
+      "topTags": "Top tags"
+    },
+    "colorLabel": "Color label",
+    "createButton": "Create",
+    "createNew": "Create new",
+    "deleteConfirm": "Confirm deletion",
+    "error": "Error",
+    "files": "Files",
+    "loadError": "Failed to load",
+    "manage": "Manage",
+    "merge": "Merge",
+    "mergeButton": "Merge",
+    "mergeDescription": "Merge a tag into another",
+    "mergeSource": "Source tag",
+    "mergeTarget": "Target tag",
+    "mergeTitle": "Merge tags",
+    "nameLabel": "Name",
+    "namePlaceholder": "Enter name",
+    "next": "Next",
+    "noResults": "No results",
+    "period30": "Last 30 days",
+    "period7": "Last 7 days",
+    "period90": "Last 90 days",
+    "previous": "Previous",
+    "refresh": "Refresh",
+    "rename": "Rename",
+    "result": "Result",
+    "results": "Results",
+    "searching": "Searching…",
+    "stats": {
+      "avg": "Average",
+      "documents": "Documents",
+      "storageUsed": "Storage used",
+      "tags": "Tags",
+      "unused": "Unused",
+      "uploadsThisWeek": "Uploads this week"
+    },
+    "subtitle": "Overview of your document activity",
+    "typeLabel": "Type",
+    "types": {
+      "all": "All",
+      "content": "Content",
+      "folder": "Folder",
+      "title": "Title"
+    }
   },
   "search": {
     "title": "Search",
@@ -329,7 +483,9 @@
     "next": "Next",
     "pageInfo": "{page} of {total}",
     "error": "Search failed",
-    "suggestionsLabel": "Search suggestions"
+    "suggestionsLabel": "Search suggestions",
+    "result": "Result",
+    "results": "Results"
   },
   "conversions": {
     "title": "Processing",
@@ -355,7 +511,8 @@
     "processing": "Processing",
     "completed": "Completed",
     "failed": "Failed",
-    "cancelled": "Cancelled"
+    "cancelled": "Cancelled",
+    "conversions": "Processing"
   },
   "settings": {
     "title": "Settings",
@@ -411,7 +568,9 @@
   },
   "ui": {
     "menuOpen": "Open menu",
-    "menuClose": "Close menu"
+    "menuClose": "Close menu",
+    "name": "Ibn Al-Azhar Docs",
+    "tagline": "Your documents, searchable and actionable."
   },
   "tags": {
     "title": "Tags",
@@ -482,7 +641,9 @@
     "notReady": "Document is not ready to share",
     "notReadyHint": "Sharing becomes available once processing completes.",
     "failed": "Document processing failed",
-    "failedHint": "Retry from the documents list, then share it."
+    "failedHint": "Retry from the documents list, then share it.",
+    "loadingPreview": "Loading preview…",
+    "previewDocument": "Preview document"
   },
   "discovery": {
     "library": "Library",

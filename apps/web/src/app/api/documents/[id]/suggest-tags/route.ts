@@ -11,12 +11,10 @@ export const POST = withAuth(async (request, { session, params }) => {
   if (!rl.allowed) return rateLimitResponse(rl.retryAfterMs);
 
   try {
-    // @ts-expect-error — autoTag use-case not yet implemented in composition-root
     const suggestions = await useCases.autoTag.suggestTags(id, session);
 
     await auditLog({
       userId: session.user.id,
-      // @ts-expect-error — AUTO_TAG_SUGGEST not yet added to AUDIT_ACTIONS
       action: AUDIT_ACTIONS.AUTO_TAG_SUGGEST,
       entity: "document",
       entityId: id,
