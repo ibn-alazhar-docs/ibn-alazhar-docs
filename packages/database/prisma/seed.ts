@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { randomBytes } from "node:crypto";
 
 const prisma = new PrismaClient();
 
@@ -63,7 +64,17 @@ async function main() {
 
   console.log(`Admin user created: ${adminUser.id}`);
 
-  const testPasswordHash = bcrypt.hashSync("ibnalazhardocs@gmail.com", 10);
+  // Test admin password is env-driven (no hardcoded weak default). In
+  // production this MUST be overridden; falling back to a random value avoids
+  // ever persisting a known/guessable credential.
+  const testAdminPassword =
+    process.env.TEST_ADMIN_PASSWORD || randomBytes(18).toString("base64url");
+  const testPasswordHash = bcrypt.hashSync(testAdminPassword, 10);
+  if (!process.env.TEST_ADMIN_PASSWORD) {
+    console.warn(
+      "[seed] TEST_ADMIN_PASSWORD not set — generated a random password for ibnalazhardocs@gmail.com. Set TEST_ADMIN_PASSWORD in production.",
+    );
+  }
 
   const testUser = await prisma.user.upsert({
     where: { email: "ibnalazhardocs@gmail.com" },

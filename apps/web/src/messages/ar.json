@@ -1,7 +1,9 @@
 {
   "app": {
     "name": "مستندات ابن الأزهر",
-    "tagline": "مستنداتك، مُيسّرة للبحث والعمل."
+    "tagline": "مستنداتك، مُيسّرة للبحث والعمل.",
+    "loadingPreview": "جارٍ تحميل المعاينة…",
+    "previewDocument": "مستند المعاينة"
   },
   "nav": {
     "home": "الرئيسية",
@@ -11,13 +13,36 @@
     "search": "البحث",
     "conversions": "المعالجة",
     "settings": "الإعدادات",
+    "analytics": "التحليلات",
     "users": "المستخدمين",
     "admin": "المدير",
     "signIn": "تسجيل الدخول",
     "signUp": "حساب جديد",
     "mainNav": "القائمة الرئيسية",
     "bookmarks": "المفضلة",
-    "breadcrumbLibrary": "المكتبة"
+    "breadcrumbLibrary": "المكتبة",
+    "arabic": "العربية",
+    "dangerZone": "المنطقة الخطرة",
+    "dangerZoneDescription": "إجراءات لا يمكن التراجع عنها",
+    "dark": "داكن",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountConfirm": "هل أنت متأكد من حذف الحساب نهائياً؟",
+    "deleting": "جارٍ الحذف…",
+    "email": "البريد الإلكتروني",
+    "english": "الإنجليزية",
+    "error": "خطأ",
+    "language": "اللغة",
+    "languageDescription": "تغيير لغة الواجهة",
+    "light": "فاتح",
+    "name": "الاسم",
+    "profile": "الملف الشخصي",
+    "profileDescription": "إعدادات حسابك",
+    "role": "الدور",
+    "saved": "تم الحفظ",
+    "saving": "جارٍ الحفظ…",
+    "theme": "السمة",
+    "themeDescription": "تغيير مظهر الواجهة",
+    "user": "المستخدم"
   },
   "section": {
     "hero": {
@@ -111,7 +136,81 @@
     "results": "نتائج",
     "seconds": "ثوانٍ",
     "settings": "الإعدادات",
-    "share": "مشاركة"
+    "share": "مشاركة",
+    "addBookmark": "إضافة للمفضلة",
+    "addTag": "إضافة وسوم",
+    "admin": "مشرف",
+    "admins": "المشرفون",
+    "allFiles": "كل الملفات",
+    "arabic": "العربية",
+    "collapse": "طيّ",
+    "colorLabel": "لون البطاقة",
+    "create": "إنشاء",
+    "createButton": "إنشاء",
+    "createError": "تعذّر الإنشاء",
+    "createNew": "إنشاء جديد",
+    "createSuccess": "تم الإنشاء",
+    "createdAt": "أُنشئ في",
+    "dangerZone": "المنطقة الخطرة",
+    "dangerZoneDescription": "إجراءات لا يمكن التراجع عنها",
+    "dark": "داكن",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountConfirm": "هل أنت متأكد من حذف الحساب نهائياً؟",
+    "deleteConfirm": "تأكيد الحذف",
+    "deleteConfirmTitle": "تأكيد الحذف",
+    "deleteError": "تعذّر الحذف",
+    "deleteSuccess": "تم الحذف",
+    "deleteTitle": "حذف",
+    "deleting": "جارٍ الحذف…",
+    "email": "البريد الإلكتروني",
+    "empty": "فارغ",
+    "english": "الإنجليزية",
+    "expand": "توسيع",
+    "forbidden": "ممنوع",
+    "language": "اللغة",
+    "languageDescription": "تغيير لغة الواجهة",
+    "light": "فاتح",
+    "loadError": "تعذّر التحميل",
+    "makeAdmin": "ترقية إلى مشرف",
+    "manage": "إدارة",
+    "merge": "دمج",
+    "mergeButton": "دمج",
+    "mergeDescription": "ادمج وسماً مع آخر",
+    "mergeSource": "الوسم المصدر",
+    "mergeTarget": "وسم الهدف",
+    "mergeTitle": "دمج الوسوم",
+    "moveError": "تعذّر النقل",
+    "moveSuccess": "تم النقل",
+    "moveTitle": "نقل",
+    "moveTo": "نقل إلى",
+    "name": "الاسم",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "أدخل الاسم",
+    "nameRequired": "الاسم مطلوب",
+    "nameTooLong": "الاسم طويل جداً",
+    "noFolders": "لا توجد مجلدات",
+    "noTags": "لا توجد وسوم",
+    "profile": "الملف الشخصي",
+    "profileDescription": "إعدادات حسابك",
+    "removeAdmin": "إلغاء صلاحية المشرف",
+    "removeBookmark": "إزالة من المفضلة",
+    "rename": "إعادة تسمية",
+    "role": "الدور",
+    "roleToggleError": "تعذّر تغيير الدور",
+    "root": "الجذر",
+    "saved": "تم الحفظ",
+    "saving": "جارٍ الحفظ…",
+    "students": "الطلاب",
+    "switchConfirm": "تأكيد التبديل",
+    "switchMessage": "سيتم تبديل اللغة",
+    "switchTitle": "تبديل اللغة",
+    "tagline": "مستنداتك، مُيسّرة للبحث والعمل.",
+    "theme": "السمة",
+    "themeDescription": "تغيير مظهر الواجهة",
+    "title": "العنوان",
+    "toggle": "تبديل",
+    "total": "الإجمالي",
+    "user": "المستخدم"
   },
   "auth": {
     "loginTitle": "تسجيل الدخول",
@@ -157,7 +256,8 @@
     "emailRequired": "البريد الإلكتروني مطلوب",
     "nameRequired": "الاسم مطلوب",
     "passwordRequired": "كلمة المرور مطلوبة",
-    "or": "أو"
+    "or": "أو",
+    "signingUp": "جارٍ التسجيل…"
   },
   "pipeline": {
     "upload": {
@@ -198,7 +298,8 @@
       "previewDocument": "معاينة",
       "downloadMd": "نزّل .md",
       "downloadTxt": "نزّل .txt",
-      "downloadJson": "نزّل .json"
+      "downloadJson": "نزّل .json",
+      "conversions": "المعالجة"
     },
     "exportModal": {
       "title": "تصدير متقدم",
@@ -226,7 +327,9 @@
       "formatDocx": "مستند Word (DOCX)",
       "formatEpub": "كتاب إلكتروني (EPUB)",
       "formatMd": "Markdown",
-      "formatTxt": "نص عادي (TXT)"
+      "formatTxt": "نص عادي (TXT)",
+      "loadingPreview": "جارٍ تحميل المعاينة…",
+      "previewDocument": "مستند المعاينة"
     }
   },
   "folders": {
@@ -258,7 +361,9 @@
     "collapse": "طي",
     "expand": "توسيع",
     "createSuccess": "أُنشئ المجلد",
-    "moveSuccess": "نُقل المجلد"
+    "moveSuccess": "نُقل المجلد",
+    "deleteSuccess": "تم حذف المجلد",
+    "moveError": "تعذّر نقل المجلد"
   },
   "documents": {
     "title": "المستندات",
@@ -307,7 +412,56 @@
     "range": "نطاق",
     "selectAria": "تحديد {title}",
     "showSidebar": "إظهار الفلاتر",
-    "hideSidebar": "إخفاء الفلاتر"
+    "hideSidebar": "إخفاء الفلاتر",
+    "charts": {
+      "dailyUploads": "عمليات الرفع اليومية",
+      "largestDocuments": "أكبر المستندات",
+      "status": "الحالة",
+      "topTags": "أهم الوسوم"
+    },
+    "colorLabel": "لون البطاقة",
+    "createButton": "إنشاء",
+    "createNew": "إنشاء جديد",
+    "deleteConfirm": "تأكيد الحذف",
+    "error": "خطأ",
+    "files": "الملفات",
+    "loadError": "تعذّر التحميل",
+    "manage": "إدارة",
+    "merge": "دمج",
+    "mergeButton": "دمج",
+    "mergeDescription": "ادمج وسماً مع آخر",
+    "mergeSource": "الوسم المصدر",
+    "mergeTarget": "وسم الهدف",
+    "mergeTitle": "دمج الوسوم",
+    "nameLabel": "الاسم",
+    "namePlaceholder": "أدخل الاسم",
+    "next": "التالي",
+    "noResults": "لا توجد نتائج",
+    "period30": "آخر 30 يوماً",
+    "period7": "آخر 7 أيام",
+    "period90": "آخر 90 يوماً",
+    "previous": "السابق",
+    "refresh": "تحديث",
+    "rename": "إعادة تسمية",
+    "result": "نتيجة",
+    "results": "نتائج",
+    "searching": "جارٍ البحث…",
+    "stats": {
+      "avg": "المتوسط",
+      "documents": "المستندات",
+      "storageUsed": "المساحة المستخدمة",
+      "tags": "الوسوم",
+      "unused": "غير مستخدمة",
+      "uploadsThisWeek": "عمليات الرفع هذا الأسبوع"
+    },
+    "subtitle": "نظرة عامة على نشاط مستنداتك",
+    "typeLabel": "النوع",
+    "types": {
+      "all": "الكل",
+      "content": "المحتوى",
+      "folder": "مجلد",
+      "title": "العنوان"
+    }
   },
   "search": {
     "title": "البحث",
@@ -357,7 +511,8 @@
     "processing": "نعالج",
     "completed": "اكتمل",
     "failed": "فشل",
-    "cancelled": "أُلغي"
+    "cancelled": "أُلغي",
+    "conversions": "المعالجة"
   },
   "settings": {
     "title": "الإعدادات",
@@ -413,7 +568,9 @@
   },
   "ui": {
     "menuOpen": "افتح القائمة",
-    "menuClose": "أغلق القائمة"
+    "menuClose": "أغلق القائمة",
+    "name": "مستندات ابن الأزهر",
+    "tagline": "مستنداتك، مُيسّرة للبحث والعمل."
   },
   "tags": {
     "title": "الوسوم",
@@ -484,7 +641,9 @@
     "notReady": "المستند غير جاهز للمشاركة",
     "notReadyHint": "ستتوفر المشاركة بعد اكتمال معالجة المستند.",
     "failed": "فشلت معالجة المستند",
-    "failedHint": "يمكنك إعادة المحاولة من قائمة المستندات ثم مشاركته."
+    "failedHint": "يمكنك إعادة المحاولة من قائمة المستندات ثم مشاركته.",
+    "loadingPreview": "جارٍ تحميل المعاينة…",
+    "previewDocument": "مستند المعاينة"
   },
   "discovery": {
     "library": "المكتبة",

@@ -57,4 +57,5 @@ export const AUDIT_ACTIONS = {
   EXPORT_BULK: "export.bulk",
   USER_ROLE_CHANGE: "user.role.change",
   USER_DELETE: "user.delete",
+  AUTO_TAG_SUGGEST: "document.auto_tag.suggest",
 } as const;

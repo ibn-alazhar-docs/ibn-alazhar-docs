@@ -73,7 +73,10 @@ async function checkStorage(): Promise<{ status: string; latencyMs: number }> {
       return { status: "unhealthy", latencyMs: Date.now() - start };
     }
 
-    const isMinio = parsedUrl.hostname.includes("minio");
+    const isMinio =
+      parsedUrl.hostname.includes("minio") ||
+      parsedUrl.hostname === "localhost" ||
+      parsedUrl.hostname === "127.0.0.1";
     const url = isMinio ? `${endpoint}/minio/health/live` : endpoint;
 
     const response = await fetch(url, { method: "HEAD", signal: AbortSignal.timeout(3000) });
