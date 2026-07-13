@@ -190,7 +190,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="stat-card-premium group relative overflow-hidden rounded-xl border border-line bg-[var(--card-bg)] p-5 shadow-[var(--shadow-sm)] transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[color-mix(in_srgb,var(--border-line)_50%,currentColor)] hover:-translate-y-0.5"
+      className="stat-card-premium glass-panel group relative overflow-hidden rounded-xl bg-[var(--card-bg)] p-5 transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[color-mix(in_srgb,var(--border-line)_50%,currentColor)] hover:-translate-y-0.5"
     >
       {/* Accent glow */}
       <div

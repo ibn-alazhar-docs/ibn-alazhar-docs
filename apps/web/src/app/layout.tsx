@@ -72,7 +72,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
           }}
         />
       </head>
-      <body className={`${firaCode.variable} ${cairo.variable} ${amiri.variable} bg-page`}>
+      <body className={`${firaCode.variable} ${cairo.variable} ${amiri.variable} bg-page animated-bg min-h-screen antialiased`}>
         {children}
       </body>
     </html>

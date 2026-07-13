@@ -164,3 +164,7 @@ html[dir="rtl"]::view-transition-new(.nav-back) {
     animation-delay: 0s !important;
   }
 }
+
+.page-content-transition {
+  view-transition-name: page-content;
+}

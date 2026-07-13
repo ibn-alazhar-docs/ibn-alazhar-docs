@@ -91,13 +91,20 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
       {/* Status Text */}
       <div className="text-center">
-        <p className={`text-lg font-medium ${isFailed ? "text-danger" : "text-success"}`}>
+        <p className={`text-lg font-bold tracking-tight ${isFailed ? "text-danger" : "premium-gradient-text"}`}>
           {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {!isCompleted && !isFailed && (
-          <p className="text-sm text-muted-color mt-1">
-            {progress > 0 && `${Math.round(progress)}%`}
-          </p>
+          <div className="mt-2 flex flex-col items-center gap-1">
+            <span className="text-sm font-semibold text-primary-color bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
+              {progress > 0 ? `${Math.round(progress)}%` : "0%"}
+            </span>
+            {stage === "OCR_PROCESSING" && (
+              <p className="text-[11px] text-muted-color animate-pulse mt-1">
+                (قد تستغرق هذه الخطوة بضع دقائق حسب حجم الملف)
+              </p>
+            )}
+          </div>
         )}
       </div>
 
