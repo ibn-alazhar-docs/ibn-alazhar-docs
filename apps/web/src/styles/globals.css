@@ -19,11 +19,16 @@ button,
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
     text-align: start;
+    width: 100%;
+    max-width: 100%;
   }
 
   body {
     margin: 0;
     padding: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
     color: var(--text-primary);
     background-color: var(--page-bg);
     transition:
