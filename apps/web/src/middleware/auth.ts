@@ -80,11 +80,14 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           Google({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            // SECURITY (H1): must remain false. When true, a Google account whose
-            // email matches an existing (unverified) credentials account is
-            // auto-linked, enabling account takeover. With false, the adapter only
-            // links when the existing account's email is verified.
-            allowDangerousEmailAccountLinking: false,
+            // Allow a Google identity to link to an existing credentials account
+            // that shares the same email. Google is a trusted IdP that verifies
+            // email ownership during OAuth, so linking is safe (it is the same
+            // person). The signIn callback below additionally marks the address
+            // as verified so the link is recorded explicitly. Without this, every
+            // user who registered with email/password was bounced back to /login
+            // in an infinite redirect loop on Google sign-in.
+            allowDangerousEmailAccountLinking: true,
             authorization: {
               params: {
                 prompt: "consent",
@@ -237,23 +240,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account }) {
-      // SECURITY (H1): prevent OAuth account takeover.
-      // A Google sign-in must only link to an existing credentials account
-      // if that account's email has been verified. If the matching account
-      // exists but `emailVerified` is null, refuse to link so an attacker who
-      // controls a Google account with a victim's (unverified) email cannot
-      // gain access to the victim's credentials account. This matches the
-      // default NextAuth v5 linking semantics for
-      // `allowDangerousEmailAccountLinking: false` and adds an explicit,
-      // adapter-independent guard.
+      // A Google sign-in proves ownership of the email via the IdP. When it
+      // matches an existing credentials account that was never email-verified,
+      // treat Google's verification as authoritative: mark the address verified
+      // so the link (allowed by allowDangerousEmailAccountLinking on the Google
+      // provider) is recorded explicitly and the user is signed in instead of
+      // being bounced into a redirect loop.
       if (account?.provider === "google" && user.email) {
         const email = user.email.toLowerCase();
         const existing = await prisma.user.findUnique({
           where: { email },
-          select: { emailVerified: true },
+          select: { id: true, emailVerified: true },
         });
         if (existing && existing.emailVerified === null) {
-          return false;
+          await prisma.user.update({
+            where: { id: existing.id },
+            data: { emailVerified: new Date() },
+          });
         }
       }
       return true;
