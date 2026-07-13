@@ -12,7 +12,7 @@ const siteUrl = "https://ibnalazhar-docs.vercel.app";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  manifest: "/manifest.webmanifest",
+  manifest: "/manifest.json",
   icons: {
     icon: "/logo.png",
     shortcut: "/logo.png",
@@ -44,7 +44,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
   return (
     <html lang={lang} dir={dir} suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.webmanifest" />
+        <link rel="manifest" href="/manifest.json" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -60,6 +60,11 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
                   var isDark = stored === 'dark' || ((stored === 'system' || !stored) && prefersDark);
                   if (isDark) {
                     document.documentElement.classList.add('dark');
+                  }
+                  if ('serviceWorker' in navigator) {
+                    window.addEventListener('load', function() {
+                      navigator.serviceWorker.register('/sw.js').catch(function(err) {});
+                    });
                   }
                 } catch(e) {}
               })();

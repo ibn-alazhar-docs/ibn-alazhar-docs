@@ -63,6 +63,26 @@ async function main() {
 
   console.log(`Admin user created: ${adminUser.id}`);
 
+  const testPasswordHash = bcrypt.hashSync("ibnalazhardocs@gmail.com", 10);
+
+  const testUser = await prisma.user.upsert({
+    where: { email: "ibnalazhardocs@gmail.com" },
+    update: {
+      passwordHash: testPasswordHash,
+      failedLoginAttempts: 0,
+      lockedAt: null,
+    },
+    create: {
+      email: "ibnalazhardocs@gmail.com",
+      name: "حساب الاختبار",
+      role: "ADMIN",
+      locale: "ar",
+      passwordHash: testPasswordHash,
+    },
+  });
+
+  console.log(`Test user created: ${testUser.id}`);
+
   console.log("Seeding complete. Clean database without fake data.");
 }
 

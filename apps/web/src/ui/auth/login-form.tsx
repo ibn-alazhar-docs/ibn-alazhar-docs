@@ -10,6 +10,7 @@ import { loginSchema } from "@/shared/validators/auth";
 
 interface ActionState {
   error: string | null;
+  isLocked?: boolean;
   fieldErrors?: {
     email?: string;
     password?: string;
@@ -50,6 +51,12 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
           redirectTo: "/dashboard",
         });
 
+        if (result?.error === "AccountLocked") {
+          return { error: t("accountLocked"), isLocked: true };
+        }
+        if (result?.error === "IpRateLimit") {
+          return { error: t("ipRateLimit"), isLocked: true };
+        }
         if (result?.error) {
           return { error: t("loginError") };
         }
@@ -60,7 +67,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
         return { error: t("unexpectedError") };
       }
     },
-    { error: null },
+    { error: null, isLocked: false },
   );
 
   return (
@@ -95,9 +102,10 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
             type="email"
             name="email"
             dir="ltr"
+            disabled={isPending || state.isLocked}
             aria-invalid={!!state.fieldErrors?.email}
             aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 disabled:opacity-50 transition-colors"
             placeholder={t("emailPlaceholder")}
           />
           {state.fieldErrors?.email && (
@@ -124,9 +132,10 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
             type="password"
             name="password"
             dir="ltr"
+            disabled={isPending || state.isLocked}
             aria-invalid={!!state.fieldErrors?.password}
             aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
+            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 disabled:opacity-50 transition-colors"
             placeholder={t("passwordPlaceholder")}
           />
           {state.fieldErrors?.password && (
@@ -138,7 +147,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isPending || state.isLocked}
           className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50 transition-all hover:shadow-lg cursor-pointer"
         >
           {isPending ? t("loggingIn") : t("loginButton")}
@@ -159,7 +168,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
           <button
             type="button"
             onClick={() => signIn("google", { redirectTo: "/dashboard" })}
-            disabled={isPending}
+            disabled={isPending || state.isLocked}
             className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="h-5 w-5" />

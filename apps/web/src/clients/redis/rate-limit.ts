@@ -148,6 +148,21 @@ export async function checkUserRateLimit(
   return checkWithFallback(key, rule.limit, rule.windowMs, strict);
 }
 
+export async function checkIpRateLimit(
+  action: string,
+  ip: string,
+  limit: number,
+  windowMs: number,
+  strict?: boolean,
+): Promise<{ allowed: boolean; retryAfterMs?: number }> {
+  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+    return { allowed: true };
+  }
+  startCleanupIfNeeded();
+  const key = `ip:${action}:${ip}`;
+  return checkWithFallback(key, limit, windowMs, strict);
+}
+
 export function rateLimitResponse(retryAfterMs?: number): NextResponse {
   return NextResponse.json(
     { error: { code: "RATE_LIMITED", message: "تجاوزت الحد الأقصى للطلبات" } },
