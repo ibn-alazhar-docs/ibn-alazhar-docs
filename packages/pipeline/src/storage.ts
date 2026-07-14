@@ -275,10 +275,23 @@ export function validatePdf(
 }
 
 export async function ensureBucket(config: PipelineConfig, retryDelay?: number): Promise<void> {
-  if (getDriver(config) === "local") {
+  const driver = getDriver(config);
+  logger.debug(
+    {
+      driver,
+      envDriver: process.env.STORAGE_DRIVER,
+      localDir: config.storage?.localDir,
+    },
+    "ensureBucket called",
+  );
+
+  if (driver === "local") {
     await localEnsureRoot(config);
+    logger.debug({ localDir: config.storage.localDir }, "Local storage root ensured");
     return;
   }
+
+  logger.debug("Attempting MinIO connection...");
   const mc = getStorageClient(config);
   const maxRetries = 10;
 

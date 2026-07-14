@@ -157,6 +157,8 @@ ENV NODE_ENV=production \
     LANG=C.UTF-8 \
     STORAGE_DRIVER=local \
     STORAGE_LOCAL_DIR=/data \
+    OCR_PROVIDER=tesseract \
+    OCR_CLOUD_ENABLED=false \
     DEBIAN_FRONTEND=noninteractive
 
 # Single RUN layer for ALL system dependencies to minimize layers

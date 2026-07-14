@@ -28,6 +28,12 @@ PROMETHEUS_BEARER_TOKEN="${PROMETHEUS_BEARER_TOKEN:-hf-internal-metrics}"
 export STORAGE_DRIVER="${STORAGE_DRIVER:-local}"
 export STORAGE_LOCAL_DIR="${STORAGE_LOCAL_DIR:-/data}"
 
+# For local storage, also disable S3 endpoint to prevent confusion
+if [ "$STORAGE_DRIVER" = "local" ]; then
+  export S3_ENDPOINT=""
+  export MINIO_ENDPOINT=""
+fi
+
 # ---- OCR engine ------------------------------------------------------------
 # The bundled image only ships the local Tesseract engine. Surya/cloud engines
 # require heavy model downloads or API keys and are not installed here, so force

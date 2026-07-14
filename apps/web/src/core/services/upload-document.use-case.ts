@@ -32,6 +32,16 @@ export class UploadDocumentUseCase {
   }) {
     const { file, folderId, userId, pageRange } = params;
 
+    logger.info(
+      {
+        userId,
+        fileName: file.name,
+        fileSize: file.size,
+        storageDriver: process.env.STORAGE_DRIVER,
+      },
+      "Upload request received",
+    );
+
     if (folderId) {
       const folder = await this.folderRepository.findFolderById(folderId, userId);
       if (!folder) {
@@ -42,10 +52,15 @@ export class UploadDocumentUseCase {
     // Storage availability is checked before any file is written or any DB row
     // is created, so a failure here leaves no orphaned resources.
     try {
+      logger.debug({ storageDriver: process.env.STORAGE_DRIVER }, "Ensuring storage bucket...");
       await this.storage.ensureBucket();
+      logger.debug("Storage bucket ensured successfully");
     } catch (err) {
       const cause = err instanceof Error ? err : new Error(String(err));
-      logger.error({ error: cause.message }, "Storage unavailable during upload");
+      logger.error(
+        { error: cause.message, stack: cause.stack, storageDriver: process.env.STORAGE_DRIVER },
+        "Storage unavailable during upload",
+      );
       throw new AppError(
         "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
         ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
