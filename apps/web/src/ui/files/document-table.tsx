@@ -106,11 +106,11 @@ export function DocumentTable({
           />
         )}
       </div>
-      <div className="overflow-x-auto rounded-xl border border-line bg-card">
-        <table className="min-w-[640px] w-full table-auto">
+      <div className="overflow-x-auto rounded-xl border border-line bg-card -mx-2 sm:mx-0">
+        <table className="min-w-full w-full table-auto">
           <thead>
             <tr className="sticky top-0 z-10 border-b border-line bg-card text-start">
-              <th className="w-10 px-3 py-3">
+              <th className="w-8 sm:w-10 px-2 sm:px-3 py-2 sm:py-3">
                 <input
                   type="checkbox"
                   checked={allSelected}
@@ -119,22 +119,22 @@ export function DocumentTable({
                   className="h-4 w-4 rounded border-[var(--input-border)] accent-[var(--success)]"
                 />
               </th>
-              <th className="px-3 py-3 text-sm font-medium text-muted-color">
+              <th className="px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color">
                 {tDocs("table.title")}
               </th>
-              <th className="whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-color">
+              <th className="hidden md:table-cell whitespace-nowrap px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color">
                 {tDocs("table.status")}
               </th>
-              <th className="whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-color">
+              <th className="hidden lg:table-cell whitespace-nowrap px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color">
                 {tDocs("table.pages")}
               </th>
-              <th className="whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-color">
+              <th className="hidden lg:table-cell whitespace-nowrap px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color">
                 {tDocs("table.size")}
               </th>
-              <th className="whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-color">
+              <th className="hidden sm:table-cell whitespace-nowrap px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color">
                 {tDocs("table.date")}
               </th>
-              <th className="w-20 whitespace-nowrap px-3 py-3 text-sm font-medium text-muted-color" />
+              <th className="w-16 sm:w-20 whitespace-nowrap px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium text-muted-color" />
             </tr>
           </thead>
           <tbody>
