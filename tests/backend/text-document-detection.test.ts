@@ -131,7 +131,7 @@ describe("detectDocumentType", () => {
       const examPart = "س١: سؤال\n".repeat(50); // Strong exam signal
       const generalPart = "نص عادي طويل جداً. ".repeat(500);
       const longText = examPart + generalPart;
-      
+
       expect(longText.length).toBeGreaterThan(3000);
       expect(detectDocumentType(longText)).toBe("exam");
     });

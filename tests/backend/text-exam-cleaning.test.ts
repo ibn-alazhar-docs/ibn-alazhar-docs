@@ -6,7 +6,7 @@ describe("cleanArabicText", () => {
     it("preserves exam question markers with mixed Arabic/Latin", () => {
       const input = "س١: السؤال الأول\nس5: السؤال الخامس\nس10: السؤال العاشر";
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("س١:");
       expect(output).toContain("س5:");
       expect(output).toContain("س10:");
@@ -19,7 +19,7 @@ describe("cleanArabicText", () => {
 (ج) الخيار الثالث
 (د) الخيار الرابع`;
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("(أ)");
       expect(output).toContain("(ب)");
       expect(output).toContain("(ج)");
@@ -33,7 +33,7 @@ describe("cleanArabicText", () => {
 (ج) جواب ثالث`;
       const output = cleanArabicText(input);
       const lines = output.split("\n").filter((l) => l.trim().length > 0);
-      
+
       // Each question and answer should remain on separate lines
       expect(lines.length).toBeGreaterThanOrEqual(4);
       expect(lines.some((l) => l.includes("س١:"))).toBe(true);
@@ -47,7 +47,7 @@ describe("cleanArabicText", () => {
 سؤال ٢: السؤال الثاني
 (3): السؤال الثالث`;
       const output = cleanArabicText(input);
-      
+
       // Should NOT convert to markdown headings
       expect(output).not.toContain("## س١:");
       expect(output).not.toContain("## سؤال ٢:");
@@ -60,7 +60,7 @@ describe("cleanArabicText", () => {
 (أ) نعم
 (ب) لا`;
       const output = cleanArabicText(input);
-      
+
       // Short fragments should NOT be removed in exam context
       expect(output).toContain("(أ) نعم");
       expect(output).toContain("(ب) لا");
@@ -70,9 +70,9 @@ describe("cleanArabicText", () => {
       const examInput = `س١: السؤال
 (أ) الخيار أ
 (ب) الخيار ب`;
-      
+
       const output = cleanArabicText(examInput);
-      
+
       // Verify exam-specific preservation
       expect(output).toContain("س١:");
       expect(output).toContain("(أ)");
@@ -86,7 +86,7 @@ describe("cleanArabicText", () => {
 مع كلمات a b c منفردة
 وسطور قصيرة`;
       const output = cleanArabicText(input);
-      
+
       // Latin noise (single letters) should be removed in general docs
       expect(output).not.toContain(" a ");
       expect(output).not.toContain(" b ");
@@ -99,7 +99,7 @@ describe("cleanArabicText", () => {
 بدون أسئلة
 أو امتحانات`;
       const output = cleanArabicText(input);
-      
+
       // Lines should be merged in general context
       const lines = output.split("\n").filter((l) => l.trim().length > 0);
       expect(lines.length).toBeLessThan(4);
@@ -110,7 +110,7 @@ describe("cleanArabicText", () => {
 @#$%^&*()
 نص آخر صحيح`;
       const output = cleanArabicText(input);
-      
+
       // Garbage line should be removed
       expect(output).toContain("نص صحيح");
       expect(output).toContain("نص آخر صحيح");
@@ -123,7 +123,7 @@ describe("cleanArabicText", () => {
 الفصل الثاني
 محتوى آخر`;
       const output = cleanArabicText(input);
-      
+
       // Should convert to markdown headings in general docs
       expect(output).toContain("## الفصل الأول");
       expect(output).toContain("## الفصل الثاني");
@@ -134,7 +134,7 @@ describe("cleanArabicText", () => {
     it("respects explicit EXAM_OPTIONS even for general text", () => {
       const generalText = "نص عادي بدون أسئلة مع حرف a منفرد";
       const output = cleanArabicText(generalText, EXAM_OPTIONS);
-      
+
       // With explicit EXAM_OPTIONS, Latin chars should be preserved
       expect(output).toContain("a");
     });
@@ -142,7 +142,7 @@ describe("cleanArabicText", () => {
     it("respects explicit DEFAULT_OPTIONS even for exam text", () => {
       const examText = "س١: السؤال\n(أ) الخيار";
       const output = cleanArabicText(examText, DEFAULT_OPTIONS);
-      
+
       // This would apply default cleaning even though it's exam text
       // The behavior here depends on whether DEFAULT_OPTIONS triggers auto-detection
       expect(output).toBeDefined();
@@ -153,7 +153,7 @@ describe("cleanArabicText", () => {
     it("normalizes Unicode characters", () => {
       const input = "نص\u200Bمع\u200Fحروف\u202Aتحكم";
       const output = cleanArabicText(input);
-      
+
       expect(output).not.toContain("\u200B");
       expect(output).not.toContain("\u200F");
       expect(output).not.toContain("\u202A");
@@ -162,7 +162,7 @@ describe("cleanArabicText", () => {
     it("normalizes whitespace", () => {
       const input = "نص    مع    مسافات     كثيرة";
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("نص مع مسافات كثيرة");
       expect(output).not.toMatch(/  +/); // No double spaces
     });
@@ -170,7 +170,7 @@ describe("cleanArabicText", () => {
     it("removes broken HTML tags", () => {
       const input = "<div>نص مع <b>تنسيق</b> HTML</div>";
       const output = cleanArabicText(input);
-      
+
       expect(output).not.toContain("<div>");
       expect(output).not.toContain("<b>");
       expect(output).not.toContain("</div>");
@@ -181,7 +181,7 @@ describe("cleanArabicText", () => {
     it("removes repeated tokens", () => {
       const input = "نص نص نص نص معاد";
       const output = cleanArabicText(input);
-      
+
       // Should collapse repeated words
       expect(output).toContain("نص");
       expect(output).not.toMatch(/نص\s+نص\s+نص\s+نص/);
@@ -190,7 +190,7 @@ describe("cleanArabicText", () => {
     it("normalizes Arabic punctuation", () => {
       const input = "نص،بدون مسافة,وفاصلة إنجليزية؛";
       const output = cleanArabicText(input);
-      
+
       expect(output).toMatch(/،/); // Arabic comma
       expect(output).not.toMatch(/[^،],/); // Should not have English comma next to text
     });
@@ -210,7 +210,7 @@ describe("cleanArabicText", () => {
     it("handles text with only exam markers", () => {
       const input = "س١:\nس٢:\nس٣:";
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("س١:");
       expect(output).toContain("س٢:");
       expect(output).toContain("س٣:");
@@ -219,7 +219,7 @@ describe("cleanArabicText", () => {
     it("preserves Arabic diacritics by default", () => {
       const input = "نَصٌّ مُشَكَّل";
       const output = cleanArabicText(input);
-      
+
       // Default options have removeTashkeel: false
       expect(output).toContain("َ"); // fatha
       expect(output).toContain("ٌ"); // tanween damm
@@ -228,7 +228,7 @@ describe("cleanArabicText", () => {
     it("handles mixed RTL/LTR content", () => {
       const input = "نص عربي مع English text وعربي مرة أخرى";
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("نص عربي");
       expect(output).toBeDefined();
     });
@@ -239,7 +239,7 @@ describe("cleanArabicText", () => {
       const input = `س١: أكمل الفراغ: العاصمة هي ......
 س٢: املأ: السماء [...] اللون`;
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("......");
       expect(output).toContain("[...]");
     });
@@ -250,7 +250,7 @@ describe("cleanArabicText", () => {
 (٢) الثاني
 (٣) الثالث`;
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("(١)");
       expect(output).toContain("(٢)");
       expect(output).toContain("(٣)");
@@ -262,7 +262,7 @@ describe("cleanArabicText", () => {
 (3): السؤال الثالث
 س: السؤال الرابع`;
       const output = cleanArabicText(input);
-      
+
       expect(output).toContain("س١:");
       expect(output).toContain("سؤال ٢:");
       expect(output).toContain("(3):");
