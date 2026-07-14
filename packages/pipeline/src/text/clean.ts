@@ -20,8 +20,10 @@ import {
   HEADING_SUB,
   HEADING_ORDINAL,
   DEFAULT_OPTIONS,
+  EXAM_OPTIONS,
   type CleanOptions,
 } from "./constants";
+import { detectDocumentType } from "./analyze";
 
 export type { CleanOptions };
 
@@ -404,9 +406,20 @@ function finalCleanup(text: string): string {
     .join("\n");
 }
 
-export function cleanArabicText(raw: string, options: CleanOptions = DEFAULT_OPTIONS): string {
+export function cleanArabicText(raw: string, options?: CleanOptions): string {
   let text = raw;
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+
+  // Auto-detect document type if options not provided or if using DEFAULT_OPTIONS
+  const shouldAutoDetect = !options || JSON.stringify(options) === JSON.stringify(DEFAULT_OPTIONS);
+  let opts: CleanOptions;
+
+  if (shouldAutoDetect) {
+    const docType = detectDocumentType(raw);
+    opts =
+      docType === "exam" ? { ...EXAM_OPTIONS, ...options } : { ...DEFAULT_OPTIONS, ...options };
+  } else {
+    opts = { ...DEFAULT_OPTIONS, ...options };
+  }
 
   if (opts.normalizeUnicode) {
     text = text.normalize("NFKC");
