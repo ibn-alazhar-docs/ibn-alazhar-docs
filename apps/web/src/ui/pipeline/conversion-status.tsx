@@ -91,7 +91,9 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
       {/* Status Text */}
       <div className="text-center">
-        <p className={`text-lg font-bold tracking-tight ${isFailed ? "text-danger" : "premium-gradient-text"}`}>
+        <p
+          className={`text-lg font-bold tracking-tight ${isFailed ? "text-danger" : "premium-gradient-text"}`}
+        >
           {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {!isCompleted && !isFailed && (

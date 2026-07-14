@@ -41,7 +41,9 @@ export default function FilesPage() {
                 className="mb-3 flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-muted-color hover:bg-hover transition-colors lg:hidden"
               >
                 <FolderIcon className="h-4 w-4" />
-                {showMobileSidebar ? tDocs("hideSidebar") || "إخفاء الفلاتر" : tDocs("showSidebar") || "إظهار الفلاتر"}
+                {showMobileSidebar
+                  ? tDocs("hideSidebar") || "إخفاء الفلاتر"
+                  : tDocs("showSidebar") || "إظهار الفلاتر"}
               </button>
               <Card
                 className={[

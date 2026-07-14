@@ -24,6 +24,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
     uploading,
     progress,
     error,
+    setError,
     showVisualSelector,
     setShowVisualSelector,
     inputRef,
@@ -109,10 +110,28 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
       </motion.div>
 
       {error && (
-        <div className="bg-danger-bg border border-danger/20 text-danger px-4 py-3 rounded-lg text-sm">
-          {error.startsWith("pipeline.") || error.startsWith("common.")
-            ? t(error.replace("pipeline.upload.", ""))
-            : error}
+        <div
+          className="bg-danger-bg border border-danger/20 text-danger px-4 py-3 sm:px-4 sm:py-3 rounded-lg text-sm max-w-full overflow-hidden break-words overflow-wrap-anywhere text-start space-y-2"
+          role="alert"
+          aria-live="polite"
+        >
+          <div className="flex items-start justify-between gap-2">
+            <span className="flex-1">
+              {error.startsWith("pipeline.") || error.startsWith("common.")
+                ? t(error.replace("pipeline.upload.", ""))
+                : error.startsWith("error")
+                  ? t(error)
+                  : error}
+            </span>
+            <button
+              type="button"
+              onClick={() => setError(null)}
+              className="sm:hidden flex-shrink-0 text-danger hover:text-danger/80 p-1 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              aria-label={t("dismiss")}
+            >
+              ×
+            </button>
+          </div>
         </div>
       )}
 

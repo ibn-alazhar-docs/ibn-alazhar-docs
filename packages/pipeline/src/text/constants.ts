@@ -96,3 +96,45 @@ export const DEFAULT_OPTIONS: CleanOptions = {
   collapseRepeatedParagraphs: true,
   finalCleanup: true,
 };
+
+/**
+ * Options preset for exam/Q&A documents (امتحانات، أسئلة وأجوبة).
+ * Disables destructive passes that mangle question numbering, answer
+ * choices, and mixed Arabic/Latin content typical in exam papers.
+ */
+export const EXAM_OPTIONS: CleanOptions = {
+  normalizeUnicode: true,
+  normalizeArabic: true,
+  removeTashkeel: false,
+  removeTatweel: true,
+  normalizeDigits: false,
+  normalizeWhitespace: true,
+  removeBrokenHtml: true,
+  // Keep Latin chars — exam papers mix س١، س5، (أ)، (ب) with digits
+  removeAsciiNoise: false,
+  removeRepeatedTokens: true,
+  // Keep lines that look like garbage — answer choices like (أ - ب - ج) score low
+  removeGarbageSymbols: false,
+  normalizePunctuation: true,
+  // Don't drop short fragments — answer stubs are intentionally short
+  removeIsolatedFragments: false,
+  collapseRepeatedWords: true,
+  // Don't merge lines — every question/answer must stay on its own line
+  reconstructLines: false,
+  // Don't auto-detect headings — question numbers like س١: become ## headings wrongly
+  detectHeadings: false,
+  removePageNoise: true,
+  collapseRepeatedParagraphs: true,
+  // Loosen final filter — exam lines often have high symbol/digit ratios
+  finalCleanup: false,
+};
+
+// Patterns that identify exam/Q&A documents
+export const EXAM_QUESTION_PATTERN =
+  /^(س\s*\d+|سؤال\s*\d*|س\s*[:：]|\(\d+\)\s*[:：]?)/m;
+export const EXAM_ANSWER_PATTERN =
+  /^(ج\s*[:：]|جواب\s*[:：]|الإجابة\s*[:：]|الجواب\s*[:：])/m;
+export const EXAM_CHOICE_PATTERN =
+  /^\s*[\(\[]\s*[أابجدهوزحطيكلمنسعفصقرشت١٢٣٤٥٦٧٨٩0-9]\s*[\)\]]/m;
+export const EXAM_FILL_PATTERN = /\.{3,}|…{2,}|\[\.+\]|\(\s*\.\.\.\s*\)/m;
+export const EXAM_MCQ_PATTERN = /\([١٢٣٤-]\)|[\(\[][أ-ي][\)\]]/m;

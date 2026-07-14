@@ -266,6 +266,7 @@
       "uploading": "Uploading...",
       "uploadButton": "Upload & Process",
       "progress": "Processing...",
+      "dismiss": "Dismiss",
       "errorInvalidType": "Unsupported format. Upload a PDF or image.",
       "errorTooLarge": "File exceeds the maximum size (50MB). Reduce the size or split it.",
       "errorUploadFailed": "Upload failed. You can retry.",
