@@ -130,11 +130,8 @@ export const EXAM_OPTIONS: CleanOptions = {
 };
 
 // Patterns that identify exam/Q&A documents
-export const EXAM_QUESTION_PATTERN =
-  /^(س\s*\d+|سؤال\s*\d*|س\s*[:：]|\(\d+\)\s*[:：]?)/m;
-export const EXAM_ANSWER_PATTERN =
-  /^(ج\s*[:：]|جواب\s*[:：]|الإجابة\s*[:：]|الجواب\s*[:：])/m;
-export const EXAM_CHOICE_PATTERN =
-  /^\s*[\(\[]\s*[أابجدهوزحطيكلمنسعفصقرشت١٢٣٤٥٦٧٨٩0-9]\s*[\)\]]/m;
+export const EXAM_QUESTION_PATTERN = /^(س\s*\d+|سؤال\s*\d*|س\s*[:：]|\(\d+\)\s*[:：]?)/m;
+export const EXAM_ANSWER_PATTERN = /^(ج\s*[:：]|جواب\s*[:：]|الإجابة\s*[:：]|الجواب\s*[:：])/m;
+export const EXAM_CHOICE_PATTERN = /^\s*[\(\[]\s*[أابجدهوزحطيكلمنسعفصقرشت١٢٣٤٥٦٧٨٩0-9]\s*[\)\]]/m;
 export const EXAM_FILL_PATTERN = /\.{3,}|…{2,}|\[\.+\]|\(\s*\.\.\.\s*\)/m;
 export const EXAM_MCQ_PATTERN = /\([١٢٣٤-]\)|[\(\[][أ-ي][\)\]]/m;

@@ -61,14 +61,40 @@ export class GeminiOcrProvider implements OcrProvider {
     const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
     const model = genAI.getGenerativeModel({ model: config.gemini.model });
 
-    const prompt = `أنت نظام خبير في التعرف الضوئي على النصوص العربية وتحليل تخطيط المستندات.
-استخرج كل النص تمامًا كما يظهر في المستند الأصلي دون إضافة أو حذف.
-الأهمية القصوى: احتفظ بعلامات التشكيل (التنوين والحركات: الفتحة والضمة والكسرة والسكون) لكل كلمة كما هي، ولا تحذفها ولا تقدّرها.
-احتفظ بعلامات الترقيم (، . ؛ : ؟ ! " " ( ) وغيرها) بدقة.
-حافظ على اتجاه النص من اليمين إلى اليسار (RTL) وبنفس ترتيب الصفحات.
-حافظ على البنية والتخطيط الأصلي: العناوين، الفقرات، والقوائم (النقطية والرقمية) كما هي.
-أعد أي جداول (tables) بصيغة Markdown صحيحة ومطابقة للأصل تمامًا.
-لا تُضف أي نص استهلالي أو ختامي؛ أعد النص المستخرج فقط.`;
+    const prompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
+
+**Your Primary Task:**
+Extract all text exactly as it appears in the original document without adding, removing, or interpreting anything.
+
+**Critical Rules (must follow strictly):**
+1. **Diacritics:** Preserve all tashkeel marks (fatha, damma, kasra, sukun, tanween, shadda) exactly as they are — do not remove, add, or infer them.
+2. **Punctuation:** Preserve all punctuation marks precisely: ، . ؛ : ؟ ! " " ( ) [ ] { } - – — / \\ * # @ & % $ and others.
+3. **Numbers and Letters:** Preserve Arabic numerals (١٢٣), Hindu numerals (123), and Latin letters (a, b, c, س١, س5) as they are.
+4. **Direction:** Maintain right-to-left (RTL) text direction and page order.
+5. **Layout:** Preserve the original structure:
+   - Main and sub headings
+   - Paragraphs and separate lines
+   - Bulleted and numbered lists
+   - Tables (in Markdown format)
+   - Questions and answers (each question on a separate line)
+   - Multiple-choice alternatives (each alternative on a separate line)
+   - Any other special formatting
+
+**Special Instructions:**
+- **For Questions and Exams:** Preserve question formatting (س١:, س5:, سؤال ١:, etc.) and answer alternatives [(أ), (ب), (ج), (د)] on separate lines.
+- **For Tables:** Use correct Markdown format with column alignment.
+- **For Footnotes:** Extract footnotes precisely with reference numbers, place them below page text separated by "---".
+- **For Multiple Columns:** Read right to left, column by column, then top to bottom.
+
+**What NOT to do:**
+❌ Do not add introductory text, comments, or notes
+❌ Do not interpret, summarize, or rephrase
+❌ Do not correct spelling or grammatical errors in the original text
+❌ Do not remove parts that seem "unimportant"
+✅ Only extract the text exactly as it is
+
+**Required Output:**
+Precise raw text in simple Markdown format (headings start with #, lists with -, tables with |).`;
 
     const result = await model.generateContent([
       prompt,
@@ -112,16 +138,37 @@ export class GeminiOcrProvider implements OcrProvider {
     const model = genAI.getGenerativeModel({ model: config.gemini.model });
 
     const BATCH_SIZE = 10;
-    const batchPrompt = `أنت نظام خبير في التعرف الضوئي على النصوص العربية وتحليل تخطيط المستندات.
-أزوّدك بعدة صفحات من مستند.
-استخرج كل النص تمامًا كما يظهر في المستند الأصلي دون إضافة أو حذف.
-الأهمية القصوى: احتفظ بعلامات التشكيل (التنوين والحركات: الفتحة والضمة والكسرة والسكون) لكل كلمة كما هي، ولا تحذفها.
-احتفظ بعلامات الترقيم (، . ؛ : ؟ ! " " ( ) وغيرها) بدقة.
-حافظ على اتجاه النص من اليمين إلى اليسار (RTL) وبنفس ترتيب الصفحات.
-حافظ على البنية والتخطيط الأصلي: العناوين، الفقرات، والقوائم كما هي.
-أعد أي جداول (tables) بصيغة Markdown صحيحة ومطابقة للأصل تمامًا.
-تعليمة هامة: إذا احتوت الصفحة على هوامش أو حواشٍ سفلية، فاستخرجها بدقة مع أرقام المراجع، وضعها أسفل نص الصفحة مفصولة بخط أفقي "---".
-تعليمة هامة: افصل نص كل صفحة عن الصفحة التي تليها تمامًا بفاصل في سطر جديد وهو: "===PAGE_BREAK==="`;
+    const batchPrompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
+
+**Context:** I am providing you with multiple pages from a single document (up to 10 pages in this batch).
+
+**Your Task:**
+Extract all text exactly as it appears in the original document without adding, removing, or interpreting anything.
+
+**Critical Rules:**
+1. **Diacritics:** Preserve all tashkeel marks (fatha, damma, kasra, sukun, tanween, shadda) with absolute precision.
+2. **Punctuation:** Preserve all punctuation marks: ، . ؛ : ؟ ! " " ( ) [ ] { } - – — / \\ * # @ and others.
+3. **Numbers:** Preserve Arabic numerals (١٢٣), Hindu numerals (123), and Latin letters (a, b, c, س١, س5).
+4. **Direction:** Right-to-left (RTL) with same page order.
+5. **Layout:** Preserve headings, paragraphs, lists, tables, questions and answers, choice alternatives.
+
+**Special Instructions:**
+- **For Questions:** Each question on a separate line (س١:, س5:, سؤال ١:)
+- **For Alternatives:** Each alternative on a separate line [(أ), (ب), (ج), (د)]
+- **For Tables:** Correct Markdown format
+- **For Footnotes:** Extract them with reference numbers, place below page text after "---"
+- **For Columns:** Read right to left, column by column, then top to bottom
+
+**Page Separator (very important):**
+Separate each page's text from the next page with a separator on a new line: "===PAGE_BREAK==="
+
+**What NOT to do:**
+❌ Do not add introductory text or comments
+❌ Do not interpret, summarize, or rephrase
+❌ Do not correct spelling errors
+❌ Do not remove parts that seem "unimportant"
+
+**Output:** Precise raw text in simple Markdown format, with PAGE_BREAK separator between pages.`;
     const pages: OcrPageResult[] = [];
     let fullText = "";
 
