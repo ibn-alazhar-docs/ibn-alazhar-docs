@@ -26,7 +26,10 @@ export function ActiveJobs({ jobs, completedIds, locale, onMarkComplete }: Activ
       <h3 className="text-lg font-semibold text-primary-color">{tDocs("activeJobs")}</h3>
       <div className="mt-4 space-y-4">
         {jobs.map((job) => (
-          <div key={job.jobId} className="glass-panel rounded-xl p-6 relative overflow-hidden group">
+          <div
+            key={job.jobId}
+            className="glass-panel rounded-xl p-6 relative overflow-hidden group"
+          >
             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[var(--success-bg)] to-transparent opacity-0 group-hover:opacity-10 transition-opacity duration-1000" />
             <div className="mb-4 flex items-center justify-between gap-4 relative z-10">
               <h4 className="truncate font-medium text-primary-color">{job.fileName}</h4>

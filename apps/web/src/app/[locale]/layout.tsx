@@ -41,7 +41,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
 
   const appUrl =
     process.env.APP_URL ||
-    (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "https://ibnalazhar-docs.hf.space");
+    (process.env.VERCEL_URL
+      ? `https://${process.env.VERCEL_URL}`
+      : "https://ibnalazhar-docs.hf.space");
 
   const jsonLd = {
     "@context": "https://schema.org",

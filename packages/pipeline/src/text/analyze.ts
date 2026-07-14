@@ -1,3 +1,32 @@
+import {
+  EXAM_QUESTION_PATTERN,
+  EXAM_ANSWER_PATTERN,
+  EXAM_CHOICE_PATTERN,
+  EXAM_FILL_PATTERN,
+  EXAM_MCQ_PATTERN,
+} from "./constants";
+
+export type DocumentType = "exam" | "general";
+
+/**
+ * Detect whether a raw OCR text is an exam / Q&A document.
+ * Uses a simple scoring heuristic: count how many exam-specific
+ * patterns appear in the first 3000 characters (fast, representative sample).
+ */
+export function detectDocumentType(text: string): DocumentType {
+  const sample = text.slice(0, 3000);
+  let score = 0;
+  if (EXAM_QUESTION_PATTERN.test(sample)) score += 3;
+  if (EXAM_ANSWER_PATTERN.test(sample)) score += 2;
+  if (EXAM_CHOICE_PATTERN.test(sample)) score += 2;
+  if (EXAM_FILL_PATTERN.test(sample)) score += 1;
+  if (EXAM_MCQ_PATTERN.test(sample)) score += 2;
+  // Count occurrence density: multiple question markers = strong signal
+  const qCount = (sample.match(/س\s*\d+/g) || []).length;
+  if (qCount >= 3) score += 3;
+  return score >= 4 ? "exam" : "general";
+}
+
 export interface TextAnalysis {
   pageCount: number;
   headingCount: number;

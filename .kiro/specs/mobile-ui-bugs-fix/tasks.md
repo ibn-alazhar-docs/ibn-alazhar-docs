@@ -1,0 +1,96 @@
+# Implementation Plan
+
+- [x] 1. Write bug condition exploration test
+  - **Property 1: Bug Condition** - Mobile Error Message Invisible on Failed Upload
+  - **CRITICAL**: This test MUST FAIL on unfixed code - failure confirms the bug exists
+  - **DO NOT attempt to fix the test or the code when it fails**
+  - **NOTE**: This test encodes the expected behavior - it will validate the fix when it passes after implementation
+  - **GOAL**: Surface counterexamples that demonstrate the bug exists
+  - **Scoped PBT Approach**: Test mobile viewports (320px, 375px, 414px, 500px, 639px) with all error types (errorInvalidType, errorTooLarge, errorUploadFailed, servicesUnavailable)
+  - Test that error messages are visible and accessible on mobile viewports < 640px when upload fails (from Bug Condition in design: `isBugCondition` where `viewportWidth < 640 AND errorState !== null AND NOT isVisible`)
+  - The test assertions should match the Expected Behavior Properties from design: error div is visible, within viewport bounds, properly wrapped, and accessible
+  - Test setup: Render FileUpload component with error state on mobile viewport dimensions using React Testing Library and Vitest
+  - Create test file: `tests/frontend/file-upload-mobile-error.test.tsx`
+  - Use `window.innerWidth` mocking or container queries to simulate mobile viewports
+  - Assert error div exists with `getByRole('alert')` or `getByText` matching error message
+  - Assert error is within viewport bounds (no clipping or overflow)
+  - Assert Arabic RTL text wraps properly without horizontal overflow on narrow viewports (test with longest message `servicesUnavailable`)
+  - Run test on UNFIXED code in `apps/web/src/ui/pipeline/file-upload.tsx`
+  - **EXPECTED OUTCOME**: Test FAILS (this is correct - it proves the bug exists)
+  - Document counterexamples found: error div clipped, text overflow, or element not in viewport
+  - Mark task complete when test is written, run, and failure is documented
+  - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6_
+
+- [x] 2. Write preservation property tests (BEFORE implementing fix)
+  - **Property 2: Preservation** - Desktop and Non-Error Behavior Unchanged
+  - **IMPORTANT**: Follow observation-first methodology
+  - Observe behavior on UNFIXED code for non-buggy inputs (desktop viewports ≥ 640px, successful uploads, non-error states)
+  - Write property-based tests capturing observed behavior patterns from Preservation Requirements
+  - Create test file: `tests/frontend/file-upload-preservation.test.tsx`
+  - Test desktop error display (viewport ≥ 640px): verify error div uses existing `bg-danger-bg border border-danger/20` styling unchanged
+  - Test successful upload flows on mobile: verify file name, size, progress bar display correctly
+  - Test hover animations on desktop: verify `whileHover` effects still trigger (if testable in Vitest environment)
+  - Test file validation logic: verify `validateFile` produces same results for all file types
+  - Test error state management: verify `setError` and `reset` functions work identically
+  - Test drag-and-drop functionality: verify file selection via hidden input works unchanged
+  - Test translations: verify `next-intl` translations for Arabic/English work correctly
+  - Test accessibility: verify ARIA attributes and semantic HTML remain intact
+  - Test visual design: verify design tokens (`--danger-bg`, `--danger`, `border-danger/20`) are used consistently
+  - Test reduced motion: verify `prefers-reduced-motion` media queries are respected (if applicable)
+  - Property-based testing generates many test cases for stronger guarantees
+  - Run tests on UNFIXED code in `apps/web/src/ui/pipeline/file-upload.tsx`
+  - **EXPECTED OUTCOME**: Tests PASS (this confirms baseline behavior to preserve)
+  - Mark task complete when tests are written, run, and passing on unfixed code
+  - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12_
+
+- [x] 3. Fix for mobile error message visibility
+
+  - [x] 3.1 Implement the fix in FileUpload component
+    - Add mobile-specific error container styling: `max-w-full overflow-hidden` to prevent horizontal overflow
+    - Increase mobile padding/margin: ensure clear separation from surrounding elements with `space-y-4`
+    - Add touch-friendly dimensions: `min-h-[44px]` for dismiss button if added
+    - Implement responsive text handling for RTL: add `break-words overflow-wrap-anywhere` for proper Arabic text wrapping
+    - Ensure logical text alignment: use `text-start` for proper RTL/LTR alignment
+    - Add explicit mobile layout rules: use consistent spacing between form elements
+    - Add dismiss button for mobile: small close icon (minimum 44x44px touch target) only visible on viewports < 640px
+    - Wire dismiss button to call `setError(null)` when clicked
+    - Ensure error div has proper ARIA attributes: `role="alert"` and `aria-live="polite"`
+    - File to modify: `apps/web/src/ui/pipeline/file-upload.tsx`
+    - _Bug_Condition: isBugCondition(input) where input.viewportWidth < 640 AND input.errorState !== null AND NOT input.isVisible_
+    - _Expected_Behavior: error div is persistently visible, within viewport bounds, properly wrapped, accessible with dismiss mechanism_
+    - _Preservation: Desktop error styling (≥640px), successful upload flows, hover effects, validation logic, state management, drag-and-drop, translations, accessibility, design tokens, reduced motion_
+    - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7, 3.8, 3.9, 3.10, 3.11, 3.12_
+
+  - [x] 3.2 Verify bug condition exploration test now passes
+    - **Property 1: Expected Behavior** - Mobile Error Message Visible After Fix
+    - **IMPORTANT**: Re-run the SAME test from task 1 - do NOT write a new test
+    - The test from task 1 encodes the expected behavior
+    - When this test passes, it confirms the expected behavior is satisfied
+    - Run bug condition exploration test from step 1 on FIXED code
+    - **EXPECTED OUTCOME**: Test PASSES (confirms bug is fixed)
+    - Verify error messages are visible on all mobile viewports (320px, 375px, 414px, 500px, 639px)
+    - Verify error div is within viewport bounds with no clipping
+    - Verify Arabic RTL text wraps properly on narrow screens
+    - Verify dismiss button appears only on mobile and is touch-friendly
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8_
+
+  - [x] 3.3 Verify preservation tests still pass
+    - **Property 2: Preservation** - No Regressions in Desktop or Non-Error Behavior
+    - **IMPORTANT**: Re-run the SAME tests from task 2 - do NOT write new tests
+    - Run preservation property tests from step 2 on FIXED code
+    - **EXPECTED OUTCOME**: Tests PASS (confirms no regressions)
+    - Confirm desktop error display unchanged (≥640px viewports)
+    - Confirm successful upload flows work identically on all devices
+    - Confirm hover animations, validation logic, state management unchanged
+    - Confirm translations, accessibility, design tokens preserved
+    - Confirm all tests still pass after fix (no regressions)
+
+- [x] 4. Checkpoint - Ensure all tests pass
+  - Run full test suite: `pnpm test`
+  - Verify mobile error visibility test passes: `pnpm test tests/frontend/file-upload-mobile-error.test.tsx`
+  - Verify preservation tests pass: `pnpm test tests/frontend/file-upload-preservation.test.tsx`
+  - Verify no new TypeScript or ESLint errors introduced: `pnpm check`
+  - Test manually on mobile device emulation (Chrome DevTools) with viewports: 320px, 375px, 414px, 500px, 639px
+  - Test error dismissal interaction on mobile (if dismiss button was added)
+  - Test Arabic and English error messages display correctly with proper RTL/LTR handling
+  - Ensure all tests pass, ask the user if questions arise
