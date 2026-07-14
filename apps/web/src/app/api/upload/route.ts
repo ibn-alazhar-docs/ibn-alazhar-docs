@@ -51,6 +51,28 @@ function validateRequest(
 export const POST = withAuth(async (request, { session }) => {
   const startedAt = Date.now();
   try {
+    // CRITICAL: Verify user exists before processing upload. The JWT token may
+    // contain a stale user ID (e.g. deleted user, or race with Google OAuth
+    // account creation). Without this check, createDocument() fails with a
+    // foreign key constraint violation.
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { id: true, deletedAt: true },
+    });
+
+    if (!userExists || userExists.deletedAt) {
+      logger.warn({ userId: session.user.id }, "Upload rejected: user not found or deleted");
+      return NextResponse.json(
+        {
+          error: {
+            code: ERROR_CODES.UNAUTHORIZED,
+            message: "الجلسة غير صالحة. يرجى تسجيل الدخول مرة أخرى.",
+          },
+        },
+        { status: 401 },
+      );
+    }
+
     const rateLimitResult = await checkUserRateLimit("documents:create", session.user.id);
     if (!rateLimitResult.allowed) {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
