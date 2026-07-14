@@ -1,0 +1,87 @@
+# Hugging Face Spaces specific .dockerignore
+# This reduces the build context to absolute minimum
+
+# All tests and test data
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+test-results/
+test-data/
+playwright-report/
+.nyc_output/
+.stryker-tmp/
+coverage/
+
+# All documentation
+docs/
+specs/
+governance/
+*.md
+!README.md
+
+# Development tools
+.kiro/
+.repowise/
+.vscode/
+.idea/
+.husky/
+.github/
+.git/
+
+# Build artifacts that will be regenerated
+.next/
+dist/
+build/
+out/
+.turbo/
+
+# Cache directories
+.cache/
+.eslintcache
+.prettiercache
+.tsbuildinfo
+.ruff_cache/
+node_modules/.cache/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.production.example
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Large media (except what's needed in public/)
+**/*.pdf
+tests/**/*.png
+tests/**/*.jpg
+
+# Infrastructure configs not needed in HF
+infrastructure/
+docker-compose*.yml
+monitoring/
+grafana/
+prometheus/
+k8s/
+railway.toml
+northflank*.yml
+
+# Code quality tools configs
+.semgrep.yml
+.lighthouserc.json
+.dependency-cruiser.mjs
+.coderabbit.yaml
+.prettierrc
+.prettierignore
+.eslintrc.json
+.editorconfig
