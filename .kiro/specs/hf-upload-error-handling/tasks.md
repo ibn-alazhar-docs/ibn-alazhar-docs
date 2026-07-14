@@ -34,13 +34,13 @@ This document outlines the implementation tasks for enhancing error handling in 
 
 **Acceptance Criteria:**
 - [x] `ServiceErrorType` enum created with all 4 error types
-- [~] `ServiceError` interface includes Arabic and English messages
-- [~] `ServiceErrorClassifier.classify()` correctly identifies database errors
-- [~] `ServiceErrorClassifier.classify()` correctly identifies Redis errors
-- [~] `ServiceErrorClassifier.classify()` correctly identifies storage errors
-- [~] `ServiceErrorClassifier.classify()` returns `UNKNOWN_ERROR` for unrecognized errors
-- [~] All error types map to correct HTTP status codes (503 for service unavailable, 500 for unknown)
-- [~] Module compiles without TypeScript errors
+- [ ] `ServiceError` interface includes Arabic and English messages
+- [ ] `ServiceErrorClassifier.classify()` correctly identifies database errors
+- [ ] `ServiceErrorClassifier.classify()` correctly identifies Redis errors
+- [ ] `ServiceErrorClassifier.classify()` correctly identifies storage errors
+- [ ] `ServiceErrorClassifier.classify()` returns `UNKNOWN_ERROR` for unrecognized errors
+- [ ] All error types map to correct HTTP status codes (503 for service unavailable, 500 for unknown)
+- [ ] Module compiles without TypeScript errors
 
 ---
 
@@ -59,9 +59,9 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-16.1: Application-layer implementation (proper module organization)
 
 **Acceptance Criteria:**
-- [~] Service-health module exported from shared package
-- [~] Imports work correctly from other packages: `import { ServiceErrorClassifier } from "@ibn-al-azhar-docs/shared"`
-- [~] TypeScript compilation succeeds
+- [ ] Service-health module exported from shared package
+- [ ] Imports work correctly from other packages: `import { ServiceErrorClassifier } from "@ibn-al-azhar-docs/shared"`
+- [ ] TypeScript compilation succeeds
 
 ---
 
@@ -87,11 +87,11 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-2.5: 10-second maximum retry timeout
 
 **Acceptance Criteria:**
-- [~] `RetryStrategy` interface defined with all required fields
-- [~] `DATABASE_RETRY_STRATEGY` uses exact delay sequence [100, 200, 400, 800, 1600, 3200]
-- [~] `REDIS_RETRY_STRATEGY` uses delay sequence [100, 200, 400, 800, 1600]
-- [~] Both strategies have 10-second `maxTotalTimeout`
-- [~] `shouldRetry` correctly identifies retryable error types
+- [ ] `RetryStrategy` interface defined with all required fields
+- [ ] `DATABASE_RETRY_STRATEGY` uses exact delay sequence [100, 200, 400, 800, 1600, 3200]
+- [ ] `REDIS_RETRY_STRATEGY` uses delay sequence [100, 200, 400, 800, 1600]
+- [ ] Both strategies have 10-second `maxTotalTimeout`
+- [ ] `shouldRetry` correctly identifies retryable error types
 - [ ] Module compiles without TypeScript errors
 
 ---
@@ -125,16 +125,16 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-5.3: Log retry attempts
 
 **Acceptance Criteria:**
-- [~] `RetryExecutor.retryWithBackoff()` successfully retries on transient failures
-- [~] Exponential backoff delays are correctly applied
-- [~] Total timeout of 10 seconds is enforced
-- [~] Non-retryable errors immediately throw without retry
-- [~] Retry attempts logged at DEBUG level with context
-- [~] Success after retry logged at INFO level
-- [~] Exhausted retries logged at ERROR level with full context
-- [~] Original error is re-thrown when retries fail
-- [~] TypeScript generics work correctly for return type
-- [~] Module compiles without errors
+- [ ] `RetryExecutor.retryWithBackoff()` successfully retries on transient failures
+- [ ] Exponential backoff delays are correctly applied
+- [ ] Total timeout of 10 seconds is enforced
+- [ ] Non-retryable errors immediately throw without retry
+- [ ] Retry attempts logged at DEBUG level with context
+- [ ] Success after retry logged at INFO level
+- [ ] Exhausted retries logged at ERROR level with full context
+- [ ] Original error is re-thrown when retries fail
+- [ ] TypeScript generics work correctly for return type
+- [ ] Module compiles without errors
 
 ---
 
@@ -166,13 +166,13 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-7.4: Parallel validation for minimal latency
 
 **Acceptance Criteria:**
-- [~] `validateDatabase()` performs lightweight `SELECT 1` query
-- [~] `validateRedis()` uses `PING` command
-- [~] `validateStorage()` checks write permissions with `fs.access`
-- [~] `validateAll()` runs all checks in parallel with `Promise.all()`
-- [~] Validation failures return Arabic error messages via `ServiceErrorClassifier`
-- [~] `validateAll()` returns `{ success: true }` when all services healthy
-- [~] `validateAll()` returns `{ success: false, error: string }` when any service fails
+- [ ] `validateDatabase()` performs lightweight `SELECT 1` query
+- [ ] `validateRedis()` uses `PING` command
+- [ ] `validateStorage()` checks write permissions with `fs.access`
+- [ ] `validateAll()` runs all checks in parallel with `Promise.all()`
+- [ ] Validation failures return Arabic error messages via `ServiceErrorClassifier`
+- [ ] `validateAll()` returns `{ success: true }` when all services healthy
+- [ ] `validateAll()` returns `{ success: false, error: string }` when any service fails
 - [ ] Module compiles without TypeScript errors
 
 ---
@@ -193,9 +193,9 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-4.2: TypeScript response schema
 
 **Acceptance Criteria:**
-- [~] `ServiceCheckResult` interface created with correct fields
-- [~] `DetailedHealthResponse` interface created with nested services object
-- [~] All interfaces use strict TypeScript types (no `any`)
+- [ ] `ServiceCheckResult` interface created with correct fields
+- [ ] `DetailedHealthResponse` interface created with nested services object
+- [ ] All interfaces use strict TypeScript types (no `any`)
 - [ ] Module compiles without errors
 
 ---
@@ -214,8 +214,8 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-4.2: Type availability across packages
 
 **Acceptance Criteria:**
-- [~] Health types exported from shared package
-- [~] Imports work: `import { DetailedHealthResponse } from "@ibn-al-azhar-docs/shared"`
+- [ ] Health types exported from shared package
+- [ ] Imports work: `import { DetailedHealthResponse } from "@ibn-al-azhar-docs/shared"`
 - [ ] TypeScript compilation succeeds
 
 ---
@@ -262,19 +262,19 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-15.2: Minimize Redis command usage
 
 **Acceptance Criteria:**
-- [~] Endpoint created at `/api/health/detailed`
-- [~] GET handler implemented
-- [~] `checkDatabase()` uses lightweight `SELECT 1` with 2s timeout
-- [~] `checkRedis()` uses `PING` with 2s timeout
-- [~] `checkStorage()` uses `fs.access()` with 2s timeout
-- [~] All checks run in parallel with `Promise.all()`
-- [~] Response includes individual service status and response times
-- [~] Returns HTTP 200 when all services healthy
-- [~] Returns HTTP 503 when any service unhealthy
-- [~] Response includes ISO 8601 timestamp
-- [~] `Cache-Control: no-store` header included
-- [~] Unhealthy services logged at WARN level
-- [~] Unexpected errors return 503 status
+- [ ] Endpoint created at `/api/health/detailed`
+- [ ] GET handler implemented
+- [ ] `checkDatabase()` uses lightweight `SELECT 1` with 2s timeout
+- [ ] `checkRedis()` uses `PING` with 2s timeout
+- [ ] `checkStorage()` uses `fs.access()` with 2s timeout
+- [ ] All checks run in parallel with `Promise.all()`
+- [ ] Response includes individual service status and response times
+- [ ] Returns HTTP 200 when all services healthy
+- [ ] Returns HTTP 503 when any service unhealthy
+- [ ] Response includes ISO 8601 timestamp
+- [ ] `Cache-Control: no-store` header included
+- [ ] Unhealthy services logged at WARN level
+- [ ] Unexpected errors return 503 status
 - [ ] Module compiles without TypeScript errors
 
 ---
@@ -314,16 +314,16 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-11.3: Mark failed uploads
 
 **Acceptance Criteria:**
-- [~] All database operations wrapped with `RetryExecutor.retryWithBackoff()`
-- [~] All Redis operations wrapped with retry logic
-- [~] Upload attempt logged at start with file metadata
-- [~] Upload completion logged with status and duration
-- [~] Service failures logged with error details
-- [~] Mid-upload failures trigger rollback attempt
-- [~] Failed uploads marked in database if rollback fails
-- [~] No sensitive data (file contents, tokens) logged
+- [ ] All database operations wrapped with `RetryExecutor.retryWithBackoff()`
+- [ ] All Redis operations wrapped with retry logic
+- [ ] Upload attempt logged at start with file metadata
+- [ ] Upload completion logged with status and duration
+- [ ] Service failures logged with error details
+- [ ] Mid-upload failures trigger rollback attempt
+- [ ] Failed uploads marked in database if rollback fails
+- [ ] No sensitive data (file contents, tokens) logged
 - [ ] TypeScript compilation succeeds
-- [~] Existing tests pass
+- [ ] Existing tests pass
 
 ---
 
@@ -355,13 +355,13 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-17.2: Preserve API schema
 
 **Acceptance Criteria:**
-- [~] `ServiceHealthValidator.validateAll()` called before accepting file
-- [~] HTTP 503 returned when validation fails
-- [~] Error response includes Arabic message
-- [~] Error response includes English fallback in metadata
-- [~] File upload proceeds only when validation passes
-- [~] Validation failures logged appropriately
-- [~] Existing API contract maintained (no breaking changes)
+- [ ] `ServiceHealthValidator.validateAll()` called before accepting file
+- [ ] HTTP 503 returned when validation fails
+- [ ] Error response includes Arabic message
+- [ ] Error response includes English fallback in metadata
+- [ ] File upload proceeds only when validation passes
+- [ ] Validation failures logged appropriately
+- [ ] Existing API contract maintained (no breaking changes)
 - [ ] TypeScript compilation succeeds
 
 ---
@@ -394,13 +394,13 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-6.3: Clear, actionable Arabic messages
 
 **Acceptance Criteria:**
-- [~] All upload errors classified with `ServiceErrorClassifier`
-- [~] Correct HTTP status returned based on error type
-- [~] Arabic message returned as primary error
-- [~] English message included in metadata
-- [~] Errors logged with full context (error code, messages, user ID, operation)
+- [ ] All upload errors classified with `ServiceErrorClassifier`
+- [ ] Correct HTTP status returned based on error type
+- [ ] Arabic message returned as primary error
+- [ ] English message included in metadata
+- [ ] Errors logged with full context (error code, messages, user ID, operation)
 - [ ] TypeScript compilation succeeds
-- [~] Existing error handling improved (no regression)
+- [ ] Existing error handling improved (no regression)
 
 ---
 
@@ -426,14 +426,14 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-1.1 through REQ-1.5 (verification)
 
 **Acceptance Criteria:**
-- [~] Test cases for all database error patterns
-- [~] Test cases for all Redis error patterns
-- [~] Test cases for all storage error patterns
-- [~] Test case for unknown error fallback
-- [~] HTTP status codes verified for all error types
-- [~] Arabic and English messages verified
-- [~] All tests pass: `pnpm test`
-- [~] No test warnings or errors
+- [ ] Test cases for all database error patterns
+- [ ] Test cases for all Redis error patterns
+- [ ] Test cases for all storage error patterns
+- [ ] Test case for unknown error fallback
+- [ ] HTTP status codes verified for all error types
+- [ ] Arabic and English messages verified
+- [ ] All tests pass: `pnpm test`
+- [ ] No test warnings or errors
 
 ---
 
@@ -458,15 +458,15 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-2.1 through REQ-2.5 (verification)
 
 **Acceptance Criteria:**
-- [~] Test: successful operation returns result without retry
-- [~] Test: transient failure retries and succeeds
-- [~] Test: exhausted retries throws original error
-- [~] Test: non-retryable error throws immediately
-- [~] Test: timeout enforced at 10 seconds
-- [~] Test: exponential backoff delays applied correctly
-- [~] Test: retry attempts logged at DEBUG level
-- [~] Test: success after retry logged at INFO level
-- [~] Test: exhausted retries logged at ERROR level
+- [ ] Test: successful operation returns result without retry
+- [ ] Test: transient failure retries and succeeds
+- [ ] Test: exhausted retries throws original error
+- [ ] Test: non-retryable error throws immediately
+- [ ] Test: timeout enforced at 10 seconds
+- [ ] Test: exponential backoff delays applied correctly
+- [ ] Test: retry attempts logged at DEBUG level
+- [ ] Test: success after retry logged at INFO level
+- [ ] Test: exhausted retries logged at ERROR level
 - [ ] All tests pass: `pnpm test`
 
 ---
@@ -495,15 +495,15 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-8.1 through REQ-8.3 (verification)
 
 **Acceptance Criteria:**
-- [~] Test: all healthy returns HTTP 200
-- [~] Test: database unhealthy returns HTTP 503
-- [~] Test: Redis unhealthy returns HTTP 503
-- [~] Test: storage unhealthy returns HTTP 503
-- [~] Test: response includes all required fields
-- [~] Test: response times are reasonable numbers
-- [~] Test: timestamp in correct ISO 8601 format
-- [~] Test: Cache-Control header present
-- [~] All tests pass: `pnpm test:integration`
+- [ ] Test: all healthy returns HTTP 200
+- [ ] Test: database unhealthy returns HTTP 503
+- [ ] Test: Redis unhealthy returns HTTP 503
+- [ ] Test: storage unhealthy returns HTTP 503
+- [ ] Test: response includes all required fields
+- [ ] Test: response times are reasonable numbers
+- [ ] Test: timestamp in correct ISO 8601 format
+- [ ] Test: Cache-Control header present
+- [ ] All tests pass: `pnpm test:integration`
 - [ ] No test warnings or errors
 
 ---
@@ -534,13 +534,13 @@ This document outlines the implementation tasks for enhancing error handling in 
 - REQ-11.1 through REQ-11.3 (verification)
 
 **Acceptance Criteria:**
-- [~] Test: successful upload when services healthy
-- [~] Test: upload rejected during pre-upload validation failures
-- [~] Test: retry succeeds when service recovers
-- [~] Test: retry exhaustion returns appropriate error
-- [~] Test: mid-upload failure triggers rollback
-- [~] Test: error messages in Arabic and English
-- [~] Test: correct HTTP status codes returned
+- [ ] Test: successful upload when services healthy
+- [ ] Test: upload rejected during pre-upload validation failures
+- [ ] Test: retry succeeds when service recovers
+- [ ] Test: retry exhaustion returns appropriate error
+- [ ] Test: mid-upload failure triggers rollback
+- [ ] Test: error messages in Arabic and English
+- [ ] Test: correct HTTP status codes returned
 - [ ] All tests pass: `pnpm test:integration`
 - [ ] No test warnings or errors
 
@@ -562,14 +562,14 @@ This document outlines the implementation tasks for enhancing error handling in 
 - All requirements (manual verification)
 
 **Acceptance Criteria:**
-- [~] Database cold start handled gracefully with retry
-- [~] Redis failure returns appropriate error message
-- [~] Storage failure returns appropriate error message
-- [~] Concurrent uploads handled correctly
-- [~] Arabic error messages displayed in UI
-- [~] Health check endpoint reflects actual service status
-- [~] Logs contain appropriate detail for debugging
-- [~] No crashes or unhandled rejections
+- [ ] Database cold start handled gracefully with retry
+- [ ] Redis failure returns appropriate error message
+- [ ] Storage failure returns appropriate error message
+- [ ] Concurrent uploads handled correctly
+- [ ] Arabic error messages displayed in UI
+- [ ] Health check endpoint reflects actual service status
+- [ ] Logs contain appropriate detail for debugging
+- [ ] No crashes or unhandled rejections
 
 ---
 
@@ -589,14 +589,14 @@ pnpm ci:all             # Full CI baseline
 - REQ-17.1: Backward compatibility verification
 
 **Acceptance Criteria:**
-- [~] `pnpm check` passes without errors
-- [~] `pnpm test` passes all unit tests
-- [~] `pnpm test:integration` passes all integration tests
-- [~] `pnpm ci:all` passes complete baseline
-- [~] No ESLint warnings (zero-warning policy)
-- [~] No TypeScript errors
-- [~] No Prettier formatting issues
-- [~] No new security vulnerabilities detected
+- [ ] `pnpm check` passes without errors
+- [ ] `pnpm test` passes all unit tests
+- [ ] `pnpm test:integration` passes all integration tests
+- [ ] `pnpm ci:all` passes complete baseline
+- [ ] No ESLint warnings (zero-warning policy)
+- [ ] No TypeScript errors
+- [ ] No Prettier formatting issues
+- [ ] No new security vulnerabilities detected
 
 ---
 
@@ -633,30 +633,30 @@ pnpm ci:all             # Full CI baseline
 Use this template to track progress:
 
 - [ ] Phase 1: Foundation
-  - [~] Task 1.1: Create service-health.ts with error classification
-  - [~] Task 1.2: Export service-health module
+  - [ ] Task 1.1: Create service-health.ts with error classification
+  - [ ] Task 1.2: Export service-health module
 
 - [ ] Phase 2: Retry Logic
-  - [~] Task 2.1: Implement retry strategies
-  - [~] Task 2.2: Implement RetryExecutor
+  - [ ] Task 2.1: Implement retry strategies
+  - [ ] Task 2.2: Implement RetryExecutor
 
 - [ ] Phase 3: Pre-Upload Validation
-  - [~] Task 3.1: Implement ServiceHealthValidator
-  - [~] Task 3.2: Create health types
-  - [~] Task 3.3: Export health types
+  - [ ] Task 3.1: Implement ServiceHealthValidator
+  - [ ] Task 3.2: Create health types
+  - [ ] Task 3.3: Export health types
 
 - [ ] Phase 4: Enhanced Health Check
-  - [~] Task 4.1: Create detailed health check endpoint
+  - [ ] Task 4.1: Create detailed health check endpoint
 
 - [ ] Phase 5: Upload Enhancement
-  - [~] Task 5.1: Enhance upload use case with retry
-  - [~] Task 5.2: Add pre-upload validation
-  - [~] Task 5.3: Update error responses
+  - [ ] Task 5.1: Enhance upload use case with retry
+  - [ ] Task 5.2: Add pre-upload validation
+  - [ ] Task 5.3: Update error responses
 
 - [ ] Phase 6: Testing
-  - [~] Task 6.1: Unit tests for error classifier
-  - [~] Task 6.2: Unit tests for RetryExecutor
-  - [~] Task 6.3: Integration tests for health check
-  - [~] Task 6.4: Integration tests for upload flow
-  - [~] Task 6.5: Manual testing
-  - [~] Task 6.6: Full test suite and quality checks
+  - [ ] Task 6.1: Unit tests for error classifier
+  - [ ] Task 6.2: Unit tests for RetryExecutor
+  - [ ] Task 6.3: Integration tests for health check
+  - [ ] Task 6.4: Integration tests for upload flow
+  - [ ] Task 6.5: Manual testing
+  - [ ] Task 6.6: Full test suite and quality checks
