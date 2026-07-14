@@ -70,7 +70,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="border-2 border-dashed border-line rounded-lg p-5 sm:p-8 text-center cursor-pointer transition-colors"
+        className="border-2 border-dashed border-line rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors"
         onClick={() => inputRef.current?.click()}
         onDragOver={(e) => e.preventDefault()}
         onDrop={(e) => {
@@ -92,31 +92,34 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         />
 
         {file ? (
-          <div className="space-y-2">
-            <div className="text-lg font-medium text-primary-color">{file.name}</div>
-            <div className="text-sm text-muted-color">
+          <div className="space-y-1 sm:space-y-2">
+            <div className="text-base sm:text-lg font-medium text-primary-color break-words px-2">
+              {file.name}
+            </div>
+            <div className="text-xs sm:text-sm text-muted-color">
               {(file.size / 1024 / 1024).toFixed(2)} MB
             </div>
           </div>
         ) : (
-          <div className="space-y-2">
-            <div className="mb-2 text-muted-color">
-              <FileTextIcon className="mx-auto h-10 w-10" />
+          <div className="space-y-1 sm:space-y-2 px-2">
+            <div className="mb-1 sm:mb-2 text-muted-color">
+              <FileTextIcon className="mx-auto h-8 w-8 sm:h-10 sm:w-10" />
             </div>
-            <div className="text-lg font-medium text-muted-color">{t("dragDrop")}</div>
-            <div className="text-sm text-very-muted">{t("formats")}</div>
+            <div className="text-base sm:text-lg font-medium text-muted-color">{t("dragDrop")}</div>
+            <div className="text-xs sm:text-sm text-very-muted">{t("formats")}</div>
           </div>
         )}
       </motion.div>
 
       {error && (
         <div
-          className="bg-danger-bg border border-danger/20 text-danger px-4 py-3 sm:px-4 sm:py-3 rounded-lg text-sm max-w-full overflow-hidden break-words overflow-wrap-anywhere text-start space-y-2"
+          className="bg-danger-bg border border-danger/20 text-danger px-3 py-2.5 sm:px-4 sm:py-3 rounded-lg text-xs sm:text-sm max-w-full break-words hyphens-auto text-start"
           role="alert"
           aria-live="polite"
+          style={{ wordBreak: "break-word", overflowWrap: "anywhere" }}
         >
           <div className="flex items-start justify-between gap-2">
-            <span className="flex-1">
+            <span className="flex-1 leading-relaxed">
               {error.startsWith("pipeline.") || error.startsWith("common.")
                 ? t(error.replace("pipeline.upload.", ""))
                 : error.startsWith("error")
@@ -126,7 +129,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
             <button
               type="button"
               onClick={() => setError(null)}
-              className="sm:hidden flex-shrink-0 text-danger hover:text-danger/80 p-1 -m-1 min-w-[44px] min-h-[44px] flex items-center justify-center"
+              className="flex-shrink-0 text-danger hover:text-danger/80 p-1.5 -m-1 min-w-[40px] min-h-[40px] flex items-center justify-center text-xl leading-none"
               aria-label={t("dismiss")}
             >
               ×
@@ -152,7 +155,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         whileTap={{ scale: 0.98 }}
         type="submit"
         disabled={!file || uploading}
-        className="w-full bg-success text-btn-primary-text rounded-lg px-6 py-3 font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
+        className="w-full bg-success text-btn-primary-text rounded-lg px-4 py-2.5 sm:px-6 sm:py-3 text-sm sm:text-base font-medium hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed transition-all shadow-sm"
         data-testid="upload-button"
       >
         {uploading ? t("uploading") : t("uploadButton")}
