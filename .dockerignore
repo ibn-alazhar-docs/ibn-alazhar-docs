@@ -6,19 +6,26 @@ dist/
 build/
 out/
 coverage/
+.turbo/
+.cache/
+.eslintcache
+.prettiercache
+.tsbuildinfo
 
 # Git & CI
 .git/
 .github/
+.husky/
 
 # Environment
 .env
 .env.*
 !.env.example
 
-# IDE
+# IDE & Editor
 .idea/
 .vscode/
+.kiro/
 *.swp
 *.swo
 
@@ -28,29 +35,22 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
 
-# Test artifacts
+# Test artifacts & testing
 test-results/
 test-data/
 playwright-report/
 .nyc_output/
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+.stryker-tmp/
 
-# Cache
-.turbo/
-.vercel/
-.netlify/
-.cache/
-.eslintcache
-.prettiercache
-.tsbuildinfo
-
-# Documentation
+# Documentation & Specs
 docs/
-README.md
-CHANGELOG.md
-*.md
-
-# Specs & config
 specs/
 governance/
 00_Inbox/
@@ -58,8 +58,12 @@ governance/
 .opencode/
 .specify/
 .agents/
+.repowise/
+*.md
+!README.md
+!apps/web/src/**/*.md
 
-# Config files not needed in build
+# Config files not needed in runtime
 *.config.ts
 *.config.js
 *.config.mjs
@@ -74,7 +78,7 @@ governance/
 !stryker.config.ts
 !wrangler.jsonc
 
-# Large media
+# Large media (except public assets)
 **/*.pdf
 **/*.png
 **/*.jpg
@@ -83,23 +87,17 @@ governance/
 !apps/web/public/**/*.jpg
 !apps/web/public/**/*.jpeg
 
-# Infrastructure
+# Infrastructure & Deployment
 infrastructure/
 docker-compose*.yml
 Dockerfile*
 .dockerignore
 !supervisord.conf
 !scripts/docker-entrypoint.sh
-
-# Monitoring
 monitoring/
 grafana/
 prometheus/
-
-# Backup scripts
 scripts/backup-job.sh
-
-# Deployment configs
 railway.toml
 northflank*.yml
 k8s/
@@ -109,24 +107,14 @@ k8s/
 !package.json
 !pnpm-lock.yaml
 
-# Additional optimizations for Hugging Face Spaces
-.kiro/
-.repowise/
-.ruff_cache/
-tests/
-*.test.ts
-*.test.tsx
-*.spec.ts
-*.spec.tsx
-.husky/
-.stryker-tmp/
-.opencode-session-summary.md
-*.md
-!README.md
-!apps/web/src/**/*.md
-
-# Reduce layer cache size
+# Code quality & linting
 .semgrep.yml
 .lighthouserc.json
 .dependency-cruiser.mjs
 .coderabbit.yaml
+.ruff_cache/
+.opencode-session-summary.md
+
+# Vercel & Netlify
+.vercel/
+.netlify/
