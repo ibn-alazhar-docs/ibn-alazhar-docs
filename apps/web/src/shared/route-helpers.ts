@@ -176,11 +176,15 @@ export async function handleRouteError(
   const mapped = ERROR_MESSAGES[code];
 
   const childLogger = logger.child({ requestId, userId: context.userId });
+  const errObj = error instanceof Error ? error : new Error(String(error));
   childLogger.error(
     {
       route,
       errorCode: code,
-      error: error instanceof Error ? error.message : String(error),
+      error: errObj.message,
+      errorName: errObj.name,
+      prismaCode: (error as { code?: string })?.code,
+      stack: errObj.stack,
       durationMs: context.durationMs,
       fileName: context.fileName,
       fileSize: context.fileSize,
@@ -203,8 +207,19 @@ export async function handleRouteError(
   }
 
   const statusCode = getErrorStatusCode(error);
+  // Surface the underlying error message in the body so a 500 from an
+  // unmapped/raw exception (e.g. a Prisma validation error in /api/upload) is
+  // self-diagnosing from the client response instead of only the server log.
+  const detail = error instanceof Error ? error.message : String(error);
   return NextResponse.json(
-    { error: { code: ERROR_CODES.INTERNAL_ERROR, message: fallbackMessage, requestId } },
+    {
+      error: {
+        code: ERROR_CODES.INTERNAL_ERROR,
+        message: fallbackMessage,
+        requestId,
+        detail,
+      },
+    },
     { status: statusCode },
   );
 }
