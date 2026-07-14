@@ -71,32 +71,44 @@ describe("ServiceErrorClassifier", () => {
       expect(result.httpStatus).toBe(503);
     });
 
-    it("should classify ENOENT storage errors", () => {
+    it("should classify ENOENT storage errors with specific message", () => {
       const error = new Error("ENOENT: no such file or directory");
       const result = ServiceErrorClassifier.classify(error);
 
       expect(result.type).toBe(ServiceErrorType.STORAGE_UNAVAILABLE);
       expect(result.httpStatus).toBe(503);
-      expect(result.message.ar).toBe("نظام التخزين غير متاح. يرجى الاتصال بالدعم الفني");
+      expect(result.message.ar).toBe("مجلد التخزين غير موجود. يرجى التحقق من إعدادات النشر");
       expect(result.message.en).toBe(
-        "Storage system is unavailable. Please contact technical support.",
+        "Storage directory does not exist. Please check deployment configuration.",
       );
     });
 
-    it("should classify EACCES storage errors", () => {
+    it("should classify EACCES storage errors with specific message", () => {
       const error = new Error("EACCES: permission denied");
       const result = ServiceErrorClassifier.classify(error);
 
       expect(result.type).toBe(ServiceErrorType.STORAGE_UNAVAILABLE);
       expect(result.httpStatus).toBe(503);
+      expect(result.message.ar).toBe(
+        "لا توجد صلاحيات كتابة على مجلد التخزين. يرجى الاتصال بالدعم الفني",
+      );
+      expect(result.message.en).toBe(
+        "Storage directory is not writable. Please contact technical support.",
+      );
     });
 
-    it("should classify ENOSPC storage errors", () => {
+    it("should classify ENOSPC storage errors with specific message", () => {
       const error = new Error("ENOSPC: no space left on device");
       const result = ServiceErrorClassifier.classify(error);
 
       expect(result.type).toBe(ServiceErrorType.STORAGE_UNAVAILABLE);
-      expect(result.httpStatus).toBe(503);
+      expect(result.httpStatus).toBe(507);
+      expect(result.message.ar).toBe(
+        "مساحة التخزين ممتلئة. يرجى حذف بعض الملفات أو زيادة المساحة",
+      );
+      expect(result.message.en).toBe(
+        "Storage is full. Please delete files or increase storage capacity.",
+      );
     });
 
     it("should classify disk errors", () => {
@@ -311,7 +323,7 @@ describe("ServiceHealthValidator", () => {
     expect(result.error?.type).toBe(ServiceErrorType.REDIS_UNAVAILABLE);
   });
 
-  it("returns the classified error when storage fails", async () => {
+  it("returns the classified error when storage fails with permission denied", async () => {
     const result = await ServiceHealthValidator.validateAll({
       database: async () => {},
       redis: async () => {},
@@ -322,6 +334,13 @@ describe("ServiceHealthValidator", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.type).toBe(ServiceErrorType.STORAGE_UNAVAILABLE);
+    expect(result.error?.httpStatus).toBe(503);
+    expect(result.error?.message.ar).toBe(
+      "لا توجد صلاحيات كتابة على مجلد التخزين. يرجى الاتصال بالدعم الفني",
+    );
+    expect(result.error?.message.en).toBe(
+      "Storage directory is not writable. Please contact technical support.",
+    );
   });
 
   it("fails within the configured timeout when a check hangs", async () => {

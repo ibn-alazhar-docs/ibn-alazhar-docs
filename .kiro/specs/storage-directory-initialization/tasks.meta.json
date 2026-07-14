@@ -1,0 +1,161 @@
+{
+  "pbtResults": {
+    "3.4 Verify bug condition exploration test now passes": {
+      "status": "passed",
+      "lastRunTimestamp": 1784049865343
+    }
+  },
+  "executionHistory": {
+    "1. Write bug condition exploration test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595049
+      },
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042605556
+      },
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784043403388
+      }
+    ],
+    "2. Write preservation property tests (BEFORE implementing fix)": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595176
+      },
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784043409812
+      }
+    ],
+    "3.1 Modify docker-entrypoint.sh to create root storage directory": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595302
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784047318560
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784047448178
+      }
+    ],
+    "3.2 Improve error messages in service-health.ts": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595431
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784047455857
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049292324
+      }
+    ],
+    "3.3 Add specific error messages to ar.json (Optional Enhancement)": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595542
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049299298
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049650386
+      }
+    ],
+    "3.4 Verify bug condition exploration test now passes": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595679
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049658635
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049885489
+      }
+    ],
+    "3.5 Verify preservation tests still pass": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042595886
+      },
+      {
+        "executionId": "59e1bd7e-d2ef-4ab7-b2d8-ac3f61ff6c09",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784049904893
+      }
+    ],
+    "4.1 Full container lifecycle test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596016
+      }
+    ],
+    "4.2 Container restart test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596151
+      }
+    ],
+    "4.3 Permission error reporting test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596283
+      }
+    ],
+    "4.4 S3 mode integration test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596402
+      }
+    ],
+    "4.5 Custom storage path test": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596534
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "84561483-fe61-4fb4-8a36-07a2c13125a2",
+        "chatSessionId": "sess_99d3b388-85f9-4d6b-ba98-6e8b4bcfe4e7",
+        "timestamp": 1784042596670
+      }
+    ]
+  }
+}

@@ -85,14 +85,49 @@ export class ServiceErrorClassifier {
     }
 
     // Storage errors (Requirement 1.3)
-    // Detect: filesystem errors (ENOENT, EACCES, ENOSPC) and storage keywords
-    if (
-      message.includes("enoent") ||
-      message.includes("eacces") ||
-      message.includes("enospc") ||
-      message.includes("disk") ||
-      message.includes("storage")
-    ) {
+    // Detect: filesystem errors with specific error types
+
+    // Storage errors - Directory doesn't exist (ENOENT)
+    if (message.includes("enoent") || message.includes("no such file or directory")) {
+      return {
+        type: ServiceErrorType.STORAGE_UNAVAILABLE,
+        message: {
+          ar: "مجلد التخزين غير موجود. يرجى التحقق من إعدادات النشر",
+          en: "Storage directory does not exist. Please check deployment configuration.",
+        },
+        httpStatus: 503,
+        originalError: err,
+      };
+    }
+
+    // Storage errors - Permission denied (EACCES)
+    if (message.includes("eacces") || message.includes("permission denied")) {
+      return {
+        type: ServiceErrorType.STORAGE_UNAVAILABLE,
+        message: {
+          ar: "لا توجد صلاحيات كتابة على مجلد التخزين. يرجى الاتصال بالدعم الفني",
+          en: "Storage directory is not writable. Please contact technical support.",
+        },
+        httpStatus: 503,
+        originalError: err,
+      };
+    }
+
+    // Storage errors - Disk full (ENOSPC)
+    if (message.includes("enospc") || message.includes("no space left")) {
+      return {
+        type: ServiceErrorType.STORAGE_UNAVAILABLE,
+        message: {
+          ar: "مساحة التخزين ممتلئة. يرجى حذف بعض الملفات أو زيادة المساحة",
+          en: "Storage is full. Please delete files or increase storage capacity.",
+        },
+        httpStatus: 507, // HTTP 507 Insufficient Storage
+        originalError: err,
+      };
+    }
+
+    // Storage errors - Generic (fallback for other storage issues)
+    if (message.includes("disk") || message.includes("storage")) {
       return {
         type: ServiceErrorType.STORAGE_UNAVAILABLE,
         message: {

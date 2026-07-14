@@ -34,6 +34,39 @@ if [ "$STORAGE_DRIVER" = "local" ]; then
   export MINIO_ENDPOINT=""
 fi
 
+# ---- Local storage directory initialization ---------------------------------
+# Ensure the root storage directory exists with correct ownership and write
+# permissions before any subdirectories are created. This prevents ENOENT errors
+# during file uploads when the container starts with no pre-existing /data volume.
+if [ "$STORAGE_DRIVER" = "local" ]; then
+  echo "[entrypoint] local filesystem storage enabled (STORAGE_DRIVER=${STORAGE_DRIVER})"
+  echo "[entrypoint] ensuring storage directory exists: $STORAGE_LOCAL_DIR"
+  
+  # Create root storage directory with proper ownership
+  if [ ! -d "$STORAGE_LOCAL_DIR" ]; then
+    mkdir -p "$STORAGE_LOCAL_DIR"
+    if [ "$(id -u)" = "0" ]; then
+      chown 1000:1000 "$STORAGE_LOCAL_DIR"
+    fi
+    chmod 755 "$STORAGE_LOCAL_DIR"
+  fi
+  
+  # Verify write permissions with a test file
+  if ! touch "$STORAGE_LOCAL_DIR/.write-test" 2>/dev/null || ! rm "$STORAGE_LOCAL_DIR/.write-test" 2>/dev/null; then
+    echo "[entrypoint] ERROR: Storage directory $STORAGE_LOCAL_DIR is not writable"
+    exit 1
+  fi
+  
+  # Create subdirectories synchronously with error checking
+  mkdir -p "$STORAGE_LOCAL_DIR/uploads" "$STORAGE_LOCAL_DIR/exports" \
+           "$STORAGE_LOCAL_DIR/ocr-text" "$STORAGE_LOCAL_DIR/tmp" || {
+    echo "[entrypoint] ERROR: Failed to create storage subdirectories"
+    exit 1
+  }
+  
+  echo "[entrypoint] storage directory verified: $STORAGE_LOCAL_DIR"
+fi
+
 # ---- OCR engine ------------------------------------------------------------
 # The bundled image only ships the local Tesseract engine. Surya/cloud engines
 # require heavy model downloads or API keys and are not installed here, so force
@@ -122,8 +155,7 @@ if [ "$STORAGE_DRIVER" = "s3" ]; then
   mc alias set local http://127.0.0.1:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1
   mc mb -p "local/$S3_BUCKET" >/dev/null 2>&1 || true
 else
-  echo "[entrypoint] local filesystem storage enabled (STORAGE_DRIVER=${STORAGE_DRIVER}) — MinIO skipped"
-  mkdir -p "$STORAGE_LOCAL_DIR/uploads" "$STORAGE_LOCAL_DIR/exports" "$STORAGE_LOCAL_DIR/ocr-text" "$STORAGE_LOCAL_DIR/tmp"
+  echo "[entrypoint] MinIO skipped (local filesystem storage initialized earlier)"
 fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
