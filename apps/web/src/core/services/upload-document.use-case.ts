@@ -4,10 +4,9 @@ import {
   classifyError,
   recordJobFailure,
 } from "@ibn-al-azhar-docs/pipeline";
-import { unlink, writeFile } from "node:fs/promises";
+import { unlink, writeFile, mkdir } from "node:fs/promises";
 
 import { join } from "node:path";
-import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
@@ -78,7 +77,10 @@ export class UploadDocumentUseCase {
     const safeName = fileName
       .replace(/[^a-zA-Z0-9._\u0600-\u06FF\u0660-\u0669-]/g, "_")
       .slice(0, 200);
-    const tempPath = join(tmpdir(), `${jobId}_${safeName}`);
+    const tempDir =
+      process.env.UPLOAD_TMP_DIR ?? join(process.env.STORAGE_LOCAL_DIR || "/data", "tmp");
+    await mkdir(tempDir, { recursive: true });
+    const tempPath = join(tempDir, `${jobId}_${safeName}`);
 
     const buffer = Buffer.from(await file.arrayBuffer());
     try {
