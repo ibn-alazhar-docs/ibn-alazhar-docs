@@ -16,6 +16,11 @@ import { NotFoundError } from "@/shared/errors";
 import { AppError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
 import { logger } from "@/shared/logger";
+import {
+  RetryExecutor,
+  DATABASE_RETRY_STRATEGY,
+  REDIS_RETRY_STRATEGY,
+} from "@ibn-al-azhar-docs/shared";
 
 export class UploadDocumentUseCase {
   constructor(
@@ -105,19 +110,27 @@ export class UploadDocumentUseCase {
 
     let document;
     try {
-      document = await this.documentRepository.createDocument({
-        id: jobId,
-        userId: userId,
-        title: fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, ""),
-        fileName,
-        originalName: fileName,
-        mimeType: file.type,
-        fileSize: file.size,
-        storageKey: storageKey,
-        folderId: folderId || null,
-        status: "UPLOADED",
-        pageRange: pageRange || null,
-      });
+      // Requirement 2.1: retry DB writes with exponential backoff so Neon
+      // cold starts (up to 5 min) are absorbed for short outages while the
+      // 10s user-facing timeout is still enforced (Requirement 2.5, 13.1).
+      document = await RetryExecutor.retryWithBackoff(
+        () =>
+          this.documentRepository.createDocument({
+            id: jobId,
+            userId: userId,
+            title: fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, ""),
+            fileName,
+            originalName: fileName,
+            mimeType: file.type,
+            fileSize: file.size,
+            storageKey: storageKey,
+            folderId: folderId || null,
+            status: "UPLOADED",
+            pageRange: pageRange || null,
+          }),
+        DATABASE_RETRY_STRATEGY,
+        { serviceName: "database", operationName: "create_document" },
+      );
     } catch (error) {
       // If DB insert fails, cleanup the S3 object to prevent orphaned files.
       await this.storage.deleteFile(storageKey).catch(() => {});
@@ -140,7 +153,14 @@ export class UploadDocumentUseCase {
     };
 
     try {
-      await enqueueValidation(config, job);
+      // Requirement 2.2: retry the Redis enqueue with exponential backoff so
+      // transient Upstash connection/quota errors are absorbed before we fall
+      // back to a delayed re-enqueue below.
+      await RetryExecutor.retryWithBackoff(
+        () => enqueueValidation(config, job),
+        REDIS_RETRY_STRATEGY,
+        { serviceName: "redis", operationName: "enqueue_validation" },
+      );
     } catch (err) {
       // Best-effort: schedule a delayed retry. If this also fails (e.g. Redis
       // still down) we fall through to a recoverable FAILED state.

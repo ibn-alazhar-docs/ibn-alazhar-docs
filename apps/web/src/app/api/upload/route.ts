@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
+import { getRedisClient } from "@/clients/redis/rate-limit/redis";
+import { prisma } from "@/transport/db";
 import { useCases } from "@/core/composition-root";
 import {
   uploadMetadataSchema,
@@ -10,6 +12,8 @@ import {
 } from "@/shared/validators/document";
 import { DashboardService } from "@/core/services/dashboard.service";
 import { ERROR_CODES } from "@/shared/constants";
+import { logger } from "@/shared/logger";
+import { ServiceHealthValidator, ServiceErrorType } from "@ibn-al-azhar-docs/shared";
 
 function validateRequest(
   file: File | null,
@@ -65,6 +69,54 @@ export const POST = withAuth(async (request, { session }) => {
           },
         },
         { status: 400 },
+      );
+    }
+
+    // Requirement 3.1-3.5: validate that all required services are available
+    // before accepting the file upload. Runs in parallel with a 2s budget so a
+    // cold database does not block the request (Requirement 7.2, 7.4).
+    const serviceValidation = await ServiceHealthValidator.validateAll(
+      {
+        database: async () => {
+          await prisma.$queryRaw`SELECT 1`;
+        },
+        redis: async () => {
+          const client = await getRedisClient();
+          if (!client) {
+            throw new Error("Redis connection unavailable");
+          }
+          await client.ping();
+        },
+        storage: async () => {
+          const { access, constants } = await import("node:fs/promises");
+          await access(process.env.STORAGE_LOCAL_DIR || "/data", constants.W_OK);
+        },
+      },
+      { timeoutMs: 2000 },
+    );
+
+    if (!serviceValidation.success && serviceValidation.error) {
+      const { type, message, httpStatus } = serviceValidation.error;
+      const code =
+        type === ServiceErrorType.DATABASE_UNAVAILABLE
+          ? ERROR_CODES.DB_CONNECTION_FAILED
+          : type === ServiceErrorType.REDIS_UNAVAILABLE
+            ? ERROR_CODES.REDIS_UNAVAILABLE
+            : type === ServiceErrorType.STORAGE_UNAVAILABLE
+              ? ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE
+              : ERROR_CODES.INTERNAL_ERROR;
+
+      logger.warn(
+        { service: type, userId: session.user.id },
+        "Pre-upload service validation failed",
+      );
+
+      return NextResponse.json(
+        {
+          error: { code, message: message.ar },
+          errorEn: message.en,
+        },
+        { status: httpStatus },
       );
     }
 

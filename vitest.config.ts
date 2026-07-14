@@ -11,6 +11,10 @@ const rootAlias = [
     find: "@ibn-al-azhar-docs/database",
     replacement: path.resolve(__dirname, "packages/database/src"),
   },
+  {
+    find: "@ibn-al-azhar-docs/shared",
+    replacement: path.resolve(__dirname, "packages/shared/src"),
+  },
   { find: "zod", replacement: path.resolve(__dirname, "node_modules/zod") },
   { find: "minio", replacement: path.resolve(__dirname, "tests/mocks/minio.ts") },
   { find: "ioredis", replacement: path.resolve(__dirname, "tests/mocks/ioredis.ts") },

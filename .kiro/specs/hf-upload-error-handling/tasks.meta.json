@@ -1,0 +1,1048 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "`ServiceErrorType` enum created with all 4 error types": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673425
+      },
+      {
+        "executionId": "586537c8-4da2-4748-9376-5f1a353d9c64",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784030560562
+      },
+      {
+        "executionId": "586537c8-4da2-4748-9376-5f1a353d9c64",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784031400526
+      }
+    ],
+    "`ServiceError` interface includes Arabic and English messages": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673530
+      }
+    ],
+    "`ServiceErrorClassifier.classify()` correctly identifies database errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673671
+      }
+    ],
+    "`ServiceErrorClassifier.classify()` correctly identifies Redis errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673785
+      }
+    ],
+    "`ServiceErrorClassifier.classify()` correctly identifies storage errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673883
+      }
+    ],
+    "`ServiceErrorClassifier.classify()` returns `UNKNOWN_ERROR` for unrecognized errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029673987
+      }
+    ],
+    "All error types map to correct HTTP status codes (503 for service unavailable, 500 for unknown)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674150
+      }
+    ],
+    "Module compiles without TypeScript errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674285
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675478
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677663
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680200
+      }
+    ],
+    "Service-health module exported from shared package": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674405
+      }
+    ],
+    "Imports work correctly from other packages: `import { ServiceErrorClassifier } from \"@ibn-al-azhar-docs/shared\"`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674548
+      }
+    ],
+    "TypeScript compilation succeeds": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674714
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678486
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681348
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682384
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683111
+      }
+    ],
+    "`RetryStrategy` interface defined with all required fields": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674837
+      }
+    ],
+    "`DATABASE_RETRY_STRATEGY` uses exact delay sequence [100, 200, 400, 800, 1600, 3200]": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029674960
+      }
+    ],
+    "`REDIS_RETRY_STRATEGY` uses delay sequence [100, 200, 400, 800, 1600]": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675084
+      }
+    ],
+    "Both strategies have 10-second `maxTotalTimeout`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675221
+      }
+    ],
+    "`shouldRetry` correctly identifies retryable error types": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675351
+      }
+    ],
+    "`RetryExecutor.retryWithBackoff()` successfully retries on transient failures": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675585
+      }
+    ],
+    "Exponential backoff delays are correctly applied": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675714
+      }
+    ],
+    "Total timeout of 10 seconds is enforced": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675839
+      }
+    ],
+    "Non-retryable errors immediately throw without retry": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029675951
+      }
+    ],
+    "Retry attempts logged at DEBUG level with context": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676069
+      }
+    ],
+    "Success after retry logged at INFO level": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676183
+      }
+    ],
+    "Exhausted retries logged at ERROR level with full context": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676311
+      }
+    ],
+    "Original error is re-thrown when retries fail": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676411
+      }
+    ],
+    "TypeScript generics work correctly for return type": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676527
+      }
+    ],
+    "Module compiles without errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676633
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678118
+      }
+    ],
+    "`validateDatabase()` performs lightweight `SELECT 1` query": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676749
+      }
+    ],
+    "`validateRedis()` uses `PING` command": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029676882
+      }
+    ],
+    "`validateStorage()` checks write permissions with `fs.access`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677032
+      }
+    ],
+    "`validateAll()` runs all checks in parallel with `Promise.all()`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677151
+      }
+    ],
+    "Validation failures return Arabic error messages via `ServiceErrorClassifier`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677279
+      }
+    ],
+    "`validateAll()` returns `{ success: true }` when all services healthy": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677466
+      }
+    ],
+    "`validateAll()` returns `{ success: false, error: string }` when any service fails": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677564
+      }
+    ],
+    "`ServiceCheckResult` interface created with correct fields": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677776
+      }
+    ],
+    "`DetailedHealthResponse` interface created with nested services object": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029677901
+      }
+    ],
+    "All interfaces use strict TypeScript types (no `any`)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678015
+      }
+    ],
+    "Health types exported from shared package": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678231
+      }
+    ],
+    "Imports work: `import { DetailedHealthResponse } from \"@ibn-al-azhar-docs/shared\"`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678366
+      }
+    ],
+    "Endpoint created at `/api/health/detailed`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678653
+      }
+    ],
+    "GET handler implemented": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678768
+      }
+    ],
+    "`checkDatabase()` uses lightweight `SELECT 1` with 2s timeout": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678882
+      }
+    ],
+    "`checkRedis()` uses `PING` with 2s timeout": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029678980
+      }
+    ],
+    "`checkStorage()` uses `fs.access()` with 2s timeout": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679086
+      }
+    ],
+    "All checks run in parallel with `Promise.all()`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679185
+      }
+    ],
+    "Response includes individual service status and response times": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679300
+      }
+    ],
+    "Returns HTTP 200 when all services healthy": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679398
+      }
+    ],
+    "Returns HTTP 503 when any service unhealthy": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679515
+      }
+    ],
+    "Response includes ISO 8601 timestamp": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679628
+      }
+    ],
+    "`Cache-Control: no-store` header included": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679736
+      }
+    ],
+    "Unhealthy services logged at WARN level": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029679842
+      }
+    ],
+    "Unexpected errors return 503 status": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680060
+      }
+    ],
+    "All database operations wrapped with `RetryExecutor.retryWithBackoff()`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680468
+      }
+    ],
+    "All Redis operations wrapped with retry logic": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680582
+      }
+    ],
+    "Upload attempt logged at start with file metadata": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680720
+      }
+    ],
+    "Upload completion logged with status and duration": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680825
+      }
+    ],
+    "Service failures logged with error details": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029680918
+      }
+    ],
+    "Mid-upload failures trigger rollback attempt": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681033
+      }
+    ],
+    "Failed uploads marked in database if rollback fails": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681131
+      }
+    ],
+    "No sensitive data (file contents, tokens) logged": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681231
+      }
+    ],
+    "Existing tests pass": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681465
+      }
+    ],
+    "`ServiceHealthValidator.validateAll()` called before accepting file": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681568
+      }
+    ],
+    "HTTP 503 returned when validation fails": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681668
+      }
+    ],
+    "Error response includes Arabic message": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681777
+      }
+    ],
+    "Error response includes English fallback in metadata": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029681898
+      }
+    ],
+    "File upload proceeds only when validation passes": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682019
+      }
+    ],
+    "Validation failures logged appropriately": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682157
+      }
+    ],
+    "Existing API contract maintained (no breaking changes)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682277
+      }
+    ],
+    "All upload errors classified with `ServiceErrorClassifier`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682484
+      }
+    ],
+    "Correct HTTP status returned based on error type": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682604
+      }
+    ],
+    "Arabic message returned as primary error": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682698
+      }
+    ],
+    "English message included in metadata": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682802
+      }
+    ],
+    "Errors logged with full context (error code, messages, user ID, operation)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029682916
+      }
+    ],
+    "Existing error handling improved (no regression)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683213
+      }
+    ],
+    "Test cases for all database error patterns": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683315
+      }
+    ],
+    "Test cases for all Redis error patterns": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683447
+      }
+    ],
+    "Test cases for all storage error patterns": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683573
+      }
+    ],
+    "Test case for unknown error fallback": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683714
+      }
+    ],
+    "HTTP status codes verified for all error types": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683855
+      }
+    ],
+    "Arabic and English messages verified": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029683968
+      }
+    ],
+    "All tests pass: `pnpm test`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684081
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685366
+      }
+    ],
+    "No test warnings or errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684201
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686577
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687631
+      }
+    ],
+    "Test: successful operation returns result without retry": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684318
+      }
+    ],
+    "Test: transient failure retries and succeeds": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684432
+      }
+    ],
+    "Test: exhausted retries throws original error": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684550
+      }
+    ],
+    "Test: non-retryable error throws immediately": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684684
+      }
+    ],
+    "Test: timeout enforced at 10 seconds": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684795
+      }
+    ],
+    "Test: exponential backoff delays applied correctly": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029684910
+      }
+    ],
+    "Test: retry attempts logged at DEBUG level": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685031
+      }
+    ],
+    "Test: success after retry logged at INFO level": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685130
+      }
+    ],
+    "Test: exhausted retries logged at ERROR level": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685259
+      }
+    ],
+    "Test: all healthy returns HTTP 200": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685468
+      }
+    ],
+    "Test: database unhealthy returns HTTP 503": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685582
+      }
+    ],
+    "Test: Redis unhealthy returns HTTP 503": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685808
+      }
+    ],
+    "Test: storage unhealthy returns HTTP 503": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029685899
+      }
+    ],
+    "Test: response includes all required fields": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686011
+      }
+    ],
+    "Test: response times are reasonable numbers": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686116
+      }
+    ],
+    "Test: timestamp in correct ISO 8601 format": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686231
+      }
+    ],
+    "Test: Cache-Control header present": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686347
+      }
+    ],
+    "All tests pass: `pnpm test:integration`": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686464
+      },
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687531
+      }
+    ],
+    "Test: successful upload when services healthy": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686683
+      }
+    ],
+    "Test: upload rejected during pre-upload validation failures": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686793
+      }
+    ],
+    "Test: retry succeeds when service recovers": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029686928
+      }
+    ],
+    "Test: retry exhaustion returns appropriate error": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687030
+      }
+    ],
+    "Test: mid-upload failure triggers rollback": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687144
+      }
+    ],
+    "Test: error messages in Arabic and English": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687276
+      }
+    ],
+    "Test: correct HTTP status codes returned": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687406
+      }
+    ],
+    "Database cold start handled gracefully with retry": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687743
+      }
+    ],
+    "Redis failure returns appropriate error message": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687864
+      }
+    ],
+    "Storage failure returns appropriate error message": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029687988
+      }
+    ],
+    "Concurrent uploads handled correctly": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688103
+      }
+    ],
+    "Arabic error messages displayed in UI": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688215
+      }
+    ],
+    "Health check endpoint reflects actual service status": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688429
+      }
+    ],
+    "Logs contain appropriate detail for debugging": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688561
+      }
+    ],
+    "No crashes or unhandled rejections": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688698
+      }
+    ],
+    "`pnpm check` passes without errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688817
+      }
+    ],
+    "`pnpm test` passes all unit tests": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029688918
+      }
+    ],
+    "`pnpm test:integration` passes all integration tests": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689029
+      }
+    ],
+    "`pnpm ci:all` passes complete baseline": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689152
+      }
+    ],
+    "No ESLint warnings (zero-warning policy)": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689267
+      }
+    ],
+    "No TypeScript errors": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689380
+      }
+    ],
+    "No Prettier formatting issues": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689515
+      }
+    ],
+    "No new security vulnerabilities detected": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689633
+      }
+    ],
+    "Task 1.1: Create service-health.ts with error classification": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689763
+      }
+    ],
+    "Task 1.2: Export service-health module": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689865
+      }
+    ],
+    "Task 2.1: Implement retry strategies": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029689996
+      }
+    ],
+    "Task 2.2: Implement RetryExecutor": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690120
+      }
+    ],
+    "Task 3.1: Implement ServiceHealthValidator": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690233
+      }
+    ],
+    "Task 3.2: Create health types": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690350
+      }
+    ],
+    "Task 3.3: Export health types": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690467
+      }
+    ],
+    "Task 4.1: Create detailed health check endpoint": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690588
+      }
+    ],
+    "Task 5.1: Enhance upload use case with retry": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690701
+      }
+    ],
+    "Task 5.2: Add pre-upload validation": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029690896
+      }
+    ],
+    "Task 5.3: Update error responses": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691004
+      }
+    ],
+    "Task 6.1: Unit tests for error classifier": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691115
+      }
+    ],
+    "Task 6.2: Unit tests for RetryExecutor": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691247
+      }
+    ],
+    "Task 6.3: Integration tests for health check": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691377
+      }
+    ],
+    "Task 6.4: Integration tests for upload flow": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691526
+      }
+    ],
+    "Task 6.5: Manual testing": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691652
+      }
+    ],
+    "Task 6.6: Full test suite and quality checks": [
+      {
+        "executionId": "a86548a2-bc99-416e-b8ac-4179add89efd",
+        "chatSessionId": "sess_5c4bbf57-3267-49e8-95a3-cc4d274bf6ae",
+        "timestamp": 1784029691785
+      }
+    ]
+  }
+}

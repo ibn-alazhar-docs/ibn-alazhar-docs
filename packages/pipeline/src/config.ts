@@ -1,17 +1,21 @@
 import type { PipelineConfig, OcrEngineType, StorageDriver } from "./types";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function getStorageDriver(): StorageDriver {
   const driver = process.env.STORAGE_DRIVER === "local" ? "local" : "s3";
   // Log to help debug Hugging Face deployment issues
   if (process.env.NODE_ENV === "production") {
-    console.log(`[config] Storage driver: ${driver} (STORAGE_DRIVER=${process.env.STORAGE_DRIVER})`);
+    logger.info(
+      { storageDriver: driver, storageDriverEnv: process.env.STORAGE_DRIVER },
+      "[config] Storage driver selected",
+    );
   }
   return driver;
 }
 
 export function loadConfig(): PipelineConfig {
   const storageDriver = getStorageDriver();
-  
+
   return {
     storage: {
       driver: storageDriver,
