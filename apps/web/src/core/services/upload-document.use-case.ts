@@ -62,14 +62,20 @@ export class UploadDocumentUseCase {
     } catch (err) {
       const cause = err instanceof Error ? err : new Error(String(err));
       logger.error(
-        { error: cause.message, stack: cause.stack, storageDriver: process.env.STORAGE_DRIVER },
+        {
+          error: cause.message,
+          errorStack: cause.stack,
+          storageDriver: process.env.STORAGE_DRIVER,
+        },
         "Storage unavailable during upload",
       );
-      throw new AppError(
+      const wrappedError = new AppError(
         "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
         ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
         503,
       );
+      (wrappedError as Error & { cause?: Error }).cause = cause;
+      throw wrappedError;
     }
 
     const jobId = randomUUID();
@@ -87,8 +93,23 @@ export class UploadDocumentUseCase {
       await writeFile(tempPath, buffer);
     } catch (err) {
       const cause = err instanceof Error ? err : new Error(String(err));
-      logger.error({ error: cause.message, userId }, "Temp file write failed during upload");
-      throw new AppError("تعذر تجهيز الملف للرفع. حاول مرة أخرى.", ERROR_CODES.UPLOAD_FAILED, 500);
+      logger.error(
+        {
+          error: cause.message,
+          errorCode: (cause as NodeJS.ErrnoException).code,
+          errorStack: cause.stack,
+          tempPath,
+          userId,
+        },
+        "Temp file write failed during upload",
+      );
+      const wrappedError = new AppError(
+        "تعذر تجهيز الملف للرفع. حاول مرة أخرى.",
+        ERROR_CODES.UPLOAD_FAILED,
+        500,
+      );
+      (wrappedError as Error & { cause?: Error }).cause = cause;
+      throw wrappedError;
     }
 
     const storageKey = this.storage.uploadKey(userId, jobId, safeName);
@@ -98,14 +119,21 @@ export class UploadDocumentUseCase {
     } catch (err) {
       const cause = err instanceof Error ? err : new Error(String(err));
       logger.error(
-        { error: cause.message, userId, storageKey },
+        {
+          error: cause.message,
+          errorStack: cause.stack,
+          userId,
+          storageKey,
+        },
         "Storage write failed during upload",
       );
-      throw new AppError(
+      const wrappedError = new AppError(
         "خدمة التخزين غير متاحة حاليًا. حاول مرة أخرى بعد دقيقة.",
         ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE,
         503,
       );
+      (wrappedError as Error & { cause?: Error }).cause = cause;
+      throw wrappedError;
     } finally {
       await unlink(tempPath).catch(() => {});
     }
