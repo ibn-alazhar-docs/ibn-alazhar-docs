@@ -62,7 +62,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     <div>
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:z-[9999] focus:bg-[var(--color-primary-600)] focus:text-white focus:px-4 focus:py-2 focus:rounded"
+        className="fixed -top-96 start-4 z-[9999] rounded bg-[var(--color-primary-600)] px-4 py-2 text-white opacity-0 transition-all focus:top-4 focus:opacity-100"
       >
         {t("skipToContent")}
       </a>
