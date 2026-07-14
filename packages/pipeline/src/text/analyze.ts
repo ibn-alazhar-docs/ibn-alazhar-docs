@@ -22,7 +22,8 @@ export function detectDocumentType(text: string): DocumentType {
   if (EXAM_FILL_PATTERN.test(sample)) score += 1;
   if (EXAM_MCQ_PATTERN.test(sample)) score += 2;
   // Count occurrence density: multiple question markers = strong signal
-  const qCount = (sample.match(/س\s*\d+/g) || []).length;
+  // Support both س\d+ (Hindu-Arabic numerals) and س[\u0660-\u0669] (Arabic-Indic numerals)
+  const qCount = (sample.match(/س\s*[\d\u0660-\u0669\u06F0-\u06F9]+/g) || []).length;
   if (qCount >= 3) score += 3;
   return score >= 4 ? "exam" : "general";
 }
