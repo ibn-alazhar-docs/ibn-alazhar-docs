@@ -1,16 +1,35 @@
 import type { PipelineConfig, OcrEngineType, StorageDriver } from "./types";
 
 export function getStorageDriver(): StorageDriver {
-  return process.env.STORAGE_DRIVER === "local" ? "local" : "s3";
+  const driver = process.env.STORAGE_DRIVER === "local" ? "local" : "s3";
+  // Log to help debug Hugging Face deployment issues
+  if (process.env.NODE_ENV === "production") {
+    console.log(`[config] Storage driver: ${driver} (STORAGE_DRIVER=${process.env.STORAGE_DRIVER})`);
+  }
+  return driver;
 }
 
 export function loadConfig(): PipelineConfig {
+  const storageDriver = getStorageDriver();
+  
   return {
     storage: {
-      driver: getStorageDriver(),
+      driver: storageDriver,
       localDir: process.env.STORAGE_LOCAL_DIR || "/data",
     },
     minio: (() => {
+      // If using local storage, skip MinIO config entirely to avoid connection attempts
+      if (storageDriver === "local") {
+        return {
+          endpoint: "localhost",
+          port: 9000,
+          useSSL: false,
+          accessKey: "dummy",
+          secretKey: "dummy",
+          bucket: "dummy",
+        };
+      }
+
       const rawEndpoint = process.env.S3_ENDPOINT ?? process.env.MINIO_ENDPOINT ?? "localhost";
       let endpoint = rawEndpoint;
       let port = Number(process.env.S3_PORT ?? process.env.MINIO_PORT ?? 9000);
