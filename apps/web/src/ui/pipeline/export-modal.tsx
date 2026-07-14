@@ -75,22 +75,22 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         />
         <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-card shadow-lg animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="border-b border-line bg-badge/50 px-6 py-4">
-            <h3 className="text-xl font-bold text-primary-color flex items-center gap-2">
-              <ExportIcon className="w-5 h-5 text-success" />
+          <div className="border-b border-line bg-badge/50 px-4 sm:px-6 py-3 sm:py-4">
+            <h3 className="text-lg sm:text-xl font-bold text-primary-color flex items-center gap-2">
+              <ExportIcon className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
               {t("title")}
             </h3>
           </div>
 
           {/* Body */}
-          <div className="p-6 space-y-5">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-primary-color">{t("format")}</label>
+              <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("format")}</label>
               <div className="relative">
                 <select
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                  className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
                   <option value="searchable-pdf">{t("formatSearchablePdf")}</option>
                   <option value="pdf">{t("formatPdf")}</option>
@@ -170,11 +170,11 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
           </div>
 
           {/* Footer */}
-          <div className="bg-badge/30 px-6 py-4 border-t border-line flex items-center justify-end gap-3">
+          <div className="bg-badge/30 px-4 sm:px-6 py-3 sm:py-4 border-t border-line flex items-center justify-end gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-5 py-2.5 text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color"
+              className="rounded-lg px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color whitespace-nowrap"
             >
               {t("cancel")}
             </button>
@@ -182,11 +182,11 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
               type="button"
               onClick={handleExport}
               disabled={loading}
-              className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-bold text-btn-primary-text transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-lg px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-btn-primary-text transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20 whitespace-nowrap"
             >
               {loading ? (
                 <>
-                  <SpinnerIcon className="h-4 w-4" />
+                  <SpinnerIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                   {t("exporting")}
                 </>
               ) : (

@@ -55,15 +55,15 @@ function DocumentRowActions({
   };
 
   return (
-    <td className="whitespace-nowrap px-3 py-2">
-      <div className="flex items-center gap-1">
+    <td className="whitespace-nowrap px-2 sm:px-3 py-2">
+      <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap justify-end">
         {!isEditing && (
           <motion.button
             whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => setIsShareModalOpen(true)}
-            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+            className="rounded-lg p-1.5 sm:p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
             title={tCommon("share")}
             aria-label={tCommon("share")}
           >
@@ -76,7 +76,7 @@ function DocumentRowActions({
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => onStartEdit(doc)}
-            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+            className="rounded-lg p-1.5 sm:p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
             title={tCommon("edit")}
             aria-label={tCommon("edit")}
           >
@@ -90,7 +90,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={() => onSaveEdit(doc.id)}
-              className="rounded-lg bg-success-bg p-2 text-success transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+              className="rounded-lg bg-success-bg p-1.5 sm:p-2 text-success transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
               title={tCommon("save")}
               aria-label={tCommon("save")}
             >
@@ -101,7 +101,7 @@ function DocumentRowActions({
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onCancelEdit}
-              className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success"
+              className="rounded-lg p-1.5 sm:p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
               title={tCommon("cancel")}
               aria-label={tCommon("cancel")}
             >
@@ -116,7 +116,7 @@ function DocumentRowActions({
             type="button"
             disabled={retrying}
             onClick={handleRetry}
-            className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50"
+            className="rounded-lg p-1.5 sm:p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success disabled:opacity-50 min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
             title={tCommon("retry")}
             aria-label={tCommon("retry")}
           >
@@ -128,7 +128,7 @@ function DocumentRowActions({
           whileTap={{ scale: 0.9 }}
           type="button"
           onClick={() => onDelete(doc.id)}
-          className="rounded-lg p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+          className="rounded-lg p-1.5 sm:p-2 text-muted-color transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger min-w-[32px] min-h-[32px] sm:min-w-[36px] sm:min-h-[36px] flex items-center justify-center"
           title={tCommon("delete")}
           aria-label={tCommon("delete")}
         >
@@ -189,7 +189,7 @@ export const DocumentRow = memo(function DocumentRow({
       data-testid="document-row"
       data-document-id={doc.id}
     >
-      <td className="px-3 py-2">
+      <td className="px-2 sm:px-3 py-2">
         <input
           type="checkbox"
           checked={isSelected}
@@ -199,7 +199,7 @@ export const DocumentRow = memo(function DocumentRow({
           data-testid="document-select"
         />
       </td>
-      <td className="max-w-[200px] px-3 py-2">
+      <td className="min-w-[140px] sm:min-w-[200px] max-w-[250px] px-2 sm:px-3 py-2">
         {editingDocId === doc.id ? (
           <input
             type="text"
@@ -211,30 +211,51 @@ export const DocumentRow = memo(function DocumentRow({
             }}
             onBlur={() => onSaveEdit(doc.id)}
             autoFocus
-            className="w-full rounded-lg border border-[var(--input-border)] bg-card px-2 py-1 text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-success"
+            className="w-full rounded-lg border border-[var(--input-border)] bg-card px-2 py-1 text-xs sm:text-sm text-primary-color focus:outline-none focus:ring-1 focus:ring-success"
           />
         ) : (
           <div
-            className="truncate text-sm font-medium text-primary-color"
+            className="truncate text-xs sm:text-sm font-medium text-primary-color"
             data-testid="document-title"
           >
             {doc.title}
           </div>
         )}
         <div className="mt-1 flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <span className="truncate text-xs text-very-muted">{doc.fileName}</span>
+          <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
+            <span className="truncate text-[10px] sm:text-xs text-very-muted break-all">{doc.fileName}</span>
             {doc.status === "COMPLETED" && (
               <a
                 href={`/${locale}/preview/${doc.id}`}
-                className="inline-block shrink-0 rounded-full bg-success-bg px-2 py-0.5 text-xs font-medium text-success transition-colors hover:bg-success hover:text-btn-primary-text"
+                className="inline-block shrink-0 rounded-full bg-success-bg px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-xs font-medium text-success transition-colors hover:bg-success hover:text-btn-primary-text whitespace-nowrap"
               >
                 {tCommon("view")}
               </a>
             )}
           </div>
+          {/* Show status badge on mobile (inline with title) */}
+          <div className="md:hidden">
+            <Badge
+              variant={
+                doc.status === "COMPLETED"
+                  ? "success"
+                  : doc.status === "FAILED"
+                    ? "destructive"
+                    : doc.status === "UPLOADED"
+                      ? "warning"
+                      : doc.status.startsWith("OCR") ||
+                          doc.status === "SPLITTING" ||
+                          doc.status === "PROCESSING"
+                        ? "info"
+                        : "secondary"
+              }
+              data-testid="document-status-mobile"
+            >
+              {getStatusLabel(doc.status, tDocs)}
+            </Badge>
+          </div>
           {doc.tags && doc.tags.length > 0 && (
-            <div className="mt-1 flex flex-wrap gap-1">
+            <div className="mt-0.5 sm:mt-1 flex flex-wrap gap-1">
               {doc.tags.map((t) => (
                 <TagChip
                   key={t.tag.id}
@@ -248,7 +269,7 @@ export const DocumentRow = memo(function DocumentRow({
           )}
         </div>
       </td>
-      <td className="whitespace-nowrap px-3 py-2">
+      <td className="hidden md:table-cell whitespace-nowrap px-2 sm:px-3 py-2">
         <Badge
           variant={
             doc.status === "COMPLETED"
@@ -268,13 +289,13 @@ export const DocumentRow = memo(function DocumentRow({
           {getStatusLabel(doc.status, tDocs)}
         </Badge>
       </td>
-      <td className="whitespace-nowrap px-3 py-2 text-sm text-muted-color">
+      <td className="hidden lg:table-cell whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm text-muted-color">
         {doc.pageCount ? tDocs("pagesCount", { count: doc.pageCount }) : "-"}
       </td>
-      <td className="whitespace-nowrap px-3 py-2 text-sm text-muted-color">
+      <td className="hidden lg:table-cell whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm text-muted-color">
         {formatFileSize(doc.fileSize)}
       </td>
-      <td className="whitespace-nowrap px-3 py-2 text-sm text-muted-color">
+      <td className="hidden sm:table-cell whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm text-muted-color">
         {new Date(doc.createdAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
       </td>
       <DocumentRowActions
