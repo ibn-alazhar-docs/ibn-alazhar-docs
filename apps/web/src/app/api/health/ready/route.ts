@@ -54,7 +54,6 @@ async function checkStorage(): Promise<{ status: string; latencyMs: number }> {
     // the configured local root is present and writable instead.
     if ((process.env.STORAGE_DRIVER || "s3") === "local") {
       const { access, writeFile, unlink, mkdir } = await import("node:fs/promises");
-      const { dirname } = await import("node:path");
       const root = process.env.STORAGE_LOCAL_DIR || "/data";
       try {
         await access(root);

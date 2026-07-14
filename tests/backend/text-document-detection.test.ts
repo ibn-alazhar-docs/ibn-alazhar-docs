@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { detectDocumentType } from "./analyze";
+import { detectDocumentType } from "@ibn-al-azhar-docs/pipeline/text";
 
 describe("detectDocumentType", () => {
   describe("exam detection", () => {
@@ -126,7 +126,7 @@ describe("detectDocumentType", () => {
       const examPart = "س١: سؤال\n".repeat(50); // Strong exam signal
       const generalPart = "نص عادي طويل جداً. ".repeat(500);
       const longText = examPart + generalPart;
-
+      
       expect(longText.length).toBeGreaterThan(3000);
       expect(detectDocumentType(longText)).toBe("exam");
     });
