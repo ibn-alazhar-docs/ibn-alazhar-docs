@@ -79,7 +79,7 @@ export default function FilesPage() {
                 )}
 
                 {/* Upload Zone */}
-                <Card className="p-6">
+                <Card className="p-4 sm:p-6">
                   <FileUpload onUploadStart={fm.handleUploadStart} folderId={fm.selectedFolderId} />
                 </Card>
 
