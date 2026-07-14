@@ -210,7 +210,13 @@ export async function handleRouteError(
   // Surface the underlying error message in the body so a 500 from an
   // unmapped/raw exception (e.g. a Prisma validation error in /api/upload) is
   // self-diagnosing from the client response instead of only the server log.
-  const detail = error instanceof Error ? error.message : String(error);
+  // If the error has a cause (e.g. wrapped filesystem errors), include it.
+  let detail = error instanceof Error ? error.message : String(error);
+  const cause = (error as Error & { cause?: Error })?.cause;
+  if (cause) {
+    const errCode = (cause as NodeJS.ErrnoException).code;
+    detail = `${detail} [Cause: ${cause.message}${errCode ? ` (${errCode})` : ""}]`;
+  }
   return NextResponse.json(
     {
       error: {
