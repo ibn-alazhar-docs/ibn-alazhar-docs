@@ -87,14 +87,30 @@ NEXT_PUBLIC_SITE_URL="$APP_URL"
 SITE_URL="$APP_URL"
 
 # ---- Internal connection strings (everything is in-container) --------------
-DATABASE_URL="postgresql://ibn_docs:postgres@127.0.0.1:5432/ibn_docs?schema=public"
-REDIS_URL="redis://:${REDIS_PASSWORD}@127.0.0.1:6379"
+# Respect externally-provided connection strings (e.g. Neon + Upstash) so the
+# self-contained container can also run against managed services. We only fall
+# back to the in-container Postgres/Redis (127.0.0.1) when nothing is configured.
+export DATABASE_URL="${DATABASE_URL:-postgresql://ibn_docs:postgres@127.0.0.1:5432/ibn_docs?schema=public}"
+export DATABASE_URL_DIRECT="${DATABASE_URL_DIRECT:-$DATABASE_URL}"
+export REDIS_URL="${REDIS_URL:-redis://:${REDIS_PASSWORD}@127.0.0.1:6379}"
 S3_ENDPOINT="http://127.0.0.1:9000"
 S3_REGION="us-east-1"
 S3_ACCESS_KEY_ID="$MINIO_ACCESS_KEY"
 S3_SECRET_ACCESS_KEY="$MINIO_SECRET_KEY"
 
-export DATABASE_URL DATABASE_URL_DIRECT="$DATABASE_URL" REDIS_URL S3_ENDPOINT S3_REGION S3_BUCKET \
+# Decide whether to start the bundled Postgres/Redis daemons. We only start them
+# when the configured URL actually points at the local container; otherwise we
+# assume an external service (Neon / Upstash / compose service) is reachable.
+case "$DATABASE_URL" in
+  *127.0.0.1:5432*|*localhost:5432*|*0.0.0.0:5432*) USE_LOCAL_PG=1 ;;
+  *) USE_LOCAL_PG=0 ;;
+esac
+case "$REDIS_URL" in
+  *127.0.0.1:6379*|*localhost:6379*|*0.0.0.0:6379*) USE_LOCAL_REDIS=1 ;;
+  *) USE_LOCAL_REDIS=0 ;;
+esac
+
+export DATABASE_URL DATABASE_URL_DIRECT REDIS_URL S3_ENDPOINT S3_REGION S3_BUCKET \
        S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY \
        AUTH_SECRET AUTH_TRUST_HOST=true AUTH_URL="$APP_URL" NEXTAUTH_URL="$APP_URL" APP_URL NEXT_PUBLIC_SITE_URL SITE_URL \
        ADMIN_EMAIL ADMIN_PASSWORD PROMETHEUS_BEARER_TOKEN NODE_ENV=production \
@@ -105,42 +121,54 @@ PGPORT=5432
 PGHOST=127.0.0.1
 
 # ---- 1) PostgreSQL -----------------------------------------------------------
-# Hugging Face runs containers as user 1000. PostgreSQL cannot be run as root.
-# If we are root, we drop privileges to the postgres user.
-# If we are already a non-root user, we run postgres directly.
-RUN_PG=""
-if [ "$(id -u)" = "0" ]; then
-  chown -R postgres:postgres "$PGDATA"
-  RUN_PG="su postgres -c"
+# Only start the bundled PostgreSQL when the configured DATABASE_URL points at
+# the local container (self-contained mode). With an external database (Neon,
+# RDS, compose service, ...) we assume it is already reachable.
+if [ "$USE_LOCAL_PG" = "1" ]; then
+  # Hugging Face runs containers as user 1000. PostgreSQL cannot be run as root.
+  # If we are root, we drop privileges to the postgres user.
+  # If we are already a non-root user, we run postgres directly.
+  RUN_PG=""
+  if [ "$(id -u)" = "0" ]; then
+    chown -R postgres:postgres "$PGDATA"
+    RUN_PG="su postgres -c"
+  else
+    RUN_PG="eval"
+  fi
+
+  if [ ! -f "$PGDATA/PG_VERSION" ]; then
+    echo "[entrypoint] initializing PostgreSQL data directory..."
+    rm -rf "$PGDATA"/* "$PGDATA"/.* 2>/dev/null || true
+    $RUN_PG "$PG_BIN/initdb -D $PGDATA --auth=trust" >/dev/null 2>&1
+  fi
+  echo "[entrypoint] starting PostgreSQL..."
+  $RUN_PG "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l /tmp/pg.log start" >/dev/null 2>&1 || true
+
+  # Wait for Postgres
+  for i in $(seq 1 30); do
+    if $RUN_PG "$PG_BIN/pg_isready -h $PGHOST -p $PGPORT" >/dev/null 2>&1; then break; fi
+    sleep 1
+  done
+
+  # Create role + database idempotently
+  $RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_roles WHERE rolname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE ROLE ibn_docs LOGIN PASSWORD 'postgres';\"" 2>/dev/null || true
+  $RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_database WHERE datname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE DATABASE ibn_docs OWNER ibn_docs;\"" 2>/dev/null || true
 else
-  RUN_PG="eval"
+  echo "[entrypoint] skipping bundled PostgreSQL (using external DATABASE_URL)"
 fi
-
-if [ ! -f "$PGDATA/PG_VERSION" ]; then
-  echo "[entrypoint] initializing PostgreSQL data directory..."
-  rm -rf "$PGDATA"/* "$PGDATA"/.* 2>/dev/null || true
-  $RUN_PG "$PG_BIN/initdb -D $PGDATA --auth=trust" >/dev/null 2>&1
-fi
-echo "[entrypoint] starting PostgreSQL..."
-$RUN_PG "$PG_BIN/pg_ctl -D $PGDATA -o '-p $PGPORT -k /tmp -c listen_addresses=127.0.0.1' -l /tmp/pg.log start" >/dev/null 2>&1 || true
-
-# Wait for Postgres
-for i in $(seq 1 30); do
-  if $RUN_PG "$PG_BIN/pg_isready -h $PGHOST -p $PGPORT" >/dev/null 2>&1; then break; fi
-  sleep 1
-done
-
-# Create role + database idempotently
-$RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_roles WHERE rolname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE ROLE ibn_docs LOGIN PASSWORD 'postgres';\"" 2>/dev/null || true
-$RUN_PG "$PG_BIN/psql -h $PGHOST -p $PGPORT -tc \"SELECT 1 FROM pg_database WHERE datname='ibn_docs'\" | grep -q 1 || $PG_BIN/psql -h $PGHOST -p $PGPORT -c \"CREATE DATABASE ibn_docs OWNER ibn_docs;\"" 2>/dev/null || true
 
 # ---- 2) Redis ---------------------------------------------------------------
-echo "[entrypoint] starting Redis..."
-redis-server --port 6379 --requirepass "$REDIS_PASSWORD" --dir "$REDIS_DATA" --daemonize yes --save 60 1 >/dev/null 2>&1
-for i in $(seq 1 30); do
-  if redis-cli -p 6379 -a "$REDIS_PASSWORD" ping >/dev/null 2>&1; then break; fi
-  sleep 1
-done
+# Only start the bundled Redis when REDIS_URL points at the local container.
+if [ "$USE_LOCAL_REDIS" = "1" ]; then
+  echo "[entrypoint] starting Redis..."
+  redis-server --port 6379 --requirepass "$REDIS_PASSWORD" --dir "$REDIS_DATA" --daemonize yes --save 60 1 >/dev/null 2>&1
+  for i in $(seq 1 30); do
+    if redis-cli -p 6379 -a "$REDIS_PASSWORD" ping >/dev/null 2>&1; then break; fi
+    sleep 1
+  done
+else
+  echo "[entrypoint] skipping bundled Redis (using external REDIS_URL)"
+fi
 
 # ---- 3) MinIO (S3-compatible object storage) --------------------------------
 # Only started when STORAGE_DRIVER=s3. In local-storage mode (default on HF
