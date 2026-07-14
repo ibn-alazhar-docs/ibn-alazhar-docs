@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 self.addEventListener("install", (_event) => {
   console.log("Service Worker installed.");
   self.skipWaiting();
