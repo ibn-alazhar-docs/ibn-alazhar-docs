@@ -63,7 +63,18 @@ if [ "$STORAGE_DRIVER" = "local" ]; then
     echo "[entrypoint] ERROR: Failed to create storage subdirectories"
     exit 1
   }
-  
+
+  # The app runs as uid 1000 on Hugging Face, but this entrypoint may run as
+  # root. When it does, the subdirectories above are created owned by root with
+  # 755 perms, which blocks the app (uid 1000) from writing upload/temp files
+  # into them (EACCES -> "تعذر تجهيز الملف"). Re-assign ownership to 1000:1000 so
+  # the runtime user can write, and keep the temp dir world-writable.
+  if [ "$(id -u)" = "0" ]; then
+    chown -R 1000:1000 "$STORAGE_LOCAL_DIR"
+  fi
+  chmod -R 755 "$STORAGE_LOCAL_DIR"
+  chmod 777 "$STORAGE_LOCAL_DIR/tmp"
+
   echo "[entrypoint] storage directory verified: $STORAGE_LOCAL_DIR"
 fi
 
