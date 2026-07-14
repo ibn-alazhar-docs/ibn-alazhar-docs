@@ -108,3 +108,25 @@ k8s/
 !pnpm-workspace.yaml
 !package.json
 !pnpm-lock.yaml
+
+# Additional optimizations for Hugging Face Spaces
+.kiro/
+.repowise/
+.ruff_cache/
+tests/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+.husky/
+.stryker-tmp/
+.opencode-session-summary.md
+*.md
+!README.md
+!apps/web/src/**/*.md
+
+# Reduce layer cache size
+.semgrep.yml
+.lighthouserc.json
+.dependency-cruiser.mjs
+.coderabbit.yaml
