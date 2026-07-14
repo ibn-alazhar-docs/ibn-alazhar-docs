@@ -26,6 +26,7 @@ export const mockInstance: Record<string, any> = {
   expire: vi.fn<any>().mockResolvedValue(1),
   ttl: vi.fn<any>().mockResolvedValue(60),
   on: vi.fn<any>().mockReturnThis(),
+  ping: vi.fn<any>().mockResolvedValue("PONG"),
   get: vi.fn<any>(),
   del: vi.fn(async (key: string) => {
     keyState.delete(key);
