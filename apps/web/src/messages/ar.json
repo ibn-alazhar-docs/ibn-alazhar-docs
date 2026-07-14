@@ -274,8 +274,8 @@
     },
     "status": {
       "pending": "بانتظار المعالجة",
-      "validating": "نتحقق",
-      "splitting": "نقسم الصفحات",
+      "validating": "نتحقق من الملف",
+      "splitting": "نحلل الصفحات",
       "ocr": "نقرأ النص",
       "cleaning": "ننظف المحتوى",
       "generating": "نُنشئ الملفات",
@@ -393,7 +393,7 @@
     "status": {
       "UPLOADED": "رُفع",
       "VALIDATING": "نتحقق",
-      "SPLITTING": "نقسم",
+      "SPLITTING": "نحلل",
       "OCR_PROCESSING": "نقرأ النص",
       "CLEANING": "ننظف",
       "GENERATING": "نُنشئ",

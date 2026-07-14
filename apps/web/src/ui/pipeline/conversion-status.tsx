@@ -15,7 +15,9 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const eventSource = new EventSource(`/api/stream?jobId=${jobId}`);
+    const eventSource = new EventSource(`/api/stream?jobId=${jobId}`, {
+      withCredentials: true,
+    });
 
     eventSource.onmessage = (event) => {
       try {
@@ -42,7 +44,17 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
       fallbackInterval = setInterval(async () => {
         try {
-          const res = await fetch(`/api/conversion/${jobId}/status`);
+          const res = await fetch(`/api/conversion/${jobId}/status`, {
+            credentials: "include",
+          });
+
+          // Handle 401: stop polling to prevent infinite loop
+          if (res.status === 401) {
+            if (fallbackInterval) clearInterval(fallbackInterval);
+            eventSource.close();
+            return;
+          }
+
           if (res.ok) {
             const data = await res.json();
             setStage(normalizeStage(data.status));
@@ -104,6 +116,11 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             {stage === "ocr" && (
               <p className="text-[11px] text-muted-color animate-pulse mt-1">
                 (قد تستغرق هذه الخطوة بضع دقائق حسب حجم الملف)
+              </p>
+            )}
+            {stage === "pending" && progress === 0 && (
+              <p className="text-[11px] text-muted-color animate-pulse mt-1">
+                (في انتظار بدء المعالجة...)
               </p>
             )}
           </div>

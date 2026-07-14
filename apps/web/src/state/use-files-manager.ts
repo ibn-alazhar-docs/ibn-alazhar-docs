@@ -82,7 +82,23 @@ export function useFilesManager(): UseFilesManagerReturn {
         if (selectedTagIds.length > 0) {
           selectedTagIds.forEach((id) => params.append("tagId", id));
         }
-        const res = await fetch(`/api/documents?${params}`, { cache: "no-store" });
+        const res = await fetch(`/api/documents?${params}`, {
+          cache: "no-store",
+          credentials: "include",
+        });
+
+        // Handle 401: clear active jobs and stop polling to prevent glitch loop
+        if (res.status === 401) {
+          setActiveJobs([]);
+          setLoadingDocs(false);
+          logger.error("Unauthorized: session expired. Cleared active jobs.");
+          // Optionally redirect to login after a delay
+          setTimeout(() => {
+            window.location.href = "/ar/login";
+          }, 2000);
+          return;
+        }
+
         if (res.ok) {
           const data = await res.json();
           setDocuments(data.documents);
