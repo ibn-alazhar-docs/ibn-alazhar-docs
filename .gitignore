@@ -65,6 +65,7 @@ pnpm-lock.yaml.old
 .opencode/
 .qoder/
 .repowise/
+repowise.db
 .specify/
 
 # AI Configuration and Internal Docs
