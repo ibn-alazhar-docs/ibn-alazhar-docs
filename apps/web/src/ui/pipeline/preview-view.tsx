@@ -164,33 +164,33 @@ export function PreviewView({ jobId }: PreviewViewProps) {
           remarkPlugins={[remarkGfm, remarkBreaks]}
           components={{
             h1: ({ children }) => (
-              <h1 className="text-3xl font-bold mt-8 mb-6 text-primary-color text-center leading-normal border-b border-line pb-4">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mt-6 sm:mt-8 mb-4 sm:mb-6 text-primary-color text-center leading-normal border-b border-line pb-3 sm:pb-4">
                 {children}
               </h1>
             ),
             h2: ({ children }) => (
-              <h2 className="text-2xl font-bold mt-10 mb-4 text-success leading-normal">
+              <h2 className="text-lg sm:text-xl md:text-2xl font-bold mt-6 sm:mt-10 mb-3 sm:mb-4 text-success leading-normal">
                 {children}
               </h2>
             ),
             h3: ({ children }) => (
-              <h3 className="text-xl font-bold mt-8 mb-3 text-primary-color leading-normal">
+              <h3 className="text-base sm:text-lg md:text-xl font-bold mt-5 sm:mt-8 mb-2 sm:mb-3 text-primary-color leading-normal">
                 {children}
               </h3>
             ),
             h4: ({ children }) => (
-              <h4 className="text-lg font-bold mt-6 mb-2 text-primary-color leading-normal">
+              <h4 className="text-base sm:text-lg font-bold mt-4 sm:mt-6 mb-2 text-primary-color leading-normal">
                 {children}
               </h4>
             ),
             p: ({ children }) => (
-              <p className="mb-6 leading-[2.2] text-justify text-xl">{children}</p>
+              <p className="mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] text-justify text-base sm:text-lg md:text-xl">{children}</p>
             ),
             ul: ({ children }) => (
-              <ul className="list-disc ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ul>
+              <ul className="list-disc ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">{children}</ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal ps-8 mb-6 leading-[2.2] space-y-2 text-xl">{children}</ol>
+              <ol className="list-decimal ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">{children}</ol>
             ),
             li: ({ children }) => <li>{children}</li>,
             blockquote: ({ children }) => (

@@ -88,29 +88,29 @@ export default function PreviewPage() {
         <PreviewToolbar jobId={id} fileName={jobInfo?.fileName ?? "document"} onBack={handleBack} />
 
         {/* Preview Content */}
-        <div className="flex-1 max-w-4xl mx-auto w-full px-4 py-8">
-          <div className="bg-card rounded-xl border border-line p-6 sm:p-10 shadow-sm">
+        <div className="flex-1 max-w-4xl mx-auto w-full px-3 sm:px-4 py-4 sm:py-8">
+          <div className="bg-card rounded-lg sm:rounded-xl border border-line p-4 sm:p-6 md:p-10 shadow-sm">
             <PreviewView jobId={id} />
           </div>
         </div>
 
         {/* Footer */}
-        <div className="border-t border-line bg-card py-4 px-4">
-          <div className="max-w-4xl mx-auto flex flex-wrap items-center justify-between gap-2">
-            <span className="min-w-0 truncate text-xs text-very-muted">
+        <div className="border-t border-line bg-card py-3 sm:py-4 px-3 sm:px-4">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-2">
+            <span className="text-[10px] sm:text-xs text-very-muted truncate w-full sm:w-auto">
               {tApp("name")} — {t("previewDocument")}
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap sm:flex-nowrap w-full sm:w-auto">
               <button
                 onClick={() => setIsShareModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium bg-badge border border-line text-primary-color rounded-lg hover:bg-line transition-colors"
+                className="flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium bg-badge border border-line text-primary-color rounded-lg hover:bg-line transition-colors flex-1 sm:flex-initial min-h-9"
               >
-                <ShareIcon className="h-3.5 w-3.5" />
-                {tShareModal("title")}
+                <ShareIcon className="h-3.5 w-3.5 shrink-0" />
+                <span className="truncate">{tShareModal("title")}</span>
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}
-                className="px-3 py-2 text-xs font-medium bg-success text-btn-primary-text rounded-lg hover:opacity-90 transition-colors"
+                className="px-3 py-2 text-xs font-medium bg-success text-btn-primary-text rounded-lg hover:opacity-90 transition-colors flex-1 sm:flex-initial min-h-9 whitespace-nowrap"
               >
                 {tExportModal("button")}
               </button>

@@ -58,8 +58,8 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
 
       <aside
         className={cn(
-          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-line bg-page/90 backdrop-blur-xl pt-16 transition-transform duration-200 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:pt-0",
-          isOpen ? "translate-x-0" : "-translate-x-full rtl:translate-x-full lg:!translate-x-0",
+          "fixed inset-y-0 start-0 z-50 flex w-64 flex-col border-e border-line bg-page backdrop-blur-xl pt-16 transition-transform duration-200 lg:sticky lg:top-16 lg:h-[calc(100vh-4rem)] lg:translate-x-0 lg:pt-0 lg:bg-page/90",
+          isOpen ? "translate-x-0" : "ltr:-translate-x-full rtl:translate-x-full lg:!translate-x-0",
         )}
         style={{ viewTransitionName: "dashboard-sidebar" }}
         data-testid="sidebar"
@@ -77,15 +77,15 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
           ))}
         </nav>
 
-        <div className="border-t border-line px-4 py-4">
+        <div className="border-t border-line px-3 sm:px-4 py-3 sm:py-4">
           {isAdmin && (
-            <span className="mb-2 inline-block rounded-full bg-success/10 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-success">
+            <span className="mb-2 inline-block rounded-full bg-success/10 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-success">
               {t("nav.admin")}
             </span>
           )}
-          <p className="text-xs text-very-muted">
+          <p className="text-[10px] sm:text-xs text-very-muted">
             {t("app.name")}{" "}
-            <span className="text-[10px] opacity-40">© {new Date().getFullYear()}</span>
+            <span className="text-[9px] sm:text-[10px] opacity-40">© {new Date().getFullYear()}</span>
           </p>
         </div>
       </aside>

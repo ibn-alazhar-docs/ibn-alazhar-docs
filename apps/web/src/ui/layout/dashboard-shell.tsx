@@ -24,7 +24,7 @@ export function DashboardShell({ children, role }: DashboardShellProps) {
         <main
           id="main-content"
           tabIndex={-1}
-          className="min-w-0 flex-1 px-4 sm:px-6 lg:px-8 focus:outline-none"
+          className="min-w-0 flex-1 px-3 sm:px-4 lg:px-6 xl:px-8 focus:outline-none"
         >
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
