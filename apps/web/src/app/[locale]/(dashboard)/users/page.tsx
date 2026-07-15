@@ -62,10 +62,15 @@ export default function UsersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId, role: newRole }),
       });
-      if (!res.ok) throw new Error(t("roleToggleError"));
-      setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, role: newRole } : u)));
-    } catch {
-      setError(t("roleToggleError"));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || t("roleToggleError"));
+      }
+      
+      // إعادة تحميل البيانات من السيرفر بدلاً من تحديث الحالة المحلية فقط
+      await loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("roleToggleError"));
     }
   }
 
@@ -76,10 +81,15 @@ export default function UsersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId }),
       });
-      if (!res.ok) throw new Error(t("deleteError"));
-      setUsers((prev) => prev.filter((u) => u.id !== userId));
-    } catch {
-      setError(t("deleteError"));
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.error?.message || t("deleteError"));
+      }
+      
+      // إعادة تحميل البيانات من السيرفر
+      await loadUsers();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("deleteError"));
     }
   }
 
