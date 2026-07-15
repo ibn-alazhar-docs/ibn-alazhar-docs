@@ -705,7 +705,8 @@
       "status": "Document Status",
       "dailyUploads": "Daily Uploads",
       "topTags": "Top Tags",
-      "largestDocuments": "Largest Documents"
+      "largestDocuments": "Largest Documents",
+      "noData": "No data available"
     },
     "status": {
       "COMPLETED": "Completed",

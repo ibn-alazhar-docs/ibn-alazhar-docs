@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/middleware/auth-guards";
-import { isAdminRole } from "@/domain/auth";
 import { prisma } from "@/transport/db";
 import { DashboardContent } from "../dashboard-content";
 import { PageTransition } from "@/ui/page-transition";
@@ -22,11 +21,12 @@ export async function generateMetadata({ params }: DashboardPageProps): Promise<
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  const admin = isAdminRole(session.user.role);
-  const docWhere = admin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null };
-  const folderWhere = admin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null };
-  const tagWhere = admin ? {} : { userId: session.user.id };
-  const conversionWhere = admin ? {} : { userId: session.user.id };
+  
+  // SECURITY FIX: كل مستخدم يرى بياناته فقط (بغض النظر عن دوره)
+  const docWhere = { userId: session.user.id, deletedAt: null };
+  const folderWhere = { userId: session.user.id, deletedAt: null };
+  const tagWhere = { userId: session.user.id };
+  const conversionWhere = { userId: session.user.id };
 
   const [documents, folders, tags, conversions, recentDocuments] = await Promise.all([
     prisma.document.count({ where: docWhere }),

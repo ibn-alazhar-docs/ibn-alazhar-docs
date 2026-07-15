@@ -52,8 +52,9 @@ export class DashboardService {
 
   /**
    * Computes the metrics for the dashboard.
+   * SECURITY FIX: Now accepts userId to filter user-specific metrics
    */
-  static async getMetrics(): Promise<DashboardMetrics> {
+  static async getMetrics(userId?: string): Promise<DashboardMetrics> {
     const now = Date.now();
     let uploadsLastHour = 0;
     let activeUsers15Min = 0;
@@ -63,10 +64,28 @@ export class DashboardService {
       const redis = await getRedisClient();
       if (redis) {
         await redis.zremrangebyscore("dashboard:uploads", "-inf", now - 3600000);
-        uploadsLastHour = await redis.zcount("dashboard:uploads", now - 3600000, "+inf");
+        
+        // SECURITY FIX: If userId provided, only count that user's uploads
+        if (userId) {
+          // For user-specific metrics, we need a different approach
+          // Count documents created by this user in last hour from DB instead
+          const userDocs = await repos.document.count({
+            where: {
+              userId,
+              createdAt: { gte: new Date(now - 3600000) },
+              deletedAt: null,
+            },
+          });
+          uploadsLastHour = userDocs;
+        } else {
+          uploadsLastHour = await redis.zcount("dashboard:uploads", now - 3600000, "+inf");
+        }
 
-        await redis.zremrangebyscore("dashboard:active_users", "-inf", now - 900000);
-        activeUsers15Min = await redis.zcount("dashboard:active_users", now - 900000, "+inf");
+        // Active users metric only makes sense for admins (global view)
+        if (!userId) {
+          await redis.zremrangebyscore("dashboard:active_users", "-inf", now - 900000);
+          activeUsers15Min = await redis.zcount("dashboard:active_users", now - 900000, "+inf");
+        }
       }
     } catch (err) {
       logger.error(err, "Failed to fetch Redis metrics in DashboardService:");
@@ -75,12 +94,19 @@ export class DashboardService {
     // 2. Fetch PostgreSQL-based metrics (Average processing time for completed docs in last 24h)
     let avgProcessingTimeSec = 0;
     try {
+      const whereClause: Record<string, unknown> = {
+        status: "COMPLETED",
+        updatedAt: { gte: new Date(now - 24 * 60 * 60 * 1000) },
+        deletedAt: null,
+      };
+      
+      // SECURITY FIX: Filter by userId if provided
+      if (userId) {
+        whereClause.userId = userId;
+      }
+      
       const docs = await repos.document.findMany({
-        where: {
-          status: "COMPLETED",
-          updatedAt: { gte: new Date(now - 24 * 60 * 60 * 1000) },
-          deletedAt: null,
-        },
+        where: whereClause,
         select: {
           createdAt: true,
           updatedAt: true,
@@ -98,14 +124,16 @@ export class DashboardService {
       logger.error(err, "Failed to calculate processing time in DashboardService:");
     }
 
-    // 3. Fetch BullMQ queue metrics
+    // 3. Fetch BullMQ queue metrics (global only - admins only)
     let queueMetrics = { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
-    try {
-      const { getQueueMetrics, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
-      const config = loadConfig();
-      queueMetrics = await getQueueMetrics(config);
-    } catch (err) {
-      logger.warn(err, "Queue metrics unavailable in DashboardService (non-critical):");
+    if (!userId) {
+      try {
+        const { getQueueMetrics, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
+        const config = loadConfig();
+        queueMetrics = await getQueueMetrics(config);
+      } catch (err) {
+        logger.warn(err, "Queue metrics unavailable in DashboardService (non-critical):");
+      }
     }
 
     return {

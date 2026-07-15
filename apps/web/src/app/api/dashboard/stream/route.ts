@@ -27,7 +27,8 @@ export const GET = withAuth(async (request, { session }) => {
 
         // Initial push
         try {
-          const metrics = await DashboardService.getMetrics();
+          // SECURITY FIX: Pass userId to get user-specific metrics
+          const metrics = await DashboardService.getMetrics(session.user.id);
           send(JSON.stringify({ type: "metrics", metrics }));
         } catch {
           send(JSON.stringify({ type: "error", message: "تعذر تحميل التحليلات الأولية" }));
@@ -43,7 +44,8 @@ export const GET = withAuth(async (request, { session }) => {
             // Track active user on each tick
             await DashboardService.trackUserActivity(session.user.id);
 
-            const metrics = await DashboardService.getMetrics();
+            // SECURITY FIX: Pass userId to get user-specific metrics
+            const metrics = await DashboardService.getMetrics(session.user.id);
             send(JSON.stringify({ type: "metrics", metrics }));
           } catch {
             send(JSON.stringify({ type: "error", message: "تعذر تحديث التحليلات" }));

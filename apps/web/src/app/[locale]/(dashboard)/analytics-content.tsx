@@ -253,7 +253,11 @@ export function AnalyticsContent() {
         <StatCard
           icon={TrendingUpIcon}
           label={t("stats.uploadsThisWeek")}
-          value={data?.documents.uploadsOverTime.slice(-7).reduce((s, d) => s + d.count, 0) ?? 0}
+          value={
+            data?.documents.uploadsOverTime
+              ? data.documents.uploadsOverTime.slice(-7).reduce((s, d) => s + d.count, 0)
+              : 0
+          }
           sub={t("stats.totalDays", { days })}
           accentColor="var(--danger)"
         />
@@ -301,6 +305,13 @@ export function AnalyticsContent() {
             <div className="flex items-end gap-2 h-32">
               {(() => {
                 const series = data?.documents.uploadsOverTime ?? [];
+                if (series.length === 0) {
+                  return (
+                    <div className="flex items-center justify-center w-full h-full text-muted-foreground text-sm">
+                      {t("charts.noData")}
+                    </div>
+                  );
+                }
                 const maxCount = Math.max(1, ...series.map((d) => d.count));
                 return series.slice(-14).map((item) => {
                   const height = (item.count / maxCount) * 100;
