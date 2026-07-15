@@ -37,6 +37,7 @@ export function registerGenerationStage(
         const cleanedBuffer = await downloadFile(config, cleanedKey);
         const cleanedData = JSON.parse(cleanedBuffer.toString("utf-8"));
         const rawText: string = cleanedData.text;
+        const ocrConfidence: number = cleanedData.confidence || 0.5;
 
         let pageCount: number | undefined;
         try {
@@ -55,7 +56,11 @@ export function registerGenerationStage(
         }
 
         const title = data.fileName.replace(/\.(pdf|png|jpg|jpeg)$/i, "");
-        const result = generateMarkdown(rawText, { title, pageCount });
+        const result = generateMarkdown(rawText, {
+          title,
+          pageCount,
+          confidence: ocrConfidence,
+        });
 
         const outputKeys: Record<string, string> = {};
         const titleSafe = title

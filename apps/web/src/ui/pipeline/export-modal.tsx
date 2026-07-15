@@ -85,7 +85,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
           {/* Body */}
           <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
             <div className="space-y-1.5">
-              <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("format")}</label>
+              <label className="text-xs sm:text-sm font-semibold text-primary-color">
+                {t("format")}
+              </label>
               <div className="relative">
                 <select
                   value={format}
@@ -107,7 +109,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("fontSize")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">
+                  {t("fontSize")}
+                </label>
                 <div className="relative">
                   <select
                     value={fontSize}
@@ -127,7 +131,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("watermark")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">
+                  {t("watermark")}
+                </label>
                 <input
                   type="text"
                   value={watermark}
@@ -140,7 +146,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("pageRange")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">
+                  {t("pageRange")}
+                </label>
                 <input
                   type="text"
                   value={pageRange}
@@ -152,7 +160,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("destination")}</label>
+              <label className="text-xs sm:text-sm font-semibold text-primary-color">
+                {t("destination")}
+              </label>
               <div className="relative">
                 <select
                   value={destination}

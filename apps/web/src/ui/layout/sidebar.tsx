@@ -85,7 +85,9 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
           )}
           <p className="text-[10px] sm:text-xs text-very-muted">
             {t("app.name")}{" "}
-            <span className="text-[9px] sm:text-[10px] opacity-40">© {new Date().getFullYear()}</span>
+            <span className="text-[9px] sm:text-[10px] opacity-40">
+              © {new Date().getFullYear()}
+            </span>
           </p>
         </div>
       </aside>

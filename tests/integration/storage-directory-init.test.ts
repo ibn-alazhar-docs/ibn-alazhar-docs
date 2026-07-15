@@ -715,10 +715,7 @@ describe("Preservation Property Tests - Existing Directory and S3 Mode Behavior"
           fs.writeFile(testFile, "test"),
           `should write to ${subdir}`,
         ).resolves.not.toThrow();
-        await expect(
-          access(testFile),
-          `file in ${subdir} should exist`,
-        ).resolves.not.toThrow();
+        await expect(access(testFile), `file in ${subdir} should exist`).resolves.not.toThrow();
         await fs.unlink(testFile);
       }
     });

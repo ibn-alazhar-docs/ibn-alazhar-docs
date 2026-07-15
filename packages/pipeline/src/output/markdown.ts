@@ -6,11 +6,17 @@ export interface GenerateMdOptions {
   includeMetadata?: boolean;
   pageSeparator?: string;
   pageCount?: number;
+  confidence?: number; // OCR confidence score for adaptive cleaning
 }
 
 export function generateMarkdown(rawText: string, options: GenerateMdOptions = {}): CleanedText {
-  const cleanedTextContent = cleanArabicText(rawText);
+  // Pass confidence to cleaning for adaptive behavior
+  const cleanedTextContent = cleanArabicText(rawText, { confidence: options.confidence });
   const analysis = analyzeText(cleanedTextContent, options.pageCount);
+
+  // Use actual OCR confidence if provided, otherwise fall back to analyzed ratio
+  const actualConfidence =
+    options.confidence !== undefined ? options.confidence : analysis.arabicRatio;
 
   const mdLines: string[] = [];
 
@@ -24,6 +30,7 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
     mdLines.push(`headings_level2: ${analysis.level2HeadingCount}`);
     mdLines.push(`headings_level3: ${analysis.level3HeadingCount}`);
     mdLines.push(`arabic_ratio: ${(analysis.arabicRatio * 100).toFixed(1)}%`);
+    mdLines.push(`confidence: ${(actualConfidence * 100).toFixed(1)}%`);
     mdLines.push(`garbage_ratio: ${(analysis.garbageRatio * 100).toFixed(1)}%`);
     mdLines.push(`paragraphs: ${analysis.paragraphCount}`);
     mdLines.push(`quality_score: ${analysis.qualityScore}`);
@@ -141,7 +148,7 @@ export function generateMarkdown(rawText: string, options: GenerateMdOptions = {
       headingCount: analysis.headingCount,
       wordCount: analysis.wordCount,
       charCount: analysis.charCount,
-      confidence: analysis.arabicRatio,
+      confidence: actualConfidence,
       garbageRatio: analysis.garbageRatio,
       htmlFragmentCount: analysis.htmlFragmentCount,
       paragraphCount: analysis.paragraphCount,

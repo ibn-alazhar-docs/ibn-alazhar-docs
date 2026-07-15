@@ -223,7 +223,9 @@ export const DocumentRow = memo(function DocumentRow({
         )}
         <div className="mt-1 flex flex-col gap-1">
           <div className="flex items-center gap-2 flex-wrap md:flex-nowrap">
-            <span className="truncate text-[10px] sm:text-xs text-very-muted break-all">{doc.fileName}</span>
+            <span className="truncate text-[10px] sm:text-xs text-very-muted break-all">
+              {doc.fileName}
+            </span>
             {doc.status === "COMPLETED" && (
               <a
                 href={`/${locale}/preview/${doc.id}`}

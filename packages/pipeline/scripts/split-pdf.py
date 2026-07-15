@@ -107,67 +107,135 @@ def _border_crop(gray, pad=8):
 
 
 def _detect_rotation_and_deskew(gray, max_angle=15.0):
-    """Correct rotation and deskew using Hough transform.
+    """Advanced rotation and deskew detection using multi-method approach.
     
-    Detects if the image is rotated 90 or 270 degrees by comparing
-    horizontal and vertical projection profiles. Then deskews.
+    Methods:
+    1. Projection profile analysis for 90/180/270 degree rotations
+    2. Tesseract OSD (Orientation and Script Detection) if available
+    3. Hough line detection for skew
+    4. MinAreaRect fallback
     """
-    # 1. Rotation detection (90 / 270 / 0)
-    # Text lines are usually horizontal. If vertical projection variance is
-    # much higher than horizontal, it's likely rotated by 90 or 270 degrees.
+    h, w = gray.shape
+    
+    # Method 1: Projection profile for major rotations (90/180/270)
     _, binary = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     h_proj = np.sum(binary, axis=1)
     v_proj = np.sum(binary, axis=0)
     
-    if np.var(v_proj) > np.var(h_proj) * 1.5:
-        # Rotated 90 or 270 degrees. For simplicity, rotate 90.
-        # Advanced: use tesseract OSD for 180 degree detection.
-        gray = cv2.rotate(gray, cv2.ROTATE_90_CLOCKWISE)
-        binary = cv2.rotate(binary, cv2.ROTATE_90_CLOCKWISE)
-
-    # 2. Deskew using Hough Lines
-    edges = cv2.Canny(binary, 50, 150, apertureSize=3)
-    lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
+    rotation_angle = 0
+    h_var = np.var(h_proj)
+    v_var = np.var(v_proj)
     
-    angle = 0.0
-    if lines is not None:
+    # If vertical variance >> horizontal variance, likely rotated 90 or 270
+    if v_var > h_var * 2.0:
+        # Check text density in quadrants to determine 90 vs 270
+        left_half = binary[:, :w//2]
+        right_half = binary[:, w//2:]
+        left_density = np.sum(left_half) / left_half.size
+        right_density = np.sum(right_half) / right_half.size
+        
+        # Rotate 90 or 270 based on content distribution
+        rotation_angle = 90 if right_density > left_density else 270
+        if rotation_angle == 90:
+            gray = cv2.rotate(gray, cv2.ROTATE_90_CLOCKWISE)
+        else:
+            gray = cv2.rotate(gray, cv2.ROTATE_90_COUNTERCLOCKWISE)
+        binary = cv2.rotate(binary, cv2.ROTATE_90_CLOCKWISE if rotation_angle == 90 else cv2.ROTATE_90_COUNTERCLOCKWISE)
+        h_proj = np.sum(binary, axis=1)
+        v_proj = np.sum(binary, axis=0)
+    
+    # Check for 180 degree rotation using top-bottom density comparison
+    top_half = binary[:h//2, :]
+    bottom_half = binary[h//2:, :]
+    top_density = np.sum(top_half) / top_half.size
+    bottom_density = np.sum(bottom_half) / bottom_half.size
+    
+    # If bottom is significantly denser than top, might be upside down
+    if bottom_density > top_density * 1.8:
+        gray = cv2.rotate(gray, cv2.ROTATE_180)
+        binary = cv2.rotate(binary, cv2.ROTATE_180)
+        rotation_angle += 180
+
+    # Method 2: Try Tesseract OSD for orientation (more accurate)
+    try:
+        import pytesseract
+        # Only use OSD on a center crop for speed
+        crop_y1, crop_y2 = h // 4, 3 * h // 4
+        crop_x1, crop_x2 = w // 4, 3 * w // 4
+        gray_crop = gray[crop_y1:crop_y2, crop_x1:crop_x2]
+        
+        osd = pytesseract.image_to_osd(gray_crop, output_type=pytesseract.Output.DICT)
+        osd_angle = osd.get("rotate", 0)
+        osd_confidence = osd.get("orientation_conf", 0)
+        
+        # High confidence OSD result overrides projection analysis
+        if osd_confidence > 5.0 and osd_angle != 0:
+            if osd_angle == 90:
+                gray = cv2.rotate(gray, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                binary = cv2.rotate(binary, cv2.ROTATE_90_COUNTERCLOCKWISE)
+                rotation_angle += 270
+            elif osd_angle == 180:
+                gray = cv2.rotate(gray, cv2.ROTATE_180)
+                binary = cv2.rotate(binary, cv2.ROTATE_180)
+                rotation_angle += 180
+            elif osd_angle == 270:
+                gray = cv2.rotate(gray, cv2.ROTATE_90_CLOCKWISE)
+                binary = cv2.rotate(binary, cv2.ROTATE_90_CLOCKWISE)
+                rotation_angle += 90
+    except Exception:
+        pass  # Tesseract OSD not available or failed, continue with other methods
+
+    # Method 3: Hough lines for skew detection
+    edges = cv2.Canny(binary, 50, 150, apertureSize=3)
+    
+    # Use Probabilistic Hough for better performance on large images
+    lines = cv2.HoughLinesP(edges, 1, np.pi / 180, threshold=100, minLineLength=w//10, maxLineGap=20)
+    
+    skew_angle = 0.0
+    if lines is not None and len(lines) > 10:
         angles = []
         for line in lines:
-            rho, theta = line[0]
-            deg = np.degrees(theta)
-            if deg < 45:
-                angles.append(deg)
-            elif deg > 135:
-                angles.append(deg - 180)
-            elif 45 <= deg <= 135:
-                angles.append(deg - 90)
+            x1, y1, x2, y2 = line[0]
+            # Skip near-vertical lines
+            if abs(x2 - x1) < 5:
+                continue
+            angle = np.degrees(np.arctan2(y2 - y1, x2 - x1))
+            # Normalize to [-45, 45]
+            if angle < -45:
+                angle += 90
+            elif angle > 45:
+                angle -= 90
+            if abs(angle) < max_angle:
+                angles.append(angle)
         
         if angles:
-            median_angle = np.median(angles)
-            if abs(median_angle) < max_angle:
-                angle = median_angle
+            # Use median to be robust against outliers
+            skew_angle = np.median(angles)
     else:
-        # Fallback to minAreaRect
+        # Method 4: Fallback to minAreaRect
         coords = np.column_stack(np.where(binary > 0))
-        if len(coords) > 50:
-            rect_angle = cv2.minAreaRect(coords)[-1]
+        if len(coords) > 100:
+            rect = cv2.minAreaRect(coords)
+            rect_angle = rect[-1]
+            # Normalize angle
             if rect_angle < -45:
                 rect_angle = 90 + rect_angle
             else:
                 rect_angle = -rect_angle
             if abs(rect_angle) < max_angle:
-                angle = rect_angle
-                
-    if abs(angle) <= 0.25:
-        return gray, 0.0
-
-    h, w = gray.shape
-    center = (w // 2, h // 2)
-    m = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(
-        gray, m, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
-    )
-    return rotated, float(angle)
+                skew_angle = rect_angle
+    
+    # Only apply skew correction if angle is significant
+    if abs(skew_angle) > 0.25:
+        h, w = gray.shape
+        center = (w // 2, h // 2)
+        m = cv2.getRotationMatrix2D(center, skew_angle, 1.0)
+        gray = cv2.warpAffine(
+            gray, m, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE
+        )
+        
+    total_rotation = (rotation_angle + skew_angle) % 360
+    return gray, float(total_rotation)
 
 
 def _sharpen(gray):

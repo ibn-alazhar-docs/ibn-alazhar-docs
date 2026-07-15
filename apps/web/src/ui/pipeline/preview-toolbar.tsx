@@ -46,7 +46,9 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
 
       {/* Export buttons */}
       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
-        <span className="text-[10px] sm:text-xs text-very-muted hidden sm:inline">{t("export")}</span>
+        <span className="text-[10px] sm:text-xs text-very-muted hidden sm:inline">
+          {t("export")}
+        </span>
         <button
           onClick={() => handleExport("md")}
           dir="ltr"

@@ -103,9 +103,7 @@ describe("ServiceErrorClassifier", () => {
 
       expect(result.type).toBe(ServiceErrorType.STORAGE_UNAVAILABLE);
       expect(result.httpStatus).toBe(507);
-      expect(result.message.ar).toBe(
-        "مساحة التخزين ممتلئة. يرجى حذف بعض الملفات أو زيادة المساحة",
-      );
+      expect(result.message.ar).toBe("مساحة التخزين ممتلئة. يرجى حذف بعض الملفات أو زيادة المساحة");
       expect(result.message.en).toBe(
         "Storage is full. Please delete files or increase storage capacity.",
       );
