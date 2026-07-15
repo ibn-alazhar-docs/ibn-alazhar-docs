@@ -2,7 +2,6 @@ import { type FlatFolder } from "@/core/folder-tree";
 import { AppError, NotFoundError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
 import { MAX_FOLDER_DEPTH } from "@/shared/validators/folder";
-import { isAdminRole } from "@/domain/auth";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import { getDescendantMaxDepth, buildFolderTree } from "@/core/folder-tree";
@@ -25,10 +24,10 @@ export class FolderUseCases {
   }
 
   async getFolders(userId: string, role: string, parentId?: string | null) {
-    const admin = isAdminRole(role);
+    // كل مستخدم يرى مجلداته فقط
     return this.folderRepository.findMany(userId, {
       where: {
-        ...(admin ? {} : { userId }),
+        userId,
         ...(parentId !== undefined ? { parentId: parentId || null } : {}),
         deletedAt: null,
       },

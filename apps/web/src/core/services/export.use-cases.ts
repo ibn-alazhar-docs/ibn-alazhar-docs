@@ -1,6 +1,5 @@
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
-import { isAdminRole } from "@/domain/auth";
 import { NotFoundError, AppError } from "@/shared/errors";
 import { executeBulkExport } from "@/core/services/export/bulk-export-helpers";
 import {
@@ -317,13 +316,15 @@ export class ExportUseCases {
     });
 
     const allDocuments = tagDocs.map((td) => td.document);
+    // كل مستخدم يرى مستنداته المرتبطة بالوسم فقط
     const documents = allDocuments.filter(
       (doc): doc is NonNullable<typeof doc> =>
         doc != null &&
         typeof doc === "object" &&
         "deletedAt" in doc &&
         doc.deletedAt === null &&
-        (isAdminRole(session.user.role) || ("userId" in doc && doc.userId === session.user.id)),
+        "userId" in doc &&
+        doc.userId === session.user.id,
     ) as import("@prisma/client").Document[];
 
     if (documents.length === 0) throw new NotFoundError("No documents with this tag");

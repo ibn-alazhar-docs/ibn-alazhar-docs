@@ -1,7 +1,6 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
 import type { AuthSession } from "../../domain/types";
-import { isAdminRole } from "@/domain/auth";
 import { NotFoundError } from "@/shared/errors";
 
 export interface TagSuggestion {
@@ -132,10 +131,11 @@ export class AutoTagUseCases {
     })) as AutoTagDocument | null;
     if (!document) throw new NotFoundError();
 
-    const admin = isAdminRole(session.user.role);
-    const existingTags = await this.tagRepository.findMany(
-      admin ? { deletedAt: null } : { userId: session.user.id, deletedAt: null },
-    );
+    // كل مستخدم يرى الوسوم الخاصة به فقط
+    const existingTags = await this.tagRepository.findMany({
+      userId: session.user.id,
+      deletedAt: null,
+    });
 
     const corpus = [document.title, document.description, document.originalName, document.fileName]
       .filter(Boolean)

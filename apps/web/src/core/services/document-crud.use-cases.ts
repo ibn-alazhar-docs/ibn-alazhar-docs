@@ -112,7 +112,7 @@ export class DocumentCrudUseCases {
     return { ...updated, fileSize: Number(updated.fileSize) };
   }
 
-  async bulkDeleteDocuments(ids: string[], userId: string, role?: string) {
+  async bulkDeleteDocuments(ids: string[], userId: string, _role?: string) {
     // كل مستخدم يحذف مستنداته فقط
     const where: Prisma.DocumentWhereInput = {
       id: { in: ids },

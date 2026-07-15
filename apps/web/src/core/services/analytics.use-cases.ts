@@ -1,6 +1,5 @@
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
-import { isAdminRole } from "@/domain/auth";
 import type { IAnalyticsDataSource } from "@/domain/repositories/analytics.repository.interface";
 
 export interface DocumentAnalytics {
@@ -40,15 +39,14 @@ export class AnalyticsUseCases {
   constructor(private readonly dataSource: IAnalyticsDataSource) {}
 
   async getAnalytics(session: AuthSession, days: number = 30): Promise<AnalyticsSummary> {
-    const admin = isAdminRole(session.user.role);
-    const whereClause = admin ? { deletedAt: null } : ownedWhere({ deletedAt: null }, session);
-
-    const auditWhere = admin ? {} : { userId: session.user.id };
+    // كل مستخدم يرى إحصائياته فقط
+    const whereClause = ownedWhere({ deletedAt: null }, session);
+    const auditWhere = { userId: session.user.id };
 
     const [documents, tags, storage] = await Promise.all([
       this.getDocumentAnalytics(whereClause, auditWhere, days),
       this.getTagAnalytics(whereClause),
-      this.getStorageAnalytics(whereClause, admin),
+      this.getStorageAnalytics(whereClause),
     ]);
 
     return { documents, tags, storage };
@@ -211,9 +209,8 @@ export class AnalyticsUseCases {
 
   private async getStorageAnalytics(
     whereClause: Record<string, unknown>,
-    admin: boolean,
   ): Promise<StorageAnalytics> {
-    const [totalSizeResult, averageSize, largestDocs, storageByUser] = await Promise.all([
+    const [totalSizeResult, averageSize, largestDocs] = await Promise.all([
       this.dataSource.document.aggregate({
         where: whereClause as never,
         _sum: { fileSize: true },
@@ -228,20 +225,6 @@ export class AnalyticsUseCases {
         orderBy: { fileSize: "desc" },
         take: 5,
       }),
-      admin
-        ? this.dataSource.user.findMany({
-            select: {
-              id: true,
-              name: true,
-              _count: { select: { documents: true } },
-              documents: {
-                select: { fileSize: true },
-                where: { deletedAt: null },
-              },
-            },
-            take: 10,
-          })
-        : Promise.resolve([]),
     ]);
 
     return {
@@ -252,12 +235,7 @@ export class AnalyticsUseCases {
         fileSize: Number(doc.fileSize),
         mimeType: doc.mimeType,
       })),
-      storageByUser: storageByUser.map((user) => ({
-        userId: user.id,
-        userName: user.name ?? "مستخدم",
-        totalSize: user.documents.reduce((sum, doc) => sum + Number(doc.fileSize), 0),
-        documentCount: user._count.documents,
-      })),
+      storageByUser: [], // لا نعرض إحصائيات المستخدمين الآخرين
     };
   }
 }

@@ -1,7 +1,6 @@
 import { NotFoundError } from "@/shared/errors";
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
-import { isAdminRole } from "@/domain/auth";
 import { LIMITS } from "@/shared/constants";
 import type { Prisma } from "@/domain/repositories/prisma-types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
@@ -61,10 +60,10 @@ export class ConversionUseCases {
       Math.max(1, filters.limit || LIMITS.DEFAULT_PAGE_LIMIT),
     );
 
-    const where: Prisma.ConversionJobWhereInput = {};
-    if (!isAdminRole(session.user.role)) {
-      where.userId = session.user.id;
-    }
+    // كل مستخدم يرى وظائف التحويل الخاصة به فقط
+    const where: Prisma.ConversionJobWhereInput = {
+      userId: session.user.id,
+    };
     if (filters.status) {
       (where as Record<string, unknown>).status = filters.status;
     }

@@ -1,5 +1,4 @@
 import { ValidationError } from "@/shared/errors";
-import { isAdminRole } from "@/domain/auth";
 import { LIMITS } from "@/shared/constants";
 import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
 
@@ -59,11 +58,10 @@ export class SearchUseCases {
     const normalizedQuery = this.normalizeArabic(query);
     if (!normalizedQuery) throw new ValidationError("Invalid search query");
 
-    const admin = isAdminRole(role);
-
+    // كل مستخدم يبحث في مستنداته فقط
     const searchParams = {
       userId,
-      isAdmin: admin,
+      isAdmin: false,
       normalizedQuery,
       rawQuery: query,
       type,

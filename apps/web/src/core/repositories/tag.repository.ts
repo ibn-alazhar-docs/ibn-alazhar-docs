@@ -78,7 +78,7 @@ export class TagRepository implements ITagRepository {
     });
   }
 
-  async findTagById(id: string, userId: string, role: string) {
+  async findTagById(id: string, userId: string, _role: string) {
     return this.prisma.tag.findFirst({
       where: {
         id,
@@ -87,7 +87,7 @@ export class TagRepository implements ITagRepository {
     });
   }
 
-  async findManyTagsByIds(ids: string[], userId: string, role: string) {
+  async findManyTagsByIds(ids: string[], userId: string, _role: string) {
     return this.prisma.tag.findMany({
       where: {
         id: { in: ids },
