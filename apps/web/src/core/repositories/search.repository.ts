@@ -107,7 +107,7 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private buildWhereClause(params: SearchQueryParams) {
-    const { userId, isAdmin, normalizedQuery, rawQuery, type, folderId, status, tagId } = params;
+    const { userId, normalizedQuery, rawQuery, type, folderId, status, tagId } = params;
 
     // كل مستخدم يبحث في مستنداته فقط
     let whereClause = `d."userId" = $1 AND d."deletedAt" IS NULL`;

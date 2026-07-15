@@ -2,7 +2,6 @@ import { NotFoundError, ConflictError, ValidationError } from "@/shared/errors";
 import { MAX_TAGS_PER_USER } from "@/shared/validators/tag";
 import { ownedWhere } from "@/core/authorization";
 import type { AuthSession } from "@/domain/types";
-import { isAdminRole } from "@/domain/auth";
 import { DEFAULT_TAG_COLOR } from "@/shared/constants";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 import type { ITagDocumentRepository } from "@/domain/repositories/tag-document.repository.interface";
@@ -14,10 +13,10 @@ export class TagUseCases {
   ) {}
 
   async getTags(session: AuthSession) {
-    const admin = isAdminRole(session.user.role);
+    // كل مستخدم يرى وسومه فقط
     return this.tagRepository.findMany({
       deletedAt: null,
-      ...(admin ? {} : { userId: session.user.id }),
+      userId: session.user.id,
     });
   }
 

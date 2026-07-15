@@ -1,4 +1,3 @@
-import { isAdminRole } from "@/domain/auth";
 import type { AuthSession } from "@/domain/types";
 
 export function ownedWhere(
@@ -6,9 +5,8 @@ export function ownedWhere(
   session: AuthSession,
   userIdField = "userId",
 ): Record<string, unknown> {
-  const where = isAdminRole(session.user.role)
-    ? { ...baseWhere }
-    : { ...baseWhere, [userIdField]: session.user.id };
+  // كل مستخدم يرى بياناته فقط، بغض النظر عن دوره
+  const where = { ...baseWhere, [userIdField]: session.user.id };
   if (!("deletedAt" in where)) {
     where.deletedAt = null;
   }
