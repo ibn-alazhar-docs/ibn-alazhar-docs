@@ -629,6 +629,7 @@
     "copyLink": "انسخ الرابط",
     "copied": "نُسخ",
     "revokeLink": "ألغِ الرابط",
+    "regenerateLink": "أعد إنشاء الرابط",
     "createLink": "أنشئ رابطاً عاماً",
     "expiration": "الانتهاء",
     "expiresIn": "ينتهي خلال",
