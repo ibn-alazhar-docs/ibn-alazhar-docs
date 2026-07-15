@@ -64,7 +64,7 @@ export class DashboardService {
       const redis = await getRedisClient();
       if (redis) {
         await redis.zremrangebyscore("dashboard:uploads", "-inf", now - 3600000);
-        
+
         // SECURITY FIX: If userId provided, only count that user's uploads
         if (userId) {
           // For user-specific metrics, we need a different approach
@@ -99,12 +99,12 @@ export class DashboardService {
         updatedAt: { gte: new Date(now - 24 * 60 * 60 * 1000) },
         deletedAt: null,
       };
-      
+
       // SECURITY FIX: Filter by userId if provided
       if (userId) {
         whereClause.userId = userId;
       }
-      
+
       const docs = await repos.document.findMany({
         where: whereClause,
         select: {

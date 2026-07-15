@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { cn } from "@/ui/cn";
 import { NavLink } from "./nav-link";
@@ -25,6 +25,26 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
   const t = useTranslations();
   const isAdmin = role === "ADMIN";
 
+  // PERFORMANCE FIX: Memoize navigation items to prevent recreating on every render
+  const navItems = useMemo(
+    () => [
+      { href: "/dashboard", label: "nav.home", icon: HomeIcon },
+      { href: "/files", label: "nav.files", icon: FileTextIcon },
+      { href: "/folders", label: "nav.folders", icon: FolderIcon },
+      { href: "/tags", label: "nav.tags", icon: TagsIcon },
+      { href: "/search", label: "nav.search", icon: SearchIcon },
+      { href: "/conversions", label: "nav.conversions", icon: RefreshIcon },
+      ...(isAdmin ? [{ href: "/users", label: "nav.users", icon: UserIcon }] : []),
+      { href: "/settings", label: "nav.settings", icon: GearIcon },
+    ],
+    [isAdmin],
+  );
+
+  // PERFORMANCE FIX: Memoize close handler to prevent recreating NavLink props
+  const handleClose = useCallback(() => {
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isOpen) {
@@ -33,18 +53,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isOpen, onClose]);
-
-  const navItems = [
-    { href: "/dashboard", label: "nav.home", icon: HomeIcon },
-    { href: "/files", label: "nav.files", icon: FileTextIcon },
-    { href: "/folders", label: "nav.folders", icon: FolderIcon },
-    { href: "/tags", label: "nav.tags", icon: TagsIcon },
-    { href: "/search", label: "nav.search", icon: SearchIcon },
-    { href: "/conversions", label: "nav.conversions", icon: RefreshIcon },
-    ...(isAdmin ? [{ href: "/users", label: "nav.users", icon: UserIcon }] : []),
-    { href: "/settings", label: "nav.settings", icon: GearIcon },
-  ];
+  }, [isOpen, handleClose]);
 
   return (
     <>
@@ -70,7 +79,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
           data-testid="sidebar-nav"
         >
           {navItems.map((item) => (
-            <NavLink key={item.href} href={item.href} onNavigate={onClose}>
+            <NavLink key={item.href} href={item.href} onNavigate={handleClose}>
               <item.icon />
               {t(item.label)}
             </NavLink>

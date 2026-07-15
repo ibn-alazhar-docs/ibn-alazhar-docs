@@ -513,7 +513,9 @@
     "completed": "Completed",
     "failed": "Failed",
     "cancelled": "Cancelled",
-    "conversions": "Processing"
+    "conversions": "Processing",
+    "all": "All",
+    "filterByStatus": "Filter by status"
   },
   "settings": {
     "title": "Settings",

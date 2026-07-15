@@ -24,13 +24,13 @@ export const GET = withAuth(async (_request, { session, params }) => {
 export const PATCH = withAuth(async (request, { session, params }) => {
   try {
     const id = params.id!;
-    
+
     // SECURITY FIX: Add rate limiting to PATCH operation (consistency with DELETE)
     const rateLimit = await checkUserRateLimit("documents:update", session.user.id);
     if (!rateLimit.allowed) {
       return rateLimitResponse(rateLimit.retryAfterMs);
     }
-    
+
     const validation = await parseValidatedBody(request, documentUpdateSchema);
 
     const updated = await useCases.documentCrud.updateDocument(id, session.user.id, validation);

@@ -111,7 +111,7 @@ export async function middleware(request: NextRequest) {
         // This prevents CSRF even for unauthenticated endpoints
         const origin = request.headers.get("origin");
         const referer = request.headers.get("referer");
-        
+
         if (!origin && !referer) {
           return NextResponse.json(
             {
