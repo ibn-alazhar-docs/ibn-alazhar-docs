@@ -55,8 +55,10 @@ export function withAuth(handler: AuthenticatedHandler) {
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
 
+    // SECURITY FIX: Only allow TEST_API_KEY in development/test environments
     const apiKey = process.env.TEST_API_KEY;
-    if (!session && apiKey && request.headers.get("x-api-key") === apiKey) {
+    const isDevelopment = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+    if (!session && apiKey && isDevelopment && request.headers.get("x-api-key") === apiKey) {
       const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
       if (admin) {
         session = {
@@ -83,8 +85,10 @@ export function withAdminAuth(handler: AuthenticatedHandler) {
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
 
+    // SECURITY FIX: Only allow TEST_API_KEY in development/test environments
     const apiKey = process.env.TEST_API_KEY;
-    if (!session && apiKey && request.headers.get("x-api-key") === apiKey) {
+    const isDevelopment = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+    if (!session && apiKey && isDevelopment && request.headers.get("x-api-key") === apiKey) {
       const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
       if (admin) {
         session = {

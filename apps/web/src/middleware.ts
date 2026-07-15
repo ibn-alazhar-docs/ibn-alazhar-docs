@@ -107,9 +107,23 @@ export async function middleware(request: NextRequest) {
           );
         }
       } else {
-        // Legacy fallback: existing Origin/Referer check (cookie not yet issued)
+        // FIXED: Always require Origin/Referer for state-changing requests
+        // This prevents CSRF even for unauthenticated endpoints
         const origin = request.headers.get("origin");
         const referer = request.headers.get("referer");
+        
+        if (!origin && !referer) {
+          return NextResponse.json(
+            {
+              error: {
+                code: "CSRF_ERROR",
+                message: "Forbidden: CSRF protection requires origin or referer header",
+              },
+            },
+            { status: 403 },
+          );
+        }
+
         if (origin) {
           try {
             const originUrl = new URL(origin);
@@ -146,16 +160,6 @@ export async function middleware(request: NextRequest) {
               { status: 403 },
             );
           }
-        } else if (hasSessionCookie(request)) {
-          return NextResponse.json(
-            {
-              error: {
-                code: "CSRF_ERROR",
-                message: "Forbidden: CSRF protection requires origin or referer header",
-              },
-            },
-            { status: 403 },
-          );
         }
       }
     }
