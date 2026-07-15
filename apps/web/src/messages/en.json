@@ -719,5 +719,10 @@
     "counted": "{count} bookmarks",
     "emptyTitle": "No bookmarked documents",
     "emptyDesc": "Click the heart icon on any document to add it to your bookmarks"
+  },
+  "errors": {
+    "storageNotFound": "Storage directory not found. Check deployment settings",
+    "storageNotWritable": "No write permission on storage directory",
+    "storageFull": "Storage is full"
   }
 }

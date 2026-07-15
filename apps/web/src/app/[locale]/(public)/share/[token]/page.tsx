@@ -330,9 +330,10 @@ export default async function SharePage({ params }: SharePageProps) {
           <hr className="my-6 border-line" />
 
           <div
-            className="text-primary-color leading-relaxed"
+            className="text-primary-color leading-relaxed prose prose-lg max-w-none"
+            dir={dir}
             dangerouslySetInnerHTML={{
-              __html: renderMarkdown(data.content.markdown),
+              __html: renderMarkdown(data.content.markdown || data.content.rawText),
             }}
           />
         </article>
