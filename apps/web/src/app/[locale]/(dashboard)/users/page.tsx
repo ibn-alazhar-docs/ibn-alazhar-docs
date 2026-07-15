@@ -66,7 +66,7 @@ export default function UsersPage() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error?.message || t("roleToggleError"));
       }
-      
+
       // إعادة تحميل البيانات من السيرفر بدلاً من تحديث الحالة المحلية فقط
       await loadUsers();
     } catch (err) {
@@ -85,7 +85,7 @@ export default function UsersPage() {
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error?.message || t("deleteError"));
       }
-      
+
       // إعادة تحميل البيانات من السيرفر
       await loadUsers();
     } catch (err) {

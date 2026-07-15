@@ -3,7 +3,6 @@ import type { IFolderRepository } from "../../domain/repositories/folder.reposit
 import type { Prisma } from "@/domain/repositories/prisma-types";
 import { AppError, NotFoundError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
-import { isAdminRole } from "@/domain/auth";
 import { logger } from "@/shared/logger";
 
 export class DocumentCrudUseCases {
@@ -23,9 +22,10 @@ export class DocumentCrudUseCases {
       take?: number;
     },
   ) {
-    const admin = isAdminRole(role);
+    // كل مستخدم يرى مستنداته فقط، حتى المشرفين
+    // المشرفون لديهم صلاحيات إضافية لكن لا يرون مستندات الآخرين
     const where: Prisma.DocumentWhereInput = {
-      ...(admin ? {} : { userId }),
+      userId,
       deletedAt: filters.deleted ? { not: null } : null,
     };
 
@@ -113,14 +113,13 @@ export class DocumentCrudUseCases {
   }
 
   async bulkDeleteDocuments(ids: string[], userId: string, role?: string) {
-    const admin = role ? isAdminRole(role) : false;
+    // كل مستخدم يحذف مستنداته فقط
     const where: Prisma.DocumentWhereInput = {
       id: { in: ids },
+      userId,
       deletedAt: null,
     };
-    if (!admin) {
-      where.userId = userId;
-    }
+
     const documents = await this.documentRepository.findMany({
       where,
       select: { id: true },
@@ -129,10 +128,11 @@ export class DocumentCrudUseCases {
     if (documents.length === 0) return 0;
 
     const foundIds = documents.map((d) => d.id);
-    const updateWhere: Prisma.DocumentWhereInput = { id: { in: foundIds } };
-    if (!admin) {
-      updateWhere.userId = userId;
-    }
+    const updateWhere: Prisma.DocumentWhereInput = {
+      id: { in: foundIds },
+      userId,
+    };
+
     const { count } = await this.documentRepository.updateMany(updateWhere, {
       deletedAt: new Date(),
     });

@@ -1,6 +1,5 @@
 import { PrismaClient } from "@prisma/client";
 import type { Prisma } from "@prisma/client";
-import { isAdminRole } from "@/domain/auth";
 import type { ITagRepository } from "@/domain/repositories/tag.repository.interface";
 
 export class TagRepository implements ITagRepository {
@@ -47,17 +46,17 @@ export class TagRepository implements ITagRepository {
   async findFolderTags(userId: string, role: string, folderId: string | null) {
     const isRoot = folderId === "root";
     const whereFolder = isRoot ? { folderId: null } : { folderId };
-    const admin = isAdminRole(role);
 
+    // كل مستخدم يرى وسومه فقط
     const where = {
       deletedAt: null,
+      userId,
       ...whereFolder,
-      ...(admin ? {} : { userId }),
     };
 
     return this.prisma.tag.findMany({
       where: {
-        ...(admin ? {} : { userId }),
+        userId,
         documents: {
           some: {
             document: where,
@@ -80,21 +79,19 @@ export class TagRepository implements ITagRepository {
   }
 
   async findTagById(id: string, userId: string, role: string) {
-    const admin = isAdminRole(role);
     return this.prisma.tag.findFirst({
       where: {
         id,
-        ...(admin ? {} : { userId }),
+        userId,
       },
     });
   }
 
   async findManyTagsByIds(ids: string[], userId: string, role: string) {
-    const admin = isAdminRole(role);
     return this.prisma.tag.findMany({
       where: {
         id: { in: ids },
-        ...(admin ? {} : { userId }),
+        userId,
       },
     });
   }
