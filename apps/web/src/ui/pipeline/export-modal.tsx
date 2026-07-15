@@ -75,22 +75,22 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         />
         <div className="relative z-10 max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl border border-line bg-card shadow-lg animate-in fade-in zoom-in-95 duration-200">
           {/* Header */}
-          <div className="border-b border-line bg-badge/50 px-4 sm:px-6 py-3 sm:py-4">
-            <h3 className="text-lg sm:text-xl font-bold text-primary-color flex items-center gap-2">
-              <ExportIcon className="w-4 h-4 sm:w-5 sm:h-5 text-success" />
-              {t("title")}
+          <div className="border-b border-line bg-badge/50 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 md:py-4">
+            <h3 className="text-base sm:text-lg md:text-xl font-bold text-primary-color flex items-center gap-2">
+              <ExportIcon className="w-4 h-4 sm:w-5 sm:h-5 text-success shrink-0" />
+              <span className="truncate">{t("title")}</span>
             </h3>
           </div>
 
           {/* Body */}
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5">
+          <div className="p-3 sm:p-4 md:p-6 space-y-3 sm:space-y-4">
             <div className="space-y-1.5">
               <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("format")}</label>
               <div className="relative">
                 <select
                   value={format}
                   onChange={(e) => setFormat(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2.5 sm:py-3 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                  className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
                   <option value="searchable-pdf">{t("formatSearchablePdf")}</option>
                   <option value="pdf">{t("formatPdf")}</option>
@@ -99,27 +99,27 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   <option value="md">{t("formatMd")}</option>
                   <option value="txt">{t("formatTxt")}</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-4 text-muted-color">
-                  <ChevronDownIcon className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
+                  <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
               </div>
             </div>
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-sm font-semibold text-primary-color">{t("fontSize")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("fontSize")}</label>
                 <div className="relative">
                   <select
                     value={fontSize}
                     onChange={(e) => setFontSize(e.target.value)}
-                    className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                    className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                   >
                     <option value="small">{t("small")}</option>
                     <option value="medium">{t("medium")}</option>
                     <option value="large">{t("large")}</option>
                   </select>
-                  <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-4 text-muted-color">
-                    <ChevronDownIcon className="h-4 w-4" />
+                  <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
+                    <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   </div>
                 </div>
               </div>
@@ -127,54 +127,54 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-sm font-semibold text-primary-color">{t("watermark")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("watermark")}</label>
                 <input
                   type="text"
                   value={watermark}
                   onChange={(e) => setWatermark(e.target.value)}
                   placeholder={t("watermarkPlaceholder")}
-                  className="w-full rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
+                  className="w-full rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
                 />
               </div>
             )}
 
             {format !== "searchable-pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-sm font-semibold text-primary-color">{t("pageRange")}</label>
+                <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("pageRange")}</label>
                 <input
                   type="text"
                   value={pageRange}
                   onChange={(e) => setPageRange(e.target.value)}
                   placeholder={t("pageRangePlaceholder")}
-                  className="w-full rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
+                  className="w-full rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
                 />
               </div>
             )}
 
             <div className="space-y-1.5">
-              <label className="text-sm font-semibold text-primary-color">{t("destination")}</label>
+              <label className="text-xs sm:text-sm font-semibold text-primary-color">{t("destination")}</label>
               <div className="relative">
                 <select
                   value={destination}
                   onChange={(e) => setDestination(e.target.value)}
-                  className="w-full appearance-none rounded-lg border border-line bg-badge px-4 py-3 text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
+                  className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
                   <option value="download">{t("download")}</option>
                   <option value="drive">{t("drive")}</option>
                 </select>
-                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-4 text-muted-color">
-                  <ChevronDownIcon className="h-4 w-4" />
+                <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
+                  <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Footer */}
-          <div className="bg-badge/30 px-4 sm:px-6 py-3 sm:py-4 border-t border-line flex items-center justify-end gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+          <div className="bg-badge/30 px-3 sm:px-4 md:px-6 py-2.5 sm:py-3 border-t border-line flex items-center justify-end gap-2 flex-wrap">
             <button
               type="button"
               onClick={onClose}
-              className="rounded-lg px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color whitespace-nowrap"
+              className="rounded-lg px-3 sm:px-4 md:px-5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-muted-color transition-colors hover:bg-badge hover:text-primary-color whitespace-nowrap"
             >
               {t("cancel")}
             </button>
@@ -182,12 +182,12 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
               type="button"
               onClick={handleExport}
               disabled={loading}
-              className="flex items-center gap-1.5 sm:gap-2 rounded-lg px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-btn-primary-text transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20 whitespace-nowrap"
+              className="flex items-center gap-1.5 rounded-lg px-4 sm:px-5 md:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-btn-primary-text transition-all bg-success hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-[var(--success)]/20 whitespace-nowrap"
             >
               {loading ? (
                 <>
-                  <SpinnerIcon className="h-3 w-3 sm:h-4 sm:w-4" />
-                  {t("exporting")}
+                  <SpinnerIcon className="h-3 w-3 sm:h-4 sm:w-4 shrink-0" />
+                  <span className="truncate">{t("exporting")}</span>
                 </>
               ) : (
                 t("export")

@@ -38,16 +38,18 @@ export default function FilesPage() {
               <button
                 type="button"
                 onClick={() => setShowMobileSidebar((p) => !p)}
-                className="mb-3 flex items-center gap-2 rounded-lg border border-line px-3 py-2 text-xs font-semibold text-muted-color hover:bg-hover transition-colors lg:hidden"
+                className="mb-3 flex items-center gap-2 rounded-lg border border-line px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-xs font-semibold text-muted-color hover:bg-hover transition-colors lg:hidden"
               >
-                <FolderIcon className="h-4 w-4" />
-                {showMobileSidebar
-                  ? tDocs("hideSidebar") || "إخفاء الفلاتر"
-                  : tDocs("showSidebar") || "إظهار الفلاتر"}
+                <FolderIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
+                <span className="truncate">
+                  {showMobileSidebar
+                    ? tDocs("hideSidebar") || "إخفاء الفلاتر"
+                    : tDocs("showSidebar") || "إظهار الفلاتر"}
+                </span>
               </button>
               <Card
                 className={[
-                  "space-y-6 p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto",
+                  "space-y-4 sm:space-y-6 p-3 sm:p-4 lg:sticky lg:top-4 lg:max-h-[calc(100dvh-6rem)] lg:overflow-y-auto",
                   showMobileSidebar ? "block" : "hidden lg:block",
                 ].join(" ")}
               >
@@ -55,7 +57,7 @@ export default function FilesPage() {
                   selectedFolderId={fm.selectedFolderId}
                   onSelectFolder={fm.handleFolderSelect}
                 />
-                <div className="border-t border-line pt-4">
+                <div className="border-t border-line pt-3 sm:pt-4">
                   <TagFilterSidebar
                     selectedTagIds={fm.selectedTagIds}
                     onTagsChange={fm.setSelectedTagIds}

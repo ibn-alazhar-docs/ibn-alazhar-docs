@@ -17,15 +17,16 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
   }
 
   return (
-    <div className="sticky top-0 z-40 flex items-center justify-between flex-wrap gap-3 p-4 bg-card border-b border-line shadow-sm">
-      <div className="flex items-center gap-3">
+    <div className="sticky top-0 z-40 flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 sm:p-4 bg-card border-b border-line shadow-sm">
+      {/* Back button + Title */}
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
         <button
           onClick={onBack}
-          className="text-muted-color hover:text-primary-color transition-colors rounded-lg p-2 min-h-11 min-w-11 flex items-center justify-center"
+          className="shrink-0 text-muted-color hover:text-primary-color transition-colors rounded-lg p-1.5 sm:p-2 min-h-8 min-w-8 sm:min-h-10 sm:min-w-10 flex items-center justify-center"
           aria-label={t("back")}
         >
           <svg
-            className="w-5 h-5 rtl:-scale-x-100"
+            className="w-4 h-4 sm:w-5 sm:h-5 rtl:-scale-x-100"
             fill="none"
             viewBox="0 0 24 24"
             strokeWidth="1.5"
@@ -38,45 +39,46 @@ export function PreviewToolbar({ jobId, fileName, onBack }: PreviewToolbarProps)
             />
           </svg>
         </button>
-        <h2 className="text-sm font-medium text-primary-color truncate max-w-[200px] sm:max-w-[400px]">
+        <h2 className="text-xs sm:text-sm font-medium text-primary-color truncate min-w-0">
           {fileName}
         </h2>
       </div>
 
-      <div className="flex items-center gap-2">
-        <span className="text-xs text-very-muted ms-2">{t("export")}</span>
+      {/* Export buttons */}
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap w-full sm:w-auto">
+        <span className="text-[10px] sm:text-xs text-very-muted hidden sm:inline">{t("export")}</span>
         <button
           onClick={() => handleExport("md")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
+          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-card border border-line text-primary-color rounded-md sm:rounded-lg hover:bg-badge transition-colors"
         >
           .md
         </button>
         <button
           onClick={() => handleExport("txt")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
+          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-card border border-line text-primary-color rounded-md sm:rounded-lg hover:bg-badge transition-colors"
         >
           .txt
         </button>
         <button
           onClick={() => handleExport("json")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-card border border-line text-primary-color rounded-lg hover:bg-badge transition-colors"
+          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-card border border-line text-primary-color rounded-md sm:rounded-lg hover:bg-badge transition-colors"
         >
           .json
         </button>
         <button
           onClick={() => handleExport("docx")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
+          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md sm:rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
         >
           .docx
         </button>
         <button
           onClick={() => handleExport("epub")}
           dir="ltr"
-          className="px-3 py-1.5 text-xs font-medium bg-primary-color border border-primary-color text-card rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
+          className="px-2 sm:px-3 py-1 sm:py-1.5 text-[10px] sm:text-xs font-medium bg-primary-color border border-primary-color text-card rounded-md sm:rounded-lg hover:bg-primary-hover transition-colors shadow-sm"
         >
           .epub
         </button>
