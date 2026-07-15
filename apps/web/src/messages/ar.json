@@ -513,7 +513,9 @@
     "completed": "اكتمل",
     "failed": "فشل",
     "cancelled": "أُلغي",
-    "conversions": "المعالجة"
+    "conversions": "المعالجة",
+    "all": "الكل",
+    "filterByStatus": "تصفية حسب الحالة"
   },
   "settings": {
     "title": "الإعدادات",

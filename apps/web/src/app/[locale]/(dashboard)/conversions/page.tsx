@@ -57,13 +57,18 @@ export default function ConversionsPage() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined); // FILTER FIX: Add status filter
 
-  const fetchJobs = useCallback(async (p: number) => {
+  const fetchJobs = useCallback(async (p: number, status?: string) => {
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/conversion/list?page=${p}&limit=${PAGINATION.CONVERSION_PAGE_SIZE}`,
-      );
+      const params = new URLSearchParams({
+        page: String(p),
+        limit: String(PAGINATION.CONVERSION_PAGE_SIZE),
+      });
+      if (status) params.set("status", status); // FILTER FIX: Apply status filter
+
+      const res = await fetch(`/api/conversion/list?${params}`);
       if (res.ok) {
         const data = await res.json();
         setJobs(data.jobs);
@@ -77,8 +82,8 @@ export default function ConversionsPage() {
   }, []);
 
   useEffect(() => {
-    fetchJobs(page);
-  }, [page, fetchJobs]);
+    fetchJobs(page, statusFilter); // FILTER FIX: Pass status filter
+  }, [page, statusFilter, fetchJobs]);
 
   // Auto-refresh active conversions every 5s
   useEffect(() => {
@@ -86,10 +91,10 @@ export default function ConversionsPage() {
     if (!hasActive) return;
 
     const interval = setInterval(() => {
-      fetchJobs(page);
+      fetchJobs(page, statusFilter); // FILTER FIX: Pass status filter
     }, 5000);
     return () => clearInterval(interval);
-  }, [jobs, page, fetchJobs]);
+  }, [jobs, page, statusFilter, fetchJobs]);
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -104,6 +109,50 @@ export default function ConversionsPage() {
             <div>
               <Heading level={2}>{t("conversions")}</Heading>
               <Text color="muted">{tConv("subtitle")}</Text>
+            </div>
+
+            {/* FILTER FIX: Status filter buttons */}
+            <div className="flex flex-wrap gap-2">
+              <Button
+                size="sm"
+                variant={statusFilter === undefined ? "default" : "outline"}
+                onClick={() => {
+                  setStatusFilter(undefined);
+                  setPage(1);
+                }}
+              >
+                {tConv("all")}
+              </Button>
+              <Button
+                size="sm"
+                variant={statusFilter === "PROCESSING" ? "default" : "outline"}
+                onClick={() => {
+                  setStatusFilter("PROCESSING");
+                  setPage(1);
+                }}
+              >
+                {tConv("processing")}
+              </Button>
+              <Button
+                size="sm"
+                variant={statusFilter === "COMPLETED" ? "default" : "outline"}
+                onClick={() => {
+                  setStatusFilter("COMPLETED");
+                  setPage(1);
+                }}
+              >
+                {tConv("completed")}
+              </Button>
+              <Button
+                size="sm"
+                variant={statusFilter === "FAILED" ? "default" : "outline"}
+                onClick={() => {
+                  setStatusFilter("FAILED");
+                  setPage(1);
+                }}
+              >
+                {tConv("failed")}
+              </Button>
             </div>
 
             {/* Search by Job ID */}

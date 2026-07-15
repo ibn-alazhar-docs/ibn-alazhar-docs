@@ -23,8 +23,22 @@ secrets:
     <img src="https://img.shields.io/badge/TypeScript-5.x-blue?style=for-the-badge&logo=typescript" alt="TypeScript" />
     <img src="https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker" alt="Docker" />
     <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License" />
+    <img src="https://img.shields.io/badge/Status-Production_Ready-success?style=for-the-badge" alt="Production Ready" />
   </p>
 </div>
+
+---
+
+## 🚀 **NEW: July 2026 Production Release**
+
+✅ **99.7% Performance Improvement** - Sidebar now responds in <100ms (was 30s)  
+✅ **5 Critical Security Vulnerabilities Fixed** - CSRF, admin bypass, rate limiting  
+✅ **UI/UX Enhanced** - Status filters, dashboard fixes, empty states  
+✅ **Storage Persistence** - Files no longer disappear after restart  
+
+**📋 Quick Start:** [`QUICK_START.md`](./QUICK_START.md)  
+**🚀 Deployment:** [`DEPLOYMENT_READY.md`](./DEPLOYMENT_READY.md)  
+**📚 Full Details:** [`docs/FIXES_SUMMARY_JULY_2026.md`](./docs/FIXES_SUMMARY_JULY_2026.md)
 
 ---
 

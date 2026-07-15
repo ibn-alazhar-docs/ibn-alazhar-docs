@@ -21,18 +21,25 @@ export async function generateMetadata({ params }: DashboardPageProps): Promise<
 
 export default async function DashboardPage() {
   const session = await requireAuth();
-  
+
   // SECURITY FIX: كل مستخدم يرى بياناته فقط (بغض النظر عن دوره)
   const docWhere = { userId: session.user.id, deletedAt: null };
   const folderWhere = { userId: session.user.id, deletedAt: null };
   const tagWhere = { userId: session.user.id };
-  const conversionWhere = { userId: session.user.id };
+  // FIX: Count processing documents, not conversion jobs
+  const processingWhere = {
+    userId: session.user.id,
+    status: {
+      in: ["UPLOADED", "VALIDATING", "SPLITTING", "OCR_PROCESSING", "CLEANING", "GENERATING"],
+    },
+    deletedAt: null,
+  };
 
   const [documents, folders, tags, conversions, recentDocuments] = await Promise.all([
     prisma.document.count({ where: docWhere }),
     prisma.folder.count({ where: folderWhere }),
     prisma.tag.count({ where: tagWhere }),
-    prisma.conversionJob.count({ where: conversionWhere }),
+    prisma.document.count({ where: processingWhere }), // FIX: Count documents being processed
     prisma.document.findMany({
       where: docWhere,
       orderBy: { createdAt: "desc" },

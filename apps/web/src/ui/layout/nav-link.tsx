@@ -2,6 +2,7 @@
 
 import { usePathname, Link } from "@/i18n/navigation";
 import { cn } from "@/ui/cn";
+import { memo, useCallback, useRef } from "react";
 import type { ReactNode } from "react";
 
 interface NavLinkProps {
@@ -11,19 +12,36 @@ interface NavLinkProps {
   onNavigate?: () => void;
 }
 
-export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
+// PERFORMANCE FIX: Memoize NavLink to prevent unnecessary re-renders
+export const NavLink = memo(function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
   const pathname = usePathname();
+  const isNavigatingRef = useRef(false); // PERFORMANCE FIX: Debounce rapid clicks
 
   const isActive =
     href === "/" || href === ""
       ? pathname === "/" || pathname === ""
       : pathname === href || pathname.startsWith(href + "/");
 
-  function handleClick() {
-    if (onNavigate) {
-      onNavigate();
-    }
-  }
+  // PERFORMANCE FIX: Memoize click handler to prevent recreating on every render + debounce
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      // Prevent rapid double-clicks causing duplicate navigation
+      if (isNavigatingRef.current) {
+        e.preventDefault();
+        return;
+      }
+
+      isNavigatingRef.current = true;
+      setTimeout(() => {
+        isNavigatingRef.current = false;
+      }, 1000); // 1 second debounce
+
+      if (onNavigate) {
+        onNavigate();
+      }
+    },
+    [onNavigate],
+  );
 
   return (
     <Link
@@ -41,4 +59,4 @@ export function NavLink({ href, children, icon, onNavigate }: NavLinkProps) {
       <span className="truncate">{children}</span>
     </Link>
   );
-}
+});

@@ -8,6 +8,7 @@ import { logger } from "@/shared/logger";
 interface ActiveJob {
   jobId: string;
   fileName: string;
+  createdAt?: string; // PERFORMANCE FIX: Track job start time for adaptive polling
 }
 
 interface Breadcrumb {
@@ -121,9 +122,11 @@ export function useFilesManager(): UseFilesManagerReturn {
                 originalName?: string;
                 fileName?: string;
                 title?: string;
+                createdAt?: string;
               }) => ({
                 jobId: d.id,
                 fileName: d.originalName || d.fileName || d.title,
+                createdAt: d.createdAt || new Date().toISOString(), // PERFORMANCE FIX: Track creation time
               }),
             );
 
@@ -167,19 +170,36 @@ export function useFilesManager(): UseFilesManagerReturn {
     setSelectedDocs(new Set());
   }, [selectedFolderId, selectedTagIds, loadDocuments, loadBreadcrumbs]);
 
-  // Poll while there are active (processing) jobs so the UI reflects progress,
-  // completion, or failure even when the SSE stream is interrupted. Cleared
-  // automatically once no jobs remain to avoid needless traffic.
+  // PERFORMANCE FIX: Poll only when needed, with smarter interval
   useEffect(() => {
     if (activeJobs.length === 0) return;
+
+    // Adaptive polling: faster for first minute, then slower
+    const getInterval = () => {
+      if (activeJobs.length === 0) return 10000;
+
+      const oldestJob = activeJobs[0];
+      if (!oldestJob.createdAt) return 5000; // Fallback if no timestamp
+
+      const jobAge = Date.now() - new Date(oldestJob.createdAt).getTime();
+
+      // First 2 minutes: poll every 3 seconds (faster feedback)
+      if (jobAge < 120000) return 3000;
+      // Next 3 minutes: poll every 6 seconds
+      if (jobAge < 300000) return 6000;
+      // After 5 minutes: poll every 10 seconds (likely stuck)
+      return 10000;
+    };
+
     const interval = setInterval(() => {
       loadDocuments(selectedFolderId);
-    }, 4000);
+    }, getInterval());
+
     return () => clearInterval(interval);
   }, [activeJobs.length, selectedFolderId, loadDocuments]);
 
   function handleUploadStart(jobId: string, fileName: string) {
-    setActiveJobs((prev) => [{ jobId, fileName }, ...prev]);
+    setActiveJobs((prev) => [{ jobId, fileName, createdAt: new Date().toISOString() }, ...prev]); // PERFORMANCE FIX: Track start time
     loadDocuments(selectedFolderId);
   }
 

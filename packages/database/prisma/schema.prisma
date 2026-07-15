@@ -151,6 +151,8 @@ model Document {
   @@index([userId, deletedAt, createdAt])
   @@index([deletedAt])
   @@index([status, createdAt])
+  @@index([userId, status, deletedAt]) // PERFORMANCE: Composite index for filtering by user + status + soft-delete
+  @@index([userId, folderId, deletedAt]) // PERFORMANCE: Composite index for folder queries
   @@map("documents")
 }
 
