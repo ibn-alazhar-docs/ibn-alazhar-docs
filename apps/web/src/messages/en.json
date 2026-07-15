@@ -629,6 +629,7 @@
     "copyLink": "Copy Link",
     "copied": "Copied!",
     "revokeLink": "Revoke Link",
+    "regenerateLink": "Regenerate Link",
     "createLink": "Create Public Link",
     "expiration": "Expiration",
     "expiresIn": "Expires In",

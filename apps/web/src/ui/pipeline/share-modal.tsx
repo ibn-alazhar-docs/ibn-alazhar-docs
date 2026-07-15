@@ -98,6 +98,33 @@ export function ShareModal({ documentId, isOpen, onClose, documentStatus }: Shar
     }
   }
 
+  async function handleRegenerateLink() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiFetch(`/api/documents/${documentId}/share/regenerate`, {
+        method: "POST",
+      });
+
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error?.message || t("error"));
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        setShareUrl(data.url);
+      } else if (data.token) {
+        setShareUrl(`${window.location.origin}/share/${data.token}`);
+      }
+      setCopied(false);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : t("error"));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function handleRevokeLink() {
     setLoading(true);
     setError(null);
