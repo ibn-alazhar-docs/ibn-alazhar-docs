@@ -35,15 +35,17 @@ export function registerCleaningStage(
         const ocrBuffer = await downloadFile(config, ocrKey);
         const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
         const rawText: string = ocrData.text;
+        const ocrConfidence: number = ocrData.confidence || 0.5;
 
-        const baseCleaned = cleanArabicText(rawText);
+        // Pass confidence to cleaning for adaptive behavior
+        const baseCleaned = cleanArabicText(rawText, { confidence: ocrConfidence });
         const cleaned = await enhanceArabicText(baseCleaned);
 
         const cleanedKey = `${config.paths.ocrResults}/${data.id}/cleaned.json`;
         await uploadBuffer(
           config,
           cleanedKey,
-          Buffer.from(JSON.stringify({ text: cleaned })),
+          Buffer.from(JSON.stringify({ text: cleaned, confidence: ocrConfidence })),
           "application/json",
         );
 

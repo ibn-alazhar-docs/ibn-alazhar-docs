@@ -39,10 +39,23 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             className="inline-flex size-8 sm:size-10 items-center justify-center rounded-lg text-muted-color hover:bg-hover hover:text-primary-color transition-colors lg:hidden shrink-0"
             aria-label={isMenuOpen ? tUi("menuClose") : tUi("menuOpen")}
           >
-            {isMenuOpen ? <CloseIcon className="size-4 sm:size-5" /> : <MenuIcon className="size-4 sm:size-5" />}
+            {isMenuOpen ? (
+              <CloseIcon className="size-4 sm:size-5" />
+            ) : (
+              <MenuIcon className="size-4 sm:size-5" />
+            )}
           </button>
-          <Link href="/dashboard" className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0">
-            <Image src="/logo.png" alt={t("name")} width={32} height={32} className="h-6 sm:h-7 lg:h-8 w-auto shrink-0" />
+          <Link
+            href="/dashboard"
+            className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0"
+          >
+            <Image
+              src="/logo.png"
+              alt={t("name")}
+              width={32}
+              height={32}
+              className="h-6 sm:h-7 lg:h-8 w-auto shrink-0"
+            />
             <span className="heading-display-sm text-[10px] sm:text-xs font-bold tracking-tight text-primary-color truncate max-w-[100px] sm:max-w-[120px] lg:max-w-none">
               {t("name")}
             </span>
@@ -59,7 +72,9 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-0.5 sm:gap-1">
-          <span className="hidden lg:inline text-[10px] sm:text-xs text-very-muted truncate max-w-[100px]">{t("tagline")}</span>
+          <span className="hidden lg:inline text-[10px] sm:text-xs text-very-muted truncate max-w-[100px]">
+            {t("tagline")}
+          </span>
           <LocaleToggle />
           <ThemeToggle />
           <button

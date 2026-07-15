@@ -1,5 +1,5 @@
 export { cleanArabicText, enhanceArabicText } from "./clean";
-export type { CleanOptions } from "./clean";
+export type { CleanOptions, CleanArabicTextOptions } from "./clean";
 export { analyzeText, detectDocumentType } from "./analyze";
 export type { TextAnalysis, DocumentType } from "./analyze";
 export {

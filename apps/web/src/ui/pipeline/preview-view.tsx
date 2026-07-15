@@ -184,13 +184,19 @@ export function PreviewView({ jobId }: PreviewViewProps) {
               </h4>
             ),
             p: ({ children }) => (
-              <p className="mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] text-justify text-base sm:text-lg md:text-xl">{children}</p>
+              <p className="mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] text-justify text-base sm:text-lg md:text-xl">
+                {children}
+              </p>
             ),
             ul: ({ children }) => (
-              <ul className="list-disc ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">{children}</ul>
+              <ul className="list-disc ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">
+                {children}
+              </ul>
             ),
             ol: ({ children }) => (
-              <ol className="list-decimal ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">{children}</ol>
+              <ol className="list-decimal ps-6 sm:ps-8 mb-4 sm:mb-6 leading-[1.8] sm:leading-[2.2] space-y-1.5 sm:space-y-2 text-base sm:text-lg md:text-xl">
+                {children}
+              </ol>
             ),
             li: ({ children }) => <li>{children}</li>,
             blockquote: ({ children }) => (

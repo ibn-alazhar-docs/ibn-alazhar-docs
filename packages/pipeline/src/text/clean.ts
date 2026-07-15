@@ -77,7 +77,11 @@ function removeRepeatedTokens(text: string): string {
   return text.replace(/\b(\S+)(\s+\1){3,}\b/g, "$1");
 }
 
-function removeGarbageSymbols(text: string): string {
+function removeGarbageSymbols(text: string, confidence?: number): string {
+  // Adaptive cleaning: higher confidence = lighter cleaning, lower confidence = more aggressive
+  const aggressiveness = confidence !== undefined ? 1.0 - confidence : 0.5;
+  const symbolThreshold = 0.6 + aggressiveness * 0.2; // 0.6-0.8 range
+
   return text
     .split("\n")
     .map((line) => {
@@ -95,11 +99,13 @@ function removeGarbageSymbols(text: string): string {
 
       const realContent = arabic + latin + digits;
 
-      if (chars.length > 5 && symbols / chars.length > 0.6 && realContent < 3) {
+      // Only remove if very high symbol ratio AND very low real content
+      if (chars.length > 5 && symbols / chars.length > symbolThreshold && realContent < 2) {
         return "";
       }
 
-      if (/^[؟?!.،،،\-\s]{4,}$/.test(trimmed)) {
+      // Only remove pure punctuation lines
+      if (/^[؟?!.،،،\-\s]{5,}$/.test(trimmed)) {
         return "";
       }
 
@@ -134,7 +140,10 @@ function normalizeArabicPunctuation(text: string): string {
   return text;
 }
 
-function removeIsolatedFragments(text: string): string {
+function removeIsolatedFragments(text: string, confidence?: number): string {
+  // Be less aggressive for high-confidence OCR results
+  const minLength = confidence !== undefined && confidence > 0.8 ? 2 : 3;
+
   return text
     .split("\n")
     .map((line) => {
@@ -144,12 +153,19 @@ function removeIsolatedFragments(text: string): string {
       if (trimmed.startsWith("#") || trimmed.startsWith("- ") || trimmed.startsWith("> "))
         return line;
 
-      if (trimmed.length <= 3) {
+      if (trimmed.length <= minLength) {
         const arabic = (trimmed.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
         const latin = (trimmed.match(/[a-zA-Z]/g) || []).length;
-        const symbols = (trimmed.match(/[^a-zA-Z\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\s]/g) || [])
-          .length;
-        if (arabic === 0 && latin === 0 && symbols > 0) return "";
+        const digits = (trimmed.match(/[0-9]/g) || []).length;
+        const symbols = (
+          trimmed.match(/[^a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\s]/g) || []
+        ).length;
+
+        // Keep if has any meaningful content (arabic, latin, or digits)
+        if (arabic > 0 || latin > 0 || digits > 0) return line;
+
+        // Only remove pure symbol fragments
+        if (symbols > 0 && arabic === 0 && latin === 0 && digits === 0) return "";
       }
 
       return line;
@@ -406,7 +422,11 @@ function finalCleanup(text: string): string {
     .join("\n");
 }
 
-export function cleanArabicText(raw: string, options?: CleanOptions): string {
+export interface CleanArabicTextOptions extends CleanOptions {
+  confidence?: number; // OCR confidence score to adjust cleaning aggressiveness
+}
+
+export function cleanArabicText(raw: string, options?: CleanArabicTextOptions): string {
   let text = raw;
 
   // Auto-detect document type if options not provided or if using DEFAULT_OPTIONS
@@ -420,6 +440,8 @@ export function cleanArabicText(raw: string, options?: CleanOptions): string {
   } else {
     opts = { ...DEFAULT_OPTIONS, ...options };
   }
+
+  const confidence = options?.confidence;
 
   if (opts.normalizeUnicode) {
     text = text.normalize("NFKC");
@@ -465,9 +487,9 @@ export function cleanArabicText(raw: string, options?: CleanOptions): string {
   if (opts.removeBrokenHtml) text = removeBrokenHtml(text);
   if (opts.removeAsciiNoise) text = removeAsciiNoise(text);
   if (opts.removeRepeatedTokens) text = removeRepeatedTokens(text);
-  if (opts.removeGarbageSymbols) text = removeGarbageSymbols(text);
+  if (opts.removeGarbageSymbols) text = removeGarbageSymbols(text, confidence);
   if (opts.normalizePunctuation) text = normalizeArabicPunctuation(text);
-  if (opts.removeIsolatedFragments) text = removeIsolatedFragments(text);
+  if (opts.removeIsolatedFragments) text = removeIsolatedFragments(text, confidence);
   if (opts.collapseRepeatedWords) text = collapseRepeatedWords(text);
   if (opts.detectHeadings) text = detectArabicHeadings(text);
   if (opts.reconstructLines) {
