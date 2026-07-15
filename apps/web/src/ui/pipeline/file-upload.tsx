@@ -63,18 +63,29 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
       <motion.div
         whileHover={{
           scale: 1.01,
-          borderColor: "var(--success)",
+          borderColor: file ? "var(--gold)" : "var(--success)",
           boxShadow: "0 4px 20px var(--shadow-color, rgba(0,0,0,0.05))",
         }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ type: "spring", stiffness: 300, damping: 20 }}
-        className="border-2 border-dashed border-line rounded-lg p-4 sm:p-8 text-center cursor-pointer transition-colors"
+        className={`border-2 border-dashed rounded-lg p-6 sm:p-8 text-center cursor-pointer transition-all duration-200 ${
+          file
+            ? "border-gold/50 bg-gold-bg/30"
+            : "border-line hover:border-success/50 hover:bg-success-bg/20"
+        }`}
         onClick={() => inputRef.current?.click()}
-        onDragOver={(e) => e.preventDefault()}
+        onDragOver={(e) => {
+          e.preventDefault();
+          e.currentTarget.classList.add("border-success", "bg-success-bg/30");
+        }}
+        onDragLeave={(e) => {
+          e.currentTarget.classList.remove("border-success", "bg-success-bg/30");
+        }}
         onDrop={(e) => {
           e.preventDefault();
+          e.currentTarget.classList.remove("border-success", "bg-success-bg/30");
           const dropped = e.dataTransfer.files[0];
           if (dropped) handleFileSelect(dropped);
         }}
@@ -91,24 +102,43 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
           data-testid="file-input"
         />
 
-        {file ? (
-          <div className="space-y-1 sm:space-y-2">
-            <div className="text-base sm:text-lg font-medium text-primary-color break-words px-2">
-              {file.name}
-            </div>
-            <div className="text-xs sm:text-sm text-muted-color">
-              {(file.size / 1024 / 1024).toFixed(2)} MB
-            </div>
+        <div className="flex flex-col items-center gap-3 sm:gap-4">
+          {/* Icon - always visible */}
+          <div className={`${file ? "text-gold" : "text-muted-color"} transition-colors`}>
+            <FileTextIcon className="h-10 w-10 sm:h-12 sm:w-12" />
           </div>
-        ) : (
-          <div className="space-y-1 sm:space-y-2 px-2">
-            <div className="mb-1 sm:mb-2 text-muted-color">
-              <FileTextIcon className="mx-auto h-8 w-8 sm:h-10 sm:w-10" />
-            </div>
-            <div className="text-base sm:text-lg font-medium text-muted-color">{t("dragDrop")}</div>
-            <div className="text-xs sm:text-sm text-very-muted">{t("formats")}</div>
+
+          {/* Main text */}
+          <div className="space-y-2 w-full">
+            {file ? (
+              <>
+                <div className="text-sm sm:text-base font-semibold text-primary-color truncate px-4 max-w-full">
+                  {file.name}
+                </div>
+                <div className="text-xs sm:text-sm text-muted-color">
+                  {(file.size / 1024 / 1024).toFixed(2)} MB
+                </div>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    reset();
+                  }}
+                  className="mt-2 text-xs sm:text-sm text-danger hover:text-danger/80 underline transition-colors"
+                >
+                  {t("../../documents.remove") || "إزالة"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-base sm:text-lg font-medium text-muted-color px-2">
+                  {t("dragDrop")}
+                </div>
+                <div className="text-xs sm:text-sm text-very-muted px-2">{t("formats")}</div>
+              </>
+            )}
           </div>
-        )}
+        </div>
       </motion.div>
 
       {error && (
