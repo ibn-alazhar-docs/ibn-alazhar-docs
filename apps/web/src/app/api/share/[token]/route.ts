@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos, useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/shared/route-helpers";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 export async function GET(request: Request, { params }: { params: Promise<{ token: string }> }) {
   try {
@@ -105,7 +106,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error: unknown) {
-    console.error("Public share route error:", error);
+    // SECURITY FIX: Use structured logger instead of console.error
+    logger.error({ error, token: "***" }, "Public share route error");
     return handleRouteError(error, "share/[token]", "Failed to load document");
   }
 }
