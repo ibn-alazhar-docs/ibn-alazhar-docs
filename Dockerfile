@@ -45,8 +45,9 @@ COPY workers ./workers
 WORKDIR /app/apps/web
 ARG SENTRY_RELEASE=""
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
-# Build-time env: production only, no secrets (runtime env comes from entrypoint)
-RUN echo 'NODE_ENV=production' > /app/apps/web/.env.production
+# Build-time env: minimal production vars for build-time validation.
+# Runtime env (DATABASE_URL, REDIS_URL, AUTH_SECRET, etc.) comes from the entrypoint.
+RUN printf 'NODE_ENV=production\nSTORAGE_DRIVER=local\n' > /app/apps/web/.env.production
 RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build
 
 # -----------------------------------------------------------------------------
