@@ -18,6 +18,7 @@ interface FileUploadProps {
 
 export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
   const t = useTranslations("pipeline.upload");
+  const tDocs = useTranslations("documents");
   const {
     file,
     setPageRange,
@@ -126,7 +127,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
                   }}
                   className="mt-2 text-xs sm:text-sm text-danger hover:text-danger/80 underline transition-colors"
                 >
-                  {t("../../documents.remove") || "إزالة"}
+                  {tDocs("remove")}
                 </button>
               </>
             ) : (
