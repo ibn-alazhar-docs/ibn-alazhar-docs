@@ -6,7 +6,7 @@ export { generateDocx, generateEpub } from "./pandoc";
 export { generatePdf } from "./pdf";
 
 // IR-based format generators (structure-preserving export pipeline)
-export { FormatGenerator, type GeneratorOptions } from "./generator-base";
+export type { FormatGenerator, GeneratorOptions } from "./generator-base";
 export { MarkdownGenerator, generateMarkdownFromIR } from "./markdown-generator";
 export { TxtGenerator, generateTxtFromIR } from "./txt-from-ir";
 export {
