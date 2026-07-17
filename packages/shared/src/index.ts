@@ -22,3 +22,24 @@ export type {
 } from "./service-health";
 
 export type { ServiceCheckResult, DetailedHealthResponse } from "./types/health";
+
+export type {
+  DocumentIR,
+  DocumentMetadata,
+  BlockNode,
+  HeadingNode,
+  ParagraphNode,
+  ListNode,
+  ListItemNode,
+  CodeBlockNode,
+  InlineNode,
+  TextNode,
+  LineBreakNode,
+} from "./types/document-ir";
+
+export {
+  documentIRSchema,
+  isDocumentIR,
+  parseDocumentIR,
+  safeParseDocumentIR,
+} from "./types/document-ir";

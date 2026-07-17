@@ -124,6 +124,11 @@ model Document {
   // still completes (graceful degradation) but is flagged for human review.
   needsReview Boolean   @default(false)
 
+  // Intermediate Representation (IR) for document structure preservation
+  documentIR      Json?     // Stores DocumentIR structure
+  irVersion       String?   // IR schema version (e.g., "1.0")
+  irGeneratedAt   DateTime? // Timestamp when IR was generated
+
   // Search fields (managed via raw SQL, not Prisma)
   // searchVector  tsvector (in PostgreSQL)
   // searchPreview text

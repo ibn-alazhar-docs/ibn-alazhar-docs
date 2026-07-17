@@ -7,6 +7,7 @@ import {
 import { unlink, writeFile, mkdir } from "node:fs/promises";
 
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
@@ -83,22 +84,49 @@ export class UploadDocumentUseCase {
     const safeName = fileName
       .replace(/[^a-zA-Z0-9._\u0600-\u06FF\u0660-\u0669-]/g, "_")
       .slice(0, 200);
-    const tempDir =
-      process.env.UPLOAD_TMP_DIR ?? join(process.env.STORAGE_LOCAL_DIR || "/data", "tmp");
-    await mkdir(tempDir, { recursive: true });
-    const tempPath = join(tempDir, `${jobId}_${safeName}`);
+    // The temp file is staged before the real storage write. On Hugging Face
+    // Spaces the app runs as uid 1000 while the persistent volume (/data) is
+    // prepared by the entrypoint as root, so the configured tmp dir may not
+    // always be writable. Try a ordered set of candidate directories and use
+    // the first one that succeeds, so a single bad path cannot block uploads.
+    const baseDir = process.env.STORAGE_LOCAL_DIR || "/data";
+    const candidateDirs = [
+      process.env.UPLOAD_TMP_DIR,
+      join(baseDir, "tmp"),
+      join(baseDir, "uploads"),
+      tmpdir(),
+    ].filter((d): d is string => Boolean(d));
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    try {
-      await writeFile(tempPath, buffer);
-    } catch (err) {
-      const cause = err instanceof Error ? err : new Error(String(err));
+
+    let tempPath: string | undefined;
+    const writeAttempts: Array<{ dir: string; error: string; code?: string }> = [];
+    for (const dir of candidateDirs) {
+      try {
+        await mkdir(dir, { recursive: true });
+        const candidate = join(dir, `${jobId}_${safeName}`);
+        await writeFile(candidate, buffer);
+        tempPath = candidate;
+        break;
+      } catch (err) {
+        const cause = err instanceof Error ? err : new Error(String(err));
+        writeAttempts.push({
+          dir,
+          error: cause.message,
+          code: (cause as NodeJS.ErrnoException).code,
+        });
+      }
+    }
+
+    if (!tempPath) {
+      const summary = writeAttempts
+        .map((a) => `${a.dir}: ${a.error}${a.code ? ` (${a.code})` : ""}`)
+        .join(" | ");
+      const cause = new Error(`All temp dirs failed: ${summary}`);
       logger.error(
         {
           error: cause.message,
-          errorCode: (cause as NodeJS.ErrnoException).code,
-          errorStack: cause.stack,
-          tempPath,
+          attempts: writeAttempts,
           userId,
         },
         "Temp file write failed during upload",

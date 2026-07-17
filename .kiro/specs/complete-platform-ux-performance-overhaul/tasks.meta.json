@@ -1,0 +1,244 @@
+{
+  "pbtResults": {},
+  "executionHistory": {
+    "1. Create Intermediate Representation (IR) type definitions": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272013
+      },
+      {
+        "executionId": "69880ff4-0287-41c3-8cee-a20bb67aa48d",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784250183909
+      },
+      {
+        "executionId": "69880ff4-0287-41c3-8cee-a20bb67aa48d",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784251265333
+      }
+    ],
+    "2. Add database schema migration for IR storage": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272118
+      },
+      {
+        "executionId": "69880ff4-0287-41c3-8cee-a20bb67aa48d",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784251277197
+      }
+    ],
+    "3. Create IR converter base interface and utilities": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272219
+      }
+    ],
+    "4. Checkpoint - Verify foundation": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272313
+      }
+    ],
+    "5. Enhance Gemini OCR provider to extract layout metadata": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272409
+      }
+    ],
+    "6. Implement heading detection heuristics": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272512
+      }
+    ],
+    "7. Implement list detection heuristics": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272611
+      }
+    ],
+    "8. Implement paragraph grouping logic": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272706
+      }
+    ],
+    "9. Build Gemini IR converter": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272868
+      }
+    ],
+    "10. Integrate IR generation into OCR pipeline": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249272938
+      }
+    ],
+    "12. Checkpoint - Verify IR generation": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273005
+      }
+    ],
+    "13. Create format generator base interface": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273073
+      }
+    ],
+    "14. Implement DOCX generator with styled headings and lists": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273163
+      }
+    ],
+    "15. Implement Markdown generator with proper syntax": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273284
+      }
+    ],
+    "16. Implement PDF generator via Pandoc": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273408
+      }
+    ],
+    "17. Update TXT and JSON generators to use IR": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273521
+      }
+    ],
+    "18. Refactor export API endpoint to use new generators": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273623
+      }
+    ],
+    "20. Checkpoint - Verify export pipeline": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273723
+      }
+    ],
+    "21. Implement sticky export header component": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273826
+      }
+    ],
+    "22. Implement floating action button (FAB)": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249273956
+      }
+    ],
+    "23. Redesign export dialog with shadcn/ui": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274051
+      }
+    ],
+    "24. Add loading states and progress indicators": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274153
+      }
+    ],
+    "25. Integrate UI components into document preview page": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274300
+      }
+    ],
+    "26. Add mobile responsive breakpoints": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274373
+      }
+    ],
+    "27. Checkpoint - Verify UI components": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274442
+      }
+    ],
+    "28. Implement code splitting and lazy loading": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274533
+      }
+    ],
+    "29. Optimize images with WebP and Next.js Image": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274649
+      }
+    ],
+    "30. Add caching headers and implement Redis cache": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274745
+      }
+    ],
+    "31. Implement React Query for client-side caching": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274831
+      }
+    ],
+    "32. Add performance monitoring instrumentation": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249274937
+      }
+    ],
+    "33. Optimize web fonts loading": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249275050
+      }
+    ],
+    "34. Checkpoint - Verify performance improvements": [
+      {
+        "executionId": "8ea4bad7-931f-4948-a2f0-ca68209c4d7b",
+        "chatSessionId": "sess_384372b7-2e36-4df0-bad6-afccdec0c39f",
+        "timestamp": 1784249275138
+      }
+    ]
+  }
+}
