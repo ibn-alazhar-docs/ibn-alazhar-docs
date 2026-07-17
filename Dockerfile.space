@@ -45,7 +45,8 @@ COPY workers ./workers
 WORKDIR /app/apps/web
 ARG SENTRY_RELEASE=""
 ENV SENTRY_RELEASE=$SENTRY_RELEASE
-COPY .env.example /app/apps/web/.env.production
+# Build-time env: production only, no secrets (runtime env comes from entrypoint)
+RUN echo 'NODE_ENV=production' > /app/apps/web/.env.production
 RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build
 
 # -----------------------------------------------------------------------------
@@ -106,6 +107,8 @@ COPY --from=builder /app/apps/web/src/messages ./apps/web/src/messages
 COPY --from=builder /app/apps/web/public ./apps/web/public
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/.next/standalone ./
+# Remove .env.production from standalone output — the entrypoint handles all runtime env
+RUN rm -f .env.production apps/web/.env.production
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/bcryptjs
 
