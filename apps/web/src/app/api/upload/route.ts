@@ -94,18 +94,24 @@ export const POST = withAuth(async (request, { session }) => {
       );
     }
 
-    // Requirement 3.1-3.5: validate that all required services are available
-    // before accepting the file upload. Runs in parallel with a 2s budget so a
-    // cold database does not block the request (Requirement 7.2, 7.4).
+    // Requirement 3.1-3.5: validate that critical services (DB + storage) are
+    // available before accepting the file upload. Redis is treated as optional
+    // — when unavailable the rate limiter gracefully degrades to memory.
+    // Runs in parallel with a 2s budget (Requirement 7.2, 7.4).
     const serviceValidation = await ServiceHealthValidator.validateAll(
       {
         database: async () => {
           await prisma.$queryRaw`SELECT 1`;
         },
         redis: async () => {
+          // Redis is optional on HF Spaces — skip if not configured
+          if (!process.env.REDIS_URL && !process.env.REDIS_HOST) {
+            return;
+          }
           const client = await getRedisClient();
           if (!client) {
-            throw new Error("Redis connection unavailable");
+            // Not configured or temporarily unavailable — non-blocking
+            return;
           }
           await client.ping();
         },
