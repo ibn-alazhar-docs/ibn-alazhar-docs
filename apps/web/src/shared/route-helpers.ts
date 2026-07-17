@@ -200,10 +200,21 @@ export async function handleRouteError(
     // detail. Full internal detail is recorded server-side in the structured
     // log above for observability; the client receives the friendly message.
     const message = error instanceof Error && error.message ? error.message : mapped.message;
-    return NextResponse.json(
-      { error: { code: mapped.code, message, requestId } },
-      { status: mapped.status },
-    );
+    // When the thrown AppError carries a `cause` (e.g. a wrapped filesystem
+    // error like EACCES/ENOENT with the failing path), surface it in `detail`
+    // so a 500 produced by an unmapped underlying failure is self-diagnosing
+    // from the client response and not only the server log.
+    let detail: string | undefined;
+    const cause = (error as Error & { cause?: Error })?.cause;
+    if (cause) {
+      const errCode = (cause as NodeJS.ErrnoException).code;
+      detail = `${cause.message}${errCode ? ` (${errCode})` : ""}`;
+    }
+    const body: { error: { code: string; message: string; requestId: string }; detail?: string } = {
+      error: { code: mapped.code, message, requestId },
+    };
+    if (detail) body.detail = detail;
+    return NextResponse.json(body, { status: mapped.status });
   }
 
   const statusCode = getErrorStatusCode(error);

@@ -52,7 +52,7 @@
   - Mark task complete when tests are written, run, and passing on unfixed code
   - _Requirements: 3.1, 3.2, 3.3, 3.4_
 
-- [ ] 3. Fix for missing storage directory initialization
+- [x] 3. Fix for missing storage directory initialization
 
   - [x] 3.1 Modify docker-entrypoint.sh to create root storage directory
     - Add root directory creation guard before subdirectory creation:
@@ -178,7 +178,7 @@
     - **EXPECTED OUTCOME**: All tests PASS (confirms no regressions)
     - Confirm all preservation tests still pass after fix (no regressions)
 
-- [ ] 4. Integration testing and validation
+- [x] 4. Integration testing and validation
 
    - [x] 4.1 Full container lifecycle test
     - Start container from scratch (no pre-existing `/data`)
@@ -228,8 +228,47 @@
   - Verify no regressions in existing functionality
   - Verify all new tests pass
   - Verify error messages are clear and actionable
-  - Ensure all acceptance criteria from design document are met
-  - If any issues arise, investigate and fix before marking complete
+   - Ensure all acceptance criteria from design document are met
+   - If any issues arise, investigate and fix before marking complete
+
+---
+
+## Critical Diagnosis Addendum (2026-07-17)
+
+The original spec assumed the upload 500 came from the storage-directory
+`access()` check in `route.ts` returning the generic "نظام التخزين غير متاح"
+message. **That was wrong.** The actual 500 on `/api/upload` returns
+**"تعذر تجهيز الملف للرفع. حاول مرة أخرى."** which is thrown ONLY from
+`apps/web/src/core/services/upload-document.use-case.ts:93` (`writeFile(tempPath)`)
+inside the temp-file staging step.
+
+### Root-cause blind spot (now fixed)
+The `AppError` thrown at `use-case.ts` carried the real OS error in `cause`,
+but `handleRouteError` (`route-helpers.ts`) only appended `cause` to the
+`detail` field for **unmapped** error codes. `UPLOAD_FAILED` (500) IS mapped in
+`ERROR_MESSAGES`, so the `detail` field was dropped and the real `EACCES`/`EROFS`
+/ exact failing path never reached the client — diagnostics were blind.
+
+**Fixes applied (uncommitted):**
+1. `route-helpers.ts`: mapped-error branch now also surfaces `error.cause`
+   (the wrapped filesystem error + errno code) in `detail`. The real OS error
+   is now visible in the 500 response body.
+2. `upload-document.use-case.ts`: temp-file write now tries an ordered list of
+   candidate dirs — `UPLOAD_TMP_DIR` → `<STORAGE_LOCAL_DIR>/tmp` →
+   `<STORAGE_LOCAL_DIR>/uploads` (proven writable by entrypoint chown) →
+   `os.tmpdir()` — using the first that succeeds, and logs every failed attempt
+   with its path/errno. This removes the single-point-of-failure on `/data/tmp`.
+
+### What this means for the operator
+- After redeploy, if uploads STILL 500, the **`error.detail`** field in the
+  `/api/upload` 500 response (DevTools → Network → Response) now contains the
+  real cause, e.g. `EACCES: permission denied, open '/data/tmp/...' (EACCES)`.
+- Verify the deployed build is the latest commit (HF Docker layer caching may
+  serve a stale image — check `Commit SHA:` in the build log; do a Factory
+  rebuild if stale).
+- If `detail` shows `/data/tmp` failing but `/data/uploads` succeeding, the
+  fallback already routes around it; otherwise the `detail` pinpoints the true
+  permission/ownership/readonly-volume issue.
 
 ---
 

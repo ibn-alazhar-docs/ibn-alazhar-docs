@@ -7,6 +7,13 @@ import {
   generateJson,
   classifyError,
   uploadExportBuffer,
+  convertMarkdownToIR,
+  generateMarkdownFromIR,
+  generateTxtFromIR,
+  generateJsonFromIR,
+  generateDocxFromIR,
+  generateEpubFromIR,
+  generatePdfFromIR,
   type ExportRequest,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
@@ -43,46 +50,55 @@ export function registerExportHandler(
 
         const result = generateMarkdown(rawText, { pageCount: req.pageCount });
 
+        // Build the structure-preserving IR once, then route every format
+        // through IR-aware generators so headings/lists survive export.
+        const ir = convertMarkdownToIR(rawText, {
+          ocrProvider: "gemini",
+          pageCount: req.pageCount,
+          language: "ar",
+          confidence: result.metadata.confidence,
+        });
+
         let outputBuffer: Buffer;
         let contentType: string;
         let outputKey: string;
 
         switch (req.format) {
           case "md": {
-            outputBuffer = Buffer.from(result.markdown, "utf-8");
+            outputBuffer = await generateMarkdownFromIR(ir, { title: req.options?.title });
             contentType = "text/markdown";
             outputKey = `${config.paths.exports}/${req.jobId}/export.md`;
             break;
           }
           case "txt": {
-            outputBuffer = Buffer.from(generateTxt(result), "utf-8");
+            outputBuffer = generateTxtFromIR(ir);
             contentType = "text/plain";
             outputKey = `${config.paths.exports}/${req.jobId}/export.txt`;
             break;
           }
           case "json": {
-            outputBuffer = Buffer.from(generateJson(result), "utf-8");
+            outputBuffer = generateJsonFromIR(ir, {
+              sourceFileName: cleanedData.fileName,
+              markdown: result.markdown,
+            });
             contentType = "application/json";
             outputKey = `${config.paths.exports}/${req.jobId}/export.json`;
             break;
           }
           case "docx": {
-            const { generateDocx } = await import("@ibn-al-azhar-docs/pipeline");
-            outputBuffer = await generateDocx(result);
+            outputBuffer = await generateDocxFromIR(ir);
             contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
             outputKey = `${config.paths.exports}/${req.jobId}/export.docx`;
             break;
           }
           case "epub": {
-            const { generateEpub } = await import("@ibn-al-azhar-docs/pipeline");
-            outputBuffer = await generateEpub(result);
+            outputBuffer = await generateEpubFromIR(ir);
             contentType = "application/epub+zip";
             outputKey = `${config.paths.exports}/${req.jobId}/export.epub`;
             break;
           }
           case "pdf": {
-            const { generatePdf } = await import("@ibn-al-azhar-docs/pipeline");
-            outputBuffer = await generatePdf(result, req.options);
+            outputBuffer = await generatePdfFromIR(ir, req.options);
             contentType = "application/pdf";
             outputKey = `${config.paths.exports}/${req.jobId}/export.pdf`;
             break;
