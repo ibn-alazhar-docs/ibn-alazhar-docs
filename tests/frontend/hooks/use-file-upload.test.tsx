@@ -59,9 +59,14 @@ describe("useFileUpload (hook)", () => {
   });
 
   it("uploads successfully and reports progress + job", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ jobId: "job-123" }),
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/api/health/ready") {
+        return Promise.resolve({ ok: true });
+      }
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ jobId: "job-123" }),
+      });
     });
     vi.stubGlobal("fetch", fetchMock);
     const { result } = renderHook(() => useFileUpload({ folderId: "f1", onUploadStart }));
@@ -76,18 +81,26 @@ describe("useFileUpload (hook)", () => {
       expect.objectContaining({ method: "POST" }),
     );
     // body should carry file + folderId
-    const body = fetchMock.mock.calls[0]![1].body as FormData;
+    const body = fetchMock.mock.calls[1]![1].body as FormData;
     expect(body.get("folderId")).toBe("f1");
     expect(result.current.progress).toBe(100);
     expect(onUploadStart).toHaveBeenCalledWith("job-123", "d.pdf");
   });
 
   it("surfaces server error message on failed upload", async () => {
+    const errorBody = JSON.stringify({ error: { message: "فشل الرفع" } });
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: { message: "فشل الرفع" } }),
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/api/health/ready") {
+          return Promise.resolve({ ok: true });
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 400,
+          text: async () => errorBody,
+          json: async () => ({ error: { message: "فشل الرفع" } }),
+        });
       }),
     );
     const { result } = renderHook(() => useFileUpload({ onUploadStart }));

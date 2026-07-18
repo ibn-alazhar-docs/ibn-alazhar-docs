@@ -44,9 +44,15 @@ export const GET = withAuth(async (_request, { session, params }) => {
       );
     }
 
-    const { loadConfig, getJobStatus } = await import("@ibn-al-azhar-docs/pipeline");
-    const config = loadConfig();
-    const queueStatus = await getJobStatus(config, id);
+    let queueStatus = null;
+    try {
+      const { loadConfig, getJobStatus } = await import("@ibn-al-azhar-docs/pipeline");
+      const config = loadConfig();
+      queueStatus = await getJobStatus(config, id);
+    } catch (configErr) {
+      // Pipeline config may fail on environments without full S3/Redis setup (e.g. HF Spaces)
+      // Fall through to DB status
+    }
 
     if (queueStatus) {
       return NextResponse.json(

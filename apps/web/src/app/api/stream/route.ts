@@ -88,9 +88,17 @@ export const GET = withAuth(async (request, { session }) => {
           }
 
           try {
-            const { getJobStatus, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
-            const config = loadConfig();
-            const status = await getJobStatus(config, jobId);
+            let status = null;
+            try {
+              const { getJobStatus, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
+              const config = loadConfig();
+              status = await getJobStatus(config, jobId);
+            } catch (configErr) {
+              logger.warn(
+                { jobId, error: String(configErr) },
+                "[stream] pipeline config/load failed, using DB fallback",
+              );
+            }
 
             if (status) {
               consecutiveCompleteChecks = 0;

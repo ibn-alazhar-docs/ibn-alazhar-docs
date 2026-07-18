@@ -195,7 +195,21 @@ export class UploadDocumentUseCase {
       throw error;
     }
 
-    const config = loadConfig();
+    let config;
+    try {
+      config = loadConfig();
+    } catch (configErr) {
+      logger.error(
+        { error: String(configErr), storageDriver: process.env.STORAGE_DRIVER },
+        "Failed to load pipeline config for enqueue",
+      );
+      throw new AppError(
+        "تعذر تكوين خط المعالجة. تأكد من إعدادات الخادم.",
+        ERROR_CODES.INTERNAL_ERROR,
+        500,
+      );
+    }
+
     const job = {
       id: document.id,
       documentId: document.id,
