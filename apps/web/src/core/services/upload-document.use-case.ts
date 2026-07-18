@@ -3,6 +3,7 @@ import {
   enqueueValidation,
   classifyError,
   recordJobFailure,
+  JOB_QUEUES,
 } from "@ibn-al-azhar-docs/pipeline";
 import { unlink, writeFile, mkdir } from "node:fs/promises";
 
@@ -236,22 +237,49 @@ export class UploadDocumentUseCase {
     } catch (err) {
       // Best-effort: schedule a delayed retry. If this also fails (e.g. Redis
       // still down) we fall through to a recoverable FAILED state.
+      const error = err instanceof Error ? err : new Error(String(err));
       try {
         await enqueueValidation(config, job, { delay: 15_000 });
+        // The delayed job IS queued. Keep the document in UPLOADED — that is the
+        // canonical "uploaded, awaiting worker pickup" state (also what the
+        // reprocess endpoint resets to before enqueuing), so we never leave a
+        // "bad status" row or create a conflicting state for the worker.
+        logger.warn(
+          {
+            requestId: undefined,
+            documentId: document.id,
+            jobId: job.id,
+            jobName: JOB_QUEUES.VALIDATION,
+            errorName: error.name,
+            errorType: error.constructor?.name,
+            errorMessage: error.message,
+          },
+          "Enqueue failed immediately — scheduled delayed retry",
+        );
         return document;
       } catch (delayedErr) {
         // The file is stored and the document row exists, so we keep both and
         // mark the doc FAILED (recoverable). The user can retry from the UI via
         // the reprocess endpoint, which re-enqueues validation without re-upload.
-        const error = err instanceof Error ? err : new Error(String(err));
+        // No new job is created here, so a manual retry cannot double-enqueue.
         const delayedError =
           delayedErr instanceof Error ? delayedErr : new Error(String(delayedErr));
+        // Structured, server-only log of the REAL failure. Never includes file
+        // contents or secrets — only identifiers, the queue name and the original
+        // error's name/type/message + stack trace in the server log.
         logger.error(
           {
-            error: error.message,
+            requestId: undefined,
+            documentId: document.id,
+            jobId: job.id,
+            jobName: JOB_QUEUES.VALIDATION,
+            errorName: error.name,
+            errorType: error.constructor?.name,
+            errorMessage: error.message,
             errorStack: error.stack,
             cause: (error as Error & { cause?: unknown }).cause,
-            delayedError: delayedError.message,
+            delayedErrorName: delayedError.name,
+            delayedErrorMessage: delayedError.message,
             redisHost: config.redis.host,
             redisPort: config.redis.port,
             hasRedisPassword: Boolean(config.redis.password),
@@ -269,7 +297,7 @@ export class UploadDocumentUseCase {
           .catch(() => {});
         await recordJobFailure(
           config,
-          "pipeline-validation",
+          JOB_QUEUES.VALIDATION,
           { id: job.id, data: job, attemptsMade: 1 },
           error,
         ).catch(() => {});

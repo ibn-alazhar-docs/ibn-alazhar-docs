@@ -186,8 +186,10 @@ export const POST = withAuth(async (request, { session }) => {
       { status: 201 },
     );
   } catch (error: unknown) {
+    const requestId = request.headers.get("x-request-id")?.split(",")[0]?.trim() || undefined;
     return handleRouteError(error, "upload", "تعذر رفع الملف", {
       userId: session.user.id,
+      requestId,
       durationMs: Date.now() - startedAt,
     });
   }

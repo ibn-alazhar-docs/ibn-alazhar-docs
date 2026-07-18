@@ -73,7 +73,8 @@ export function withAuth(handler: AuthenticatedHandler) {
     try {
       return await handler(request, { session, params });
     } catch (error) {
-      return handleRouteError(error, "api", "تعذر تنفيذ العملية");
+      const requestId = request.headers.get("x-request-id")?.split(",")[0]?.trim() || undefined;
+      return handleRouteError(error, "api", "تعذر تنفيذ العملية", { requestId });
     }
   };
 }
@@ -104,7 +105,8 @@ export function withAdminAuth(handler: AuthenticatedHandler) {
     try {
       return await handler(request, { session, params });
     } catch (error) {
-      return handleRouteError(error, "api", "تعذر تنفيذ العملية");
+      const requestId = request.headers.get("x-request-id")?.split(",")[0]?.trim() || undefined;
+      return handleRouteError(error, "api", "تعذر تنفيذ العملية", { requestId });
     }
   };
 }

@@ -20,10 +20,15 @@ export interface RouteErrorContext {
  * so the id returned to the client matches the one in our structured logs.
  */
 async function resolveRequestId(provided?: string): Promise<string> {
-  if (provided) return provided;
+  if (provided) return provided.trim();
   try {
+    // A reverse proxy (ALB/CloudFront/Nginx) may forward its own `x-request-id`,
+    // and if multiple hops set it the header arrives as a comma-separated list
+    // (e.g. "Kme1Mp, Kme1Mp"). Take only the FIRST value so the id returned to
+    // the client and written to logs is a single canonical identifier — never
+    // the duplicated string.
     const incoming = (await headers()).get("x-request-id");
-    if (incoming) return incoming;
+    if (incoming) return incoming.split(",")[0]?.trim() || generateRequestId();
   } catch {
     // headers() is unavailable outside a request scope — fall through.
   }
