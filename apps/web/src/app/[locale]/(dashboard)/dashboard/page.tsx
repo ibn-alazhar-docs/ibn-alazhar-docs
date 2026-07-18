@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   // SECURITY FIX: كل مستخدم يرى بياناته فقط (بغض النظر عن دوره)
   const docWhere = { userId: session.user.id, deletedAt: null };
   const folderWhere = { userId: session.user.id, deletedAt: null };
-  const tagWhere = { userId: session.user.id };
+  const tagWhere = { userId: session.user.id, deletedAt: null };
   // FIX: Count processing documents, not conversion jobs
   const processingWhere = {
     userId: session.user.id,
