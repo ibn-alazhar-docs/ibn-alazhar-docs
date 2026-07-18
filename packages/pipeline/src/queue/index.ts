@@ -34,3 +34,12 @@ export {
   createGenerationWorker,
   createExportWorker,
 } from "./workers";
+export { getQueueDriver, type QueueDriver, type QueueDriverName, type JobEnvelope } from "./driver";
+export {
+  PgQueueDriver,
+  type ClaimedJob,
+  buildIdempotencyKey,
+  nextRunAt,
+  canMutate,
+} from "./drivers/pg-driver";
+export { RedisQueueDriver } from "./drivers/redis-driver";
