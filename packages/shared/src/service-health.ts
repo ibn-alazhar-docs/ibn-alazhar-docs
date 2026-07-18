@@ -71,8 +71,30 @@ export class ServiceErrorClassifier {
     }
 
     // Redis errors (Requirement 1.2)
-    // Detect: Redis connection, Upstash quota, or command errors
-    if (message.includes("redis") || message.includes("upstash") || message.includes("quota")) {
+    // Detect: Redis connection, Upstash quota, or command errors. Also match
+    // BullMQ / ioredis failure modes (connection refused, closed socket, auth
+    // failures, OOM-on-write, timeouts) which do not always contain the literal
+    // word "redis" in their message.
+    const redisSignatures = [
+      "redis",
+      "upstash",
+      "quota",
+      "econnrefused",
+      "connection is closed",
+      "connection closed",
+      "connect econnrefused",
+      "wrongpass",
+      "noauth",
+      "oom command not allowed",
+      "max number of clients reached",
+      "ioredis",
+      "bullmq",
+      "readycheck",
+      "stream timed out",
+      "connection timeout",
+      "etimedout",
+    ];
+    if (redisSignatures.some((sig) => message.includes(sig))) {
       return {
         type: ServiceErrorType.REDIS_UNAVAILABLE,
         message: {
@@ -193,8 +215,8 @@ export const DATABASE_RETRY_STRATEGY: RetryStrategy = {
  * - Only retries REDIS_UNAVAILABLE errors
  */
 export const REDIS_RETRY_STRATEGY: RetryStrategy = {
-  delays: [100, 200, 400, 800, 1600],
-  maxTotalTimeout: 10000,
+  delays: [150, 300, 600, 1200, 2400, 4800],
+  maxTotalTimeout: 30000,
   shouldRetry: (error: unknown) => {
     const serviceError = ServiceErrorClassifier.classify(error);
     return serviceError.type === ServiceErrorType.REDIS_UNAVAILABLE;
