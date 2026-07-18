@@ -64,10 +64,14 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
   }
 
   async function processUpload(finalRangeString?: string) {
-    if (!file) return;
+    if (!file) {
+      console.warn("[upload] processUpload called but no file selected");
+      return;
+    }
 
     const validationError = validateFile(file);
     if (validationError) {
+      console.warn("[upload] validation failed:", validationError);
       setError(validationError);
       return;
     }
@@ -77,10 +81,9 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
     setError(null);
 
     try {
-      // Fail fast with a clear message if backend dependencies (DB/Redis/storage)
-      // are down, instead of streaming the whole file and only discovering the
-      // failure on the server.
+      console.log("[upload] starting health check...");
       const health = await fetch("/api/health/ready", { cache: "no-store" });
+      console.log("[upload] health check:", health.status);
       if (!health.ok) {
         setError("servicesUnavailable");
         return;
@@ -97,23 +100,40 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
         formData.append("pageRange", rangeToUse);
       }
 
+      console.log("[upload] sending POST /api/upload, size:", file.size, "bytes");
       const response = await apiFetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
+      console.log("[upload] response status:", response.status);
+
       if (!response.ok) {
-        const err = await response.json();
+        let errText: string;
+        try {
+          errText = await response.text();
+        } catch {
+          errText = `HTTP ${response.status}`;
+        }
+        console.error("[upload] error response:", errText);
+        let err;
+        try {
+          err = JSON.parse(errText);
+        } catch {
+          throw new Error(`HTTP ${response.status}: ${errText.slice(0, 200)}`);
+        }
         const msg = typeof err.error === "object" ? err.error?.message : err.error;
         throw new Error(msg || "errorUploadFailed");
       }
 
       const result = await response.json();
+      console.log("[upload] success, jobId:", result.jobId);
       onUploadStart(result.jobId, file.name);
       setFile(null);
       setPageRange("");
       setProgress(100);
     } catch (err: unknown) {
+      console.error("[upload] failed:", err);
       setError(err instanceof Error ? err.message : "errorUploadFailed");
     } finally {
       setUploading(false);
