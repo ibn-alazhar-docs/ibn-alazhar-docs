@@ -74,16 +74,14 @@ describe("ServiceErrorClassifier", () => {
     it("should classify BullMQ/ioredis failure modes without the word 'redis'", () => {
       const bullMqErrors = [
         "ECONNREFUSED 127.0.0.1:6379",
-        "Connection is closed.",
         "WRONGPASS invalid username-password pair",
         "NOAUTH Authentication required",
         "OOM command not allowed when used memory > 'maxmemory'",
         "max number of clients reached",
         "ioredis: failed to connect",
         "bullmq: could not reconnect",
-        "Stream timed out, no reply received from redis server",
-        "Connection timeout",
-        "ETIMEDOUT",
+        "ioredis: ETIMEDOUT while connecting to redis",
+        "bullmq connection is closed.",
       ];
 
       for (const message of bullMqErrors) {
@@ -92,6 +90,69 @@ describe("ServiceErrorClassifier", () => {
           ServiceErrorType.REDIS_UNAVAILABLE,
         );
         expect(result.httpStatus).toBe(503);
+      }
+    });
+
+    it("should classify a timeout/closed-connection ONLY as REDIS when in a redis context", () => {
+      // Redis context -> classified as REDIS_UNAVAILABLE
+      const inContext = [
+        "ioredis: ETIMEDOUT",
+        "bullmq connection is closed.",
+        "redis connection timeout",
+        "Stream timed out, no reply received from redis server",
+        "ECONNREFUSED 127.0.0.1:6379",
+      ];
+      for (const message of inContext) {
+        const result = ServiceErrorClassifier.classify(new Error(message));
+        expect(result.type, `expected "${message}" to be REDIS_UNAVAILABLE`).toBe(
+          ServiceErrorType.REDIS_UNAVAILABLE,
+        );
+      }
+
+      // Bare timeout/closed-connection from a non-redis dependency must NOT be
+      // misclassified as a Redis outage.
+      const bare = [
+        "ETIMEDOUT while connecting to postgres",
+        "Connection timeout contacting auth provider",
+        "Connection is closed. (fetch)",
+        "ECONNREFUSED 127.0.0.1:5432",
+      ];
+      for (const message of bare) {
+        const result = ServiceErrorClassifier.classify(new Error(message));
+        expect(result.type, `expected "${message}" NOT to be REDIS_UNAVAILABLE`).not.toBe(
+          ServiceErrorType.REDIS_UNAVAILABLE,
+        );
+      }
+    });
+
+    it("should match the redis port 6379 precisely, not as a loose substring", () => {
+      // These must NOT be classified as REDIS: a different port number that
+      // merely contains the digits 6379, or a non-redis service port.
+      const notRedis = [
+        "ECONNREFUSED 127.0.0.1:16379", // a different port that contains 6379
+        "ECONNREFUSED 127.0.0.1:5432", // postgres
+        "ECONNREFUSED 127.0.0.1:26379", // another redis-like but different port
+      ];
+      for (const message of notRedis) {
+        const result = ServiceErrorClassifier.classify(new Error(message));
+        expect(result.type, `expected "${message}" NOT to be REDIS_UNAVAILABLE`).not.toBe(
+          ServiceErrorType.REDIS_UNAVAILABLE,
+        );
+      }
+
+      // These ARE redis (port 6379 at a host:port boundary — end of string or
+      // followed by / or whitespace, matching the canonical ioredis
+      // "connect ECONNREFUSED host:6379" form).
+      const isRedis = [
+        "ECONNREFUSED 127.0.0.1:6379",
+        "ECONNREFUSED redis.example.com:6379",
+        "connect ECONNREFUSED my-redis:6379/",
+      ];
+      for (const message of isRedis) {
+        const result = ServiceErrorClassifier.classify(new Error(message));
+        expect(result.type, `expected "${message}" to be REDIS_UNAVAILABLE`).toBe(
+          ServiceErrorType.REDIS_UNAVAILABLE,
+        );
       }
     });
 
@@ -276,8 +337,8 @@ describe("RetryExecutor", () => {
   });
 
   it("uses the redis backoff delay sequence", () => {
-    expect(REDIS_RETRY_STRATEGY.delays).toEqual([150, 300, 600, 1200, 2400, 4800]);
-    expect(REDIS_RETRY_STRATEGY.maxTotalTimeout).toBe(30000);
+    expect(REDIS_RETRY_STRATEGY.delays).toEqual([150, 300, 600]);
+    expect(REDIS_RETRY_STRATEGY.maxTotalTimeout).toBe(4000);
   });
 
   it("logs retry lifecycle events", async () => {
@@ -380,5 +441,25 @@ describe("ServiceHealthValidator", () => {
     vi.useRealTimers();
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe("Redis retry wall-clock budget (real timers)", () => {
+  it("exhausts the redis retry strategy within maxTotalTimeout (~4s), not 30s", async () => {
+    const operation = vi.fn().mockRejectedValue(new Error("ECONNREFUSED 127.0.0.1:6379"));
+    const start = Date.now();
+
+    const promise = RetryExecutor.retryWithBackoff(operation, REDIS_RETRY_STRATEGY, {
+      serviceName: "redis",
+      operationName: "enqueue_validation",
+    });
+    await expect(promise).rejects.toThrow("ECONNREFUSED 127.0.0.1:6379");
+    const elapsedMs = Date.now() - start;
+
+    // 1 initial + 3 retries = 4 calls. Sum of delays = 150+300+600 = 1050ms.
+    // Allow generous overhead; must stay well under the old 30s window.
+    expect(operation).toHaveBeenCalledTimes(4);
+    expect(elapsedMs).toBeLessThan(4000);
+    expect(elapsedMs).toBeGreaterThanOrEqual(1000);
   });
 });

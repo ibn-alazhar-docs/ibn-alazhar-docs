@@ -73,28 +73,45 @@ export class ServiceErrorClassifier {
     // Redis errors (Requirement 1.2)
     // Detect: Redis connection, Upstash quota, or command errors. Also match
     // BullMQ / ioredis failure modes (connection refused, closed socket, auth
-    // failures, OOM-on-write, timeouts) which do not always contain the literal
-    // word "redis" in their message.
+    // failures, OOM-on-write) which do not always contain the literal word
+    // "redis". IMPORTANT: timeouts/connection-closed are ONLY matched when the
+    // message also contains a Redis-specific token ("redis", "upstash",
+    // "ioredis", "bullmq") — a bare "ETIMEDOUT" or "connection timeout" from a
+    // Postgres/HTTP call must NOT be misclassified as a Redis outage.
     const redisSignatures = [
       "redis",
       "upstash",
       "quota",
-      "econnrefused",
-      "connection is closed",
-      "connection closed",
-      "connect econnrefused",
       "wrongpass",
       "noauth",
       "oom command not allowed",
       "max number of clients reached",
       "ioredis",
       "bullmq",
-      "readycheck",
-      "stream timed out",
+    ];
+    const redisContextTimeoutSignatures = [
+      "econnrefused",
+      "connection is closed",
+      "connection closed",
       "connection timeout",
       "etimedout",
+      "stream timed out",
+      "readycheck",
     ];
-    if (redisSignatures.some((sig) => message.includes(sig))) {
+    // Only treat a generic timeout/closed-connection as Redis when the message
+    // is already in a Redis context (e.g. "ioredis: ETIMEDOUT", "bullmq
+    // connection is closed"). A bare "ECONNREFUSED" is matched only when it
+    // targets the Redis port (6379) at a host:port boundary — the port is
+    // followed by end-of-string, "/", or whitespace (the canonical ioredis
+    // "connect ECONNREFUSED host:6379" form). This excludes other port numbers
+    // that merely contain the digits 6379 (e.g. 16379, 26379) and the Postgres
+    // port 5432, so a non-Redis ECONNREFUSED is not misclassified.
+    const isRedisPort = /:(6379)([/?\s]|$)/.test(message);
+    if (
+      redisSignatures.some((sig) => message.includes(sig)) ||
+      (redisContextTimeoutSignatures.some((sig) => message.includes(sig)) &&
+        (isRedisPort || /redis|upstash|ioredis|bullmq/.test(message)))
+    ) {
       return {
         type: ServiceErrorType.REDIS_UNAVAILABLE,
         message: {
@@ -209,14 +226,18 @@ export const DATABASE_RETRY_STRATEGY: RetryStrategy = {
 /**
  * Redis Retry Strategy (Requirement 2.2)
  *
- * Exponential backoff for Upstash Redis quota/connection issues:
- * - 5 attempts: 100ms, 200ms, 400ms, 800ms, 1600ms
- * - Total timeout: 10 seconds
- * - Only retries REDIS_UNAVAILABLE errors
+ * Bounded immediate retry for transient Redis blips (Upstash quota/connection,
+ * brief restarts). Kept SHORT on purpose: an upload request must not block for
+ * long. The math: attempts = delays.length + 1 = 1 initial + 3 retries = 4.
+ * Sum of delays = 150 + 300 + 600 = 1050ms of waiting. maxTotalTimeout = 4000ms
+ * hard-caps the whole attempt (incl. per-call ping + BullMQ overhead). After
+ * exhaustion we fall through to the use-case's 15s delayed re-enqueue, so a
+ * longer outage is still handled without blocking the HTTP response.
+ * - Only retries REDIS_UNAVAILABLE errors (see ServiceErrorClassifier).
  */
 export const REDIS_RETRY_STRATEGY: RetryStrategy = {
-  delays: [150, 300, 600, 1200, 2400, 4800],
-  maxTotalTimeout: 30000,
+  delays: [150, 300, 600],
+  maxTotalTimeout: 4000,
   shouldRetry: (error: unknown) => {
     const serviceError = ServiceErrorClassifier.classify(error);
     return serviceError.type === ServiceErrorType.REDIS_UNAVAILABLE;
