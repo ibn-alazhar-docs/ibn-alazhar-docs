@@ -19,13 +19,14 @@ export function ActiveJobs({ jobs, completedIds, locale, onMarkComplete }: Activ
   const tDocs = useTranslations("documents");
   const tPreview = useTranslations("pipeline.preview");
 
-  if (jobs.length === 0) return null;
+  const validJobs = jobs.filter((job) => Boolean(job.jobId));
+  if (validJobs.length === 0) return null;
 
   return (
     <div>
       <h3 className="text-lg font-semibold text-primary-color">{tDocs("activeJobs")}</h3>
       <div className="mt-4 space-y-4">
-        {jobs.map((job) => (
+        {validJobs.map((job) => (
           <div
             key={job.jobId}
             className="glass-panel rounded-xl p-6 relative overflow-hidden group"
