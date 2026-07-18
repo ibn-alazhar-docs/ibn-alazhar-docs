@@ -6,6 +6,7 @@ import {
   classifyError,
   isFinalAttempt,
   sendAlert,
+  enqueueValidation,
   type ProcessingJob,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";
@@ -133,6 +134,59 @@ async function main() {
   };
   sweepStuckDocuments().catch(() => {});
   setInterval(sweepStuckDocuments, 5 * 60 * 1000);
+
+  // Recovery sweeper for uploads that succeeded storage+DB but FAILED at the
+  // Redis enqueue step (UPLOAD_ENQUEUE_FAILED). These documents were never
+  // actually processed, so they are safe to re-enqueue automatically rather than
+  // leaving the user to manually retry. This backs the honest "retry from the
+  // file list" promise with a real background mechanism.
+  const sweepFailedUploads = async () => {
+    try {
+      const cutoff = new Date(Date.now() - 60 * 1000);
+      const failed = await prisma.document.findMany({
+        where: {
+          status: "FAILED",
+          errorCode: "UPLOAD_ENQUEUE_FAILED",
+          updatedAt: { gt: cutoff },
+          deletedAt: null,
+        },
+        select: { id: true, fileName: true, fileSize: true, mimeType: true, storageKey: true, userId: true },
+      });
+      for (const doc of failed) {
+        const job = {
+          id: doc.id,
+          documentId: doc.id,
+          userId: doc.userId,
+          fileName: doc.fileName,
+          fileSize: Number(doc.fileSize),
+          mimeType: doc.mimeType,
+          storageKey: doc.storageKey ?? "",
+          status: "pending" as const,
+          progress: 0,
+          createdAt: new Date().toISOString(),
+        };
+        try {
+          await enqueueValidation(config, job);
+          await prisma.document
+            .update({
+              where: { id: doc.id },
+              data: { status: "UPLOADED", errorCode: null, errorMessage: null },
+            })
+            .catch(() => {});
+          logger.info({ documentId: doc.id }, "[sweeper] Re-enqueued failed upload");
+        } catch {
+          // Redis still down — leave FAILED for the next sweep interval.
+        }
+      }
+    } catch (err) {
+      logger.warn(
+        { error: err instanceof Error ? err.message : String(err) },
+        "[sweeper] Failed-upload re-enqueue failed",
+      );
+    }
+  };
+  sweepFailedUploads().catch(() => {});
+  setInterval(sweepFailedUploads, 60 * 1000);
 
   logger.info("[ocr-worker] All workers registered. Waiting for jobs...");
 }

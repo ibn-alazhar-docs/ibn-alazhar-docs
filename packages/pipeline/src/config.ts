@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import type { PipelineConfig, OcrEngineType, StorageDriver } from "./types";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
@@ -84,6 +85,37 @@ export function loadConfig(): PipelineConfig {
           };
         } catch {
           // fall through to individual vars
+        }
+      }
+      // WHY: In the self-contained HF Space deployment, Redis runs in-container
+      // with a known password (started by the entrypoint via --requirepass).
+      // If REDIS_URL is ever missing, falling back to bare "localhost" with NO
+      // password would fail to authenticate against that server and surface as
+      // UPLOAD_ENQUEUE_FAILED. We instead default to the in-container URL so a
+      // lost env var degrades to a working connection rather than a silent
+      // auth failure. The flag file is written by the entrypoint at boot.
+      const isSelfContained =
+        process.env.SELF_CONTAINED === "1" ||
+        process.env.SELF_CONTAINED === "true";
+      let flagFilePresent = false;
+      try {
+        flagFilePresent = existsSync("/data/.self-contained");
+      } catch {
+        flagFilePresent = false;
+      }
+      if (isSelfContained || flagFilePresent) {
+        const password = process.env.REDIS_PASSWORD || "ibn_docs_redis";
+        const fallback = `redis://:${password}@127.0.0.1:6379`;
+        try {
+          const parsed = new URL(fallback);
+          return {
+            host: parsed.hostname,
+            port: Number(parsed.port || 6379),
+            password: parsed.password || undefined,
+            tls: parsed.protocol === "rediss:",
+          };
+        } catch {
+          // unreachable
         }
       }
       return {

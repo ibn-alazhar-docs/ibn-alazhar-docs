@@ -10,6 +10,11 @@ set -u
 # ---- Persistent directories -------------------------------------------------
 mkdir -p "$PGDATA" "$REDIS_DATA" "$MINIO_DATA" "$APP_DATA"
 
+# Self-contained flag so the pipeline config can default Redis safely if the
+# env is ever lost (see packages/pipeline/src/config.ts). Lives on /data so it
+# persists across container restarts.
+touch /data/.self-contained 2>/dev/null || true
+
 # ---- Credentials (defaults keep the container runnable without secrets) -----
 REDIS_PASSWORD="${REDIS_PASSWORD:-ibn_docs_redis}"
 MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-minioadmin}"

@@ -274,9 +274,9 @@ export class UploadDocumentUseCase {
           error,
         ).catch(() => {});
         throw new AppError(
-          "تم رفع الملف لكن تعذر بدء المعالجة. سيتم إعادة المحاولة تلقائيًا.",
+          "تم رفع الملف لكن تعذر بدء المعالجة حاليًا. يمكنك إعادة المحاولة من قائمة الملفات.",
           ERROR_CODES.UPLOAD_ENQUEUE_FAILED,
-          202,
+          500,
         );
       }
     }
