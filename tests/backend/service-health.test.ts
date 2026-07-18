@@ -71,6 +71,30 @@ describe("ServiceErrorClassifier", () => {
       expect(result.httpStatus).toBe(503);
     });
 
+    it("should classify BullMQ/ioredis failure modes without the word 'redis'", () => {
+      const bullMqErrors = [
+        "ECONNREFUSED 127.0.0.1:6379",
+        "Connection is closed.",
+        "WRONGPASS invalid username-password pair",
+        "NOAUTH Authentication required",
+        "OOM command not allowed when used memory > 'maxmemory'",
+        "max number of clients reached",
+        "ioredis: failed to connect",
+        "bullmq: could not reconnect",
+        "Stream timed out, no reply received from redis server",
+        "Connection timeout",
+        "ETIMEDOUT",
+      ];
+
+      for (const message of bullMqErrors) {
+        const result = ServiceErrorClassifier.classify(new Error(message));
+        expect(result.type, `expected "${message}" to be REDIS_UNAVAILABLE`).toBe(
+          ServiceErrorType.REDIS_UNAVAILABLE,
+        );
+        expect(result.httpStatus).toBe(503);
+      }
+    });
+
     it("should classify ENOENT storage errors with specific message", () => {
       const error = new Error("ENOENT: no such file or directory");
       const result = ServiceErrorClassifier.classify(error);
@@ -252,8 +276,8 @@ describe("RetryExecutor", () => {
   });
 
   it("uses the redis backoff delay sequence", () => {
-    expect(REDIS_RETRY_STRATEGY.delays).toEqual([100, 200, 400, 800, 1600]);
-    expect(REDIS_RETRY_STRATEGY.maxTotalTimeout).toBe(10000);
+    expect(REDIS_RETRY_STRATEGY.delays).toEqual([150, 300, 600, 1200, 2400, 4800]);
+    expect(REDIS_RETRY_STRATEGY.maxTotalTimeout).toBe(30000);
   });
 
   it("logs retry lifecycle events", async () => {
