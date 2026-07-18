@@ -239,12 +239,26 @@ export class UploadDocumentUseCase {
       try {
         await enqueueValidation(config, job, { delay: 15_000 });
         return document;
-      } catch {
+      } catch (delayedErr) {
         // The file is stored and the document row exists, so we keep both and
         // mark the doc FAILED (recoverable). The user can retry from the UI via
         // the reprocess endpoint, which re-enqueues validation without re-upload.
         const error = err instanceof Error ? err : new Error(String(err));
-        logger.error({ error: error.message }, "Enqueue failed during upload");
+        const delayedError =
+          delayedErr instanceof Error ? delayedErr : new Error(String(delayedErr));
+        logger.error(
+          {
+            error: error.message,
+            errorStack: error.stack,
+            cause: (error as Error & { cause?: unknown }).cause,
+            delayedError: delayedError.message,
+            redisHost: config.redis.host,
+            redisPort: config.redis.port,
+            hasRedisPassword: Boolean(config.redis.password),
+            redisUrl: process.env.REDIS_URL ? "set" : "unset",
+          },
+          "Enqueue failed during upload",
+        );
         const { code } = classifyError(error);
         await this.documentRepository
           .update(document.id, userId, {
