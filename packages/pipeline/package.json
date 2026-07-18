@@ -9,6 +9,7 @@
   "dependencies": {
     "@google/generative-ai": "0.24.1",
     "@googleapis/drive": "20.2.0",
+    "@ibn-al-azhar-docs/database": "workspace:*",
     "@ibn-al-azhar-docs/shared": "workspace:*",
     "bullmq": "^5.0.0",
     "dotenv": "17.4.2",
