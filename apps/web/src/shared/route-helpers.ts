@@ -128,6 +128,11 @@ const ERROR_MESSAGES: Record<string, { code: string; message: string; status: nu
     message: "انتهت مهلة الرفع. يرجى المحاولة مرة أخرى.",
     status: 408,
   },
+  [ERROR_CODES.UPLOAD_FAILED]: {
+    code: ERROR_CODES.UPLOAD_FAILED,
+    message: "تعذر تجهيز الملف للرفع. تأكد من أن المجلد متاح وحاول مرة أخرى.",
+    status: 500,
+  },
   [ERROR_CODES.UPLOAD_ENQUEUE_FAILED]: {
     code: ERROR_CODES.UPLOAD_ENQUEUE_FAILED,
     message: "تم رفع الملف لكن تعذر بدء المعالجة. سيتم إعادة المحاولة تلقائيًا.",

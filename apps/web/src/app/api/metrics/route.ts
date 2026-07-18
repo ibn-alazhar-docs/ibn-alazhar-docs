@@ -28,7 +28,7 @@ async function getDatabaseMetrics(): Promise<Metrics["database"]> {
     prisma.user.count({ where: { deletedAt: null } }),
     prisma.document.count({ where: { deletedAt: null } }),
     prisma.folder.count(),
-    prisma.tag.count(),
+    prisma.tag.count({ where: { deletedAt: null } }),
     prisma.shareLink.count(),
   ]);
   return { users, documents, folders, tags, shareLinks };

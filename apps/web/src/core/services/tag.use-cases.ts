@@ -27,7 +27,7 @@ export class TagUseCases {
   }
 
   async createTag(name: string, color: string | undefined, session: AuthSession) {
-    const tagCount = await this.tagRepository.count({ userId: session.user.id });
+    const tagCount = await this.tagRepository.count({ userId: session.user.id, deletedAt: null });
     if (tagCount >= MAX_TAGS_PER_USER) {
       throw new ValidationError(`الحد الأقصى ${MAX_TAGS_PER_USER} وسم لكل مستخدم`);
     }
