@@ -181,6 +181,12 @@ export async function middleware(request: NextRequest) {
 
     // Default Cache-Control for API routes — private, no-store unless overridden by route
     const response = NextResponse.next();
+    // Set x-request-id exactly once on the API response. We reuse the id the
+    // proxy (or this middleware) already assigned so the value the client sees
+    // matches the server-side structured logs. Setting it here — and nowhere
+    // else for the API path — prevents the header being written twice (which
+    // some proxies surface as a duplicated "id, id" string).
+    response.headers.set("x-request-id", requestId);
     if (request.method === "GET" && pathname !== "/api/csrf") {
       ensureCsrfCookie(response, request);
       response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");

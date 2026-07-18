@@ -165,6 +165,18 @@ describe("loadConfig", () => {
       expect(c.redis.password).toBe("pass123");
     });
 
+    it("REDIS_PASSWORD is honored when REDIS_URL omits the password", () => {
+      // Reproduces the UPLOAD_ENQUEUE_FAILED incident: REDIS_URL had no
+      // password while the server required one. The standalone var must fill
+      // the gap so the connection authenticates instead of failing far away.
+      process.env.REDIS_URL = "redis://localhost:6379";
+      process.env.REDIS_PASSWORD = "redis_strong_password_2026";
+      const c = loadConfig();
+      expect(c.redis.host).toBe("localhost");
+      expect(c.redis.port).toBe(6379);
+      expect(c.redis.password).toBe("redis_strong_password_2026");
+    });
+
     it("default host is localhost", () => {
       const c = loadConfig();
       expect(c.redis.host).toBe("localhost");

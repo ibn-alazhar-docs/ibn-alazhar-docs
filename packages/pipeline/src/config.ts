@@ -77,10 +77,17 @@ export function loadConfig(): PipelineConfig {
       if (url) {
         try {
           const parsed = new URL(url);
+          // WHY: REDIS_URL frequently omits the password (e.g. the repo .env sets
+          // REDIS_URL=redis://localhost:6379 while REDIS_PASSWORD is set
+          // separately). A password-protected server then rejects the
+          // unauthenticated connection and the failure surfaces far away as
+          // UPLOAD_ENQUEUE_FAILED during upload. Honor REDIS_PASSWORD as a
+          // fallback so the URL and the standalone var agree.
+          const password = parsed.password || process.env.REDIS_PASSWORD || undefined;
           return {
             host: parsed.hostname,
             port: Number(parsed.port || 6379),
-            password: parsed.password || undefined,
+            password,
             tls: parsed.protocol === "rediss:",
           };
         } catch {
@@ -95,8 +102,7 @@ export function loadConfig(): PipelineConfig {
       // lost env var degrades to a working connection rather than a silent
       // auth failure. The flag file is written by the entrypoint at boot.
       const isSelfContained =
-        process.env.SELF_CONTAINED === "1" ||
-        process.env.SELF_CONTAINED === "true";
+        process.env.SELF_CONTAINED === "1" || process.env.SELF_CONTAINED === "true";
       let flagFilePresent = false;
       try {
         flagFilePresent = existsSync("/data/.self-contained");
