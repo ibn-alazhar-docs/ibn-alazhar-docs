@@ -104,16 +104,19 @@ export const POST = withAuth(async (request, { session }) => {
           await prisma.$queryRaw`SELECT 1`;
         },
         redis: async () => {
-          // Redis is optional on HF Spaces — skip if not configured
+          // Redis is optional — when unavailable the rate limiter and queue
+          // degrade gracefully. Never block uploads on Redis health.
           if (!process.env.REDIS_URL && !process.env.REDIS_HOST) {
             return;
           }
-          const client = await getRedisClient();
-          if (!client) {
-            // Not configured or temporarily unavailable — non-blocking
-            return;
+          try {
+            const client = await getRedisClient();
+            if (!client) return;
+            await client.ping();
+          } catch {
+            // Non-blocking: Redis may be starting up or temporarily unreachable.
+            // The upload use-case handles enqueue failure gracefully.
           }
-          await client.ping();
         },
         storage: async () => {
           const { access, constants } = await import("node:fs/promises");
