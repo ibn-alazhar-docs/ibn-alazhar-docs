@@ -15,7 +15,9 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
-    const eventSource = new EventSource(`/api/stream?jobId=${jobId}`, {
+    if (!jobId) return;
+
+    const eventSource = new EventSource(`/api/stream?jobId=${encodeURIComponent(jobId)}`, {
       withCredentials: true,
     });
 
@@ -40,16 +42,19 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
     let fallbackInterval: NodeJS.Timeout | undefined;
 
     eventSource.onerror = () => {
-      if (fallbackInterval) return; // Prevent multiple intervals (DDoS protection)
+      if (fallbackInterval) return;
+      if (!jobId) {
+        eventSource.close();
+        return;
+      }
 
       fallbackInterval = setInterval(async () => {
         try {
-          const res = await fetch(`/api/conversion/${jobId}/status`, {
+          const res = await fetch(`/api/conversion/${encodeURIComponent(jobId)}/status`, {
             credentials: "include",
           });
 
-          // Handle 401: stop polling to prevent infinite loop
-          if (res.status === 401) {
+          if (res.status === 401 || res.status === 403 || res.status === 429) {
             if (fallbackInterval) clearInterval(fallbackInterval);
             eventSource.close();
             return;
@@ -63,7 +68,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             if (s === "completed" || s === "failed") {
               if (fallbackInterval) clearInterval(fallbackInterval);
               if (s === "completed") {
-                onComplete?.(jobId); // Fix UI hang
+                onComplete?.(jobId);
               }
             }
           }
