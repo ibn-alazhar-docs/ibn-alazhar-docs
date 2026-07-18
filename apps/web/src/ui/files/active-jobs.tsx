@@ -34,7 +34,7 @@ export function ActiveJobs({ jobs, completedIds, locale, onMarkComplete }: Activ
             <div className="mb-4 flex items-center justify-between gap-4 relative z-10">
               <h4 className="truncate font-medium text-primary-color">{job.fileName}</h4>
               <span className="shrink-0 font-mono text-xs text-very-muted bg-[var(--surface)] px-2 py-1 rounded-md border border-[var(--border-subtle)]">
-                {job.jobId.slice(0, 8)}
+                {job.jobId?.slice(0, 8)}
               </span>
             </div>
             <div className="relative z-10">
