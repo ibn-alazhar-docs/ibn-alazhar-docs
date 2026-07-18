@@ -127,6 +127,17 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
       }
 
       const result = await response.json();
+      console.log("[upload] response body:", JSON.stringify(result).slice(0, 300));
+
+      if (result.error) {
+        const msg = typeof result.error === "object" ? result.error?.message : result.error;
+        throw new Error(msg || "errorUploadFailed");
+      }
+
+      if (!result.jobId) {
+        throw new Error("السيرفر لم يُرجِع معرّف المهمة. حاول مرة أخرى.");
+      }
+
       console.log("[upload] success, jobId:", result.jobId);
       onUploadStart(result.jobId, file.name);
       setFile(null);

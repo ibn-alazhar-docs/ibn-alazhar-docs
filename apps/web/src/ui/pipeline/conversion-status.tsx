@@ -14,15 +14,19 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
   const [stage, setStage] = useState<Stage>("pending");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const retryCountRef = useRef(0);
-  const MAX_RETRIES = 3;
+
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (!jobId) return;
 
-    let fallbackInterval: NodeJS.Timeout | undefined;
+    let fallbackInterval: ReturnType<typeof setInterval> | undefined;
     let eventSource: EventSource | undefined;
+    let retryTimeout: ReturnType<typeof setTimeout> | undefined;
+    let retryCount = 0;
     let closed = false;
+    const MAX_RETRIES = 3;
 
     const cleanup = () => {
       closed = true;
@@ -34,26 +38,31 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         clearInterval(fallbackInterval);
         fallbackInterval = undefined;
       }
+      if (retryTimeout) {
+        clearTimeout(retryTimeout);
+        retryTimeout = undefined;
+      }
     };
 
     const startSSE = () => {
       if (closed) return;
 
-      console.log(`[sse] connecting for jobId=${jobId} (attempt ${retryCountRef.current + 1})`);
+      console.log(`[sse] connecting jobId=${jobId} attempt=${retryCount + 1}`);
       eventSource = new EventSource(`/api/stream?jobId=${encodeURIComponent(jobId)}`, {
         withCredentials: true,
       });
 
       eventSource.onopen = () => {
         console.log("[sse] connected");
-        retryCountRef.current = 0;
+        retryCount = 0;
         setErrorMsg(null);
       };
 
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("[sse] message:", data.type, data.stage, data.progress);
+          console.log("[sse] msg:", data.type, data.stage, data.progress);
+
           if (data.type === "progress" && data.stage) {
             setStage(normalizeStage(data.stage));
             setProgress(typeof data.progress === "number" ? data.progress : 0);
@@ -63,7 +72,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             setStage(finalStage);
             setProgress(100);
             cleanup();
-            onComplete?.(jobId);
+            onCompleteRef.current?.(jobId);
           }
           if (data.type === "timeout") {
             console.warn("[sse] server timeout:", data.message);
@@ -74,25 +83,25 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             console.warn("[sse] server warning:", data.message);
           }
         } catch (parseErr) {
-          console.warn("[sse] failed to parse message:", parseErr);
+          console.warn("[sse] parse error:", parseErr);
         }
       };
 
       eventSource.onerror = () => {
-        console.warn(`[sse] error (attempt ${retryCountRef.current + 1})`);
         if (closed) return;
-        eventSource?.close();
+        const currentES = eventSource;
         eventSource = undefined;
+        currentES?.close();
 
-        if (retryCountRef.current < MAX_RETRIES) {
-          retryCountRef.current++;
-          const delay = Math.min(1000 * Math.pow(2, retryCountRef.current), 10000);
-          console.log(`[sse] retrying in ${delay}ms...`);
-          setTimeout(() => startSSE(), delay);
+        if (retryCount < MAX_RETRIES) {
+          retryCount++;
+          const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
+          console.log(`[sse] error, retry ${retryCount}/${MAX_RETRIES} in ${delay}ms`);
+          retryTimeout = setTimeout(() => startSSE(), delay);
           return;
         }
 
-        console.log("[sse] max retries reached, starting fallback polling");
+        console.log("[sse] retries exhausted, starting fallback polling");
         startFallbackPolling();
       };
     };
@@ -101,16 +110,21 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       if (closed || fallbackInterval) return;
 
       fallbackInterval = setInterval(async () => {
+        if (closed) {
+          if (fallbackInterval) clearInterval(fallbackInterval);
+          return;
+        }
+
         try {
           const res = await fetch(`/api/conversion/${encodeURIComponent(jobId)}/status`, {
             credentials: "include",
           });
 
-          console.log("[poll] status:", res.status);
+          console.log("[poll]", res.status);
 
           if (res.status === 401 || res.status === 403 || res.status === 429) {
             cleanup();
-            setErrorMsg(res.status === 401 ? "يجب تسجيل الدخول" : "تم تجاوز الحد المسموح");
+            setErrorMsg(res.status === 401 ? "يجب تسجيل الدخول" : "تم تجاوز الحد المسموح مؤقتًا");
             return;
           }
 
@@ -123,20 +137,20 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             if (s === "completed" || s === "failed") {
               cleanup();
               if (s === "completed") {
-                onComplete?.(jobId);
+                onCompleteRef.current?.(jobId);
               }
             }
           }
         } catch (pollErr) {
           console.warn("[poll] error:", pollErr);
         }
-      }, 3000);
+      }, 5000);
     };
 
     startSSE();
 
     return cleanup;
-  }, [jobId, onComplete]);
+  }, [jobId]);
 
   const currentIdx = STAGE_ORDER.indexOf(stage);
   const isCompleted = stage === "completed";
@@ -152,7 +166,6 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
   return (
     <div className="space-y-4">
-      {/* Progress Bar */}
       <div className="h-3 bg-badge rounded-full overflow-hidden">
         <div
           className={`h-full transition-all duration-500 ${isFailed ? "bg-danger" : "bg-success"}`}
@@ -160,7 +173,6 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         />
       </div>
 
-      {/* Status Text */}
       <div className="text-center">
         <p
           className={`text-lg font-bold tracking-tight ${isFailed ? "text-danger" : "premium-gradient-text"}`}
@@ -187,7 +199,6 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         )}
       </div>
 
-      {/* Stage Timeline */}
       <div className="space-y-2">
         {STAGE_ORDER.map((s, i) => {
           const isActive = i === currentIdx;
