@@ -41,5 +41,13 @@ export {
   buildIdempotencyKey,
   nextRunAt,
   canMutate,
+  recoverStale,
 } from "./drivers/pg-driver";
 export { RedisQueueDriver } from "./drivers/redis-driver";
+export {
+  PgWorker,
+  PgListener,
+  Poller,
+  createPgWorkerRunner,
+  type PgWorkerOptions,
+} from "./pg-worker";

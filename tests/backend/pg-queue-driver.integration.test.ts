@@ -1,6 +1,10 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } from "vitest";
+
+// Live-PostgreSQL integration tests; allow a generous per-test budget so a
+// cold/throttled Neon pooler connection does not trip vitest's 5000ms default.
+vi.setConfig({ testTimeout: 30_000 });
 import type { Client } from "pg";
-import { PgQueueDriver } from "@ibn-al-azhar-docs/pipeline/queue";
+import { PgQueueDriver, recoverStale } from "@ibn-al-azhar-docs/pipeline/queue";
 import type { JobEnvelope } from "@ibn-al-azhar-docs/pipeline/queue";
 
 /**
@@ -77,11 +81,15 @@ function rand(): string {
   return Math.random().toString(36).slice(2, 10);
 }
 
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
   beforeAll(async () => {
     // Map the harness-provided test URL to whatever Prisma/the driver reads.
     if (process.env.PG_QUEUE_TEST_URL && !process.env.DATABASE_URL) {
-      process.env.DATABASE_URL = process.env.PG_QUEUE_TEST_URL;
+      process.env.DATABASE_URL = `${process.env.PG_QUEUE_TEST_URL}&connection_limit=3`;
     }
     if (process.env.PG_QUEUE_TEST_URL && !process.env.DATABASE_URL_DIRECT) {
       process.env.DATABASE_URL_DIRECT = process.env.PG_QUEUE_TEST_URL;
@@ -127,7 +135,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     const queue = QUEUE;
     const job: JobEnvelope = {
       queue,
-      idempotencyKey: "k1",
+      idempotencyKey: `enqueue-claim-${rand()}`,
       payload: { hello: "world" },
     };
     await driver.enqueue(job);
@@ -152,7 +160,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     const queue = QUEUE;
     const N = 6;
     for (let i = 0; i < N; i++) {
-      await driver.enqueue({ queue, idempotencyKey: `k${i}`, payload: { i } });
+      await driver.enqueue({ queue, idempotencyKey: `concurrent-${rand()}-${i}`, payload: { i } });
     }
 
     // Fire many overlapping claims at once to force real lock contention.
@@ -177,7 +185,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
   it("wrong leaseToken: complete/fail/heartbeat never mutate the row", async () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
-    await driver.enqueue({ queue, idempotencyKey: "k1", payload: {} });
+    await driver.enqueue({ queue, idempotencyKey: `wrong-token-${rand()}`, payload: {} });
 
     const claimed = await driver.claim(queue, "worker-1", 1);
     expect(claimed).toHaveLength(1);
@@ -201,12 +209,12 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     // Row must be completely unchanged — still reserved under the real token.
     const after = await client.query<{
       status: string;
-      lockedby: string | null;
-      leasetoken: string | null;
+      lockedBy: string | null;
+      leaseToken: string | null;
     }>(`SELECT status, "lockedBy", "leaseToken" FROM job_queue WHERE id = $1`, [id]);
     expect(after.rows[0]?.status).toBe("reserved");
-    expect(after.rows[0]?.lockedby).toBe("worker-1");
-    expect(after.rows[0]?.leasetoken).toBe(leaseToken);
+    expect(after.rows[0]?.lockedBy).toBe("worker-1");
+    expect(after.rows[0]?.leaseToken).toBe(leaseToken);
 
     // The genuine token still works.
     const ok = await driver.complete(id, "worker-1", leaseToken);
@@ -216,19 +224,14 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
   it("fencing prevents a stale worker from completing after re-claim", async () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
-    await driver.enqueue({ queue, idempotencyKey: "k1", payload: {} });
+    await driver.enqueue({ queue, idempotencyKey: `fencing-${rand()}`, payload: {} });
 
     const claimedOld = await driver.claim(queue, "worker-old", 5);
     expect(claimedOld).toHaveLength(1);
     const { id, leaseToken: tokenOld } = claimedOld[0];
 
     // Simulate the old worker going away and recovery reclaiming the job.
-    const recovered = (
-      driver as unknown as {
-        recoverStale: (graceMs: number) => Promise<number>;
-      }
-    ).recoverStale;
-    await recovered.call(driver, 0);
+    await recoverStale(0);
 
     const claimedNew = await driver.claim(queue, "worker-new", 5);
     expect(claimedNew).toHaveLength(1);
@@ -246,12 +249,19 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
     const maxAttempts = 3;
+    const key = `retries-${rand()}`;
     await driver.enqueue({
       queue,
-      idempotencyKey: "k1",
+      idempotencyKey: key,
       payload: {},
       maxAttempts,
     });
+
+    // Per-queue base backoff (ms) — mirrors QUEUE_BASE_DELAY_MS in pg-driver.
+    // A willRetry fail schedules the next runAt = now + base * 2^attempts, so we
+    // must wait out the backoff before the next claim is eligible.
+    const baseDelay = 2000;
+    const backoffFor = (attempt: number) => baseDelay * 2 ** attempt;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const claimed = await driver.claim(queue, "worker-1", 1);
@@ -275,12 +285,14 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
       expect(res.rows[0]?.attempts).toBe(attempt);
       if (willRetry) {
         expect(res.rows[0]?.status).toBe("pending");
+        // Wait out the exponential backoff so the next claim is eligible.
+        await sleep(backoffFor(attempt) + 250);
       }
     }
 
     const finalRes = await client.query<{ status: string; deadletterstate: unknown }>(
-      `SELECT status, deadLetterState FROM job_queue WHERE queue = $1 AND "idempotencyKey" = 'k1'`,
-      [queue],
+      `SELECT status, "deadLetterState" FROM job_queue WHERE queue = $1 AND "idempotencyKey" = $2`,
+      [queue, key],
     );
     expect(finalRes.rows[0]?.status).toBe("dead");
     expect(finalRes.rows[0]?.deadletterstate).not.toBeNull();
@@ -290,9 +302,10 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
     const runAt = new Date(Date.now() + 10_000);
+    const key = `delayed-${rand()}`;
     await driver.enqueue({
       queue,
-      idempotencyKey: "k1",
+      idempotencyKey: key,
       payload: {},
       runAt,
     });
@@ -301,8 +314,8 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
     expect(claimed).toHaveLength(0);
 
     const res = await client.query<{ status: string }>(
-      `SELECT status FROM job_queue WHERE queue = $1 AND "idempotencyKey" = 'k1'`,
-      [queue],
+      `SELECT status FROM job_queue WHERE queue = $1 AND "idempotencyKey" = $2`,
+      [queue, key],
     );
     expect(res.rows[0]?.status).toBe("pending");
   });
@@ -324,7 +337,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
   it("stale recovery: recoverStale returns job to pending after heartbeat timeout", async () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
-    await driver.enqueue({ queue, idempotencyKey: "k1", payload: {} });
+    await driver.enqueue({ queue, idempotencyKey: `stale-${rand()}`, payload: {} });
 
     const claimed = await driver.claim(queue, "worker-1", 1);
     expect(claimed).toHaveLength(1);
@@ -336,12 +349,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
       [id],
     );
 
-    const recovered = (
-      driver as unknown as {
-        recoverStale: (graceMs: number) => Promise<number>;
-      }
-    ).recoverStale;
-    const count = await recovered.call(driver, 30_000);
+    const count = await recoverStale(30_000);
     expect(count).toBeGreaterThanOrEqual(1);
 
     const res = await client.query<{ status: string }>(
@@ -358,7 +366,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
   it("worker crash: recovered job is completed exactly once across two workers", async () => {
     if (!reachable || !client || !driver) return;
     const queue = QUEUE;
-    await driver.enqueue({ queue, idempotencyKey: "k1", payload: {} });
+    await driver.enqueue({ queue, idempotencyKey: `crash-${rand()}`, payload: {} });
 
     // Worker-1 claims then crashes (no heartbeat, no complete).
     const claimed1 = await driver.claim(queue, "worker-1", 1);
@@ -370,12 +378,7 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
       [id],
     );
 
-    const recovered = (
-      driver as unknown as {
-        recoverStale: (graceMs: number) => Promise<number>;
-      }
-    ).recoverStale;
-    const count = await recovered.call(driver, 30_000);
+    const count = await recoverStale(30_000);
     expect(count).toBeGreaterThanOrEqual(1);
 
     // Worker-2 reclaims and completes.

@@ -75,7 +75,7 @@ export class PgQueueDriver implements QueueDriver {
     const runAt = job.runAt ?? new Date();
 
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-      await tx.$queryRaw`
+      await tx.$executeRaw`
         INSERT INTO job_queue (
           queue, "idempotencyKey", payload, status, priority, "runAt", attempts, "maxAttempts"
         ) VALUES (
@@ -83,7 +83,10 @@ export class PgQueueDriver implements QueueDriver {
         )
         ON CONFLICT (queue, "idempotencyKey") DO NOTHING;
       `;
-      await tx.$queryRaw`SELECT pg_notify('job_queue', ${job.queue})`;
+      // $executeRaw does not deserialize the void result row (Prisma 6 would
+      // throw on `SELECT pg_notify(...)`'s void column). The notify fires
+      // inside the same transaction so subscribers wake only after commit.
+      await tx.$executeRaw`SELECT pg_notify('job_queue', ${job.queue})`;
     });
   }
 
@@ -108,6 +111,15 @@ export class PgQueueDriver implements QueueDriver {
       WHERE id IN (SELECT id FROM claimed)
       RETURNING *;
     `;
+
+    // RETURNING order is not guaranteed to match the CTE's ORDER BY, so sort
+    // the claimed jobs by the same priority/runAt/id tie-break the worker uses.
+    rows.sort(
+      (a, b) =>
+        Number(b.priority) - Number(a.priority) ||
+        new Date(a.runAt).getTime() - new Date(b.runAt).getTime() ||
+        Number(a.id) - Number(b.id),
+    );
 
     return rows.map(mapRowToClaimedJob);
   }
@@ -244,8 +256,26 @@ export class PgQueueDriver implements QueueDriver {
     };
   }
 
-  async listen(_queue: string, _onJob: () => void): Promise<() => void> {
-    throw new Error("PgQueueDriver.listen is implemented in phase 4");
+  async listen(_queue: string, onJob: () => void): Promise<() => void> {
+    const { PgListener } = await import("../pg-worker");
+    const directUrl = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
+    if (!directUrl) {
+      // No dedicated direct connection available; NOTIFY cannot be subscribed.
+      // The polling fallback in PgWorker covers this case. Return a no-op.
+      return async () => {};
+    }
+    const listener = new PgListener(directUrl);
+    listener.onNotify(() => {
+      try {
+        onJob();
+      } catch {
+        // never let a handler throw break the listener
+      }
+    });
+    await listener.start();
+    return async () => {
+      await listener.close();
+    };
   }
 }
 
