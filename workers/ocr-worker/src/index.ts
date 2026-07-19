@@ -20,6 +20,8 @@ import { registerOcrStage } from "./stages/ocr";
 import { registerCleaningStage } from "./stages/clean";
 import { registerGenerationStage } from "./stages/generate";
 import { updateDocStatus } from "./helpers";
+import { PgWorker, JOB_CONCURRENCY, validateQueueConfig } from "@ibn-al-azhar-docs/pipeline";
+import { buildOcrPgHandlers, OCR_WORKER_ID } from "./pg/handlers";
 
 const config = loadConfig();
 
@@ -55,6 +57,30 @@ async function main() {
   logger.info("[ocr-worker] Starting...");
 
   startHealthServer("ocr-worker", 9090);
+
+  if (process.env.QUEUE_DRIVER === "pg") {
+    validateQueueConfig();
+
+    const worker = new PgWorker({
+      handlers: buildOcrPgHandlers(config),
+      concurrency: JOB_CONCURRENCY,
+      workerId: OCR_WORKER_ID,
+      directUrl: process.env.DATABASE_URL_DIRECT,
+    });
+    await worker.start();
+
+    const shutdown = async () => {
+      logger.info("[ocr-worker] Shutting down (pg)...");
+      await worker.shutdown();
+      await prisma.$disconnect();
+      process.exit(0);
+    };
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
+
+    logger.info("[ocr-worker] PG worker started. Waiting for jobs...");
+    return;
+  }
 
   await setupDlq(config, async (failed: FailedJob) => {
     logger.error(
@@ -150,7 +176,14 @@ async function main() {
           updatedAt: { gt: cutoff },
           deletedAt: null,
         },
-        select: { id: true, fileName: true, fileSize: true, mimeType: true, storageKey: true, userId: true },
+        select: {
+          id: true,
+          fileName: true,
+          fileSize: true,
+          mimeType: true,
+          storageKey: true,
+          userId: true,
+        },
       });
       for (const doc of failed) {
         const job = {
