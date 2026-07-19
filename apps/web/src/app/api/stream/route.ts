@@ -90,9 +90,8 @@ export const GET = withAuth(async (request, { session }) => {
           try {
             let status = null;
             try {
-              const { getJobStatus, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
-              const config = loadConfig();
-              status = await getJobStatus(config, jobId);
+              const { getJobStatusViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
+              status = await getJobStatusViaDriver(jobId);
             } catch (configErr) {
               logger.warn(
                 { jobId, error: String(configErr) },

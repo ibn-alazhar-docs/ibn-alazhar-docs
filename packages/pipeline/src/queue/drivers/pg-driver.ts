@@ -81,7 +81,19 @@ export class PgQueueDriver implements QueueDriver {
         ) VALUES (
           ${job.queue}, ${idempotencyKey}, ${payload}, 'pending', ${priority}, ${runAt}, 0, ${maxAttempts}
         )
-        ON CONFLICT (queue, "idempotencyKey") DO NOTHING;
+        ON CONFLICT (queue, "idempotencyKey") DO UPDATE
+        SET status = 'pending',
+            "runAt" = EXCLUDED."runAt",
+            priority = EXCLUDED.priority,
+            payload = EXCLUDED.payload,
+            attempts = 0,
+            "maxAttempts" = EXCLUDED."maxAttempts",
+            "lockedBy" = NULL,
+            "lockedAt" = NULL,
+            "heartbeatAt" = NULL,
+            "leaseToken" = NULL,
+            "deadLetterState" = NULL
+        WHERE job_queue.status IN ('done', 'dead');
       `;
       // $executeRaw does not deserialize the void result row (Prisma 6 would
       // throw on `SELECT pg_notify(...)`'s void column). The notify fires
