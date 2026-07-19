@@ -1,7 +1,12 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
-import { loadConfig, getFailedJobs, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
+import {
+  loadConfig,
+  getFailedJobsViaDriver,
+  enqueueViaDriver,
+  JOB_QUEUES,
+} from "@ibn-al-azhar-docs/pipeline";
 import { repos } from "@/core/composition-root";
 import { ERROR_CODES } from "@/shared/constants";
 import type { ProcessingJob } from "@ibn-al-azhar-docs/pipeline";
@@ -17,8 +22,7 @@ export const dynamic = "force-dynamic";
  */
 export const GET = withAdminAuth(async () => {
   try {
-    const config = loadConfig();
-    const failed = await getFailedJobs(config);
+    const failed = await getFailedJobsViaDriver();
     return NextResponse.json({ count: failed.length, jobs: failed });
   } catch (error: unknown) {
     return handleRouteError(error, "admin/queue/GET", "تعذر جلب قائمة المهام الفاشلة");
@@ -27,7 +31,7 @@ export const GET = withAdminAuth(async () => {
 
 async function requeueJob(jobId: string): Promise<{ requeued: boolean; reason?: string }> {
   const config = loadConfig();
-  const failed = await getFailedJobs(config);
+  const failed = await getFailedJobsViaDriver();
   const target = failed.find((j) => j.jobId === jobId);
   if (!target) return { requeued: false, reason: "not_found" };
 
@@ -59,7 +63,7 @@ async function requeueJob(jobId: string): Promise<{ requeued: boolean; reason?: 
     needsReview: false,
   });
 
-  await enqueueValidation(config, {
+  await enqueueViaDriver(JOB_QUEUES.VALIDATION, config, {
     id: document.id,
     documentId: document.id,
     userId: document.userId,
@@ -104,8 +108,7 @@ export const POST = withAdminAuth(async (request) => {
     }
 
     if (body.action === "requeueAll") {
-      const config = loadConfig();
-      const failed = await getFailedJobs(config);
+      const failed = await getFailedJobsViaDriver();
       let requeued = 0;
       for (const job of failed) {
         const r = await requeueJob(job.jobId);

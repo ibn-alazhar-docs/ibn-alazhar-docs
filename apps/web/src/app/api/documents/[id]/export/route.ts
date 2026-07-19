@@ -4,7 +4,7 @@ import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { useCases } from "@/core/composition-root";
-import { enqueueExport, loadConfig } from "@ibn-al-azhar-docs/pipeline";
+import { enqueueViaDriver, JOB_QUEUES, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
@@ -93,7 +93,7 @@ export const POST = withAuth(async (request, { session, params }) => {
       return NextResponse.json({ success: true, jobId: document.id, message: "Export ready" });
     }
 
-    await enqueueExport(config, {
+    await enqueueViaDriver(JOB_QUEUES.EXPORT, config, {
       jobId,
       documentId: document.id,
       userId: session.user.id,

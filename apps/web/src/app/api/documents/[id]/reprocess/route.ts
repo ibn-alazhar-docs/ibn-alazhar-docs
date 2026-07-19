@@ -3,7 +3,7 @@ import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { repos } from "@/core/composition-root";
-import { loadConfig, enqueueValidation } from "@ibn-al-azhar-docs/pipeline";
+import { loadConfig, enqueueViaDriver, JOB_QUEUES } from "@ibn-al-azhar-docs/pipeline";
 import { Prisma } from "@prisma/client";
 import { ERROR_CODES } from "@/shared/constants";
 
@@ -79,7 +79,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     }
 
     const config = loadConfig();
-    await enqueueValidation(config, {
+    await enqueueViaDriver(JOB_QUEUES.VALIDATION, config, {
       id: document.id,
       documentId: document.id,
       userId: session.user.id,
