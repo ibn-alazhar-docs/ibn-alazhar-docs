@@ -1,0 +1,22 @@
+# Code owners for Ibn Al-Azhar Docs
+# Review requests are routed to the maintainer organization.
+
+* @ibn-alazhar-docs
+
+# Application (Next.js web app)
+/apps/            @ibn-alazhar-docs
+
+# Shared packages (pipeline, database, shared)
+/packages/        @ibn-alazhar-docs
+
+# Background workers
+/workers/         @ibn-alazhar-docs
+
+# Infrastructure & deployment (Docker, HF Space, CI)
+/infrastructure/  @ibn-alazhar-docs
+/docker/          @ibn-alazhar-docs
+/.github/         @ibn-alazhar-docs
+
+# Documentation & repo metadata
+/docs/            @ibn-alazhar-docs
+*.md              @ibn-alazhar-docs
