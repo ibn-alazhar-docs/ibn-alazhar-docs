@@ -29,8 +29,14 @@ const DEFAULT_STALE_GRACE_MS = 30_000;
 /** Default polling interval (ms) — the fallback wake-up when NOTIFY is lost. */
 const DEFAULT_POLL_MS = 5_000;
 
-/** Default graceful-shutdown drain timeout (ms). */
-const DEFAULT_SHUTDOWN_TIMEOUT_MS = 30_000;
+/**
+ * Default graceful-shutdown drain timeout (ms). Must exceed the longest
+ * realistic single-job runtime (e.g. OCR can run for many minutes) so an
+ * in-flight handler is allowed to finish and `complete()` instead of being
+ * abandoned mid-job. A stranded job is still fenced by `leaseToken` after the
+ * timeout, so this is a preference, not a correctness boundary.
+ */
+const DEFAULT_SHUTDOWN_TIMEOUT_MS = 600_000;
 
 /** Backoff for listener reconnect attempts (ms), with capped growth. */
 const RECONNECT_BASE_MS = 1_000;

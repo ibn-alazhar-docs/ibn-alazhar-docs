@@ -3,6 +3,8 @@ import { JOB_QUEUES } from "../types";
 import { getQueue, getLastConnectionError } from "./connection";
 import { getRetryConfigForQueue, getDefaultJobOptions } from "./workers";
 import { logger } from "@ibn-al-azhar-docs/shared";
+import { PgQueueDriver } from "./drivers/pg-driver";
+import { getQueueDriver, type JobEnvelope } from "./driver";
 
 /**
  * Fail-fast readiness probe before enqueueing. A dead or mis-authenticated
@@ -25,9 +27,7 @@ async function assertRedisReady(config: PipelineConfig): Promise<void> {
     throw new Error(`Redis connection failed: ${msg}`);
   }
   const ping = client.ping();
-  const timeout = new Promise<"TIMEOUT">((resolve) =>
-    setTimeout(() => resolve("TIMEOUT"), 2500),
-  );
+  const timeout = new Promise<"TIMEOUT">((resolve) => setTimeout(() => resolve("TIMEOUT"), 2500));
   const result = await Promise.race([ping, timeout]);
   if (result === "TIMEOUT") {
     throw new Error("Redis ping timed out (2.5s)");
@@ -126,4 +126,67 @@ export async function enqueueExport(
   overrides?: Record<string, unknown>,
 ): Promise<void> {
   await enqueueWithDefaults(JOB_QUEUES.EXPORT, config, req.jobId, req, overrides);
+}
+
+/**
+ * Unified enqueue entry point that routes to the active queue driver.
+ *
+ * - When `QUEUE_DRIVER=pg`, builds a `JobEnvelope` and hands it to
+ *   `PgQueueDriver`. No Redis/BullMQ connection is opened in this path.
+ * - Otherwise (redis), delegates to the matching `enqueue*` function so the
+ *   existing BullMQ behavior is preserved exactly.
+ *
+ * Stage workers can call this instead of the per-queue `enqueue*` functions to
+ * stay driver-agnostic. The public `enqueue*` signatures are left untouched.
+ */
+export async function enqueueViaDriver(
+  queue: string,
+  config: PipelineConfig,
+  job: ProcessingJob | ExportRequest,
+  overrides?: Record<string, unknown>,
+): Promise<void> {
+  if (process.env.QUEUE_DRIVER === "pg") {
+    const idempotencyKey = "jobId" in job ? job.jobId : job.id;
+    const retryConfig = getRetryConfigForQueue(queue);
+    let runAt: Date | undefined;
+    const delay = overrides?.delay;
+    if (typeof delay === "number") {
+      runAt = new Date(Date.now() + delay);
+    }
+    const envelope: JobEnvelope = {
+      queue,
+      idempotencyKey,
+      payload: job,
+      priority: 0,
+      maxAttempts: retryConfig.attempts,
+      runAt,
+    };
+    await new PgQueueDriver().enqueue(envelope);
+    return;
+  }
+
+  // Redis path: keep using the proven per-queue enqueue functions.
+  switch (queue) {
+    case JOB_QUEUES.VALIDATION:
+      await enqueueValidation(config, job as ProcessingJob, overrides);
+      return;
+    case JOB_QUEUES.SPLITTING:
+      await enqueueSplitting(config, job as ProcessingJob, overrides);
+      return;
+    case JOB_QUEUES.OCR:
+      await enqueueOcr(config, job as ProcessingJob, overrides);
+      return;
+    case JOB_QUEUES.CLEANING:
+      await enqueueCleaning(config, job as ProcessingJob, overrides);
+      return;
+    case JOB_QUEUES.GENERATION:
+      await enqueueGeneration(config, job as ProcessingJob, overrides);
+      return;
+    case JOB_QUEUES.EXPORT:
+      await enqueueExport(config, job as ExportRequest, overrides);
+      return;
+    default:
+      throw new Error(`enqueueViaDriver: unknown queue "${queue}"`);
+  }
+  void getQueueDriver;
 }
