@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # =============================================================================
-# Ibn Al-Azhar Docs — container entrypoint (self-contained FREE deployment)
+# Ibn Al-Azhar Docs - container entrypoint (self-contained FREE deployment)
 # Starts PostgreSQL + Redis + MinIO inside the container, runs migrations and
 # seeding, then hands off to supervisord (web + workers).
 # All data lives under /data (the Hugging Face persistent volume).
@@ -72,7 +72,7 @@ if [ "$STORAGE_DRIVER" = "local" ]; then
   # The app runs as uid 1000 on Hugging Face, but this entrypoint may run as
   # root. When it does, the subdirectories above are created owned by root with
   # 755 perms, which blocks the app (uid 1000) from writing upload/temp files
-  # into them (EACCES -> "تعذر تجهيز الملف"). Re-assign ownership to 1000:1000 so
+  # into them (EACCES -> "failed to prepare file"). Re-assign ownership to 1000:1000 so
   # the runtime user can write, and keep the temp dir world-writable.
   if [ "$(id -u)" = "0" ]; then
     chown -R 1000:1000 "$STORAGE_LOCAL_DIR"
@@ -126,11 +126,18 @@ case "$REDIS_URL" in
   *) USE_LOCAL_REDIS=0 ;;
 esac
 
+# In pg queue mode the driver does NOT use Redis at all, so never start the
+# bundled Redis daemon internally - even if REDIS_URL happens to point locally.
+export QUEUE_DRIVER="${QUEUE_DRIVER:-redis}"
+if [ "$QUEUE_DRIVER" = "pg" ]; then
+  USE_LOCAL_REDIS=0
+fi
+
 export DATABASE_URL DATABASE_URL_DIRECT REDIS_URL S3_ENDPOINT S3_REGION S3_BUCKET \
        S3_ACCESS_KEY_ID S3_SECRET_ACCESS_KEY \
        AUTH_SECRET AUTH_TRUST_HOST=true AUTH_URL="$APP_URL" NEXTAUTH_URL="$APP_URL" APP_URL NEXT_PUBLIC_SITE_URL SITE_URL \
        ADMIN_EMAIL ADMIN_PASSWORD PROMETHEUS_BEARER_TOKEN NODE_ENV=production \
-       NEXT_TELEMETRY_DISABLED=1 PORT=7860 HOSTNAME=0.0.0.0
+       NEXT_TELEMETRY_DISABLED=1 PORT=7860 HOSTNAME=0.0.0.0 QUEUE_DRIVER
 
 PG_BIN="$(ls -d /usr/lib/postgresql/*/bin | head -1)"
 PGPORT=5432
@@ -203,10 +210,16 @@ else
 fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
-echo "[entrypoint] applying database migrations..."
-if ! prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5; then
-  echo "[entrypoint] migrate deploy failed — falling back to prisma db push"
-  prisma db push --schema=/app/packages/database/prisma/schema.prisma --accept-data-loss 2>&1 | tail -5 || true
+# Do not auto-migrate in production unless explicitly requested. In non-prod
+# environments the schema is applied automatically on boot for local dev.
+if [ "$NODE_ENV" = "production" ] && [ "${MIGRATE_ON_BOOT:-0}" != "1" ]; then
+  echo "[entrypoint] skipping automatic migrations in production (set MIGRATE_ON_BOOT=1 to opt in)"
+else
+  echo "[entrypoint] applying database migrations..."
+  if ! prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5; then
+    echo "[entrypoint] migrate deploy failed - falling back to prisma db push"
+    prisma db push --schema=/app/packages/database/prisma/schema.prisma --accept-data-loss 2>&1 | tail -5 || true
+  fi
 fi
 echo "[entrypoint] seeding database (idempotent)..."
 node --import tsx /app/packages/database/prisma/seed.ts 2>&1 | tail -10 || true
