@@ -1,6 +1,6 @@
 import {
   loadConfig,
-  enqueueValidation,
+  enqueueViaDriver,
   classifyError,
   recordJobFailure,
   JOB_QUEUES,
@@ -230,7 +230,7 @@ export class UploadDocumentUseCase {
       // transient Upstash connection/quota errors are absorbed before we fall
       // back to a delayed re-enqueue below.
       await RetryExecutor.retryWithBackoff(
-        () => enqueueValidation(config, job),
+        () => enqueueViaDriver(JOB_QUEUES.VALIDATION, config, job),
         REDIS_RETRY_STRATEGY,
         { serviceName: "redis", operationName: "enqueue_validation" },
       );
@@ -239,7 +239,7 @@ export class UploadDocumentUseCase {
       // still down) we fall through to a recoverable FAILED state.
       const error = err instanceof Error ? err : new Error(String(err));
       try {
-        await enqueueValidation(config, job, { delay: 15_000 });
+        await enqueueViaDriver(JOB_QUEUES.VALIDATION, config, job, { delay: 15_000 });
         // The delayed job IS queued. Keep the document in UPLOADED — that is the
         // canonical "uploaded, awaiting worker pickup" state (also what the
         // reprocess endpoint resets to before enqueuing), so we never leave a

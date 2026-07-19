@@ -19,7 +19,8 @@ export class ConversionUseCases {
     );
     if (!document) throw new NotFoundError("المستند غير موجود");
 
-    const { loadConfig, enqueueSplitting } = await import("@ibn-al-azhar-docs/pipeline");
+    const { loadConfig, enqueueViaDriver, JOB_QUEUES } =
+      await import("@ibn-al-azhar-docs/pipeline");
     const config = loadConfig();
 
     const job = {
@@ -46,7 +47,7 @@ export class ConversionUseCases {
       inputKey: document.storageKey,
     });
 
-    await enqueueSplitting(config, job);
+    await enqueueViaDriver(JOB_QUEUES.SPLITTING, config, job);
     return { jobId: document.id };
   }
 

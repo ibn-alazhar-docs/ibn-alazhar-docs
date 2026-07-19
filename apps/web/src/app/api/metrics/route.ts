@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
 import { withAdminAuth } from "@/middleware/auth-guards";
+import { getMetricsViaDriver, JOB_QUEUES } from "@ibn-al-azhar-docs/pipeline";
 
 interface Metrics {
   timestamp: string;
@@ -34,36 +35,50 @@ async function getDatabaseMetrics(): Promise<Metrics["database"]> {
   return { users, documents, folders, tags, shareLinks };
 }
 
-async function getQueueLength(queueName: string, redis: RedisClient): Promise<number> {
-  const waiting = await redis.llen(`${queueName}:wait`);
-  const active = await redis.llen(`${queueName}:active`);
-  const delayed = await redis.zcard(`${queueName}:delayed`);
-  return waiting + active + delayed;
+function sumCounts(obj: Record<string, number>): number {
+  return Object.values(obj).reduce((acc, n) => acc + (Number(n) || 0), 0);
 }
 
-interface RedisClient {
-  llen(key: string): Promise<number>;
-  zcard(key: string): Promise<number>;
-  quit(): Promise<void>;
+interface ByQueueMetrics {
+  byQueue: Record<string, Record<string, number>>;
+}
+
+interface RedisMetrics {
+  [queue: string]: { waiting: number; active: number; delayed: number };
+}
+
+function isByQueueMetrics(value: unknown): value is ByQueueMetrics {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "byQueue" in value &&
+    typeof (value as ByQueueMetrics).byQueue === "object"
+  );
+}
+
+function isRedisMetrics(value: unknown): value is RedisMetrics {
+  return typeof value === "object" && value !== null && !("byQueue" in value);
 }
 
 async function getWorkerMetrics(): Promise<Metrics["workers"]> {
   try {
-    const { default: IORedis } = await import("ioredis");
-    const redis = new IORedis(process.env.REDIS_URL || "redis://localhost:6379", {
-      maxRetriesPerRequest: 1,
-      connectTimeout: 2000,
-      lazyConnect: true,
-    });
-    await redis.connect();
+    const result = await getMetricsViaDriver();
 
-    const [ocrQueue, exportQueue] = await Promise.all([
-      getQueueLength("pipeline-ocr", redis as unknown as RedisClient),
-      getQueueLength("pipeline-export", redis as unknown as RedisClient),
-    ]);
+    if (isByQueueMetrics(result)) {
+      const ocrQueue = sumCounts(result.byQueue[JOB_QUEUES.OCR] ?? {});
+      const exportQueue = sumCounts(result.byQueue[JOB_QUEUES.EXPORT] ?? {});
+      return { ocrQueue, exportQueue };
+    }
 
-    await redis.quit();
-    return { ocrQueue, exportQueue };
+    if (isRedisMetrics(result)) {
+      const ocr = result[JOB_QUEUES.OCR];
+      const exp = result[JOB_QUEUES.EXPORT];
+      const ocrQueue = ocr ? ocr.waiting + ocr.active + ocr.delayed : -1;
+      const exportQueue = exp ? exp.waiting + exp.active + exp.delayed : -1;
+      return { ocrQueue, exportQueue };
+    }
+
+    return { ocrQueue: -1, exportQueue: -1 };
   } catch {
     return { ocrQueue: -1, exportQueue: -1 };
   }

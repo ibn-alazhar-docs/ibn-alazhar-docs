@@ -124,13 +124,19 @@ export class DashboardService {
       logger.error(err, "Failed to calculate processing time in DashboardService:");
     }
 
-    // 3. Fetch BullMQ queue metrics (global only - admins only)
+    // 3. Fetch queue metrics (driver-agnostic; global only - admins only)
     let queueMetrics = { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
     if (!userId) {
       try {
-        const { getQueueMetrics, loadConfig } = await import("@ibn-al-azhar-docs/pipeline");
-        const config = loadConfig();
-        queueMetrics = await getQueueMetrics(config);
+        const { getMetricsViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
+        const metrics = await getMetricsViaDriver();
+        queueMetrics = {
+          waiting: metrics.ocrQueue.waiting + metrics.exportQueue.waiting,
+          active: metrics.ocrQueue.active + metrics.exportQueue.active,
+          completed: metrics.ocrQueue.completed + metrics.exportQueue.completed,
+          failed: metrics.ocrQueue.failed + metrics.exportQueue.failed,
+          delayed: metrics.ocrQueue.delayed + metrics.exportQueue.delayed,
+        };
       } catch (err) {
         logger.warn(err, "Queue metrics unavailable in DashboardService (non-critical):");
       }

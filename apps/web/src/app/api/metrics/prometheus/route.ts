@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
 import { isBearerAuthorized } from "@/shared/security";
+import { getMetricsViaDriver, JOB_QUEUES } from "@ibn-al-azhar-docs/pipeline";
 
 export const runtime = "nodejs";
 
@@ -30,26 +31,28 @@ export const GET = async (request: Request) => {
     let ocrQueue = -1;
     let exportQueue = -1;
     try {
-      const { default: IORedis } = await import("ioredis");
-      const redis = new IORedis(process.env.REDIS_URL || "redis://localhost:6379", {
-        maxRetriesPerRequest: 1,
-        connectTimeout: 2000,
-        lazyConnect: true,
-      });
-      await redis.connect();
-      const [ocrW, ocrA, ocrD, expW, expA, expD] = await Promise.all([
-        redis.llen("pipeline-ocr:wait"),
-        redis.llen("pipeline-ocr:active"),
-        redis.zcard("pipeline-ocr:delayed"),
-        redis.llen("pipeline-export:wait"),
-        redis.llen("pipeline-export:active"),
-        redis.zcard("pipeline-export:delayed"),
-      ]);
-      ocrQueue = ocrW + ocrA + ocrD;
-      exportQueue = expW + expA + expD;
-      await redis.quit();
+      const result = await getMetricsViaDriver();
+
+      if (
+        typeof result === "object" &&
+        result !== null &&
+        "byQueue" in result &&
+        typeof (result as { byQueue: unknown }).byQueue === "object"
+      ) {
+        const byQueue = (result as { byQueue: Record<string, Record<string, number>> }).byQueue;
+        const sum = (obj: Record<string, number> | undefined): number =>
+          obj ? Object.values(obj).reduce((acc, n) => acc + (Number(n) || 0), 0) : -1;
+        ocrQueue = sum(byQueue[JOB_QUEUES.OCR]);
+        exportQueue = sum(byQueue[JOB_QUEUES.EXPORT]);
+      } else if (typeof result === "object" && result !== null) {
+        const metrics = result as Record<string, { waiting: number; active: number; delayed: number }>;
+        const ocr = metrics[JOB_QUEUES.OCR];
+        const exp = metrics[JOB_QUEUES.EXPORT];
+        ocrQueue = ocr ? ocr.waiting + ocr.active + ocr.delayed : -1;
+        exportQueue = exp ? exp.waiting + exp.active + exp.delayed : -1;
+      }
     } catch {
-      // Redis unavailable — report -1
+      // Driver unavailable — report -1
     }
 
     const lines = [

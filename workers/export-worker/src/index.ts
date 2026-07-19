@@ -3,6 +3,10 @@ import {
   recordJobFailure,
   classifyError,
   isFinalAttempt,
+  PgWorker,
+  JOB_QUEUES,
+  JOB_CONCURRENCY,
+  validateQueueConfig,
   type ExportRequest,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
@@ -11,6 +15,7 @@ import { prisma } from "@ibn-al-azhar-docs/database";
 import { startHealthServer, logger } from "@ibn-al-azhar-docs/shared";
 
 import { registerExportHandler } from "./export-handler";
+import { buildExportPgHandlers, EXPORT_WORKER_ID } from "./pg/handlers";
 
 const config = loadConfig();
 
@@ -50,6 +55,30 @@ async function main() {
   logger.info("[export-worker] Starting...");
 
   startHealthServer("export-worker", 9091);
+
+  if (process.env.QUEUE_DRIVER === "pg") {
+    validateQueueConfig();
+
+    const worker = new PgWorker({
+      handlers: buildExportPgHandlers(config),
+      concurrency: { [JOB_QUEUES.EXPORT]: JOB_CONCURRENCY[JOB_QUEUES.EXPORT] },
+      workerId: EXPORT_WORKER_ID,
+      directUrl: process.env.DATABASE_URL_DIRECT,
+    });
+    await worker.start();
+
+    const shutdown = async () => {
+      logger.info("[export-worker] Shutting down (pg)...");
+      await worker.shutdown();
+      await prisma.$disconnect();
+      process.exit(0);
+    };
+    process.on("SIGTERM", shutdown);
+    process.on("SIGINT", shutdown);
+
+    logger.info("[export-worker] PG worker started. Waiting for jobs...");
+    return;
+  }
 
   const shutdown = async () => {
     logger.info("[export-worker] Shutting down...");
