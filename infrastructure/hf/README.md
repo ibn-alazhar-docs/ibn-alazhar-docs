@@ -78,3 +78,82 @@ Set these in **Space Settings → Variables and Secrets**:
 - **OCR:** Tesseract 5 with Arabic language pack
 - **Search:** PostgreSQL full-text search (tsvector)
 - **Auth:** NextAuth.js (JWT + Credentials + Google OAuth)
+
+---
+
+## HuggingFace Space Deployment (Sync Workflow)
+
+> **⚠️ أهم خطوة أمنية — تدوير الرمز المسرّب (Token Rotation)**
+> سبق أن وُضع رمز HuggingFace داخل رابط الـ remote `old-hf`. تم تنظيف
+> الرابط محليًا (أصبح بلا رمز)، لكن **الرمز القديم لا يزال صالحًا على خوادم
+> HF ويجب إبطاله فورًا بواسطتك فقط**:
+>
+> 1. اذهب إلى https://huggingface.co/settings/tokens
+> 2. احذف/ألغِ الرمز القديم المسرّب.
+> 3. أنشئ رمزًا جديدًا (صلاحية قراءة/كتابة على الـ Space) إن كنت بحاجة للرفع.
+>
+> **لا يقوم هذا السكربت بأي تدوير للرمز** (لا تتوفر له صلاحية API على HF)،
+> ولا يكتب أو يضمّن أي سرّ/رمز في أي ملف أو رابط.
+
+### English — Security first
+
+A HuggingFace token was previously embedded in the `old-hf` remote URL. The
+local URL is now sanitized (token-free), **but the leaked token is still valid
+on HF and MUST be rotated by you** at https://huggingface.co/settings/tokens
+(revoke the old token, create a new read/write token if needed). This script
+cannot rotate it and never embeds any secret.
+
+### How sync works
+
+HF Spaces build from a **Dockerfile at the repo root**. Our HF-specific files
+live under `infrastructure/hf/`. The sync script:
+
+1. Exports a **clean tree of the current commit only** via `git archive`
+   (untracked + `.gitignore`d files like `.env` are never included → secrets
+   can never leak).
+2. Copies `infrastructure/hf/Dockerfile` → root `Dockerfile` and
+   `infrastructure/hf/entrypoint.sh` → root `entrypoint.sh`.
+   (The project `.dockerignore` ignores `infrastructure/`, so the entrypoint
+   must sit at root or the build would silently fail.)
+3. Pushes that tree to the `old-hf` remote `main` with `--force-with-lease`
+   (so a concurrent push is never blindly overwritten).
+
+### Authenticate safely (one-time, manual)
+
+```bash
+# Option A (recommended)
+huggingface-cli login
+
+# Option B (git credential helper)
+git credential approve <<EOF
+protocol=https
+host=huggingface.co
+username=your-hf-username
+password=<YOUR_NEW_READ_WRITE_TOKEN>
+EOF
+```
+
+Replace `<YOUR_NEW_READ_WRITE_TOKEN>` with the **new** token created **after**
+rotating the old leaked one. Never paste a token into the script or a remote
+URL.
+
+### Deploy
+
+```bash
+# Dry run (prepares the tree, prints it, pushes nothing)
+./scripts/sync-hf-space.sh
+
+# Actual deploy (after you have authenticated)
+./scripts/sync-hf-space.sh --push
+```
+
+Secrets are provided to the running Space exclusively via **Space Settings →
+Variables and Secrets** — never committed to the repo.
+
+### Verification checklist
+
+- [ ] Old leaked HF token revoked at huggingface.co/settings/tokens
+- [ ] `old-hf` remote URL is token-free (`git remote get-url old-hf`)
+- [ ] No `.env` / credential file is tracked or shipped
+- [ ] Authenticated via `huggingface-cli login` or credential helper
+- [ ] Space rebuilds successfully after `--push`
