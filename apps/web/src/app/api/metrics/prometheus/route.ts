@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/transport/db";
 import { isBearerAuthorized } from "@/shared/security";
-import { getMetricsViaDriver, JOB_QUEUES } from "@ibn-al-azhar-docs/pipeline";
+import { getMetricsViaDriver } from "@ibn-al-azhar-docs/pipeline";
 
 export const runtime = "nodejs";
 
@@ -32,25 +32,10 @@ export const GET = async (request: Request) => {
     let exportQueue = -1;
     try {
       const result = await getMetricsViaDriver();
-
-      if (
-        typeof result === "object" &&
-        result !== null &&
-        "byQueue" in result &&
-        typeof (result as { byQueue: unknown }).byQueue === "object"
-      ) {
-        const byQueue = (result as { byQueue: Record<string, Record<string, number>> }).byQueue;
-        const sum = (obj: Record<string, number> | undefined): number =>
-          obj ? Object.values(obj).reduce((acc, n) => acc + (Number(n) || 0), 0) : -1;
-        ocrQueue = sum(byQueue[JOB_QUEUES.OCR]);
-        exportQueue = sum(byQueue[JOB_QUEUES.EXPORT]);
-      } else if (typeof result === "object" && result !== null) {
-        const metrics = result as Record<string, { waiting: number; active: number; delayed: number }>;
-        const ocr = metrics[JOB_QUEUES.OCR];
-        const exp = metrics[JOB_QUEUES.EXPORT];
-        ocrQueue = ocr ? ocr.waiting + ocr.active + ocr.delayed : -1;
-        exportQueue = exp ? exp.waiting + exp.active + exp.delayed : -1;
-      }
+      const depth = (b: { waiting: number; active: number; delayed: number }): number =>
+        b.waiting + b.active + b.delayed;
+      ocrQueue = depth(result.ocrQueue);
+      exportQueue = depth(result.exportQueue);
     } catch {
       // Driver unavailable — report -1
     }

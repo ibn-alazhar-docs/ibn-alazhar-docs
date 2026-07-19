@@ -179,7 +179,7 @@ export function useFilesManager(): UseFilesManagerReturn {
       if (activeJobs.length === 0) return 10000;
 
       const oldestJob = activeJobs[0];
-      if (!oldestJob.createdAt) return 5000; // Fallback if no timestamp
+      if (!oldestJob || !oldestJob.createdAt) return 5000; // Fallback if no timestamp
 
       const jobAge = Date.now() - new Date(oldestJob.createdAt).getTime();
 

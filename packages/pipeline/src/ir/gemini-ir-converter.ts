@@ -36,6 +36,7 @@ export class MarkdownIRConverter implements IRConverter {
 
     while (i < blocks.length) {
       const block = blocks[i];
+      if (!block) break;
       const text = block.text.trim();
 
       if (text === "") {
@@ -47,8 +48,10 @@ export class MarkdownIRConverter implements IRConverter {
       if (text.startsWith("```")) {
         const captured: string[] = [];
         i++;
-        while (i < blocks.length && !blocks[i].text.trim().startsWith("```")) {
-          captured.push(blocks[i].text);
+        while (i < blocks.length) {
+          const inner = blocks[i];
+          if (!inner || inner.text.trim().startsWith("```")) break;
+          captured.push(inner.text);
           i++;
         }
         i++; // skip closing fence
@@ -88,8 +91,10 @@ export class MarkdownIRConverter implements IRConverter {
       // Table block (markdown pipe table)
       if (text.includes("|") && this.looksLikeTable(blocks, i)) {
         const tableLines: string[] = [];
-        while (i < blocks.length && blocks[i].text.trim().includes("|")) {
-          tableLines.push(blocks[i].text.trim());
+        while (i < blocks.length) {
+          const tbl = blocks[i];
+          if (!tbl || !tbl.text.trim().includes("|")) break;
+          tableLines.push(tbl.text.trim());
           i++;
         }
         result.push(this.tableToParagraph(tableLines));
@@ -108,12 +113,16 @@ export class MarkdownIRConverter implements IRConverter {
   private isIndentedListContinuation(blocks: RawBlock[], i: number): boolean {
     if (i === 0) return false;
     const prev = blocks[i - 1];
-    return indentationOf(blocks[i].text) > indentationOf(prev.text) && isListMarker(prev.text);
+    const cur = blocks[i];
+    if (!prev || !cur) return false;
+    return indentationOf(cur.text) > indentationOf(prev.text) && isListMarker(prev.text);
   }
 
   private looksLikeTable(blocks: RawBlock[], i: number): boolean {
-    const line = blocks[i].text.trim();
-    const cells = line.split("|").filter((c) => c.trim()).length;
+    const line = blocks[i];
+    if (!line) return false;
+    const trimmed = line.text.trim();
+    const cells = trimmed.split("|").filter((c) => c.trim()).length;
     if (cells < 2) return false;
     const next = blocks[i + 1]?.text.trim();
     return next ? /^\s*\|?[\s:|-]+\|?\s*$/.test(next) : cells >= 2;
@@ -142,9 +151,11 @@ export class MarkdownIRConverter implements IRConverter {
     const parts: string[] = [];
     let i = start;
     while (i < blocks.length) {
-      const text = blocks[i].text.trim();
+      const blk = blocks[i];
+      if (!blk) break;
+      const text = blk.text.trim();
       if (text === "") break;
-      if (detectHeading(blocks[i], estimateAverageFontSize(blocks))) break;
+      if (detectHeading(blk, estimateAverageFontSize(blocks))) break;
       if (isListMarker(text)) break;
       if (text.startsWith("#")) break;
       if (/^(-{3,}|\*{3,}|_{3,})$/.test(text)) break;

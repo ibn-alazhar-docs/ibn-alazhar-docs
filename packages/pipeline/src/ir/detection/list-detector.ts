@@ -23,10 +23,12 @@ function isOrderedMarker(line: string): boolean {
 
 export function detectList(lines: string[]): ListDetectionResult | null {
   if (lines.length === 0) return null;
-  const first = lines[0].trim();
+  const firstLine = lines[0];
+  if (!firstLine) return null;
+  const first = firstLine.trim();
   if (!isListMarker(first)) return null;
 
-  const firstIndent = indentationOf(lines[0]);
+  const firstIndent = indentationOf(firstLine);
   const isOrdered = isOrderedMarker(first);
   const startNumber =
     isOrdered && ORDERED_MARKER.test(first) ? Number(first.match(ORDERED_MARKER)?.[1]) : undefined;
@@ -37,6 +39,7 @@ export function detectList(lines: string[]): ListDetectionResult | null {
 
   while (i < lines.length) {
     const raw = lines[i];
+    if (!raw) break;
     const trimmed = raw.trim();
 
     // Empty lines always break a list

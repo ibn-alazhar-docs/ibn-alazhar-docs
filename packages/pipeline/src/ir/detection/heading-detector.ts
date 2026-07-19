@@ -19,7 +19,7 @@ export function detectHeading(
   const trimmed = block.text.trim();
 
   const atx = trimmed.match(/^(#{1,6})\s+(.*)$/);
-  if (atx) {
+  if (atx && atx[1] && atx[2] !== undefined) {
     const level = Math.min(6, atx[1].length) as 1 | 2 | 3 | 4 | 5 | 6;
     return { level, title: atx[2].trim() };
   }

@@ -2,7 +2,6 @@ import { prisma } from "@ibn-al-azhar-docs/database";
 import type { FailedJob } from "../types";
 import { JOB_QUEUES } from "../types";
 import { loadConfig } from "../config";
-import { PgQueueDriver } from "./drivers/pg-driver";
 import { getAllQueueMetrics, getJobStatus } from "./metrics";
 import { getFailedJobs, cleanupFailedJob, recordFailedJob } from "./dlq";
 
@@ -15,16 +14,69 @@ const QUEUE_STAGE_MAP: Record<string, string> = {
   [JOB_QUEUES.GENERATION]: "generating",
 };
 
+/** Normalized queue metrics shared by every driver backend. */
+export interface QueueBucket {
+  waiting: number;
+  active: number;
+  completed: number;
+  failed: number;
+  delayed: number;
+}
+
+export interface DriverMetrics {
+  ocrQueue: QueueBucket;
+  exportQueue: QueueBucket;
+}
+
+const EMPTY_BUCKET: QueueBucket = {
+  waiting: 0,
+  active: 0,
+  completed: 0,
+  failed: 0,
+  delayed: 0,
+};
+
 /**
- * Returns aggregate queue metrics for the active driver.
- * - pg: `PgQueueDriver.getMetrics()` (job_queue table).
- * - redis: `getAllQueueMetrics(config)`.
+ * Returns aggregate queue metrics for the active driver, normalized to a stable
+ * `{ ocrQueue, exportQueue }` shape so web consumers don't branch on backend.
+ * - pg: derives buckets from `job_queue` status counts.
+ * - redis: derives buckets from BullMQ `getJobCounts`.
  */
-export async function getMetricsViaDriver(): Promise<unknown> {
+export async function getMetricsViaDriver(): Promise<DriverMetrics> {
   if (process.env.QUEUE_DRIVER === "pg") {
-    return new PgQueueDriver().getMetrics();
+    const rows = await prisma.$queryRaw<{ queue: string; status: string; count: bigint }[]>`
+      SELECT queue, status, COUNT(*)::bigint AS count
+      FROM job_queue
+      GROUP BY queue, status;
+    `;
+    const byQueue: Record<string, Record<string, number>> = {};
+    for (const row of rows) {
+      const bucket = (byQueue[row.queue] ??= {});
+      bucket[row.status] = Number(row.count);
+    }
+    return {
+      ocrQueue: toBucket(byQueue[JOB_QUEUES.OCR]),
+      exportQueue: toBucket(byQueue[JOB_QUEUES.EXPORT]),
+    };
   }
-  return getAllQueueMetrics(loadConfig());
+
+  const all = await getAllQueueMetrics(loadConfig());
+  return {
+    ocrQueue: all[JOB_QUEUES.OCR] ?? EMPTY_BUCKET,
+    exportQueue: all[JOB_QUEUES.EXPORT] ?? EMPTY_BUCKET,
+  };
+}
+
+/** Maps a BullMQ/pg status-count map into the normalized `QueueBucket`. */
+function toBucket(counts: Record<string, number> | undefined): QueueBucket {
+  if (!counts) return { ...EMPTY_BUCKET };
+  return {
+    waiting: counts["pending"] ?? 0,
+    active: counts["reserved"] ?? 0,
+    completed: counts["done"] ?? 0,
+    failed: counts["dead"] ?? 0,
+    delayed: 0,
+  };
 }
 
 /**

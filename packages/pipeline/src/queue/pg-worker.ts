@@ -338,7 +338,8 @@ export class PgWorker {
     if (this.draining) return; // no new claims while shutting down
     for (const queue of this.queues) {
       const activeCount = this.countActive(queue);
-      const free = this.concurrency[queue] - activeCount;
+      const cap = this.concurrency[queue] ?? 1;
+      const free = cap - activeCount;
       if (free <= 0) continue;
       await this.claimFor(queue, free);
     }
