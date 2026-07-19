@@ -242,10 +242,8 @@ export class PgQueueDriver implements QueueDriver {
 
     const byQueue: Record<string, Record<string, number>> = {};
     for (const row of rows) {
-      if (!byQueue[row.queue]) {
-        byQueue[row.queue] = {};
-      }
-      byQueue[row.queue][row.status] = Number(row.count);
+      const bucket = (byQueue[row.queue] ??= {});
+      bucket[row.status] = Number(row.count);
     }
 
     const reserved = await prisma.$queryRaw<{ count: bigint }[]>`

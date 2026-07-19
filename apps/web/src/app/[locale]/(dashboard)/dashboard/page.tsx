@@ -4,6 +4,7 @@ import { requireAuth } from "@/middleware/auth-guards";
 import { prisma } from "@/transport/db";
 import { DashboardContent } from "../dashboard-content";
 import { PageTransition } from "@/ui/page-transition";
+import type { DocStatus } from "@ibn-al-azhar-docs/shared";
 
 export const revalidate = 0;
 
@@ -27,10 +28,18 @@ export default async function DashboardPage() {
   const folderWhere = { userId: session.user.id, deletedAt: null };
   const tagWhere = { userId: session.user.id, deletedAt: null };
   // FIX: Count processing documents, not conversion jobs
+  const processingStatuses: DocStatus[] = [
+    "UPLOADED",
+    "VALIDATING",
+    "SPLITTING",
+    "OCR_PROCESSING",
+    "CLEANING",
+    "GENERATING",
+  ];
   const processingWhere = {
     userId: session.user.id,
     status: {
-      in: ["UPLOADED", "VALIDATING", "SPLITTING", "OCR_PROCESSING", "CLEANING", "GENERATING"],
+      in: processingStatuses,
     },
     deletedAt: null,
   };
