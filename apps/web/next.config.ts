@@ -52,14 +52,37 @@ const nextConfig: NextConfig = {
       test: /\.woff2?$/,
       type: "asset/resource",
     });
-    // Treat Node core modules (http, https, fs, node:*, …) as provided by the
-    // Node runtime so webpack does not try to bundle them. Required because the
-    // bundled pipeline package pulls in google-auth-library → agent-base which
-    // does `require("http")`/`require("https")`.
-    config.externalsPresets = {
-      ...(config.externalsPresets || {}),
-      node: true,
-    };
+    // Keep the workspace packages and their heavy native deps (pg, ioredis,
+    // google-auth-library → agent-base which does `require("http")`) external
+    // to the webpack build. Webpack must NOT try to bundle them (it cannot
+    // resolve node core builtins like http/https). They are required normally
+    // at runtime by Node, which resolves node: builtins fine. We do NOT use
+    // externalsPresets.node because that externalizes `node:http` as a bare
+    // require that Next's server runtime cannot resolve ("Native module not
+    // found: node:http").
+    const externalPackages = [
+      "pg",
+      "pg-promise",
+      "ioredis",
+      "redis",
+      "google-auth-library",
+      "googleapis",
+      "@google-cloud/storage",
+      "https-proxy-agent",
+      "agent-base",
+      "gaxios",
+    ];
+    config.externals = config.externals || [];
+    config.externals.push(({ request }, callback) => {
+      if (!request) return callback();
+      if (request.startsWith("@ibn-al-azhar-docs/")) {
+        return callback(null, "commonjs " + request);
+      }
+      if (externalPackages.includes(request)) {
+        return callback(null, "commonjs " + request);
+      }
+      return callback();
+    });
     return config;
   },
   async headers() {
