@@ -34,13 +34,19 @@ export async function GET(): Promise<NextResponse> {
     };
   }
 
-  // Probe Redis (queue) dependency — never throws.
+  // Probe Redis (queue) dependency — never throws. Under the PostgreSQL queue
+  // driver there is intentionally no Redis, so the check is skipped and reported
+  // as healthy (it is not a dependency in that mode).
   const redisStart = Date.now();
-  try {
-    const ok = await isRedisHealthy(loadConfig());
-    checks.redis = { status: ok ? "ok" : "error", latencyMs: Date.now() - redisStart };
-  } catch {
-    checks.redis = { status: "error", latencyMs: Date.now() - redisStart };
+  if (process.env.QUEUE_DRIVER === "pg") {
+    checks.redis = { status: "ok", latencyMs: 0 };
+  } else {
+    try {
+      const ok = await isRedisHealthy(loadConfig());
+      checks.redis = { status: ok ? "ok" : "error", latencyMs: Date.now() - redisStart };
+    } catch {
+      checks.redis = { status: "error", latencyMs: Date.now() - redisStart };
+    }
   }
 
   // Probe system memory limits
