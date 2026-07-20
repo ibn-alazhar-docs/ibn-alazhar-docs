@@ -77,10 +77,11 @@ const nextConfig: NextConfig = {
         "agent-base",
         "gaxios",
       ];
-      // All Node core builtins (bare form, e.g. "crypto", "stream", "path").
-      // Externalizing them makes webpack emit `require("crypto")` which Node
-      // resolves at runtime. We intentionally do NOT externalize the
-      // "node:"-prefixed form (Next's standalone loader rejects that).
+      // All Node core builtins, both bare ("http") and "node:"-prefixed
+      // ("node:http") forms. We externalize them so webpack emits a runtime
+      // require. For the "node:" form we map to the bare specifier
+      // (`commonjs http`) because Next's standalone server loader rejects the
+      // "node:" prefix — bare `require("http")` resolves fine in Node 22.
       let builtins: Set<string> = new Set();
       try {
         // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -88,11 +89,14 @@ const nextConfig: NextConfig = {
       } catch {
         builtins = new Set();
       }
+      const isBuiltin = (req: string): boolean =>
+        builtins.has(req) || builtins.has(req.replace(/^node:/, ""));
       config.externals = config.externals || [];
       config.externals.push(({ request }, callback) => {
         if (!request) return callback();
-        if (builtins.has(request)) {
-          return callback(null, "commonjs " + request);
+        if (isBuiltin(request)) {
+          const bare = request.replace(/^node:/, "");
+          return callback(null, "commonjs " + bare);
         }
         if (externalPackages.includes(request)) {
           return callback(null, "commonjs " + request);
