@@ -12,7 +12,7 @@ export interface DomainDocument {
   fileName: string;
   originalName: string;
   mimeType: string;
-  fileSize: number;
+  fileSize: number | bigint;
   storageKey: string;
   status: DocStatus;
   pageCount: number | null;
@@ -35,7 +35,7 @@ export interface CreateDocumentInput {
   fileName: string;
   originalName: string;
   mimeType: string;
-  fileSize: number;
+  fileSize: number | bigint;
   storageKey: string;
   status?: DocStatus;
   pageRange?: string | null;

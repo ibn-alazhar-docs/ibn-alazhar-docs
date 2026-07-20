@@ -55,7 +55,13 @@ export async function register() {
  * surface it immediately instead of letting the app start in a broken state.
  */
 function validateRequiredEnv(): void {
-  const required = ["DATABASE_URL", "REDIS_URL", "AUTH_SECRET"];
+  // REDIS_URL is only required when using the Redis/BullMQ queue driver.
+  // Under QUEUE_DRIVER=pg (the HuggingFace Spaces deployment) Redis is
+  // intentionally unused, so requiring it would crash boot for no reason.
+  const required = ["DATABASE_URL", "AUTH_SECRET"];
+  if (process.env.QUEUE_DRIVER !== "pg") {
+    required.push("REDIS_URL");
+  }
   const missing = required.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {

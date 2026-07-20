@@ -181,7 +181,7 @@ export class UploadDocumentUseCase {
             fileName,
             originalName: fileName,
             mimeType: file.type,
-            fileSize: Number(file.size),
+            fileSize: BigInt(file.size),
             storageKey: storageKey,
             folderId: folderId || null,
             status: "UPLOADED",
