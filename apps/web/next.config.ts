@@ -52,6 +52,14 @@ const nextConfig: NextConfig = {
       test: /\.woff2?$/,
       type: "asset/resource",
     });
+    // Treat Node core modules (http, https, fs, node:*, …) as provided by the
+    // Node runtime so webpack does not try to bundle them. Required because the
+    // bundled pipeline package pulls in google-auth-library → agent-base which
+    // does `require("http")`/`require("https")`.
+    config.externalsPresets = {
+      ...(config.externalsPresets || {}),
+      node: true,
+    };
     return config;
   },
   async headers() {
