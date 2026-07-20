@@ -74,7 +74,7 @@ ENV DISABLE_SENTRY=1
 ENV NEXT_DISABLE_TURBOPACK=1
 # Force the Webpack bundler (not Turbopack): Turbopack balloons memory and is
 # OOM-killed on the HF cpu-basic build machine. Webpack is lighter and stable.
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+ENV NODE_OPTIONS="--max-old-space-size=3072"
 WORKDIR /app/apps/web
 RUN NODE_ENV=production npx next build --webpack
 # Ship the pdf.js worker from the installed package into public/ (the HF sync
