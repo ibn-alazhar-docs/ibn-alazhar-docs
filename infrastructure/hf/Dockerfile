@@ -54,7 +54,9 @@ RUN mkdir -p /app/apps/web/public
 # ./src/*.ts (consumed directly by Turbopack in dev/web build); we transpile each
 # package's src to dist with esbuild (transpile-only, no type-check) and rewrite
 # exports/main to ./dist/*.js so Node's ESM resolver is happy at runtime.
+# The build helper is shipped at the repo root by the HF sync script.
 WORKDIR /app
+COPY build-packages.mjs ./build-packages.mjs
 RUN pnpm exec tsx /app/build-packages.mjs
 
 # Build Next.js
