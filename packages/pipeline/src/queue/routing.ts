@@ -14,6 +14,30 @@ const QUEUE_STAGE_MAP: Record<string, string> = {
   [JOB_QUEUES.GENERATION]: "generating",
 };
 
+/** Map the persisted DocStatus to the UI stage name. */
+const STATUS_TO_STAGE: Record<string, string> = {
+  UPLOADED: "pending",
+  VALIDATING: "validating",
+  SPLITTING: "splitting",
+  OCR_PROCESSING: "ocr",
+  CLEANING: "cleaning",
+  GENERATING: "generating",
+  COMPLETED: "completed",
+  FAILED: "failed",
+};
+
+/** Map the persisted DocStatus back to its originating queue (fallback only). */
+const QUEUE_BY_STATUS: Record<string, string> = {
+  UPLOADED: JOB_QUEUES.VALIDATION,
+  VALIDATING: JOB_QUEUES.VALIDATION,
+  SPLITTING: JOB_QUEUES.SPLITTING,
+  OCR_PROCESSING: JOB_QUEUES.OCR,
+  CLEANING: JOB_QUEUES.CLEANING,
+  GENERATING: JOB_QUEUES.GENERATION,
+  COMPLETED: JOB_QUEUES.GENERATION,
+  FAILED: JOB_QUEUES.GENERATION,
+};
+
 /** Normalized queue metrics shared by every driver backend. */
 export interface QueueBucket {
   waiting: number;
@@ -89,6 +113,20 @@ export async function getJobStatusViaDriver(
   jobId: string,
 ): Promise<{ stage: string; progress: number } | null> {
   if (process.env.QUEUE_DRIVER === "pg") {
+    // Prefer the document's own status/progress (the source of truth written by
+    // the worker stages). Fall back to the queue→stage mapping only when the
+    // document row is missing, so the percentage is always real, never 0.
+    const doc = await prisma.document.findFirst({
+      where: { id: jobId },
+      select: { status: true, progress: true },
+    });
+    if (doc) {
+      const stage =
+        STATUS_TO_STAGE[doc.status] ?? QUEUE_STAGE_MAP[QUEUE_BY_STATUS[doc.status] ?? ""];
+      if (!stage) return null;
+      return { stage, progress: doc.progress ?? 0 };
+    }
+
     const row = await prisma.jobQueue.findFirst({
       where: {
         idempotencyKey: jobId,

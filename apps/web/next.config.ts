@@ -13,6 +13,10 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 86400,
+    // Serve images unoptimized: avoids the Next image optimizer 400 on the
+    // HuggingFace Spaces proxy (no upstream to optimize) and works with the
+    // static SVG logo shipped in public/.
+    unoptimized: true,
     remotePatterns: [
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
       { protocol: "https", hostname: "*.ibnalazhardocs.workers.dev" },

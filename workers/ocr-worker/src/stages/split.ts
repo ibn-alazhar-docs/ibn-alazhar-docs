@@ -13,7 +13,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { downloadDocumentBuffer, updateDocStatus, parsePageRange } from "../helpers";
+import { downloadDocumentBuffer, updateDocStatusWithProgress, parsePageRange } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -32,7 +32,7 @@ export async function processSplittingStage(
   });
   jobLogger.info(`[split] Processing job ${data.id}: ${data.fileName}`);
 
-  await updateDocStatus(data.documentId, "SPLITTING");
+  await updateDocStatusWithProgress(data.documentId, "SPLITTING");
 
   const fileBuffer = await downloadDocumentBuffer(data.storageKey, data.userId, config);
   const validation = validatePdf(fileBuffer, data.mimeType, data.fileSize);
@@ -62,7 +62,9 @@ export async function processSplittingStage(
     }
 
     storedPagesCount = selectedPaths.length;
-    await updateDocStatus(data.documentId, "SPLITTING", { pageCount: storedPagesCount });
+    await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
+      pageCount: storedPagesCount,
+    });
 
     const CONCURRENCY = 5;
     try {
@@ -84,7 +86,7 @@ export async function processSplittingStage(
   } else {
     storedPagesCount = 1;
     jobLogger.info(`[split] Input is an image, skipping split for ${data.id}`);
-    await updateDocStatus(data.documentId, "SPLITTING", { pageCount: 1 });
+    await updateDocStatusWithProgress(data.documentId, "SPLITTING", { pageCount: 1 });
     const pageKey = `${config.paths.pages}/${data.id}/page-001.png`;
     await uploadBuffer(config, pageKey, fileBuffer, "image/png");
     jobLogger.info(`[split] Stored 1 page image for ${data.id}`);

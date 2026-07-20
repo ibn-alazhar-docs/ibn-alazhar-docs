@@ -7,10 +7,14 @@ import * as pdfjsLib from "pdfjs-dist";
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
 
-// Use local worker from public directory to avoid unpkg redirect/CORS issues
-// Turbopack does not support ?url imports for .mjs files currently.
+// Load the pdf.js worker from our own public/ directory (copied from
+// pdfjs-dist during the Docker build) using an absolute origin URL so it works
+// behind the HuggingFace Spaces proxy.
 if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "/pdf.worker.min.mjs",
+    window.location.origin,
+  ).href;
 }
 
 interface Range {

@@ -80,6 +80,34 @@ export async function updateDocStatus(
   }
 }
 
+/**
+ * Updates the document status AND a stage-appropriate progress percentage so
+ * the UI shows a real, monotonic progress value instead of a flat 0%.
+ * Percentages mirror the canonical stage map (validate 10 → split 25 → ocr 40 →
+ * clean 65 → generate 85 → completed 100).
+ */
+const STAGE_PROGRESS: Partial<Record<DocStatus, number>> = {
+  VALIDATING: 10,
+  SPLITTING: 25,
+  OCR_PROCESSING: 40,
+  CLEANING: 65,
+  GENERATING: 85,
+  COMPLETED: 100,
+};
+
+export async function updateDocStatusWithProgress(
+  documentId: string,
+  status: DocStatus,
+  extra?: Record<string, unknown>,
+): Promise<boolean> {
+  const progress = STAGE_PROGRESS[status];
+  return updateDocStatus(
+    documentId,
+    status,
+    progress === undefined ? extra : { progress, ...extra },
+  );
+}
+
 export async function generateSearchablePdf(
   job: ProcessingJob,
   pageGetters: (() => Promise<Buffer>)[],

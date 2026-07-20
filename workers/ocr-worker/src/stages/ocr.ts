@@ -12,7 +12,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { generateSearchablePdf, updateDocStatus } from "../helpers";
+import { generateSearchablePdf, updateDocStatusWithProgress } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -24,7 +24,7 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
   const jobLogger = logger.child({ jobId: data.id, documentId: data.documentId, stage: "ocr" });
   jobLogger.info(`[ocr] Processing job ${data.id}: ${data.fileName}`);
 
-  await updateDocStatus(data.documentId, "OCR_PROCESSING");
+  await updateDocStatusWithProgress(data.documentId, "OCR_PROCESSING");
 
   const manager = new OcrManager(config);
   const firstPageKey = `${config.paths.pages}/${data.id}/page-001.png`;
@@ -72,7 +72,7 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
       { confidence: result.confidence, minConfidence },
       `[ocr] Low-confidence OCR result for ${data.id} (code: OCR_LOW_CONFIDENCE) — proceeding with degradation`,
     );
-    await updateDocStatus(data.documentId, "OCR_PROCESSING", {
+    await updateDocStatusWithProgress(data.documentId, "OCR_PROCESSING", {
       needsReview: true,
     }).catch(() => {});
   }

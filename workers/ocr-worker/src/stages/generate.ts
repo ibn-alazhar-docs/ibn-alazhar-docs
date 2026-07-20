@@ -13,7 +13,7 @@ import {
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { prisma } from "@ibn-al-azhar-docs/database";
-import { updateDocStatus, uploadExportBufferForWorker } from "../helpers";
+import { updateDocStatusWithProgress, uploadExportBufferForWorker } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -33,7 +33,7 @@ export async function processGenerationStage(
   });
   jobLogger.info(`[generate] Processing job ${data.id}`);
 
-  await updateDocStatus(data.documentId, "GENERATING");
+  await updateDocStatusWithProgress(data.documentId, "GENERATING");
 
   const cleanedKey = `${config.paths.ocrResults}/${data.id}/cleaned.json`;
   const cleanedBuffer = await downloadFile(config, cleanedKey);
@@ -117,7 +117,7 @@ export async function processGenerationStage(
     finalFormats.push("searchable-pdf");
   }
 
-  await updateDocStatus(data.documentId, "COMPLETED", {
+  await updateDocStatusWithProgress(data.documentId, "COMPLETED", {
     outputFormats: finalFormats,
     outputKeys,
   });

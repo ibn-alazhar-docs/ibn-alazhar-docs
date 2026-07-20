@@ -9,7 +9,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { downloadDocumentBuffer, updateDocStatus } from "../helpers";
+import { downloadDocumentBuffer, updateDocStatusWithProgress } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -28,7 +28,7 @@ export async function processValidationStage(
   });
   jobLogger.info(`[validate] Processing job ${data.id}: ${data.fileName}`);
 
-  await updateDocStatus(data.documentId, "VALIDATING");
+  await updateDocStatusWithProgress(data.documentId, "VALIDATING");
 
   const fileBuffer = await downloadDocumentBuffer(data.storageKey, data.userId, config);
   const validation = validatePdf(fileBuffer, data.mimeType, data.fileSize);
