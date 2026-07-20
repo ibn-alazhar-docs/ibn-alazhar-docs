@@ -55,7 +55,7 @@ RUN mkdir -p /app/apps/web/public
 # package's src to dist with esbuild (transpile-only, no type-check) and rewrite
 # exports/main to ./dist/*.js so Node's ESM resolver is happy at runtime.
 WORKDIR /app
-RUN pnpm exec tsx infrastructure/hf/build-packages.mjs
+RUN pnpm exec tsx /app/build-packages.mjs
 
 # Build Next.js
 # Storage must resolve to "local" during the build too (page-data collection

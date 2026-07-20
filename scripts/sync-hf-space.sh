@@ -125,6 +125,14 @@ cp "$HF_DOCKERFILE" "$WORK_DIR/Dockerfile"
 cp "$HF_ENTRYPOINT" "$WORK_DIR/entrypoint.sh"
 chmod +x "$WORK_DIR/entrypoint.sh"
 
+# The workspace-package build helper ships at root too (the project's
+# .dockerignore excludes `infrastructure/`, so it must live at root or the
+# Space build would fail to find it).
+HF_BUILD_HELPER="infrastructure/hf/build-packages.mjs"
+if [ -f "$HF_BUILD_HELPER" ]; then
+  cp "$HF_BUILD_HELPER" "$WORK_DIR/build-packages.mjs"
+fi
+
 # Patch the entrypoint COPY path in the Space copy only (root, not the source):
 # the project .dockerignore excludes `infrastructure/`, so the Dockerfile must
 # reference the root entrypoint, not infrastructure/hf/entrypoint.sh.
