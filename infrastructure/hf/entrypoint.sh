@@ -38,15 +38,17 @@ echo "[2/5] Running database migrations..."
 cd /app
 
 # ── P3009 guard ─────────────────────────────────────────────────────────
-# A migration left in a FAILED state makes `migrate deploy` refuse to apply
-# ANY migration (Prisma error P3009). We delete the failed row(s) so the
+# A migration that started but never finished makes `migrate deploy` refuse
+# to apply ANY migration (Prisma error P3009). In Prisma 6 the `_prisma_migrations`
+# table has NO `status` column — an incomplete migration is one where
+# `finished_at IS NULL` (started_at is not null). We delete those rows so the
 # deploy can re-attempt them. The migration SQL is idempotent (IF NOT EXISTS),
-# so re-applying is always safe. We do NOT swallow stderr here so a real
-# failure is visible in the Space logs.
-echo "[2/5] Clearing failed migration records (P3009 guard)..."
+# so re-applying is always safe. This step is non-fatal (|| true) so a missing
+# table or other hiccup never crashes the boot.
+echo "[2/5] Clearing incomplete migration records (P3009 guard)..."
 npx prisma db execute --schema=packages/database/prisma/schema.prisma \
-  --stdin <<'SQL'
-DELETE FROM "_prisma_migrations" WHERE status = 'failed';
+  --stdin <<'SQL' || true
+DELETE FROM "_prisma_migrations" WHERE finished_at IS NULL AND started_at IS NOT NULL;
 SQL
 echo "[2/5] P3009 guard finished."
 
