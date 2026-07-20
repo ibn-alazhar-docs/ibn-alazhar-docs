@@ -137,6 +137,8 @@ ENV HOSTNAME="0.0.0.0"
 # This removes the in-container MinIO dependency (single-container Spaces).
 ENV STORAGE_DRIVER=local
 ENV STORAGE_LOCAL_DIR=/data
+# Use the Postgres-backed queue (no Redis/BullMQ in the container).
+ENV QUEUE_DRIVER=pg
 
 # HF Spaces health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
