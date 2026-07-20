@@ -65,6 +65,7 @@ const nextConfig: NextConfig = {
       "pg-promise",
       "ioredis",
       "redis",
+      "bullmq",
       "google-auth-library",
       "googleapis",
       "@google-cloud/storage",
