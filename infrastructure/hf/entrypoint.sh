@@ -37,15 +37,18 @@ fi
 echo "[2/5] Running database migrations..."
 cd /app
 
-# Clear any migrations left in a FAILED state so `migrate deploy` does not
-# refuse to apply the rest (Prisma error P3009). A failed row means the
-# migration did not complete; deleting it lets deploy re-attempt it. We only
-# touch rows that are actually marked failed — applied migrations are kept.
+# ── P3009 guard ─────────────────────────────────────────────────────────
+# A migration left in a FAILED state makes `migrate deploy` refuse to apply
+# ANY migration (Prisma error P3009). We delete the failed row(s) so the
+# deploy can re-attempt them. The migration SQL is idempotent (IF NOT EXISTS),
+# so re-applying is always safe. We do NOT swallow stderr here so a real
+# failure is visible in the Space logs.
 echo "[2/5] Clearing failed migration records (P3009 guard)..."
 npx prisma db execute --schema=packages/database/prisma/schema.prisma \
-  --stdin <<'SQL' 2>/dev/null || echo "[2/5] (no failed rows to clear or db not ready yet)"
+  --stdin <<'SQL'
 DELETE FROM "_prisma_migrations" WHERE status = 'failed';
 SQL
+echo "[2/5] P3009 guard finished."
 
 for attempt in 1 2 3 4 5; do
     if npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma 2>&1; then
