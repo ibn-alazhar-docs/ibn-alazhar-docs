@@ -4,8 +4,6 @@ export { DOC_STATUS_MAP, STATUS_LABELS, ERROR_CODES, FAILURE_CATEGORIES } from "
 
 export { logger } from "./logger";
 
-export { startHealthServer } from "./health-server";
-
 export {
   ServiceErrorType,
   ServiceErrorClassifier,

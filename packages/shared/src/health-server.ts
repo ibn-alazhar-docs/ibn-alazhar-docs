@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import http from "node:http";
+import http from "http";
 
 interface HealthStatus {
   status: "healthy" | "unhealthy";

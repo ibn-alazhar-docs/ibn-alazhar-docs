@@ -4,32 +4,20 @@
  * Loaded once when the server starts (production only — Turbopack skips this in dev).
  * Activated via NEXT_OTEL_VERBOSE=1 env var (or NODE_ENV=production).
  *
+ * NOTE: Do NOT statically (or dynamically) import @ibn-al-azhar-docs/pipeline
+ * here. Instrumentation is compiled for every runtime (including the edge /
+ * client graph), and the pipeline pulls in google-auth-library → agent-base →
+ * node core builtins (http/https/net) that webpack cannot bundle for the
+ * browser. Keep this file dependency-free of the server-only pipeline.
+ *
  * @see https://nextjs.org/docs/app/building-your-application/optimizing/instrumentation
  */
 import { registerOTel } from "@vercel/otel";
-import { loadConfig, isRedisHealthy } from "@ibn-al-azhar-docs/pipeline";
 
 export async function register() {
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
 
   validateRequiredEnv();
-
-  // Boot diagnostics: log the resolved Redis config and a live ping so a
-  // connection/auth mismatch between web and the bundled Redis is visible in
-  // the HF logs without reproducing the failure interactively.
-  if (process.env.NODE_ENV === "production") {
-    try {
-      const cfg = loadConfig();
-      const ok = await isRedisHealthy(cfg);
-      console.warn(
-        `[diagnostics] boot REDIS_URL=${process.env.REDIS_URL ?? "unset"} ` +
-          `host=${cfg.redis.host}:${cfg.redis.port} ` +
-          `hasPassword=${Boolean(cfg.redis.password)} redisHealthy=${ok}`,
-      );
-    } catch (err) {
-      console.warn(`[diagnostics] boot redis check error: ${String(err)}`);
-    }
-  }
 
   // Only activate in production or when explicitly enabled
   if (process.env.NODE_ENV !== "production" && process.env.NEXT_OTEL_VERBOSE !== "1") {
