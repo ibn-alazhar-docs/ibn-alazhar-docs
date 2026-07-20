@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { apiFetch } from "@/shared/api";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 // MUST stay in sync with MAX_UPLOAD_SIZE_MB (server-side validator). A client
 // gate far above the server limit produces late, confusing "file too large"
@@ -65,13 +66,13 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
 
   async function processUpload(finalRangeString?: string) {
     if (!file) {
-      console.warn("[upload] processUpload called but no file selected");
+      logger.warn("[upload] processUpload called but no file selected");
       return;
     }
 
     const validationError = validateFile(file);
     if (validationError) {
-      console.warn("[upload] validation failed:", validationError);
+      logger.warn({ validationError }, "[upload] validation failed");
       setError(validationError);
       return;
     }
@@ -81,9 +82,9 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
     setError(null);
 
     try {
-      console.log("[upload] starting health check...");
+      logger.debug("[upload] starting health check...");
       const health = await fetch("/api/health/ready", { cache: "no-store" });
-      console.log("[upload] health check:", health.status);
+      logger.debug(`[upload] health check: ${health.status}`);
       if (!health.ok) {
         setError("servicesUnavailable");
         return;
@@ -100,13 +101,13 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
         formData.append("pageRange", rangeToUse);
       }
 
-      console.log("[upload] sending POST /api/upload, size:", file.size, "bytes");
+      logger.debug(`[upload] sending POST /api/upload, size: ${file.size} bytes`);
       const response = await apiFetch("/api/upload", {
         method: "POST",
         body: formData,
       });
 
-      console.log("[upload] response status:", response.status);
+      logger.debug(`[upload] response status: ${response.status}`);
 
       if (!response.ok) {
         let errText: string;
@@ -115,7 +116,7 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
         } catch {
           errText = `HTTP ${response.status}`;
         }
-        console.error("[upload] error response:", errText);
+        logger.error({ errText }, "[upload] error response");
         let err;
         try {
           err = JSON.parse(errText);
@@ -127,7 +128,7 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
       }
 
       const result = await response.json();
-      console.log("[upload] response body:", JSON.stringify(result).slice(0, 300));
+      logger.debug(`[upload] response body: ${JSON.stringify(result).slice(0, 300)}`);
 
       if (result.error) {
         const msg = typeof result.error === "object" ? result.error?.message : result.error;
@@ -138,13 +139,13 @@ export function useFileUpload({ folderId, onUploadStart }: UseFileUploadOptions)
         throw new Error("السيرفر لم يُرجِع معرّف المهمة. حاول مرة أخرى.");
       }
 
-      console.log("[upload] success, jobId:", result.jobId);
+      logger.debug(`[upload] success, jobId: ${result.jobId}`);
       onUploadStart(result.jobId, file.name);
       setFile(null);
       setPageRange("");
       setProgress(100);
     } catch (err: unknown) {
-      console.error("[upload] failed:", err);
+      logger.error({ err }, "[upload] failed");
       setError(err instanceof Error ? err.message : "errorUploadFailed");
     } finally {
       setUploading(false);

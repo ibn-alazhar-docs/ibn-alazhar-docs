@@ -36,7 +36,10 @@ vi.mock("../../workers/ocr-worker/src/stages/split", () => ({
 }));
 vi.mock("../../workers/ocr-worker/src/stages/ocr", () => ({
   processOcrStage: async (job: ProcessingJob, config: PipelineConfig) => {
-    await prisma.document.update({ where: { id: job.documentId }, data: { status: "OCR_PROCESSING" } });
+    await prisma.document.update({
+      where: { id: job.documentId },
+      data: { status: "OCR_PROCESSING" },
+    });
     await enqueueViaDriver(JOB_QUEUES.CLEANING, config, {
       ...job,
       status: "CLEANING",

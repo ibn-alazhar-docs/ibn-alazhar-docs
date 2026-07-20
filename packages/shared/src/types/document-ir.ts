@@ -91,7 +91,7 @@ const emphasisSchema = z
   .optional();
 
 // Inline node schemas
-const textNodeSchema: z.ZodType<TextNode> = z.object({
+const textNodeSchema = z.object({
   type: z.literal("text"),
   content: z.string(),
   emphasis: emphasisSchema,
@@ -99,7 +99,7 @@ const textNodeSchema: z.ZodType<TextNode> = z.object({
   fontWeight: z.number().min(100).max(900).optional(),
 });
 
-const lineBreakNodeSchema: z.ZodType<LineBreakNode> = z.object({
+const lineBreakNodeSchema = z.object({
   type: z.literal("line-break"),
 });
 
@@ -109,7 +109,7 @@ const inlineNodeSchema: z.ZodType<InlineNode> = z.discriminatedUnion("type", [
 ]);
 
 // Block node schemas (with forward references for recursive types)
-const headingNodeSchema: z.ZodType<HeadingNode> = z.object({
+const headingNodeSchema = z.object({
   type: z.literal("heading"),
   level: z.union([
     z.literal(1),
@@ -123,13 +123,13 @@ const headingNodeSchema: z.ZodType<HeadingNode> = z.object({
   id: z.string().optional(),
 });
 
-const paragraphNodeSchema: z.ZodType<ParagraphNode> = z.object({
+const paragraphNodeSchema = z.object({
   type: z.literal("paragraph"),
   content: z.array(inlineNodeSchema),
   alignment: z.enum(["left", "center", "right", "justify"]).optional(),
 });
 
-const codeBlockNodeSchema: z.ZodType<CodeBlockNode> = z.object({
+const codeBlockNodeSchema = z.object({
   type: z.literal("code-block"),
   language: z.string().optional(),
   content: z.string(),
@@ -143,7 +143,7 @@ const listItemNodeSchema: z.ZodType<ListItemNode> = z.lazy(() =>
   }),
 );
 
-const listNodeSchema: z.ZodType<ListNode> = z.object({
+const listNodeSchema = z.object({
   type: z.literal("list"),
   ordered: z.boolean(),
   items: z.array(listItemNodeSchema),
@@ -193,6 +193,6 @@ export function parseDocumentIR(obj: unknown): DocumentIR {
  * Safely parse a DocumentIR object
  * @returns {success: true, data: DocumentIR} | {success: false, error: z.ZodError}
  */
-export function safeParseDocumentIR(obj: unknown): z.SafeParseReturnType<unknown, DocumentIR> {
+export function safeParseDocumentIR(obj: unknown): z.ZodSafeParseResult<DocumentIR> {
   return documentIRSchema.safeParse(obj);
 }

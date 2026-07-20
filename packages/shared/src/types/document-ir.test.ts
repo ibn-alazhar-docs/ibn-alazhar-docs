@@ -1,9 +1,6 @@
 import { describe, it, expect } from "vitest";
 import {
   type DocumentIR,
-  type HeadingNode,
-  type ParagraphNode,
-  type ListNode,
   type TextNode,
   documentIRSchema,
   isDocumentIR,

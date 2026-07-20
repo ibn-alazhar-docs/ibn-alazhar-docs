@@ -19,8 +19,9 @@ export class ConversionUseCases {
     );
     if (!document) throw new NotFoundError("المستند غير موجود");
 
-    const { loadConfig, enqueueViaDriver, JOB_QUEUES } =
-      await import("@ibn-al-azhar-docs/pipeline");
+    const { loadConfig, enqueueViaDriver, JOB_QUEUES } = await import(
+      "@ibn-al-azhar-docs/pipeline"
+    );
     const config = loadConfig();
 
     const job = {

@@ -123,22 +123,7 @@ export class SuryaOcrProvider implements OcrProvider {
         );
 
         // Re-preprocess failed pages with aggressive settings
-        const { splitPdfPages } = await import("../ocr");
-        const aggressivePreprocess = {
-          mode: "on" as const,
-          minDpi: 300,
-          targetDpi: 450,
-          upscale: 1.5,
-          deskew: true,
-          clahe: true,
-          denoise: true,
-          shadow: true,
-          border: true,
-          perspective: true,
-          binarize: true,
-          sauvola: true,
-          sharpen: true,
-        };
+        // (reprocessing is done via runSuryaBatch below)
 
         // Retry pages one by one (not batch) for maximum quality
         for (const idx of retryIndices) {

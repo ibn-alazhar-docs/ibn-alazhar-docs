@@ -126,6 +126,7 @@ export interface ExportRequest {
     watermark?: string;
     destination?: string;
     pageRange?: string;
+    title?: string;
   };
 }
 
