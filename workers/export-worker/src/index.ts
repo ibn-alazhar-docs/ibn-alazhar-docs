@@ -12,7 +12,8 @@ import {
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { loadConfig } from "@ibn-al-azhar-docs/pipeline";
 import { prisma } from "@ibn-al-azhar-docs/database";
-import { startHealthServer, logger } from "@ibn-al-azhar-docs/shared";
+import { logger } from "@ibn-al-azhar-docs/shared";
+import { startHealthServer } from "@ibn-al-azhar-docs/shared/health-server";
 
 import { registerExportHandler } from "./export-handler";
 import { buildExportPgHandlers, EXPORT_WORKER_ID } from "./pg/handlers";

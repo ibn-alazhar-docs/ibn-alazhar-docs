@@ -13,6 +13,16 @@ const packages = [
   { name: "shared", dir: "packages/shared", entry: "packages/shared/src/index.ts" },
 ];
 
+// Extra entry points that must be bundled separately (e.g. server-only code that
+// must NOT live in the shared barrel, to keep the browser build clean).
+const extraEntries = [
+  {
+    dir: "packages/shared",
+    entry: "packages/shared/src/health-server.ts",
+    outfile: "packages/shared/dist/health-server.js",
+  },
+];
+
 async function buildPkg({ dir, entry }) {
   const outfile = path.join(root, dir, "dist", "index.js");
   await esbuild.build({
@@ -28,8 +38,25 @@ async function buildPkg({ dir, entry }) {
   console.log(`bundled ${dir} -> ${outfile}`);
 }
 
+async function buildExtra({ entry, outfile }) {
+  await esbuild.build({
+    entryPoints: [path.join(root, entry)],
+    outfile: path.join(root, outfile),
+    bundle: true,
+    format: "esm",
+    platform: "node",
+    packages: "external",
+    logLevel: "error",
+    loader: { ".ts": "ts", ".json": "json" },
+  });
+  console.log(`bundled extra -> ${outfile}`);
+}
+
 for (const pkg of packages) {
   await buildPkg(pkg);
+}
+for (const extra of extraEntries) {
+  await buildExtra(extra);
 }
 
 // Rewrite exports/main in package.json to point at the bundled dist/index.js so
@@ -45,10 +72,20 @@ for (const p of pkgs) {
   const file = path.join(root, p);
   const j = JSON.parse(fs.readFileSync(file, "utf8"));
   j.main = "./dist/index.js";
-  // Collapse exports to a single entry pointing at the bundle.
+  // Map each export key to its corresponding bundled dist file. The "." entry
+  // always points at the main bundle; subpath entries (e.g. "./health-server")
+  // map to their own dist file derived from the source path.
   if (j.exports) {
     for (const k of Object.keys(j.exports)) {
-      j.exports[k] = "./dist/index.js";
+      if (k === ".") {
+        j.exports[k] = "./dist/index.js";
+        continue;
+      }
+      const src = j.exports[k];
+      const dist = src
+        .replace(/^(\.\/)?src\//, "./dist/")
+        .replace(/\.ts$/, ".js");
+      j.exports[k] = dist;
     }
   }
   fs.writeFileSync(file, JSON.stringify(j, null, 2) + "\n");
