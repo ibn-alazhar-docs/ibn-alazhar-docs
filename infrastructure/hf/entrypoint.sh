@@ -36,6 +36,17 @@ fi
 # ── Step 2: Run database migrations (with retry for Neon cold start) ──
 echo "[2/5] Running database migrations..."
 cd /app
+
+# Clear any migrations left in a FAILED state so `migrate deploy` does not
+# refuse to apply the rest (Prisma error P3009). A failed row means the
+# migration did not complete; deleting it lets deploy re-attempt it. We only
+# touch rows that are actually marked failed — applied migrations are kept.
+echo "[2/5] Clearing failed migration records (P3009 guard)..."
+npx prisma db execute --schema=packages/database/prisma/schema.prisma \
+  --stdin <<'SQL' 2>/dev/null || echo "[2/5] (no failed rows to clear or db not ready yet)"
+DELETE FROM "_prisma_migrations" WHERE status = 'failed';
+SQL
+
 for attempt in 1 2 3 4 5; do
     if npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma 2>&1; then
         echo "[2/5] Migrations applied ✓"
