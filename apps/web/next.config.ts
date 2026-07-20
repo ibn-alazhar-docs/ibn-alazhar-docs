@@ -101,19 +101,23 @@ if (process.env.CLOUDFLARE_WORKERS) {
     });
 }
 
-export default withBundleAnalyzer(
-  withSentryConfig(withNextIntl(nextConfig), {
-    silent: true,
-    org: process.env.SENTRY_ORG,
-    project: process.env.SENTRY_PROJECT,
-    release: {
-      name: process.env.SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA || undefined,
-    },
-    widenClientFileUpload: true,
-    sourcemaps: {
-      deleteSourcemapsAfterUpload: true,
-    },
-    disableLogger: true,
-    automaticVercelMonitors: true,
-  }),
-);
+const enableSentry = process.env.DISABLE_SENTRY !== "1";
+
+const sentried = enableSentry
+  ? withSentryConfig(withNextIntl(nextConfig), {
+      silent: true,
+      org: process.env.SENTRY_ORG,
+      project: process.env.SENTRY_PROJECT,
+      release: {
+        name: process.env.SENTRY_RELEASE || process.env.VERCEL_GIT_COMMIT_SHA || undefined,
+      },
+      widenClientFileUpload: true,
+      sourcemaps: {
+        deleteSourcemapsAfterUpload: true,
+      },
+      disableLogger: true,
+      automaticVercelMonitors: true,
+    })
+  : withNextIntl(nextConfig);
+
+export default withBundleAnalyzer(sentried);
