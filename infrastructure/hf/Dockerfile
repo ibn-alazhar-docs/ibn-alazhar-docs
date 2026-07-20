@@ -150,6 +150,11 @@ COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/packages/pipeline/node_modules ./packages/pipeline/node_modules
 COPY --from=builder /app/packages/shared/node_modules ./packages/shared/node_modules
 COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
+# database is pre-built to dist/ by build-packages.mjs (exports rewritten to
+# ./dist/*.js). Copy the built output + rewritten package.json so the worker
+# processes (run via tsx) resolve @ibn-al-azhar-docs/database as real JS.
+COPY --from=builder /app/packages/database/dist ./packages/database/dist
+COPY --from=builder /app/packages/database/package.json ./packages/database/package.json
 COPY --from=builder /app/node_modules ./node_modules
 
 # Regenerate the Prisma client into the local node_modules layout.
