@@ -48,6 +48,32 @@ COPY workers ./workers
 # when public assets are absent — the app degrades gracefully without them.
 RUN mkdir -p /app/apps/web/public
 
+# Build the workspace packages (database / pipeline / shared) to dist/ so the
+# worker processes (run with plain Node + tsx) can resolve the @ibn-al-azhar-docs/*
+# workspace deps as real JavaScript. The committed package.json points exports at
+# ./src/*.ts (consumed directly by Turbopack in dev/web build); we rewrite those
+# to ./dist/*.js here so Node's ESM resolver is happy at runtime.
+WORKDIR /app
+RUN pnpm exec tsc -p packages/database/tsconfig.json && \
+    pnpm exec tsc -p packages/pipeline/tsconfig.json && \
+    pnpm exec tsc -p packages/shared/tsconfig.json
+RUN node -e '
+  const fs = require("fs");
+  const pkgs = ["packages/database/package.json", "packages/pipeline/package.json", "packages/shared/package.json"];
+  for (const p of pkgs) {
+    const j = JSON.parse(fs.readFileSync(p, "utf8"));
+    if (j.main && j.main.endsWith(".ts")) j.main = j.main.replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
+    if (j.exports) {
+      for (const k of Object.keys(j.exports)) {
+        if (typeof j.exports[k] === "string" && j.exports[k].endsWith(".ts")) {
+          j.exports[k] = j.exports[k].replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
+        }
+      }
+    }
+    fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
+  }
+'
+
 # Build Next.js
 # Storage must resolve to "local" during the build too (page-data collection
 # executes route modules which load pipeline config). The production image sets
