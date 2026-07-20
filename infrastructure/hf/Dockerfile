@@ -57,22 +57,7 @@ WORKDIR /app
 RUN pnpm exec tsc -p packages/database/tsconfig.json && \
     pnpm exec tsc -p packages/pipeline/tsconfig.json && \
     pnpm exec tsc -p packages/shared/tsconfig.json
-RUN node -e '
-  const fs = require("fs");
-  const pkgs = ["packages/database/package.json", "packages/pipeline/package.json", "packages/shared/package.json"];
-  for (const p of pkgs) {
-    const j = JSON.parse(fs.readFileSync(p, "utf8"));
-    if (j.main && j.main.endsWith(".ts")) j.main = j.main.replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
-    if (j.exports) {
-      for (const k of Object.keys(j.exports)) {
-        if (typeof j.exports[k] === "string" && j.exports[k].endsWith(".ts")) {
-          j.exports[k] = j.exports[k].replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
-        }
-      }
-    }
-    fs.writeFileSync(p, JSON.stringify(j, null, 2) + "\n");
-  }
-'
+RUN node -e "const fs=require('fs');for(const p of ['packages/database/package.json','packages/pipeline/package.json','packages/shared/package.json']){const j=JSON.parse(fs.readFileSync(p,'utf8'));if(j.main&&j.main.endsWith('.ts'))j.main=j.main.replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');if(j.exports)for(const k of Object.keys(j.exports)){if(typeof j.exports[k]==='string'&&j.exports[k].endsWith('.ts'))j.exports[k]=j.exports[k].replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');}fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');}"
 
 # Build Next.js
 # Storage must resolve to "local" during the build too (page-data collection
