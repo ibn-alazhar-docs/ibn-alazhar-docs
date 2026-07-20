@@ -115,6 +115,15 @@ let lastSecretKey = "";
 let clientLock = false;
 
 export function getStorageClient(config: PipelineConfig): MinioClient {
+  if (getDriver(config) !== "local") {
+    const isProduction = process.env.NODE_ENV === "production";
+    const accessKey = config.minio.accessKey;
+    const secretKey = config.minio.secretKey;
+    if (isProduction && (accessKey === "dummy" || !accessKey || !secretKey)) {
+      throw new Error("S3_ACCESS_KEY_ID and S3_SECRET_ACCESS_KEY are required in production");
+    }
+  }
+
   if (clientLock) {
     if (client) return client;
   }

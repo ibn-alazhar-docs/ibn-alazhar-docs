@@ -44,6 +44,11 @@ COPY apps ./apps
 COPY workers ./workers
 
 # Build Next.js
+# Storage must resolve to "local" during the build too (page-data collection
+# executes route modules which load pipeline config). The production image sets
+# STORAGE_DRIVER=local again below; this keeps build + runtime consistent.
+ENV STORAGE_DRIVER=local
+ENV STORAGE_LOCAL_DIR=/data
 WORKDIR /app/apps/web
 RUN NODE_ENV=production npx next build
 
