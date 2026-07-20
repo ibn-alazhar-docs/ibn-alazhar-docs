@@ -52,9 +52,12 @@ RUN NODE_ENV=production npx next build
 # ============================================
 FROM node:22-slim
 
-# HF Spaces requires UID 1000 — handle if node base already has it
-RUN (id -u user &>/dev/null || (groupadd -g 1000 user && useradd -m -u 1000 -g user user)) && \
-    mkdir -p /home/user && chown user:user /home/user
+# HF Spaces requires UID 1000 — handle if node base already has it.
+# `useradd`/`groupadd` live in the `passwd` package, not installed by default
+# on node:22-slim, so install it first.
+RUN apt-get update && apt-get install -y --no-install-recommends passwd && rm -rf /var/lib/apt/lists/* \
+ && (id -u user >/dev/null 2>&1 || (groupadd -g 1000 user && useradd -m -u 1000 -g user user)) \
+ && mkdir -p /home/user && chown user:user /home/user
 
 # Runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
