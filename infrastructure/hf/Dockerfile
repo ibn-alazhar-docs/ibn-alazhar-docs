@@ -43,6 +43,11 @@ COPY packages ./packages
 COPY apps ./apps
 COPY workers ./workers
 
+# The HF sync script excludes binary assets under apps/web/public (HF git LFS
+# rejects them). Ensure the directory exists so the production COPY never fails
+# when public assets are absent — the app degrades gracefully without them.
+RUN mkdir -p /app/apps/web/public
+
 # Build Next.js
 # Storage must resolve to "local" during the build too (page-data collection
 # executes route modules which load pipeline config). The production image sets
