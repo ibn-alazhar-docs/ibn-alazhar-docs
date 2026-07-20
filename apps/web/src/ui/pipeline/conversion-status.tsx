@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { STAGE_ORDER, normalizeStage, type Stage } from "@/shared/conversion-status-utils";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 interface ConversionStatusProps {
   jobId: string;
@@ -47,13 +48,13 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
     const startSSE = () => {
       if (closed) return;
 
-      console.log(`[sse] connecting jobId=${jobId} attempt=${retryCount + 1}`);
+      logger.debug(`[sse] connecting jobId=${jobId} attempt=${retryCount + 1}`);
       eventSource = new EventSource(`/api/stream?jobId=${encodeURIComponent(jobId)}`, {
         withCredentials: true,
       });
 
       eventSource.onopen = () => {
-        console.log("[sse] connected");
+        logger.debug("[sse] connected");
         retryCount = 0;
         setErrorMsg(null);
       };
@@ -61,7 +62,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       eventSource.onmessage = (event) => {
         try {
           const data = JSON.parse(event.data);
-          console.log("[sse] msg:", data.type, data.stage, data.progress);
+          logger.debug(`[sse] msg: ${data.type} ${String(data.stage)} ${data.progress}`);
 
           if (data.type === "progress" && data.stage) {
             setStage(normalizeStage(data.stage));
@@ -75,15 +76,15 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             onCompleteRef.current?.(jobId);
           }
           if (data.type === "timeout") {
-            console.warn("[sse] server timeout:", data.message);
+            logger.warn({ message: data.message }, "[sse] server timeout");
             cleanup();
             setErrorMsg(data.message || "انتهت مهلة الاتصال");
           }
           if (data.type === "warning") {
-            console.warn("[sse] server warning:", data.message);
+            logger.warn({ message: data.message }, "[sse] server warning");
           }
         } catch (parseErr) {
-          console.warn("[sse] parse error:", parseErr);
+          logger.warn({ err: parseErr }, "[sse] parse error");
         }
       };
 
@@ -96,12 +97,12 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         if (retryCount < MAX_RETRIES) {
           retryCount++;
           const delay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-          console.log(`[sse] error, retry ${retryCount}/${MAX_RETRIES} in ${delay}ms`);
+          logger.debug(`[sse] error, retry ${retryCount}/${MAX_RETRIES} in ${delay}ms`);
           retryTimeout = setTimeout(() => startSSE(), delay);
           return;
         }
 
-        console.log("[sse] retries exhausted, starting fallback polling");
+        logger.debug("[sse] retries exhausted, starting fallback polling");
         startFallbackPolling();
       };
     };
@@ -120,7 +121,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             credentials: "include",
           });
 
-          console.log("[poll]", res.status);
+          logger.debug(`[poll] ${res.status}`);
 
           if (res.status === 401 || res.status === 403 || res.status === 429) {
             cleanup();
@@ -130,7 +131,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
           if (res.ok) {
             const data = await res.json();
-            console.log("[poll] data:", data.status, data.progress);
+            logger.debug(`[poll] data: ${String(data.status)} ${data.progress}`);
             setStage(normalizeStage(data.status));
             setProgress(typeof data.progress === "number" ? data.progress : 0);
             const s = normalizeStage(data.status);
@@ -142,7 +143,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             }
           }
         } catch (pollErr) {
-          console.warn("[poll] error:", pollErr);
+          logger.warn({ err: pollErr }, "[poll] error");
         }
       }, 5000);
     };

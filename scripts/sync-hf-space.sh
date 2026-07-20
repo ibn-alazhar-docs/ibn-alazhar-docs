@@ -61,7 +61,17 @@ HF_README="infrastructure/hf/README.md"
 BRANCH="main"
 WORK_DIR="$(mktemp -d -t hf-sync.XXXXXX)"
 DO_PUSH=0
-COMMIT_REF="${1:-HEAD}"
+COMMIT_REF="HEAD"
+
+# Parse args: any positional ref is the commit to deploy; --push enables push.
+for arg in "$@"; do
+  case "$arg" in
+    --push) DO_PUSH=1 ;;
+    -p)     DO_PUSH=1 ;;
+    --*)    echo "❌ Unknown flag: $arg" >&2; exit 1 ;;
+    *)      COMMIT_REF="$arg" ;;
+  esac
+done
 
 cleanup() { rm -rf "$WORK_DIR"; }
 trap cleanup EXIT
@@ -155,12 +165,11 @@ git commit -q -m "Deploy $(git rev-parse --short "$COMMIT_REF" 2>/dev/null || ec
 echo "✓ Prepared deployment commit in temp tree at: $WORK_DIR"
 
 # ---- 5. Push (only with explicit --push) -----------------------------------
-if [ "${1:-}" = "--push" ] || [ "${2:-}" = "--push" ]; then DO_PUSH=1; fi
-
 if [ "$DO_PUSH" -eq 1 ]; then
   echo ""
   echo "── Authentication (do this ONCE, manually) ──────────────────────────"
-  echo "  Option A (recommended):  huggingface-cli login"
+  echo "  Option A (recommended):  hf auth login"
+  echo "    (Note: 'huggingface-cli' is deprecated; 'hf' is the current CLI.)"
   echo "  Option B (git credential helper):"
   echo "      git credential approve <<EOF"
   echo "      protocol=https"
@@ -181,7 +190,8 @@ else
   echo "  The prepared tree is ready at: $WORK_DIR"
   echo ""
   echo "  To authenticate (manual, one-time):"
-  echo "    huggingface-cli login"
+  echo "    hf auth login"
+  echo "    # (huggingface-cli is deprecated; 'hf' is the current CLI.)"
   echo "    # OR set a NEW read/write token via git credential helper"
   echo "    # (rotate the OLD leaked token first — see script header)."
   echo ""
