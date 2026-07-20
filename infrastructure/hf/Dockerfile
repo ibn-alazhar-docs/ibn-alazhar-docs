@@ -54,9 +54,14 @@ FROM node:22-slim
 
 # HF Spaces requires UID 1000 — handle if node base already has it.
 # `useradd`/`groupadd` live in the `passwd` package, not installed by default
-# on node:22-slim, so install it first.
+# on node:22-slim, so install it first. The GID 1000 may already be taken by
+# another group (e.g. `node`), so create the group without pinning a GID and
+# fall back gracefully.
 RUN apt-get update && apt-get install -y --no-install-recommends passwd && rm -rf /var/lib/apt/lists/* \
- && (id -u user >/dev/null 2>&1 || (groupadd -g 1000 user && useradd -m -u 1000 -g user user)) \
+ && (id -u user >/dev/null 2>&1 || ( \
+       getent group user >/dev/null 2>&1 || groupadd user; \
+       useradd -m -u 1000 -g user user 2>/dev/null || useradd -m -g user user \
+     )) \
  && mkdir -p /home/user && chown user:user /home/user
 
 # Runtime dependencies
