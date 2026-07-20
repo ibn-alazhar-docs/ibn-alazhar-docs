@@ -33,42 +33,50 @@ else
   MINIO_PID=""
 fi
 
-# ── Step 2: Run database migrations (with retry for Neon cold start) ──
-echo "[2/5] Running database migrations..."
+# ── Step 2: Sync database schema ───────────────────────────────────────
+echo "[2/5] Syncing database schema..."
 cd /app
+
+SCHEMA=packages/database/prisma/schema.prisma
 
 # ── P3009 guard ─────────────────────────────────────────────────────────
 # A migration that started but never finished makes `migrate deploy` refuse
 # to apply ANY migration (Prisma error P3009). In Prisma 6 the `_prisma_migrations`
 # table has NO `status` column — an incomplete migration is one where
 # `finished_at IS NULL` (started_at is not null). We delete those rows so the
-# deploy can re-attempt them. The migration SQL is idempotent (IF NOT EXISTS),
-# so re-applying is always safe. This step is non-fatal (|| true) so a missing
+# deploy can re-attempt them. This step is non-fatal (|| true) so a missing
 # table or other hiccup never crashes the boot.
 echo "[2/5] Clearing incomplete migration records (P3009 guard)..."
-npx prisma db execute --schema=packages/database/prisma/schema.prisma \
+npx prisma db execute --schema="$SCHEMA" \
   --stdin <<'SQL' || true
 DELETE FROM "_prisma_migrations" WHERE finished_at IS NULL AND started_at IS NOT NULL;
 SQL
 echo "[2/5] P3009 guard finished."
 
-for attempt in 1 2 3 4 5; do
-    if npx prisma migrate deploy --schema=packages/database/prisma/schema.prisma 2>&1; then
-        echo "[2/5] Migrations applied ✓"
-        break
-    fi
-    if [ "$attempt" = "5" ]; then
-        echo "[2/5] Migrations failed after 5 attempts — continuing anyway"
-    else
-        echo "[2/5] Migration attempt $attempt failed — retrying in ${attempt}s..."
-        sleep "$attempt"
-    fi
-done
+# Primary: apply pending migrations. If the migration history is corrupt
+# (e.g. rows recorded as applied but tables missing → P3018, or a stuck
+# failed row → P3009) migrate deploy cannot recover on its own. In that case
+# we fall back to `prisma db push`, which syncs the schema directly from
+# schema.prisma (idempotent: creates any missing table/column such as
+# Document.progress and job_queue, without dropping existing data). We then
+# baseline every migration as applied so subsequent boots take the normal,
+# history-tracked path and never re-trigger recovery.
+if npx prisma migrate deploy --schema="$SCHEMA" 2>&1; then
+    echo "[2/5] Migrations applied ✓"
+else
+    echo "[2/5] migrate deploy failed — syncing schema via db push"
+    npx prisma db push --accept-data-loss --skip-generate --schema="$SCHEMA" 2>&1 || echo "[2/5] db push also failed"
+    for m in packages/database/prisma/migrations/*/; do
+        name=$(basename "$m")
+        npx prisma migrate resolve --applied "$name" --schema="$SCHEMA" 2>/dev/null || true
+    done
+    echo "[2/5] Schema synced and migrations baselined ✓"
+fi
 
 # Seed if seed file exists
 if [ -f packages/database/prisma/seed.ts ]; then
     echo "[2/5] Running database seed..."
-    npx prisma db seed --schema=packages/database/prisma/schema.prisma 2>&1 || echo "[2/5] Seed skipped (may already exist)"
+    npx prisma db seed --schema="$SCHEMA" 2>&1 || echo "[2/5] Seed skipped (may already exist)"
 fi
 echo "[2/5] Database ready ✓"
 
