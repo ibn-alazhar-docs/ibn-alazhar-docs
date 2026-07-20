@@ -52,35 +52,54 @@ const nextConfig: NextConfig = {
       test: /\.woff2?$/,
       type: "asset/resource",
     });
-    // Keep the heavy native deps (pg, ioredis, google-auth-library →
-    // agent-base which does `require("http")`) external to the webpack build.
-    // Webpack must NOT try to bundle them (it cannot resolve node core
-    // builtins like http/https). They are required normally at runtime by
-    // Node, which resolves node: builtins fine. The @ibn-al-azhar-docs/*
-    // workspace packages are handled by `serverExternalPackages` (which the
-    // standalone server loads correctly) — do NOT externalize them here, as
-    // that makes Next's server runtime throw "Native module not found".
-    const externalPackages = [
-      "pg",
-      "pg-promise",
-      "ioredis",
-      "redis",
-      "bullmq",
-      "google-auth-library",
-      "googleapis",
-      "@google-cloud/storage",
-      "https-proxy-agent",
-      "agent-base",
-      "gaxios",
-    ];
-    config.externals = config.externals || [];
-    config.externals.push(({ request }, callback) => {
-      if (!request) return callback();
-      if (externalPackages.includes(request)) {
-        return callback(null, "commonjs " + request);
+    // Only the server build may externalize Node builtins / native packages —
+    // the browser bundle must keep its own polyfills.
+    const isServer = typeof config.target === "string" && config.target.includes("node");
+    if (isServer) {
+      // Heavy native deps that webpack cannot bundle (they require Node core
+      // builtins like http/https/path/crypto). They are required normally at
+      // runtime by Node, which resolves node: builtins fine. The
+      // @ibn-al-azhar-docs/* workspace packages are handled by
+      // `serverExternalPackages` (the standalone server loads those correctly)
+      // — do NOT externalize them here or Next's runtime throws
+      // "Native module not found".
+      const externalPackages = [
+        "pg",
+        "pg-promise",
+        "ioredis",
+        "redis",
+        "bullmq",
+        "google-auth-library",
+        "googleapis",
+        "@googleapis/drive",
+        "@google-cloud/storage",
+        "https-proxy-agent",
+        "agent-base",
+        "gaxios",
+      ];
+      // All Node core builtins (bare form, e.g. "crypto", "stream", "path").
+      // Externalizing them makes webpack emit `require("crypto")` which Node
+      // resolves at runtime. We intentionally do NOT externalize the
+      // "node:"-prefixed form (Next's standalone loader rejects that).
+      let builtins: Set<string> = new Set();
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        builtins = new Set(require("node:module").builtinModules);
+      } catch {
+        builtins = new Set();
       }
-      return callback();
-    });
+      config.externals = config.externals || [];
+      config.externals.push(({ request }, callback) => {
+        if (!request) return callback();
+        if (builtins.has(request)) {
+          return callback(null, "commonjs " + request);
+        }
+        if (externalPackages.includes(request)) {
+          return callback(null, "commonjs " + request);
+        }
+        return callback();
+      });
+    }
     return config;
   },
   async headers() {
