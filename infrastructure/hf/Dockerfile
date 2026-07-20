@@ -55,10 +55,7 @@ RUN mkdir -p /app/apps/web/public
 # package's src to dist with esbuild (transpile-only, no type-check) and rewrite
 # exports/main to ./dist/*.js so Node's ESM resolver is happy at runtime.
 WORKDIR /app
-RUN pnpm exec esbuild 'packages/database/src/**/*.ts' --outdir=packages/database/dist --outbase=packages/database/src --format=esm --platform=node --packages=external --log-level=error && \
-    pnpm exec esbuild 'packages/pipeline/src/**/*.ts' --outdir=packages/pipeline/dist --outbase=packages/pipeline/src --format=esm --platform=node --packages=external --log-level=error && \
-    pnpm exec esbuild 'packages/shared/src/**/*.ts' --outdir=packages/shared/dist --outbase=packages/shared/src --format=esm --platform=node --packages=external --log-level=error
-RUN node -e "const fs=require('fs');for(const p of ['packages/database/package.json','packages/pipeline/package.json','packages/shared/package.json']){const j=JSON.parse(fs.readFileSync(p,'utf8'));if(j.main&&j.main.endsWith('.ts'))j.main=j.main.replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');if(j.exports)for(const k of Object.keys(j.exports)){if(typeof j.exports[k]==='string'&&j.exports[k].endsWith('.ts'))j.exports[k]=j.exports[k].replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');}fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');}"
+RUN pnpm exec tsx infrastructure/hf/build-packages.mjs
 
 # Build Next.js
 # Storage must resolve to "local" during the build too (page-data collection
