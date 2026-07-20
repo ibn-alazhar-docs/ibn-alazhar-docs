@@ -51,12 +51,13 @@ RUN mkdir -p /app/apps/web/public
 # Build the workspace packages (database / pipeline / shared) to dist/ so the
 # worker processes (run with plain Node + tsx) can resolve the @ibn-al-azhar-docs/*
 # workspace deps as real JavaScript. The committed package.json points exports at
-# ./src/*.ts (consumed directly by Turbopack in dev/web build); we rewrite those
-# to ./dist/*.js here so Node's ESM resolver is happy at runtime.
+# ./src/*.ts (consumed directly by Turbopack in dev/web build); we transpile each
+# package's src to dist with esbuild (transpile-only, no type-check) and rewrite
+# exports/main to ./dist/*.js so Node's ESM resolver is happy at runtime.
 WORKDIR /app
-RUN pnpm exec tsc -p packages/database/tsconfig.json && \
-    pnpm exec tsc -p packages/pipeline/tsconfig.json && \
-    pnpm exec tsc -p packages/shared/tsconfig.json
+RUN pnpm exec esbuild 'packages/database/src/**/*.ts' --outdir=packages/database/dist --outbase=packages/database/src --format=esm --platform=node --packages=external --log-level=error && \
+    pnpm exec esbuild 'packages/pipeline/src/**/*.ts' --outdir=packages/pipeline/dist --outbase=packages/pipeline/src --format=esm --platform=node --packages=external --log-level=error && \
+    pnpm exec esbuild 'packages/shared/src/**/*.ts' --outdir=packages/shared/dist --outbase=packages/shared/src --format=esm --platform=node --packages=external --log-level=error
 RUN node -e "const fs=require('fs');for(const p of ['packages/database/package.json','packages/pipeline/package.json','packages/shared/package.json']){const j=JSON.parse(fs.readFileSync(p,'utf8'));if(j.main&&j.main.endsWith('.ts'))j.main=j.main.replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');if(j.exports)for(const k of Object.keys(j.exports)){if(typeof j.exports[k]==='string'&&j.exports[k].endsWith('.ts'))j.exports[k]=j.exports[k].replace(/\\.ts$/,'\.js').replace(/^\\.\\/src\\//,'./dist/');}fs.writeFileSync(p,JSON.stringify(j,null,2)+'\n');}"
 
 # Build Next.js
