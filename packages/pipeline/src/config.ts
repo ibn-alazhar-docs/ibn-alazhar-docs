@@ -3,11 +3,16 @@ import type { PipelineConfig, OcrEngineType, StorageDriver } from "./types";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 export function getStorageDriver(): StorageDriver {
-  const driver = process.env.STORAGE_DRIVER === "local" ? "local" : "s3";
+  const envValue = process.env.STORAGE_DRIVER;
+  // Explicit "s3" is the only way to opt into object storage. Anything else
+  // (including an unset value) defaults to "local" so that production builds
+  // (e.g. HuggingFace Spaces) never crash at config-load / page-data
+  // collection time when S3 credentials are absent.
+  const driver = envValue === "s3" ? "s3" : "local";
   // Log to help debug Hugging Face deployment issues
   if (process.env.NODE_ENV === "production") {
     logger.info(
-      { storageDriver: driver, storageDriverEnv: process.env.STORAGE_DRIVER },
+      { storageDriver: driver, storageDriverEnv: envValue },
       "[config] Storage driver selected",
     );
   }
