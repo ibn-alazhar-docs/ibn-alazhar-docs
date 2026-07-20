@@ -40,6 +40,31 @@ const nextConfig: NextConfig = {
       test: /\.woff2?$/,
       type: "asset/resource",
     });
+    // Keep Node core modules external so webpack does not try to bundle them
+    // (e.g. `https` from google-auth-library pulled in via the bundled
+    // pipeline package). They resolve natively at runtime in Node 22.
+    config.externals = config.externals || [];
+    const nodeBuiltins = [
+      "https",
+      "http",
+      "http2",
+      "net",
+      "tls",
+      "dns",
+      "fs",
+      "zlib",
+      "crypto",
+      "stream",
+      "util",
+      "url",
+      "querystring",
+      "child_process",
+      "os",
+      "path",
+    ];
+    for (const mod of nodeBuiltins) {
+      config.externals.push(mod);
+    }
     return config;
   },
   async headers() {
