@@ -72,9 +72,11 @@ ENV AUTH_SECRET=build-placeholder-do-not-use
 ENV NEXTAUTH_SECRET=build-placeholder-do-not-use
 ENV DISABLE_SENTRY=1
 ENV NEXT_DISABLE_TURBOPACK=1
-ENV NODE_OPTIONS="--max-old-space-size=8192"
+# Force the Webpack bundler (not Turbopack): Turbopack balloons memory and is
+# OOM-killed on the HF cpu-basic build machine. Webpack is lighter and stable.
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 WORKDIR /app/apps/web
-RUN NODE_ENV=production npx next build
+RUN NODE_ENV=production npx next build --webpack
 # Ship the pdf.js worker from the installed package into public/ (the HF sync
 # script strips binary assets from apps/web/public, so it must be copied here
 # from node_modules). The visual range selector loads it as an ES module.
