@@ -114,7 +114,11 @@ fi
 
 # ---- 2. Build clean tree from the current commit ----------------------------
 echo "• Exporting clean tree from $COMMIT_REF (git archive — excludes ignored/untracked)…"
-git archive --format=tar "$COMMIT_REF" | tar -x -C "$WORK_DIR"
+# Exclude `tests/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
+# on the Space) and binary assets under `apps/web/public` (HuggingFace's git
+# pre-receive hook rejects binary files; the app degrades gracefully without
+# the logo, or you can enable Xet storage on the Space to ship them).
+git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)apps/web/public' | tar -x -C "$WORK_DIR"
 
 # Place HF Dockerfile + entrypoint at repo root (required by HF Spaces).
 cp "$HF_DOCKERFILE" "$WORK_DIR/Dockerfile"
@@ -180,8 +184,31 @@ if [ "$DO_PUSH" -eq 1 ]; then
   echo "  (Replace <YOUR_NEW_READ_WRITE_TOKEN> with the NEW token you created"
   echo "   AFTER rotating the old leaked one. Never paste it into this script.)"
   echo "──────────────────────────────────────────────────────────────────────"
-  echo "• Pushing to $REMOTE_NAME/$BRANCH (force-with-lease)…"
-  git push --force-with-lease "$REMOTE_NAME" "HEAD:$BRANCH"
+  echo "• Pushing to $REMOTE_NAME/$BRANCH (force — full deployment mirror)…"
+  # The throwaway repo in $WORK_DIR has no remotes of its own. Resolve the
+  # push credentials in this order:
+  #   1. The `hf` CLI token file (~/.cache/huggingface/token) — this is the
+  #      token the user authenticated with via `hf auth login`.
+  #   2. The git credential helper (if a token is stored there).
+  #   3. Fall back to the plain token-free URL (user gets a clear prompt).
+  PUSH_URL="$REMOTE_URL"
+  CRED_USER="ibn-alazhar-docs"
+  CRED_PASS=""
+  if [ -f "$HOME/.cache/huggingface/token" ]; then
+    CRED_PASS="$(tr -d '[:space:]' < "$HOME/.cache/huggingface/token")"
+  fi
+  if [ -z "$CRED_PASS" ]; then
+    CRED_USER="$(printf 'protocol=https\nhost=huggingface.co\n' | git credential fill 2>/dev/null | awk -F= '/^username=/{print $2}')"
+    CRED_PASS="$(printf 'protocol=https\nhost=huggingface.co\n' | git credential fill 2>/dev/null | awk -F= '/^password=/{print $2}')"
+  fi
+  if [ -n "$CRED_PASS" ]; then
+    PUSH_URL="https://${CRED_USER}:${CRED_PASS}@huggingface.co/spaces/ibn-alazhar-docs/ibn-alazhar-docs"
+  fi
+  git remote remove "$REMOTE_NAME" 2>/dev/null || true
+  git remote add "$REMOTE_NAME" "$PUSH_URL"
+  # This is a pure deployment mirror: we always replace the Space repo with
+  # the current snapshot, so a force push is intentional.
+  git push --force "$REMOTE_NAME" "HEAD:$BRANCH"
   echo "✅ Pushed. HuggingFace will now rebuild the Space automatically."
 else
   echo ""
