@@ -12,7 +12,7 @@ import {
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { updateDocStatus } from "../helpers";
+import { updateDocStatusWithProgress } from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -31,7 +31,7 @@ export async function processCleaningStage(
   });
   jobLogger.info(`[clean] Processing job ${data.id}`);
 
-  await updateDocStatus(data.documentId, "CLEANING");
+  await updateDocStatusWithProgress(data.documentId, "CLEANING");
 
   const ocrKey = `${config.paths.ocrResults}/${data.id}/text.json`;
   const ocrBuffer = await downloadFile(config, ocrKey);

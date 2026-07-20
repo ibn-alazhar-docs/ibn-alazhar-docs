@@ -43,15 +43,10 @@ declare module "next-auth" {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
-  // Use the real public base URL (HF Space domain) so OAuth callback/redirect
-  // URIs are built correctly. Without this, NextAuth derives the URL from the
-  // internal Host header (0.0.0.0:7860 on HF), which Google rejects.
-  baseURL:
-    process.env.AUTH_URL ||
-    process.env.NEXTAUTH_URL ||
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_SITE_URL ||
-    undefined,
+  // The public base URL is taken from the AUTH_URL / NEXTAUTH_URL environment
+  // variable (set to the HF Space domain in the Dockerfile / Space secrets).
+  // Without it NextAuth derives the URL from the internal Host header
+  // (0.0.0.0:7860 on HF), which Google rejects as an invalid redirect URI.
   secret:
     process.env.AUTH_SECRET ||
     (process.env.NODE_ENV === "development"

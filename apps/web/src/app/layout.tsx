@@ -16,11 +16,10 @@ const siteUrl =
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  manifest: "/manifest.json",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
 };
 
@@ -48,7 +47,6 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
   return (
     <html lang={lang} dir={dir} suppressHydrationWarning>
       <head>
-        <link rel="manifest" href="/manifest.json" />
         <script
           dangerouslySetInnerHTML={{
             __html: `

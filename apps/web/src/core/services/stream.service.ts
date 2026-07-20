@@ -1,4 +1,4 @@
-import { normalizeStage, DOC_PROGRESS_MAP } from "@/shared/conversion-status-utils";
+import { normalizeStage, getProgressPercent } from "@/shared/conversion-status-utils";
 import { repos } from "@/core/composition-root";
 import { LIMITS, UI_TIMING } from "@/shared/constants";
 
@@ -25,10 +25,12 @@ export class StreamService {
     jobId: string,
   ): Promise<{ stage: string; progress: number } | null> {
     try {
-      const doc = await repos.document.findFirst({ id: jobId }, { status: true });
+      const doc = await repos.document.findFirst({ id: jobId }, { status: true, progress: true });
       if (!doc) return null;
       const stage = normalizeStage(doc.status);
-      const progress = DOC_PROGRESS_MAP[doc.status] ?? 0;
+      // Prefer the persisted progress; fall back to the stage map when it's 0 so
+      // the bar still reflects the current stage instead of sitting at 0%.
+      const progress = doc.progress && doc.progress > 0 ? doc.progress : getProgressPercent(stage);
       return { stage, progress };
     } catch {
       return null;

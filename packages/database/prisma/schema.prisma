@@ -112,6 +112,7 @@ model Document {
   fileSize    BigInt
   storageKey  String   @unique
   status      DocStatus @default(UPLOADED)
+  progress    Int       @default(0)
   pageCount   Int?
   pageRange   String?
   outputFormats String[] @default([])

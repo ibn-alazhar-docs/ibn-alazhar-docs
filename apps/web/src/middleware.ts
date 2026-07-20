@@ -265,6 +265,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all pathnames except static files
-    "/((?!_next|favicon.ico|logo.png|manifest.json|manifest.webmanifest|sw.js|robots.ts|sitemap.ts).*)",
+    "/((?!_next|favicon.ico|logo.svg|manifest.json|manifest.webmanifest|sw.js|robots.ts|sitemap.ts).*)",
   ],
 };

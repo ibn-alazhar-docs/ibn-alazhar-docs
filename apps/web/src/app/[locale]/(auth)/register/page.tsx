@@ -31,7 +31,7 @@ export default async function RegisterPage(props: RegisterPageProps) {
     <div className="text-center">
       <Link href="/" className="inline-block mb-6">
         <Image
-          src="/logo.png"
+          src="/logo.svg"
           alt={tApp("name")}
           width={48}
           height={48}

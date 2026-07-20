@@ -75,6 +75,12 @@ ENV NEXT_DISABLE_TURBOPACK=1
 ENV NODE_OPTIONS="--max-old-space-size=8192"
 WORKDIR /app/apps/web
 RUN NODE_ENV=production npx next build
+# Ship the pdf.js worker from the installed package into public/ (the HF sync
+# script strips binary assets from apps/web/public, so it must be copied here
+# from node_modules). The visual range selector loads it as an ES module.
+RUN mkdir -p /app/apps/web/public && \
+    cp "$(find /app/node_modules/.pnpm -path '*pdfjs-dist*/build/pdf.worker.min.mjs' 2>/dev/null | head -1)" \
+       /app/apps/web/public/pdf.worker.min.mjs 2>/dev/null || true
 
 # ============================================
 # Production image
