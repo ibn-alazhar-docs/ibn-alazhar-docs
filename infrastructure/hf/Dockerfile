@@ -71,6 +71,8 @@ ENV STORAGE_LOCAL_DIR=/data
 ENV AUTH_SECRET=build-placeholder-do-not-use
 ENV NEXTAUTH_SECRET=build-placeholder-do-not-use
 ENV DISABLE_SENTRY=1
+ENV NEXT_DISABLE_TURBOPACK=1
+ENV NODE_OPTIONS="--max-old-space-size=8192"
 WORKDIR /app/apps/web
 RUN NODE_ENV=production npx next build
 
