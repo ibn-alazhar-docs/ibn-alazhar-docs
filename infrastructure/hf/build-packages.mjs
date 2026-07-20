@@ -1,5 +1,4 @@
 import { createRequire } from "node:module";
-import { fileURLToPath } from "node:url";
 import path from "node:path";
 
 const require = createRequire(import.meta.url);
@@ -9,43 +8,33 @@ const esbuild = require(esbuildPath);
 
 const root = process.cwd();
 const packages = [
-  { name: "database", dir: "packages/database" },
-  { name: "pipeline", dir: "packages/pipeline" },
-  { name: "shared", dir: "packages/shared" },
+  { name: "database", dir: "packages/database", entry: "packages/database/src/index.ts" },
+  { name: "pipeline", dir: "packages/pipeline", entry: "packages/pipeline/src/index.ts" },
+  { name: "shared", dir: "packages/shared", entry: "packages/shared/src/index.ts" },
 ];
 
-async function buildPkg({ dir }) {
-  const srcDir = path.join(root, dir, "src");
-  const outDir = path.join(root, dir, "dist");
-  const entryPoints = [];
-  const walk = (d) => {
-    const fs = require("fs");
-    for (const entry of fs.readdirSync(d, { withFileTypes: true })) {
-      const full = path.join(d, entry.name);
-      if (entry.isDirectory()) walk(full);
-      else if (entry.name.endsWith(".ts")) entryPoints.push(full);
-    }
-  };
-  walk(srcDir);
+async function buildPkg({ dir, entry }) {
+  const outfile = path.join(root, dir, "dist", "index.js");
   await esbuild.build({
-    entryPoints,
-    outdir: outDir,
-    outbase: srcDir,
-    bundle: false,
+    entryPoints: [path.join(root, entry)],
+    outfile,
+    bundle: true,
     format: "esm",
     platform: "node",
     packages: "external",
     logLevel: "error",
-    loader: { ".ts": "ts" },
+    loader: { ".ts": "ts", ".json": "json" },
   });
-  console.log(`built ${dir} -> ${entryPoints.length} files`);
+  console.log(`bundled ${dir} -> ${outfile}`);
 }
 
 for (const pkg of packages) {
   await buildPkg(pkg);
 }
 
-// Rewrite exports/main in package.json to point at dist/*.js for Node ESM.
+// Rewrite exports/main in package.json to point at the bundled dist/index.js so
+// Node's ESM resolver is happy at runtime (workers run via tsx on src/.ts, but
+// importing the workspace package must resolve to real JS).
 const fs = require("fs");
 const pkgs = [
   "packages/database/package.json",
@@ -55,16 +44,13 @@ const pkgs = [
 for (const p of pkgs) {
   const file = path.join(root, p);
   const j = JSON.parse(fs.readFileSync(file, "utf8"));
-  if (j.main && j.main.endsWith(".ts")) {
-    j.main = j.main.replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
-  }
+  j.main = "./dist/index.js";
+  // Collapse exports to a single entry pointing at the bundle.
   if (j.exports) {
     for (const k of Object.keys(j.exports)) {
-      if (typeof j.exports[k] === "string" && j.exports[k].endsWith(".ts")) {
-        j.exports[k] = j.exports[k].replace(/\.ts$/, ".js").replace(/^\.\/src\//, "./dist/");
-      }
+      j.exports[k] = "./dist/index.js";
     }
   }
   fs.writeFileSync(file, JSON.stringify(j, null, 2) + "\n");
 }
-console.log("rewrote package exports to dist");
+console.log("rewrote package exports to dist/index.js bundle");
