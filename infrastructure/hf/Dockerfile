@@ -113,10 +113,11 @@ COPY --from=builder /app/apps/web/.next/standalone ./
 COPY --from=builder /app/apps/web/.next/static ./apps/web/.next/static
 COPY --from=builder /app/apps/web/public ./apps/web/public
 
-# Prisma — copy schema for runtime migrations + generated client
+# Prisma — copy schema for runtime migrations + generate client locally.
+# The generated client lives in the pnpm virtual store (node_modules/.pnpm/...),
+# so copying a hard-coded ".prisma"/"@prisma" path from the builder fails.
+# Instead we regenerate it here after node_modules is in place (see below).
 COPY --from=builder /app/packages/database/prisma ./packages/database/prisma
-COPY --from=builder /app/packages/database/node_modules/.prisma ./packages/database/node_modules/.prisma
-COPY --from=builder /app/packages/database/node_modules/@prisma ./packages/database/node_modules/@prisma
 
 # bcryptjs (Next.js standalone tracing misses it in pnpm layout)
 COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/bcryptjs
@@ -125,6 +126,13 @@ COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
 COPY --from=builder /app/packages/shared ./packages/shared
 COPY --from=builder /app/node_modules ./node_modules
+
+# Regenerate the Prisma client into the local node_modules layout.
+# node_modules (incl. the prisma CLI) is copied from the builder above, so
+# we invoke the store binary directly to avoid any network fetch via npx.
+RUN ls node_modules/.bin/prisma >/dev/null 2>&1 && \
+    node_modules/.bin/prisma generate --schema=packages/database/prisma/schema.prisma || \
+    npx prisma generate --schema=packages/database/prisma/schema.prisma
 
 # Copy workers
 COPY --from=builder /app/workers ./workers
