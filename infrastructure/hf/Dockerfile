@@ -52,17 +52,10 @@ RUN NODE_ENV=production npx next build
 # ============================================
 FROM node:22-slim
 
-# HF Spaces requires UID 1000 — handle if node base already has it.
-# `useradd`/`groupadd` live in the `passwd` package, not installed by default
-# on node:22-slim, so install it first. The GID 1000 may already be taken by
-# another group (e.g. `node`), so create the group without pinning a GID and
-# fall back gracefully.
-RUN apt-get update && apt-get install -y --no-install-recommends passwd && rm -rf /var/lib/apt/lists/* \
- && (id -u user >/dev/null 2>&1 || ( \
-       getent group user >/dev/null 2>&1 || groupadd user; \
-       useradd -m -u 1000 -g user user 2>/dev/null || useradd -m -g user user \
-     )) \
- && mkdir -p /home/user && chown user:user /home/user
+# node:22-slim already ships a `node` user with UID/GID 1000, which is exactly
+# what HuggingFace Spaces requires — so we just ensure its home exists. No need
+# to create a separate user (that would clash on UID/GID 1000).
+RUN mkdir -p /home/node && chown node:node /home/node
 
 # Runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -131,7 +124,7 @@ COPY infrastructure/hf/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 # Fix permissions for Next.js cache
-RUN mkdir -p /app/apps/web/.next/cache && chown -R user:user /app
+RUN mkdir -p /app/apps/web/.next/cache && chown -R node:node /app
 
 # Set environment
 ENV NODE_ENV=production
@@ -149,7 +142,7 @@ ENV QUEUE_DRIVER=pg
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
     CMD wget --no-verbose --tries=1 --spider http://localhost:7860/api/health/ready || exit 1
 
-USER user
+USER node
 
 EXPOSE 7860
 
