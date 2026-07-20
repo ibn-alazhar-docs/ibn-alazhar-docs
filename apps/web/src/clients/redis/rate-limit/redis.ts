@@ -9,6 +9,11 @@ export async function getRedisClient(): Promise<Redis | null> {
   if (redisFailed && Date.now() < redisRetryAt) return null;
   if (redisClient) return redisClient;
 
+  // When the Postgres queue driver is active, no Redis is provisioned (the
+  // HuggingFace Spaces deployment runs entirely on Postgres). Skip the client
+  // entirely so we never hang on a 2s ETIMEDOUT per request.
+  if (process.env.QUEUE_DRIVER === "pg") return null;
+
   // @ts-expect-error EdgeRuntime is not defined in standard TS
   if (typeof process !== "undefined" && typeof EdgeRuntime === "undefined") {
     const host = process.env.REDIS_HOST ?? "localhost";
