@@ -47,8 +47,13 @@ COPY workers ./workers
 # Storage must resolve to "local" during the build too (page-data collection
 # executes route modules which load pipeline config). The production image sets
 # STORAGE_DRIVER=local again below; this keeps build + runtime consistent.
+# AUTH_SECRET needs a non-empty placeholder at BUILD time because next-auth
+# validates it when route modules are collected. The real value is injected at
+# RUNTIME from the HuggingFace Space secret (which overrides this ENV).
 ENV STORAGE_DRIVER=local
 ENV STORAGE_LOCAL_DIR=/data
+ENV AUTH_SECRET=build-placeholder-do-not-use
+ENV NEXTAUTH_SECRET=build-placeholder-do-not-use
 WORKDIR /app/apps/web
 RUN NODE_ENV=production npx next build
 
