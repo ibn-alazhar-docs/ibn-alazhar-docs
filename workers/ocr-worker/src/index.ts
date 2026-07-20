@@ -12,7 +12,8 @@ import {
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { prisma } from "@ibn-al-azhar-docs/database";
-import { startHealthServer, logger } from "@ibn-al-azhar-docs/shared";
+import { logger } from "@ibn-al-azhar-docs/shared";
+import { startHealthServer } from "@ibn-al-azhar-docs/shared/health-server";
 
 import { registerValidationStage } from "./stages/validate";
 import { registerSplittingStage } from "./stages/split";
