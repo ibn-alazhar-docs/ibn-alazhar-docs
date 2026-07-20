@@ -187,6 +187,9 @@ ENV STORAGE_DRIVER=local
 ENV STORAGE_LOCAL_DIR=/data
 # Use the Postgres-backed queue (no Redis/BullMQ in the container).
 ENV QUEUE_DRIVER=pg
+# Public base URL used by NextAuth to build OAuth callback/redirect URIs.
+# Override with the real HF Space domain via Space secret AUTH_URL if needed.
+ENV AUTH_URL="https://ibn-alazhar-docs-ibn-alazhar-docs.hf.space"
 
 # HF Spaces health check
 HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
