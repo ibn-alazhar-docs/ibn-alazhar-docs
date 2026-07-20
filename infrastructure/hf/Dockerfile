@@ -130,6 +130,12 @@ COPY --from=builder /app/apps/web/node_modules/bcryptjs ./apps/web/node_modules/
 # Copy pipeline (raw TypeScript — no build step)
 COPY --from=builder /app/packages/pipeline ./packages/pipeline
 COPY --from=builder /app/packages/shared ./packages/shared
+# Workspace package symlinks (pnpm creates node_modules/@ibn-al-azhar-docs/* ->
+# ../../packages/*). Without these, workers/packages can't resolve the
+# @ibn-al-azhar-docs/* workspace packages at runtime (only symlinks, cheap).
+COPY --from=builder /app/packages/pipeline/node_modules ./packages/pipeline/node_modules
+COPY --from=builder /app/packages/shared/node_modules ./packages/shared/node_modules
+COPY --from=builder /app/packages/database/node_modules ./packages/database/node_modules
 COPY --from=builder /app/node_modules ./node_modules
 
 # Regenerate the Prisma client into the local node_modules layout.
@@ -139,8 +145,10 @@ RUN ls node_modules/.bin/prisma >/dev/null 2>&1 && \
     node_modules/.bin/prisma generate --schema=packages/database/prisma/schema.prisma || \
     npx prisma generate --schema=packages/database/prisma/schema.prisma
 
-# Copy workers
+# Copy workers (incl. their node_modules symlinks to workspace packages)
 COPY --from=builder /app/workers ./workers
+COPY --from=builder /app/workers/ocr-worker/node_modules ./workers/ocr-worker/node_modules
+COPY --from=builder /app/workers/export-worker/node_modules ./workers/export-worker/node_modules
 
 # Copy entrypoint (works from root when deployed to HF)
 COPY infrastructure/hf/entrypoint.sh /entrypoint.sh
