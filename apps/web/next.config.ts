@@ -52,58 +52,6 @@ const nextConfig: NextConfig = {
       test: /\.woff2?$/,
       type: "asset/resource",
     });
-    // Only the server build may externalize Node builtins / native packages —
-    // the browser bundle must keep its own polyfills.
-    const isServer = typeof config.target === "string" && config.target.includes("node");
-    if (isServer) {
-      // Heavy native deps that webpack cannot bundle (they require Node core
-      // builtins like http/https/path/crypto). They are required normally at
-      // runtime by Node, which resolves node: builtins fine. The
-      // @ibn-al-azhar-docs/* workspace packages are handled by
-      // `serverExternalPackages` (the standalone server loads those correctly)
-      // — do NOT externalize them here or Next's runtime throws
-      // "Native module not found".
-      const externalPackages = [
-        "pg",
-        "pg-promise",
-        "ioredis",
-        "redis",
-        "bullmq",
-        "google-auth-library",
-        "googleapis",
-        "@googleapis/drive",
-        "@google-cloud/storage",
-        "https-proxy-agent",
-        "agent-base",
-        "gaxios",
-      ];
-      // All Node core builtins, both bare ("http") and "node:"-prefixed
-      // ("node:http") forms. We externalize them so webpack emits a runtime
-      // require. For the "node:" form we map to the bare specifier
-      // (`commonjs http`) because Next's standalone server loader rejects the
-      // "node:" prefix — bare `require("http")` resolves fine in Node 22.
-      let builtins: Set<string> = new Set();
-      try {
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        builtins = new Set(require("node:module").builtinModules);
-      } catch {
-        builtins = new Set();
-      }
-      const isBuiltin = (req: string): boolean =>
-        builtins.has(req) || builtins.has(req.replace(/^node:/, ""));
-      config.externals = config.externals || [];
-      config.externals.push(({ request }, callback) => {
-        if (!request) return callback();
-        if (isBuiltin(request)) {
-          const bare = request.replace(/^node:/, "");
-          return callback(null, "commonjs " + bare);
-        }
-        if (externalPackages.includes(request)) {
-          return callback(null, "commonjs " + request);
-        }
-        return callback();
-      });
-    }
     return config;
   },
   async headers() {
