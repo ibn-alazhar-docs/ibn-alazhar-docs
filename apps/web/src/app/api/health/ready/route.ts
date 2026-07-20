@@ -15,6 +15,11 @@ async function checkPostgres(): Promise<{ status: string; latencyMs: number }> {
 }
 
 async function checkRedis(): Promise<{ status: string; latencyMs: number }> {
+  // When the Postgres queue driver is active, Redis/BullMQ is not used, so a
+  // missing Redis is expected and must not fail the readiness probe.
+  if (process.env.QUEUE_DRIVER === "pg") {
+    return { status: "healthy", latencyMs: 0 };
+  }
   const start = Date.now();
   try {
     const redisUrl = process.env.REDIS_URL || "redis://localhost:6379";

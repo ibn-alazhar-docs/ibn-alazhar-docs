@@ -41,6 +41,11 @@ async function checkDatabase(): Promise<ServiceCheckResult> {
  * Uses a single PING command to minimize quota usage (Requirement 15.2, 15.4).
  */
 async function checkRedis(): Promise<ServiceCheckResult> {
+  // When the Postgres queue driver is active, Redis/BullMQ is not used, so a
+  // missing Redis is expected and must not fail the readiness probe.
+  if (process.env.QUEUE_DRIVER === "pg") {
+    return { status: "healthy", responseTimeMs: 0 };
+  }
   const start = Date.now();
   try {
     const client = await getRedisClient();
