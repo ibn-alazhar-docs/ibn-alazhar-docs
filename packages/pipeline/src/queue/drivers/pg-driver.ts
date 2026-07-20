@@ -77,9 +77,9 @@ export class PgQueueDriver implements QueueDriver {
     await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
       await tx.$executeRaw`
         INSERT INTO job_queue (
-          queue, "idempotencyKey", payload, status, priority, "runAt", attempts, "maxAttempts"
+          queue, "idempotencyKey", payload, status, priority, "runAt", attempts, "maxAttempts", "createdAt", "updatedAt"
         ) VALUES (
-          ${job.queue}, ${idempotencyKey}, ${payload}, 'pending', ${priority}, ${runAt}, 0, ${maxAttempts}
+          ${job.queue}, ${idempotencyKey}, ${payload}, 'pending', ${priority}, ${runAt}, 0, ${maxAttempts}, now(), now()
         )
         ON CONFLICT (queue, "idempotencyKey") DO UPDATE
         SET status = 'pending',
@@ -88,6 +88,7 @@ export class PgQueueDriver implements QueueDriver {
             payload = EXCLUDED.payload,
             attempts = 0,
             "maxAttempts" = EXCLUDED."maxAttempts",
+            "updatedAt" = now(),
             "lockedBy" = NULL,
             "lockedAt" = NULL,
             "heartbeatAt" = NULL,
@@ -118,6 +119,7 @@ export class PgQueueDriver implements QueueDriver {
           "lockedBy" = ${workerId},
           "lockedAt" = now(),
           "heartbeatAt" = now(),
+          "updatedAt" = now(),
           "leaseToken" = ${crypto.randomUUID()},
           attempts = attempts + 1
       WHERE id IN (SELECT id FROM claimed)
@@ -143,7 +145,8 @@ export class PgQueueDriver implements QueueDriver {
           "leaseToken" = NULL,
           "lockedBy" = NULL,
           "lockedAt" = NULL,
-          "heartbeatAt" = NULL
+          "heartbeatAt" = NULL,
+          "updatedAt" = now()
       WHERE id = ${BigInt(id)}
         AND status = 'reserved'
         AND "lockedBy" = ${workerId}
@@ -186,6 +189,7 @@ export class PgQueueDriver implements QueueDriver {
               "lockedBy" = NULL,
               "lockedAt" = NULL,
               "heartbeatAt" = NULL,
+              "updatedAt" = now(),
               "lastError" = ${error.message}
           WHERE id = ${BigInt(id)}
             AND status = 'reserved'
@@ -206,6 +210,7 @@ export class PgQueueDriver implements QueueDriver {
             "lockedBy" = NULL,
             "lockedAt" = NULL,
             "heartbeatAt" = NULL,
+            "updatedAt" = now(),
             "lastError" = ${error.message}
         WHERE id = ${BigInt(id)}
           AND status = 'reserved'
@@ -297,7 +302,8 @@ export async function recoverStale(graceMs: number = DEFAULT_STALE_GRACE_MS): Pr
         "lockedBy" = NULL,
         "leaseToken" = NULL,
         "lockedAt" = NULL,
-        "heartbeatAt" = NULL
+        "heartbeatAt" = NULL,
+        "updatedAt" = now()
     WHERE status = 'reserved'
       AND "heartbeatAt" < now() - (${graceMs} * interval '1 millisecond')
       AND "lockedAt" < now() - (${graceMs} * interval '1 millisecond');
