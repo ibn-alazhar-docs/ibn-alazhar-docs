@@ -131,9 +131,9 @@ model Document {
   irGeneratedAt   DateTime? // Timestamp when IR was generated
 
   // Search fields (managed via raw SQL, not Prisma)
-  // searchVector  tsvector (in PostgreSQL)
-  // searchPreview text
-  // wordCount     integer
+  searchvector  String?   @map("searchvector")
+  searchPreview String?   @map("searchpreview") @db.Text
+  wordCount     Int?      @map("wordcount")
   // GIN index on searchVector managed via raw SQL migration
   // See prisma/migrations/20260615120000_db_updates for the initial setup
 
