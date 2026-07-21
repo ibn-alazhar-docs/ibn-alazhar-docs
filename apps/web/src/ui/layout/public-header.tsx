@@ -28,7 +28,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
           <Image
-            src="/logo.png"
+            src="/logo.svg"
             alt={brand}
             width={40}
             height={40}

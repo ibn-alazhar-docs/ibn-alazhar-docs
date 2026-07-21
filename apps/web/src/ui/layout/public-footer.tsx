@@ -33,7 +33,7 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
               className="flex items-center gap-3 text-sm font-bold tracking-tight text-primary-color no-underline"
             >
               <Image
-                src="/logo.png"
+                src="/logo.svg"
                 alt={brand}
                 width={36}
                 height={36}
