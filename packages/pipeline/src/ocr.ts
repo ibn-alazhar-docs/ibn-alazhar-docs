@@ -94,12 +94,14 @@ export async function splitPdfPages(
 
     const python = getPythonCommand();
     const resultJson = await new Promise<string>((resolve, reject) => {
+      let stderr = "";
       const proc = execFile(
         python,
         [scriptPath, pdfPath, tempDir, String(dpi), String(MAX_PDF_PAGES)],
         {
           timeout: 1800_000,
           maxBuffer: 50 * 1024 * 1024,
+          encoding: "utf-8",
           env: {
             ...process.env,
             ...buildPreprocessEnv(preprocess),
@@ -108,12 +110,16 @@ export async function splitPdfPages(
         },
         (err, stdout) => {
           if (err) {
-            reject(new Error(`PDF_SPLIT_EXECUTION_FAILED: ${err.message}`));
+            const detail = stderr || err.message;
+            reject(new Error(`PDF_SPLIT_EXECUTION_FAILED: ${detail}`));
             return;
           }
           resolve(stdout.trim());
         },
       );
+      proc.stderr?.on("data", (chunk: string) => {
+        stderr += chunk;
+      });
       proc.on("error", reject);
     });
 
