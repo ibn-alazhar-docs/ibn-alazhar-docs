@@ -116,9 +116,11 @@ fi
 echo "• Exporting clean tree from $COMMIT_REF (git archive — excludes ignored/untracked)…"
 # Exclude `tests/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
 # on the Space) and binary assets under `apps/web/public` (HuggingFace's git
-# pre-receive hook rejects binary files; the app degrades gracefully without
-# the logo, or you can enable Xet storage on the Space to ship them).
+# pre-receive hook rejects binary files). SVG files are text and safe to ship.
 git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)apps/web/public' | tar -x -C "$WORK_DIR"
+# Re-include SVG assets from public/ (text files — not rejected by HF pre-receive)
+mkdir -p "$WORK_DIR/apps/web/public"
+find apps/web/public -name '*.svg' -exec cp --parents {} "$WORK_DIR/" \; 2>/dev/null || true
 
 # Place HF Dockerfile + entrypoint at repo root (required by HF Spaces).
 cp "$HF_DOCKERFILE" "$WORK_DIR/Dockerfile"
