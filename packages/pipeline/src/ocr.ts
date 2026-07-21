@@ -108,9 +108,9 @@ export async function splitPdfPages(
             PYTHONIOENCODING: "utf-8",
           },
         },
-        (err, stdout) => {
+        (err, stdout, stderr) => {
           if (err) {
-            const detail = stderr || err.message;
+            const detail = stderr?.trim() || stdout?.trim() || err.message;
             reject(new Error(`PDF_SPLIT_EXECUTION_FAILED: ${detail}`));
             return;
           }
