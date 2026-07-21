@@ -5,7 +5,7 @@ import {
   recordJobFailure,
   JOB_QUEUES,
 } from "@ibn-al-azhar-docs/pipeline";
-import { unlink, writeFile, mkdir, readdir, stat } from "node:fs/promises";
+import { unlink, writeFile, mkdir, readdir } from "node:fs/promises";
 
 import { join } from "node:path";
 import { tmpdir } from "node:os";

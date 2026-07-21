@@ -136,9 +136,14 @@ export function loadConfig(): PipelineConfig {
     },
     gemini: {
       apiKey: process.env.GEMINI_API_KEY ?? "",
-      // Configurable model id. Defaults to gemini-1.5-flash which supports
-      // vision + PDF + Arabic. Override via GEMINI_MODEL env var if needed.
-      model: process.env.GEMINI_MODEL ?? "gemini-1.5-flash",
+      model: process.env.GEMINI_MODEL ?? "gemini-3.5-flash",
+      modelFallbacks: (() => {
+        const raw = process.env.GEMINI_MODEL_FALLBACKS ?? "gemini-2.5-flash,gemini-2.0-flash";
+        return raw
+          .split(",")
+          .map((m) => m.trim())
+          .filter((m) => m.length > 0);
+      })(),
     },
     ocr: {
       dpi: Number(process.env.OCR_DPI ?? 300),

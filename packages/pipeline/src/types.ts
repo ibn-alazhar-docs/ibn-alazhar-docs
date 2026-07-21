@@ -53,6 +53,7 @@ export interface PipelineConfig {
   gemini: {
     apiKey: string;
     model: string;
+    modelFallbacks: string[];
   };
   ocr: {
     dpi: number;
