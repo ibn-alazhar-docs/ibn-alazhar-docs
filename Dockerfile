@@ -8,7 +8,7 @@
 # -----------------------------------------------------------------------------
 # Builder: installs deps, generates Prisma, builds Next.js
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS builder
+FROM node:26-slim AS builder
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -53,7 +53,7 @@ RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build
 # -----------------------------------------------------------------------------
 # Base runner: minimal runtime deps for all targets
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS base-runner
+FROM node:26-slim AS base-runner
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -151,7 +151,7 @@ CMD ["node", "--import", "tsx", "workers/export-worker/src/index.ts"]
 # Storage defaults to local filesystem on /data; MinIO is optional (STORAGE_DRIVER=s3).
 # All data persists on /data (HF persistent volume)
 # -----------------------------------------------------------------------------
-FROM node:22-slim AS hf-space
+FROM node:26-slim AS hf-space
 WORKDIR /app
 
 ENV NODE_ENV=production \
