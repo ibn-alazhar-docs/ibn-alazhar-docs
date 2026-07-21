@@ -104,6 +104,18 @@ async function main() {
       run(["db", "push", "--accept-data-loss", "--skip-generate"]);
     }
 
+    // Drop orphaned triggers/functions that reference columns dropped by
+    // db push. The searchvector trigger (trg_update_searchvector) fires on
+    // every INSERT/UPDATE and writes to NEW.searchvector — if db push dropped
+    // that column the trigger causes every document INSERT to fail with
+    // "The column `new` does not exist". Safe to drop: the app's
+    // DocumentRepository.updateSearchVector() handles search indexing.
+    run(["db", "execute", "--stdin"], {
+      input:
+        'DROP TRIGGER IF EXISTS trg_update_searchvector ON documents;\n' +
+        "DROP FUNCTION IF EXISTS update_searchvector();\n",
+    });
+
     // Baseline every migration so subsequent boots take the tracked path.
     for (const name of listMigrationNames()) {
       run(["migrate", "resolve", "--applied", name]);

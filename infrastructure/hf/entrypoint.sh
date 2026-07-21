@@ -47,6 +47,17 @@ SCHEMA=packages/database/prisma/schema.prisma
 # documented last resort. See infrastructure/hf/migrate-with-lock.mjs.
 node /app/migrate-with-lock.mjs || echo "[2/5] migration step reported issues; continuing boot"
 
+# Drop orphaned triggers that reference columns dropped by `db push`.
+# The searchvector trigger (trg_update_searchvector) fires on every INSERT and
+# writes to NEW.searchvector — if db push dropped that column the trigger causes
+# every document INSERT to fail. Safe to drop: the app's
+# DocumentRepository.updateSearchVector() handles search indexing via raw SQL.
+echo "[2/5] Cleaning up orphaned triggers..."
+npx prisma db execute --schema="$SCHEMA" --stdin <<'SQL' 2>/dev/null || true
+DROP TRIGGER IF EXISTS trg_update_searchvector ON documents;
+DROP FUNCTION IF EXISTS update_searchvector();
+SQL
+
 # Seed if seed file exists
 if [ -f packages/database/prisma/seed.ts ]; then
     echo "[2/5] Running database seed..."
