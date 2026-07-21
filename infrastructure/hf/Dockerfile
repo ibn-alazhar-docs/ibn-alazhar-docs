@@ -119,7 +119,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 # Python OCR dependencies
 RUN python3 -m venv /opt/ocr-venv && \
-    /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract
+    /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy
 
 ENV PATH="/opt/ocr-venv/bin:$PATH"
 
