@@ -39,39 +39,13 @@ cd /app
 
 SCHEMA=packages/database/prisma/schema.prisma
 
-# ── P3009 guard ─────────────────────────────────────────────────────────
-# A migration that started but never finished makes `migrate deploy` refuse
-# to apply ANY migration (Prisma error P3009). In Prisma 6 the `_prisma_migrations`
-# table has NO `status` column — an incomplete migration is one where
-# `finished_at IS NULL` (started_at is not null). We delete those rows so the
-# deploy can re-attempt them. This step is non-fatal (|| true) so a missing
-# table or other hiccup never crashes the boot.
-echo "[2/5] Clearing incomplete migration records (P3009 guard)..."
-npx prisma db execute --schema="$SCHEMA" \
-  --stdin <<'SQL' || true
-DELETE FROM "_prisma_migrations" WHERE finished_at IS NULL AND started_at IS NOT NULL;
-SQL
-echo "[2/5] P3009 guard finished."
-
-# Primary: apply pending migrations. If the migration history is corrupt
-# (e.g. rows recorded as applied but tables missing → P3018, or a stuck
-# failed row → P3009) migrate deploy cannot recover on its own. In that case
-# we fall back to `prisma db push`, which syncs the schema directly from
-# schema.prisma (idempotent: creates any missing table/column such as
-# Document.progress and job_queue, without dropping existing data). We then
-# baseline every migration as applied so subsequent boots take the normal,
-# history-tracked path and never re-trigger recovery.
-if npx prisma migrate deploy --schema="$SCHEMA" 2>&1; then
-    echo "[2/5] Migrations applied ✓"
-else
-    echo "[2/5] migrate deploy failed — syncing schema via db push"
-    npx prisma db push --accept-data-loss --skip-generate --schema="$SCHEMA" 2>&1 || echo "[2/5] db push also failed"
-    for m in packages/database/prisma/migrations/*/; do
-        name=$(basename "$m")
-        npx prisma migrate resolve --applied "$name" --schema="$SCHEMA" 2>/dev/null || true
-    done
-    echo "[2/5] Schema synced and migrations baselined ✓"
-fi
+# `migrate-with-lock.mjs` runs `prisma migrate deploy` as the primary,
+# history-tracked path, but FIRST takes a Postgres advisory lock so two
+# containers booting at once (rolling restart) cannot race and corrupt the
+# migration history (P3009). It also recovers from a genuinely stuck
+# incomplete migration and only ever uses `db push --accept-data-loss` as a
+# documented last resort. See infrastructure/hf/migrate-with-lock.mjs.
+node /app/migrate-with-lock.mjs || echo "[2/5] migration step reported issues; continuing boot"
 
 # Seed if seed file exists
 if [ -f packages/database/prisma/seed.ts ]; then
