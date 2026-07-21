@@ -29,7 +29,7 @@ export default async function ResetPasswordPage(props: ResetPasswordPageProps) {
     <div className="text-center">
       <Link href="/" className="inline-block mb-6">
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt={tApp("name")}
           width={48}
           height={48}

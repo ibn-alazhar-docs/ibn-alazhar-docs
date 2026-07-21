@@ -1,4 +1,5 @@
-import { readFile, rm, writeFile } from "node:fs/promises";
+import { readFile, rm, writeFile, access } from "node:fs/promises";
+import { constants as fsConstants } from "node:fs";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import path from "node:path";
@@ -45,6 +46,17 @@ export async function downloadDocumentBuffer(
       process.env.GOOGLE_CLIENT_SECRET || "",
     );
     return downloadFromDrive(drive, fileId);
+  }
+  const localDir = config.storage?.localDir || "/data";
+  const expectedPath = `${localDir}/${storageKey}`;
+  try {
+    await access(expectedPath, fsConstants.F_OK);
+    logger.info({ storageKey, expectedPath }, "[download] File found at expected path");
+  } catch {
+    logger.error(
+      { storageKey, expectedPath, localDir, userId },
+      "[download] File NOT found at expected path — ENOENT likely",
+    );
   }
   return downloadFile(config, storageKey);
 }

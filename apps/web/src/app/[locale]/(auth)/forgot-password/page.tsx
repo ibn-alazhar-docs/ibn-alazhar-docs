@@ -29,7 +29,7 @@ export default async function ForgotPasswordPage(props: ForgotPasswordPageProps)
     <div className="text-center">
       <Link href="/" className="inline-block mb-6">
         <Image
-          src="/logo.svg"
+          src="/logo.png"
           alt={tApp("name")}
           width={48}
           height={48}

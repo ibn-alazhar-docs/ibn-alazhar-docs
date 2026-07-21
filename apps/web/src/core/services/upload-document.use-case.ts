@@ -5,7 +5,7 @@ import {
   recordJobFailure,
   JOB_QUEUES,
 } from "@ibn-al-azhar-docs/pipeline";
-import { unlink, writeFile, mkdir } from "node:fs/promises";
+import { unlink, writeFile, mkdir, readdir, stat } from "node:fs/promises";
 
 import { join } from "node:path";
 import { tmpdir } from "node:os";
@@ -165,6 +165,34 @@ export class UploadDocumentUseCase {
       throw wrappedError;
     } finally {
       await unlink(tempPath).catch(() => {});
+    }
+
+    const fileExists = await this.storage.fileExists(storageKey).catch(() => false);
+    if (!fileExists) {
+      logger.error(
+        { storageKey, tempPath, userId },
+        "Upload verification failed: file not found at storage path after upload",
+      );
+    } else {
+      logger.info({ storageKey, userId, fileName }, "Upload verified: file exists at storage path");
+    }
+
+    const baseDir = process.env.STORAGE_LOCAL_DIR || "/data";
+    try {
+      const uploadsDir = join(baseDir, "uploads", userId);
+      const entries = await readdir(uploadsDir).catch(() => []);
+      logger.info(
+        { dir: uploadsDir, files: entries.slice(0, 10), total: entries.length },
+        "Uploads dir listing after upload",
+      );
+      const tmpDir = join(baseDir, "tmp");
+      const tmpEntries = await readdir(tmpDir).catch(() => []);
+      logger.info(
+        { dir: tmpDir, files: tmpEntries.slice(0, 10), total: tmpEntries.length },
+        "Tmp dir listing after upload",
+      );
+    } catch (dirErr) {
+      logger.warn({ error: String(dirErr) }, "Failed to list upload dirs for diagnostic");
     }
 
     let document;

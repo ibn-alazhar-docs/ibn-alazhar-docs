@@ -48,7 +48,9 @@ const make = async (cj: ClaimedJob): Promise<void> => {
       await prisma.document
         .update({ where: { id: payload.documentId }, data: { errorCode: code } })
         .catch(() => {});
-      await recordJobFailure(PG_CONFIG, JOB_QUEUES.EXPORT, jobLike, error);
+      if (process.env.QUEUE_DRIVER !== "pg") {
+        await recordJobFailure(PG_CONFIG, JOB_QUEUES.EXPORT, jobLike, error);
+      }
     }
 
     throw error;

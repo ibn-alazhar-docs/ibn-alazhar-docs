@@ -40,12 +40,19 @@ export function toOcrPageResult(pages: { number: number; text: string }[]): OcrP
 export function getPythonCommand(): string {
   const envPython = process.env.SURYA_PYTHON_PATH;
   if (envPython) return envPython;
-  try {
-    const home = process.env.HOME ?? process.env.USERPROFILE ?? ".";
-    const venvPython = join(home, ".venv", "bin", "python3");
-    accessSync(venvPython, constants.X_OK);
-    return venvPython;
-  } catch {
-    return "python3";
+
+  // Check multiple known venv locations (HF Spaces uses /opt/ocr-venv).
+  const candidates = [
+    join(process.env.HOME ?? process.env.USERPROFILE ?? ".", ".venv", "bin", "python3"),
+    "/opt/ocr-venv/bin/python3",
+  ];
+  for (const candidate of candidates) {
+    try {
+      accessSync(candidate, constants.X_OK);
+      return candidate;
+    } catch {
+      // not found, try next
+    }
   }
+  return "python3";
 }

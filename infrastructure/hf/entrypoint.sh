@@ -6,6 +6,9 @@ echo "  Ibn Al-Azhar Docs — HuggingFace Spaces"
 echo "  Starting all services..."
 echo "═══════════════════════════════════════════════════"
 
+# Point Python calls to the venv with pypdfium2/cv2/PIL installed.
+export SURYA_PYTHON_PATH="/opt/ocr-venv/bin/python3"
+
 # ── Step 1: Start MinIO (optional local S3-compatible storage) ────
 # MinIO is only needed when STORAGE_DRIVER=s3. In local-storage mode
 # (default on HF Spaces) files live on the persistent /data volume, so
