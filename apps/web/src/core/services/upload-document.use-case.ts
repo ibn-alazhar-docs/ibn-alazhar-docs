@@ -177,7 +177,6 @@ export class UploadDocumentUseCase {
       logger.info({ storageKey, userId, fileName }, "Upload verified: file exists at storage path");
     }
 
-    const baseDir = process.env.STORAGE_LOCAL_DIR || "/data";
     try {
       const uploadsDir = join(baseDir, "uploads", userId);
       const entries = await readdir(uploadsDir).catch(() => []);
