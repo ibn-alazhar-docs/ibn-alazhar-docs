@@ -14,6 +14,8 @@ export async function getJobStatus(
   config: PipelineConfig,
   jobId: string,
 ): Promise<{ stage: JobStage; progress: number } | null> {
+  if (process.env.QUEUE_DRIVER === "pg") return null;
+
   const pipelineQueues = [
     JOB_QUEUES.VALIDATION,
     JOB_QUEUES.SPLITTING,
@@ -44,6 +46,9 @@ export async function getQueueMetrics(config: PipelineConfig): Promise<{
   failed: number;
   delayed: number;
 }> {
+  if (process.env.QUEUE_DRIVER === "pg") {
+    return { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
+  }
   const queue = getQueue(JOB_QUEUES.OCR, config);
   const counts = await queue.getJobCounts();
   return {
@@ -63,6 +68,7 @@ export async function getAllQueueMetrics(
     { waiting: number; active: number; completed: number; failed: number; delayed: number }
   >
 > {
+  if (process.env.QUEUE_DRIVER === "pg") return {};
   const queueNames = Object.values(JOB_QUEUES);
   const result: Record<
     string,
@@ -86,6 +92,7 @@ export async function getAllQueueMetrics(
 export async function getStuckJobs(
   config: PipelineConfig,
 ): Promise<{ queue: string; jobId: string; ageMs: number }[]> {
+  if (process.env.QUEUE_DRIVER === "pg") return [];
   const stuck: { queue: string; jobId: string; ageMs: number }[] = [];
   const queueNames = Object.values(JOB_QUEUES).filter((n) => n !== JOB_QUEUES.FAILED);
   const now = Date.now();

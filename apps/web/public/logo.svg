@@ -1,5 +1,54 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="96" fill="#16A34A"/>
-  <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="serif" font-size="200" font-weight="700">ع</text>
-  <text x="50%" y="82%" dominant-baseline="middle" text-anchor="middle" fill="#ffffff" font-family="sans-serif" font-size="56" font-weight="600">Ibn Al-Azhar</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 700" width="600" height="700" dir="rtl">
+  <defs>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37"/>
+      <stop offset="50%" style="stop-color:#C5A44E"/>
+      <stop offset="100%" style="stop-color:#B8960C"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#1B7A3D"/>
+      <stop offset="100%" style="stop-color:#0D5C2F"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer arch - green -->
+  <path d="M300 40 C160 40, 80 140, 80 260 L80 320 L120 320 L120 260 C120 165, 180 90, 300 90 C420 90, 480 165, 480 260 L480 320 L520 320 L520 260 C520 140, 440 40, 300 40Z" fill="url(#greenGrad)"/>
+
+  <!-- Inner arch - gold -->
+  <path d="M300 70 C185 70, 120 155, 120 255 L120 290 L155 290 L155 255 C155 180, 210 115, 300 115 C390 115, 445 180, 445 255 L445 290 L480 290 L480 255 C480 155, 415 70, 300 70Z" fill="url(#goldGrad)"/>
+
+  <!-- Inner green arch -->
+  <path d="M300 100 C210 100, 155 175, 155 255 L155 275 L185 275 L185 255 C185 195, 230 140, 300 140 C370 140, 415 195, 415 255 L415 275 L445 275 L445 255 C445 175, 390 100, 300 100Z" fill="url(#greenGrad)"/>
+
+  <!-- Central gold keystone -->
+  <path d="M280 180 L300 145 L320 180 L320 240 L280 240Z" fill="url(#goldGrad)"/>
+
+  <!-- Side green pillars left -->
+  <rect x="130" y="280" width="25" height="60" fill="url(#greenGrad)" rx="3"/>
+  <rect x="170" y="260" width="20" height="80" fill="url(#greenGrad)" rx="3"/>
+
+  <!-- Side green pillars right -->
+  <rect x="445" y="280" width="25" height="60" fill="url(#greenGrad)" rx="3"/>
+  <rect x="410" y="260" width="20" height="80" fill="url(#greenGrad)" rx="3"/>
+
+  <!-- Base platform -->
+  <rect x="100" y="330" width="400" height="8" fill="url(#greenGrad)" rx="2"/>
+
+  <!-- Arabic calligraphy: ابن الأزهر -->
+  <text x="300" y="430" text-anchor="middle" dominant-baseline="middle"
+        font-family="'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif"
+        font-size="90" font-weight="700" fill="#1B7A3D"
+        letter-spacing="4">ابن الأزهر</text>
+
+  <!-- Gold decorative line -->
+  <line x1="150" y1="480" x2="450" y2="480" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Tagline: في بيت كل طالب أزهري -->
+  <text x="300" y="540" text-anchor="middle" dominant-baseline="middle"
+        font-family="'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif"
+        font-size="42" font-weight="600" fill="url(#goldGrad)"
+        letter-spacing="2">في بيت كل طالب أزهري</text>
+
+  <!-- Bottom gold decorative line -->
+  <line x1="150" y1="590" x2="450" y2="590" stroke="url(#goldGrad)" stroke-width="3" stroke-linecap="round"/>
 </svg>

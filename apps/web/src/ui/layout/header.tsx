@@ -50,7 +50,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0"
           >
             <Image
-              src="/logo.svg"
+              src="/logo.png"
               alt={t("name")}
               width={32}
               height={32}
