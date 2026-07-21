@@ -112,6 +112,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
+    # PDF tools (pdftoppm / pdfinfo) required by pypdfium2/split-pdf.py
+    poppler-utils \
     # Ghostscript for searchable PDF
     ghostscript \
     ocrmypdf \

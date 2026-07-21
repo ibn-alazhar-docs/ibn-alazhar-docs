@@ -187,7 +187,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && npm install -g prisma@6.5.0 \
     # Create Python venv for OCR
     && python3 -m venv /opt/ocr-venv \
-    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy \
+    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy PyMuPDF \
     # Cleanup to reduce layer size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
