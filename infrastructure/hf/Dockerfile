@@ -181,6 +181,9 @@ COPY --from=builder /app/workers/export-worker/node_modules ./workers/export-wor
 COPY infrastructure/hf/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
+# Crash-safe, serialized migration helper (run by entrypoint at boot)
+COPY infrastructure/hf/migrate-with-lock.mjs /app/migrate-with-lock.mjs
+
 # Fix permissions for Next.js cache
 RUN mkdir -p /app/apps/web/.next/cache && chown -R node:node /app
 

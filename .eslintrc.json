@@ -20,7 +20,8 @@
     "@typescript-eslint/no-explicit-any": "error",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "prefer-const": "error",
-    "no-var": "error"
+    "no-var": "error",
+    "no-server-imports-in-client": "error"
   },
   "overrides": [
     {
@@ -39,9 +40,20 @@
       }
     },
     {
-      "files": ["apps/web/src/ui/**/*.{ts,tsx}"],
+      "files": ["apps/web/src/ui/**/*.{ts,tsx}", "apps/web/src/state/**/*.{ts,tsx}"],
       "rules": {
-        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": [
+              "@prisma/client",
+              "@ibn-al-azhar-docs/pipeline",
+              "bullmq",
+              "ioredis",
+              "google-auth-library"
+            ]
+          }
+        ]
       }
     },
     {
