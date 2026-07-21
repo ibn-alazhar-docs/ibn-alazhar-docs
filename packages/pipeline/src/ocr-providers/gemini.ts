@@ -5,6 +5,49 @@ import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
 
+function isTransientError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return (
+      msg.includes("503") ||
+      msg.includes("service unavailable") ||
+      msg.includes("429") ||
+      msg.includes("resource exhausted") ||
+      msg.includes("rate limit") ||
+      msg.includes("overloaded") ||
+      msg.includes("high demand")
+    );
+  }
+  return false;
+}
+
+async function tryWithModelFallbacks<T>(
+  config: PipelineConfig,
+  fn: (modelId: string) => Promise<T>,
+): Promise<T> {
+  const models = [config.gemini.model, ...config.gemini.modelFallbacks];
+  const errors: { model: string; error: string }[] = [];
+
+  for (const modelId of models) {
+    try {
+      return await fn(modelId);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.warn(`Model ${modelId} failed: ${msg}`);
+      errors.push({ model: modelId, error: msg });
+
+      if (!isTransientError(err)) {
+        throw err;
+      }
+    }
+  }
+
+  const lastError = errors[errors.length - 1]?.error ?? "Unknown error";
+  throw new Error(
+    `ALL_GEMINI_MODELS_FAILED: ${errors.map((e) => `${e.model}:${e.error}`).join("; ")} (last: ${lastError})`,
+  );
+}
+
 /**
  * Split a Gemini batch response on the PAGE_BREAK separator and produce
  * ordered page results. Pure function — no I/O, no SDK, easily unit-testable.
@@ -58,9 +101,6 @@ export class GeminiOcrProvider implements OcrProvider {
       throw new Error("Gemini API Key is missing");
     }
 
-    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: config.gemini.model });
-
     const prompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
 
 **Your Primary Task:**
@@ -96,23 +136,29 @@ Extract all text exactly as it appears in the original document without adding, 
 **Required Output:**
 Precise raw text in simple Markdown format (headings start with #, lists with -, tables with |).`;
 
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: fileBuffer.toString("base64"),
-          mimeType,
-        },
-      },
-    ]);
+    return tryWithModelFallbacks(config, async (modelId) => {
+      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+      const model = genAI.getGenerativeModel({ model: modelId });
 
-    const text = result.response.text();
-    return {
-      text: text,
-      pages: [{ number: 1, text, confidence: 1.0 }],
-      confidence: 1.0,
-      engine: "gemini",
-    };
+      logger.info(`Trying Gemini model ${modelId} for single-image OCR`);
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            data: fileBuffer.toString("base64"),
+            mimeType,
+          },
+        },
+      ]);
+
+      const text = result.response.text();
+      return {
+        text: text,
+        pages: [{ number: 1, text, confidence: 1.0 }],
+        confidence: 1.0,
+        engine: "gemini",
+      };
+    });
   }
 
   async extractPages(
@@ -134,10 +180,6 @@ Precise raw text in simple Markdown format (headings start with #, lists with -,
       throw new Error("Gemini API Key is missing");
     }
 
-    const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
-    const model = genAI.getGenerativeModel({ model: config.gemini.model });
-
-    const BATCH_SIZE = 10;
     const batchPrompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
 
 **Context:** I am providing you with multiple pages from a single document (up to 10 pages in this batch).
@@ -169,14 +211,19 @@ Separate each page's text from the next page with a separator on a new line: "==
 ❌ Do not remove parts that seem "unimportant"
 
 **Output:** Precise raw text in simple Markdown format, with PAGE_BREAK separator between pages.`;
-    const pages: OcrPageResult[] = [];
-    let fullText = "";
 
-    for (let i = 0; i < pageGetters.length; i += BATCH_SIZE) {
-      const batchGetters = pageGetters.slice(i, i + BATCH_SIZE);
-      try {
+    return tryWithModelFallbacks(config, async (modelId) => {
+      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+      const model = genAI.getGenerativeModel({ model: modelId });
+
+      const BATCH_SIZE = 10;
+      const pages: OcrPageResult[] = [];
+      let fullText = "";
+
+      for (let i = 0; i < pageGetters.length; i += BATCH_SIZE) {
+        const batchGetters = pageGetters.slice(i, i + BATCH_SIZE);
         logger.info(
-          `Processing batch pages ${i + 1} to ${i + batchGetters.length} of ${pageGetters.length}`,
+          `Trying Gemini model ${modelId} for batch pages ${i + 1} to ${i + batchGetters.length} of ${pageGetters.length}`,
         );
 
         const parts: Array<string | { inlineData: { data: string; mimeType: string } }> = [
@@ -204,21 +251,17 @@ Separate each page's text from the next page with a separator on a new line: "==
         if (i + BATCH_SIZE < pageGetters.length) {
           await new Promise((resolve) => setTimeout(resolve, 4000));
         }
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        logger.error(`Failed to process batch ${i + 1}-${i + batchGetters.length}: ${msg}`);
-        throw err;
       }
-    }
 
-    const confidence =
-      pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence =
+        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
 
-    return {
-      text: fullText.trim(),
-      pages,
-      confidence,
-      engine: "gemini",
-    };
+      return {
+        text: fullText.trim(),
+        pages,
+        confidence,
+        engine: "gemini",
+      };
+    });
   }
 }
