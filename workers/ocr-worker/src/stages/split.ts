@@ -14,6 +14,7 @@ import {
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatusWithProgress, parsePageRange } from "../helpers";
+import { classifyDocument, extractNativePdfText } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -43,45 +44,79 @@ export async function processSplittingStage(
   }
 
   let storedPagesCount = 0;
+  let nativeText: string | undefined;
+  let skipOcr = false;
 
   if (data.mimeType === "application/pdf") {
-    const splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi, config.ocr.preprocess);
-    jobLogger.info(`[split] Split into ${splitResult.pageCount} pages for ${data.id}`);
+    // Try native text extraction fast path first
+    const classification = await classifyDocument(fileBuffer, data.mimeType, data.fileName);
+    jobLogger.info(
+      { type: classification.type, hasEmbeddedText: classification.hasEmbeddedText },
+      `[split] Document classified for ${data.id}`,
+    );
 
-    let selectedPaths = splitResult.pagePaths;
-    if (data.pageRange) {
-      const selectedPages = parsePageRange(data.pageRange, splitResult.pageCount);
-      if (selectedPages.length > 0) {
-        selectedPaths = selectedPages
-          .map((pNum) => splitResult.pagePaths[pNum - 1]!)
-          .filter(Boolean);
+    if (classification.type === "pdf-text" && classification.hasEmbeddedText) {
+      try {
+        const nativeResult = await extractNativePdfText(fileBuffer);
+        nativeText = nativeResult.text;
+        skipOcr = true;
         jobLogger.info(
-          `[split] Filtered pages using range "${data.pageRange}" (selected ${selectedPaths.length}/${splitResult.pageCount} pages)`,
+          { pages: nativeResult.pageCount },
+          `[split] Extracted native text for ${data.id} (skipping OCR)`,
         );
+        storedPagesCount = nativeResult.pageCount;
+        await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
+          pageCount: storedPagesCount,
+        });
+      } catch (nativeErr) {
+        jobLogger.warn(
+          nativeErr,
+          `[split] Native text extraction failed for ${data.id}, falling back to OCR`,
+        );
+        skipOcr = false;
+        nativeText = undefined;
       }
     }
 
-    storedPagesCount = selectedPaths.length;
-    await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
-      pageCount: storedPagesCount,
-    });
+    if (!skipOcr) {
+      const splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi, config.ocr.preprocess);
+      jobLogger.info(`[split] Split into ${splitResult.pageCount} pages for ${data.id}`);
 
-    const CONCURRENCY = 5;
-    try {
-      for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
-        const batch = selectedPaths.slice(i, i + CONCURRENCY);
-        await Promise.all(
-          batch.map(async (pagePath, batchIdx) => {
-            const pageNum = i + batchIdx + 1;
-            const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-            const imgBuf = await readFile(pagePath);
-            await uploadBuffer(config, pageKey, imgBuf, "image/png");
-          }),
-        );
+      let selectedPaths = splitResult.pagePaths;
+      if (data.pageRange) {
+        const selectedPages = parsePageRange(data.pageRange, splitResult.pageCount);
+        if (selectedPages.length > 0) {
+          selectedPaths = selectedPages
+            .map((pNum) => splitResult.pagePaths[pNum - 1]!)
+            .filter(Boolean);
+          jobLogger.info(
+            `[split] Filtered pages using range "${data.pageRange}" (selected ${selectedPaths.length}/${splitResult.pageCount} pages)`,
+          );
+        }
       }
-      jobLogger.info(`[split] Stored ${storedPagesCount} page images for ${data.id}`);
-    } finally {
-      await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
+
+      storedPagesCount = selectedPaths.length;
+      await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
+        pageCount: storedPagesCount,
+      });
+
+      const CONCURRENCY = 5;
+      try {
+        for (let i = 0; i < selectedPaths.length; i += CONCURRENCY) {
+          const batch = selectedPaths.slice(i, i + CONCURRENCY);
+          await Promise.all(
+            batch.map(async (pagePath, batchIdx) => {
+              const pageNum = i + batchIdx + 1;
+              const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+              const imgBuf = await readFile(pagePath);
+              await uploadBuffer(config, pageKey, imgBuf, "image/png");
+            }),
+          );
+        }
+        jobLogger.info(`[split] Stored ${storedPagesCount} page images for ${data.id}`);
+      } finally {
+        await rm(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
+      }
     }
   } else {
     storedPagesCount = 1;
@@ -92,7 +127,13 @@ export async function processSplittingStage(
     jobLogger.info(`[split] Stored 1 page image for ${data.id}`);
   }
 
-  await enqueueViaDriver(JOB_QUEUES.OCR, config, { ...data, status: "ocr", progress: 0 });
+  await enqueueViaDriver(JOB_QUEUES.OCR, config, {
+    ...data,
+    status: "ocr",
+    progress: 0,
+    nativeText,
+    skipOcr,
+  } as ProcessingJob);
   jobLogger.info(`[split] Enqueued OCR for ${data.id}`);
 }
 

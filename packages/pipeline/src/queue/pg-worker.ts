@@ -1,7 +1,8 @@
 import { EventEmitter } from "node:events";
 import { Client, type Client as PgClient } from "pg";
-import { PgQueueDriver, recoverStale, type ClaimedJob } from "./drivers/pg-driver";
+import { PgQueueDriver, recoverStale } from "./drivers/pg-driver";
 import { logger } from "@ibn-al-azhar-docs/shared";
+import type { ClaimedJob } from "../driver";
 
 /**
  * Phase-4 Postgres worker runtime.

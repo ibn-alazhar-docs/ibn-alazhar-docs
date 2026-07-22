@@ -18,8 +18,6 @@ import { startHealthServer } from "@ibn-al-azhar-docs/shared/health-server";
 import { registerExportHandler } from "./export-handler";
 import { buildExportPgHandlers, EXPORT_WORKER_ID } from "./pg/handlers";
 
-const config = loadConfig();
-
 /**
  * Export failures do NOT mark the document FAILED (the source document is
  * already COMPLETED and usable). We record the failure code on the document
@@ -49,10 +47,10 @@ const onExportFailed = async (
   await prisma.document
     .update({ where: { id: data.documentId }, data: { errorCode: code } })
     .catch(() => {});
-  await recordJobFailure(config, queueName, job, error);
 };
 
 async function main() {
+  const config = loadConfig();
   logger.info("[export-worker] Starting...");
 
   startHealthServer("export-worker", 9091);

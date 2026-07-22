@@ -55,7 +55,7 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
   if (msg.includes("TESSERACT_FAILED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
   if (msg.includes("PDF_SPLIT_EXECUTION_FAILED") || msg.includes("PDF_SPLIT_PARSE_FAILED"))
-    return { category: FAILURE_CATEGORIES.PERMANENT, code: "PDF_SPLIT_FAILED" };
+    return { category: FAILURE_CATEGORIES.TRANSIENT, code: "PDF_SPLIT_FAILED" };
   if (msg.includes("DIACRITICS_EXECUTION_FAILED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
   if (msg.includes("OCR_EXPORT_FAILED"))

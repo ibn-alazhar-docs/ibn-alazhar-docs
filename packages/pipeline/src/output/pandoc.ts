@@ -1,8 +1,8 @@
-import { execFile } from "child_process";
-import { promisify } from "util";
-import { mkdtemp, writeFile, readFile, rm } from "fs/promises";
-import { tmpdir } from "os";
-import path from "path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import type { CleanedText } from "../types";
 
 const execFileAsync = promisify(execFile);

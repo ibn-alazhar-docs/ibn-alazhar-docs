@@ -25,6 +25,12 @@ export interface OcrEngineResult {
   confidence: number;
   engine: OcrEngineType;
   pageErrors?: { page: number; error: string }[];
+  quality?: {
+    arabicRatio: number;
+    diacriticsRatio: number;
+    tableHints: number;
+    averagePageLength: number;
+  };
 }
 
 export interface PipelineConfig {
@@ -54,6 +60,7 @@ export interface PipelineConfig {
     apiKey: string;
     model: string;
     modelFallbacks: string[];
+    nativeChunkSize?: number;
   };
   ocr: {
     dpi: number;
@@ -62,6 +69,8 @@ export interface PipelineConfig {
     provider: OcrEngineType;
     providers: OcrEngineType[];
     minConfidence: number;
+    adaptiveProviderSelection: boolean;
+    cloudOcrDailyBudget: number;
     preprocess: {
       mode: "auto" | "on" | "off";
       minDpi: number;
@@ -100,6 +109,8 @@ export interface ProcessingJob {
   error?: string;
   createdAt: string;
   pageRange?: string;
+  nativeText?: string;
+  skipOcr?: boolean;
 }
 
 export type JobStage =
@@ -176,6 +187,14 @@ export const JOB_QUEUES = {
   EXPORT: "pipeline-export",
   FAILED: "pipeline-failed",
 } as const;
+
+export const QUEUE_STAGE_MAP: Record<string, JobStage> = {
+  [JOB_QUEUES.VALIDATION]: "validating",
+  [JOB_QUEUES.SPLITTING]: "splitting",
+  [JOB_QUEUES.OCR]: "ocr",
+  [JOB_QUEUES.CLEANING]: "cleaning",
+  [JOB_QUEUES.GENERATION]: "generating",
+};
 
 export const JOB_TIMEOUTS: Record<string, number> = {
   [JOB_QUEUES.VALIDATION]: 60_000,

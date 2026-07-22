@@ -145,11 +145,11 @@ export async function processExportStage(
   jobLogger.info(`[export] Completed ${req.format} export for ${req.jobId}`);
 }
 
-const config = loadConfig();
-
 export function registerExportHandler(
   onFailed?: (job: Job<ExportRequest>, error: Error, queueName: string) => Promise<void>,
 ): void {
+  const config = loadConfig();
+
   createExportWorker(
     config,
     async (job: Job<ExportRequest>) => {

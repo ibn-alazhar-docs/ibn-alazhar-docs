@@ -1,14 +1,7 @@
-import type { PipelineConfig, JobStage } from "../types";
-import { JOB_QUEUES, JOB_TIMEOUTS } from "../types";
+import type { PipelineConfig, JobStage, JOB_QUEUES, JOB_STAGE_MAP } from "../types";
 import { getQueue } from "./connection";
 
-const QUEUE_STAGE_MAP: Record<string, JobStage> = {
-  [JOB_QUEUES.VALIDATION]: "validating",
-  [JOB_QUEUES.SPLITTING]: "splitting",
-  [JOB_QUEUES.OCR]: "ocr",
-  [JOB_QUEUES.CLEANING]: "cleaning",
-  [JOB_QUEUES.GENERATION]: "generating",
-};
+export { JOB_STAGE_MAP };
 
 export async function getJobStatus(
   config: PipelineConfig,

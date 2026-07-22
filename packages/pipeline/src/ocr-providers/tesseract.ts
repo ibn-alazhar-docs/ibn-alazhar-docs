@@ -1,7 +1,7 @@
-import { execFile } from "child_process";
-import { mkdtemp, writeFile, unlink, rm } from "fs/promises";
-import { tmpdir } from "os";
-import { join } from "path";
+import { execFile } from "node:child_process";
+import { mkdtemp, writeFile, unlink, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
 import { getPythonCommand } from "./types";
@@ -49,7 +49,7 @@ export class TesseractOcrProvider implements OcrProvider {
         `TESSERACT_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`,
       );
     }
-    const { readFile, rm: rmFn } = await import("fs/promises");
+    const { readFile, rm: rmFn } = await import("node:fs/promises");
     try {
       const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
       return await this.extractPages(config, pageGetters, fileName);

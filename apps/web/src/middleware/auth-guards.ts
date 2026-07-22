@@ -51,7 +51,7 @@ type AuthenticatedHandler = (
 export function withAuth(handler: AuthenticatedHandler) {
   return async (
     request: NextRequest,
-    context?: { params: Promise<Record<string, string | undefined>> },
+    context: { params: Promise<Record<string, string | undefined>> },
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
 
@@ -82,7 +82,7 @@ export function withAuth(handler: AuthenticatedHandler) {
 export function withAdminAuth(handler: AuthenticatedHandler) {
   return async (
     request: NextRequest,
-    context?: { params: Promise<Record<string, string | undefined>> },
+    context: { params: Promise<Record<string, string | undefined>> },
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
 

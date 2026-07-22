@@ -1,18 +1,9 @@
 import { prisma } from "@ibn-al-azhar-docs/database";
 import type { FailedJob } from "../types";
-import { JOB_QUEUES } from "../types";
+import { JOB_QUEUES, QUEUE_STAGE_MAP } from "../types";
 import { loadConfig } from "../config";
 import { getAllQueueMetrics, getJobStatus } from "./metrics";
 import { getFailedJobs, cleanupFailedJob, recordFailedJob } from "./dlq";
-
-/** Map a queue name to the pipeline stage (mirrors metrics.ts QUEUE_STAGE_MAP). */
-const QUEUE_STAGE_MAP: Record<string, string> = {
-  [JOB_QUEUES.VALIDATION]: "validating",
-  [JOB_QUEUES.SPLITTING]: "splitting",
-  [JOB_QUEUES.OCR]: "ocr",
-  [JOB_QUEUES.CLEANING]: "cleaning",
-  [JOB_QUEUES.GENERATION]: "generating",
-};
 
 /** Map the persisted DocStatus to the UI stage name. */
 const STATUS_TO_STAGE: Record<string, string> = {
