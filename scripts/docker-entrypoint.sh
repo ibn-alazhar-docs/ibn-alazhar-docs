@@ -219,6 +219,14 @@ else
   if ! prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5; then
     echo "[entrypoint] migrate deploy failed - falling back to prisma db push"
     prisma db push --schema=/app/packages/database/prisma/schema.prisma --accept-data-loss 2>&1 | tail -5 || true
+
+    # Re-create critical columns that db push --accept-data-loss may have dropped.
+    prisma db execute --schema=/app/packages/database/prisma/schema.prisma --stdin <<'SQL' 2>/dev/null || true
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchvector tsvector;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchpreview text;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS wordcount integer;
+CREATE INDEX IF NOT EXISTS documents_searchvector_idx ON documents USING GIN (searchvector);
+SQL
   fi
 fi
 echo "[entrypoint] seeding database (idempotent)..."
