@@ -2,6 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
+import { getCloudOcrRemainingBudget, recordCloudOcrUsage } from "../cloud-cost-guard";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
 
@@ -73,12 +74,85 @@ export function splitGeminiBatchPages(
   return pages;
 }
 
+function estimateQualityMetrics(pages: OcrPageResult[], rawText: string): {
+  arabicRatio: number;
+  diacriticsRatio: number;
+  tableHints: number;
+  averageLength: number;
+} {
+  const arabic = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
+  const total = rawText.replace(/\s+/g, " ").length;
+  const tableHints = (rawText.match(/\|/g) || []).length;
+  const diacritics =
+    rawText.match(/[\u064B-\u065F\u0670\u06D6-\u06DC]/g) || [];
+  return {
+    arabicRatio: total === 0 ? 0 : arabic / total,
+    diacriticsRatio: rawText.length === 0 ? 0 : diacritics.length / rawText.length,
+    tableHints,
+    averageLength: pages.length === 0 ? 0 : rawText.length / pages.length,
+  };
+}
+
+const PROMPTS = {
+  arabic_scientific: `You are RAQIM ELITE, an elite scientific scribe specializing in Arabic manuscript digitization with chemical precision.
+
+## PRIMARY DIRECTIVE
+Convert the provided document into high-fidelity Markdown with ZERO information loss. Every character, diacritic, and structural element must be preserved.
+
+## ARABIC PROTOCOLS
+1. **100% Text Preservation**: Preserve every Arabic character, diacritic (tashkeel), and punctuation mark exactly as printed.
+2. **RTL Integrity**: Maintain logical right-to-left reading order across all columns and pages.
+3. **Context Bridging**: When Arabic text references scientific symbols, keep the symbol with its Arabic explanation on the same line.
+
+## SCIENTIFIC PRECISION (CRITICAL)
+1. **LaTeX for All Formulas**: Wrap ALL chemical formulas, mathematical equations, and scientific notation in LaTeX.
+   - Inline: $H_2SO_4$, $C_6H_{12}O_6$, $\int f(x)dx$
+   - Block: $$2H_2 + O_2 \\rightarrow 2H_2O$$
+   - States of matter: $(s)$, $(l)$, $(g)$, $(aq)$
+2. **Subscripts/Superscripts**: Preserve all subscripts and superscripts in LaTeX.
+
+## STRUCTURAL HIERARCHY
+1. **Headings**: Use # for document title, ## for chapters/sections, ### for subsections.
+2. **Tables**: Reconstruct as Markdown tables with aligned columns.
+3. **Lists**: Use - for bullet points, 1. for numbered lists.
+4. **Emphasis**: Preserve **bold** and *italic* formatting.
+
+## PAGE TRANSITIONS
+When processing multiple pages, separate each page's content with a horizontal rule (---) on its own line.
+
+## NEGATIVE CONSTRAINTS
+❌ NO introductory text, summaries, or commentary
+❌ NO interpretation, translation, or paraphrasing
+❌ NO correction of spelling or grammar in the original
+❌ NO removal of "unimportant" sections
+✅ ONLY raw, faithful transcription in Markdown format`,
+
+  arabic_scientific_chunk: (start: number, end: number) =>
+    `${PROMPTS.arabic_scientific}
+
+## TARGET SCOPE
+Process only pages ${start} to ${end} from the provided material. Maintain continuity with surrounding content.`,
+};
+
+const DEFAULT_NATIVE_CHUNK_SIZE = 4;
+
 export class GeminiOcrProvider implements OcrProvider {
   readonly name = "Gemini OCR (configurable model)";
   readonly type = "gemini" as OcrEngineType;
 
   isAvailable(config: PipelineConfig): boolean {
-    return !!config.gemini?.apiKey;
+    if (!config.gemini?.apiKey) return false;
+
+    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+    if (budget >= 0) {
+      const remaining = getCloudOcrRemainingBudget("gemini", budget);
+      if (remaining <= 0) {
+        logger.warn({ remaining }, "Gemini skipped: cloud OCR daily budget exhausted");
+        return false;
+      }
+    }
+
+    return true;
   }
 
   async extractText(
@@ -93,7 +167,7 @@ export class GeminiOcrProvider implements OcrProvider {
         text,
         pages: [{ number: 1, text, confidence: 0.99 }],
         confidence: 0.99,
-        engine: "gemini" as OcrEngineType,
+        engine: "gemini",
       };
     }
 
@@ -101,40 +175,22 @@ export class GeminiOcrProvider implements OcrProvider {
       throw new Error("Gemini API Key is missing");
     }
 
-    const prompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
+    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+    if (budget >= 0) {
+      const remaining = getCloudOcrRemainingBudget("gemini", budget);
+      if (remaining <= 0) {
+        throw new Error(
+          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
+        );
+      }
+    }
 
-**Your Primary Task:**
-Extract all text exactly as it appears in the original document without adding, removing, or interpreting anything.
+    if (mimeType === "application/pdf") {
+      const chunkSize = config.gemini.nativeChunkSize ?? 4;
+      return this.extractPdfChunksNative(config, fileBuffer, fileName, chunkSize);
+    }
 
-**Critical Rules (must follow strictly):**
-1. **Diacritics:** Preserve all tashkeel marks (fatha, damma, kasra, sukun, tanween, shadda) exactly as they are — do not remove, add, or infer them.
-2. **Punctuation:** Preserve all punctuation marks precisely: ، . ؛ : ؟ ! " " ( ) [ ] { } - – — / \\ * # @ & % $ and others.
-3. **Numbers and Letters:** Preserve Arabic numerals (١٢٣), Hindu numerals (123), and Latin letters (a, b, c, س١, س5) as they are.
-4. **Direction:** Maintain right-to-left (RTL) text direction and page order.
-5. **Layout:** Preserve the original structure:
-   - Main and sub headings
-   - Paragraphs and separate lines
-   - Bulleted and numbered lists
-   - Tables (in Markdown format)
-   - Questions and answers (each question on a separate line)
-   - Multiple-choice alternatives (each alternative on a separate line)
-   - Any other special formatting
-
-**Special Instructions:**
-- **For Questions and Exams:** Preserve question formatting (س١:, س5:, سؤال ١:, etc.) and answer alternatives [(أ), (ب), (ج), (د)] on separate lines.
-- **For Tables:** Use correct Markdown format with column alignment.
-- **For Footnotes:** Extract footnotes precisely with reference numbers, place them below page text separated by "---".
-- **For Multiple Columns:** Read right to left, column by column, then top to bottom.
-
-**What NOT to do:**
-❌ Do not add introductory text, comments, or notes
-❌ Do not interpret, summarize, or rephrase
-❌ Do not correct spelling or grammatical errors in the original text
-❌ Do not remove parts that seem "unimportant"
-✅ Only extract the text exactly as it is
-
-**Required Output:**
-Precise raw text in simple Markdown format (headings start with #, lists with -, tables with |).`;
+    const prompt = PROMPTS.arabic_scientific;
 
     return tryWithModelFallbacks(config, async (modelId) => {
       const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
@@ -152,11 +208,145 @@ Precise raw text in simple Markdown format (headings start with #, lists with -,
       ]);
 
       const text = result.response.text();
+      const metrics = estimateQualityMetrics([{ number: 1, text, confidence: 1.0 }], text);
+
+      if (budget >= 0) {
+        recordCloudOcrUsage("gemini", 1);
+      }
+
       return {
         text: text,
         pages: [{ number: 1, text, confidence: 1.0 }],
         confidence: 1.0,
         engine: "gemini",
+        quality: {
+          arabicRatio: metrics.arabicRatio,
+          diacriticsRatio: metrics.diacriticsRatio,
+          tableHints: metrics.tableHints,
+          averagePageLength: metrics.averageLength,
+        },
+      };
+    });
+  }
+
+  /**
+   * Native PDF fast path:
+   * Splits the PDF into small native chunks and sends each chunk directly to
+   * Gemini Vision. This preserves vector text, tables, and layout while
+   * reducing payload size and API calls compared to rasterizing every page.
+   */
+  async extractPdfChunksNative(
+    config: PipelineConfig,
+    fileBuffer: Buffer,
+    fileName: string,
+    chunkSize = DEFAULT_NATIVE_CHUNK_SIZE,
+    onProgress?: (processed: number, total: number) => void,
+  ): Promise<OcrEngineResult> {
+    if (process.env.MOCK_OCR === "true") {
+      const text = `هذا نص تجريبي مستخرج لا_أعلم_هويتي تفوق كبير وتألق`;
+      return {
+        text,
+        pages: [{ number: 1, text, confidence: 0.99 }],
+        confidence: 0.99,
+        engine: "gemini",
+      };
+    }
+
+    if (!config.gemini?.apiKey) {
+      throw new Error("Gemini API Key is missing");
+    }
+
+    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+    if (budget >= 0) {
+      const remaining = getCloudOcrRemainingBudget("gemini", budget);
+      if (remaining <= 0) {
+        throw new Error(
+          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
+        );
+      }
+    }
+
+    return tryWithModelFallbacks(config, async (modelId) => {
+      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+      const model = genAI.getGenerativeModel({ model: modelId });
+
+      const { PDFDocument } = await import("pdf-lib");
+      const pdfDoc = await PDFDocument.load(fileBuffer);
+      const totalPages = pdfDoc.getPageCount();
+      const chunks: Buffer[] = [];
+      const ranges: { start: number; end: number }[] = [];
+
+      for (let start = 0; start < totalPages; start += chunkSize) {
+        const end = Math.min(start + chunkSize, totalPages);
+        ranges.push({ start, end });
+
+        const chunk = await PDFDocument.create();
+        const pages = await chunk.copyPages(pdfDoc, Array.from({ length: end - start }, (_, i) => start + i));
+        pages.forEach((page) => chunk.addPage(page));
+        const bytes = await chunk.save();
+        chunks.push(Buffer.from(bytes));
+      }
+
+      logger.info(
+        `Native PDF chunking: ${totalPages} pages -> ${chunks.length} chunks on ${modelId}`
+      );
+
+      const pages: OcrPageResult[] = [];
+      let fullText = "";
+      let processedPages = 0;
+
+      for (let c = 0; c < chunks.length; c++) {
+        const base64Chunk = chunks[c].toString("base64");
+        const { start, end } = ranges[c];
+
+        const promptText = PROMPTS.arabic_scientific_chunk(start + 1, end);
+
+        const result = await model.generateContent([
+          { text: promptText },
+          {
+            inlineData: {
+              mimeType: "application/pdf",
+              data: base64Chunk,
+            },
+          },
+        ]);
+
+        const text = result.response.text();
+        const chunkPages = splitGeminiBatchPages(text, start, end - start);
+        pages.push(...chunkPages);
+        for (const p of chunkPages) {
+          fullText += p.text + "\n\n";
+        }
+        processedPages += chunkPages.length;
+
+        if (budget >= 0) {
+          recordCloudOcrUsage("gemini", chunkPages.length);
+        }
+
+        onProgress?.(processedPages, totalPages);
+
+        if (c + 1 < chunks.length) {
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        }
+      }
+
+      const metrics = estimateQualityMetrics(pages, fullText);
+      const confidence =
+        pages.length > 0
+          ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length
+          : 0;
+
+      return {
+        text: fullText.trim(),
+        pages,
+        confidence,
+        engine: "gemini",
+        quality: {
+          arabicRatio: metrics.arabicRatio,
+          diacriticsRatio: metrics.diacriticsRatio,
+          tableHints: metrics.tableHints,
+          averagePageLength: metrics.averageLength,
+        },
       };
     });
   }
@@ -169,7 +359,7 @@ Precise raw text in simple Markdown format (headings start with #, lists with -,
     if (process.env.MOCK_OCR === "true") {
       const pages: OcrPageResult[] = pageGetters.map((_, i) => ({
         number: i + 1,
-        text: `هذا نص تجريبي للصفحة ${i + 1} لا_أعلم_هويتي تفوق كبير وتألق`,
+        text: `هذا نص تجريبي للصفحة ${i + 1} لا_أعلم_هويتi تفوق كبير وتألق`,
         confidence: 0.99,
       }));
       const text = pages.map((p) => p.text).join("\n\n");
@@ -180,37 +370,47 @@ Precise raw text in simple Markdown format (headings start with #, lists with -,
       throw new Error("Gemini API Key is missing");
     }
 
-    const batchPrompt = `You are an expert Arabic OCR (Optical Character Recognition) and document layout analysis system.
+    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+    if (budget >= 0) {
+      const remaining = getCloudOcrRemainingBudget("gemini", budget);
+      const needed = pageGetters.length;
+      if (remaining < needed) {
+        throw new Error(
+          `CLOUD_OCR_BUDGET_INSUFFICIENT: Gemini budget ${remaining} < pages ${needed}`,
+        );
+      }
+    }
 
-**Context:** I am providing you with multiple pages from a single document (up to 10 pages in this batch).
+    const batchPrompt = `You are RAQIM ELITE, an elite scientific scribe specializing in Arabic manuscript digitization.
 
-**Your Task:**
-Extract all text exactly as it appears in the original document without adding, removing, or interpreting anything.
+## PRIMARY DIRECTIVE
+Convert the provided document into high-fidelity Markdown with ZERO information loss.
 
-**Critical Rules:**
-1. **Diacritics:** Preserve all tashkeel marks (fatha, damma, kasra, sukun, tanween, shadda) with absolute precision.
-2. **Punctuation:** Preserve all punctuation marks: ، . ؛ : ؟ ! " " ( ) [ ] { } - – — / \\ * # @ and others.
-3. **Numbers:** Preserve Arabic numerals (١٢٣), Hindu numerals (123), and Latin letters (a, b, c, س١, س5).
-4. **Direction:** Right-to-left (RTL) with same page order.
-5. **Layout:** Preserve headings, paragraphs, lists, tables, questions and answers, choice alternatives.
+## ARABIC PROTOCOLS
+1. **100% Text Preservation**: Preserve every Arabic character, diacritic (tashkeel), and punctuation mark exactly as printed.
+2. **RTL Integrity**: Maintain logical right-to-left reading order across all columns and pages.
+3. **Context Bridging**: When Arabic text references scientific symbols, keep the symbol with its Arabic explanation on the same line.
 
-**Special Instructions:**
-- **For Questions:** Each question on a separate line (س١:, س5:, سؤال ١:)
-- **For Alternatives:** Each alternative on a separate line [(أ), (ب), (ج), (د)]
-- **For Tables:** Correct Markdown format
-- **For Footnotes:** Extract them with reference numbers, place below page text after "---"
-- **For Columns:** Read right to left, column by column, then top to bottom
+## SCIENTIFIC PRECISION (CRITICAL)
+1. **LaTeX for All Formulas**: Wrap ALL chemical formulas and scientific notation in LaTeX.
+   - Inline: $H_2SO_4$, $C_6H_{12}O_6$
+   - Block: $$2H_2 + O_2 \\rightarrow 2H_2O$$
 
-**Page Separator (very important):**
-Separate each page's text from the next page with a separator on a new line: "===PAGE_BREAK==="
+## STRUCTURAL HIERARCHY
+1. **Headings**: Use # for document title, ## for sections, ### for subsections.
+2. **Tables**: Reconstruct as Markdown tables with aligned columns.
+3. **Lists**: Use - for bullets, 1. for numbered lists.
+4. **Emphasis**: Preserve **bold** and *italic* formatting.
 
-**What NOT to do:**
-❌ Do not add introductory text or comments
-❌ Do not interpret, summarize, or rephrase
-❌ Do not correct spelling errors
-❌ Do not remove parts that seem "unimportant"
+## PAGE TRANSITIONS
+Separate each page's text with a horizontal rule (---) on its own line.
 
-**Output:** Precise raw text in simple Markdown format, with PAGE_BREAK separator between pages.`;
+## NEGATIVE CONSTRAINTS
+❌ NO introductory text, summaries, or commentary
+❌ NO interpretation, translation, or paraphrasing
+❌ NO correction of spelling or grammar in the original
+❌ NO removal of "unimportant" sections
+✅ ONLY raw, faithful transcription in Markdown format`;
 
     return tryWithModelFallbacks(config, async (modelId) => {
       const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
@@ -248,11 +448,16 @@ Separate each page's text from the next page with a separator on a new line: "==
           fullText += p.text + "\n\n";
         }
 
+        if (budget >= 0) {
+          recordCloudOcrUsage("gemini", batchGetters.length);
+        }
+
         if (i + BATCH_SIZE < pageGetters.length) {
           await new Promise((resolve) => setTimeout(resolve, 4000));
         }
       }
 
+      const metrics = estimateQualityMetrics(pages, fullText);
       const confidence =
         pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
 
@@ -261,7 +466,14 @@ Separate each page's text from the next page with a separator on a new line: "==
         pages,
         confidence,
         engine: "gemini",
+        quality: {
+          arabicRatio: metrics.arabicRatio,
+          diacriticsRatio: metrics.diacriticsRatio,
+          tableHints: metrics.tableHints,
+          averagePageLength: metrics.averageLength,
+        },
       };
     });
   }
 }
+

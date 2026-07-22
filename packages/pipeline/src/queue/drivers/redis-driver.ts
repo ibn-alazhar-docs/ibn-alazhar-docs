@@ -1,5 +1,4 @@
-import type { QueueDriver, JobEnvelope } from "../driver";
-import type { ClaimedJob } from "./pg-driver";
+import type { QueueDriver, JobEnvelope, ClaimedJob } from "../driver";
 import {
   createValidationWorker,
   createSplittingWorker,

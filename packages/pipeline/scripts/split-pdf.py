@@ -387,11 +387,13 @@ def split_pdf(
     preprocess=False,
     min_dpi=300,
     target_dpi=400,
+    start_page=None,
+    end_page=None,
 ):
     """Split PDF into PNG images, one per page.
 
-    If `max_pages` is set, the document is rejected up-front when it exceeds
-    the limit (bounding temporary disk usage without rendering first).
+    If `start_page` and `end_page` are set, only that page range is rendered
+    (1-based, inclusive). This enables chunked processing for large PDFs.
     """
     try:
         pdf = pdfium.PdfDocument(pdf_path)
@@ -405,6 +407,21 @@ def split_pdf(
     if max_pages is not None and page_count > max_pages:
         pdf.close()
         raise ValueError(f"PDF_EXCEEDS_MAX_PAGES: {page_count} > {max_pages}")
+
+    # Apply chunk window if provided
+    if start_page is not None:
+        start_idx = max(0, start_page - 1)
+    else:
+        start_idx = 0
+
+    if end_page is not None:
+        end_idx = min(page_count, end_page)
+    else:
+        end_idx = page_count
+
+    if start_idx >= end_idx:
+        pdf.close()
+        raise ValueError(f"PDF_INVALID: empty page range {start_page}-{end_page}")
 
     scale = dpi / 72.0
     pages = []
@@ -423,7 +440,7 @@ def split_pdf(
     sharpen = os.environ.get("OCR_SHARPEN", "0") in ("1", "true")
     auto_upscale = preprocess == "auto"
 
-    for i in range(page_count):
+    for i in range(start_idx, end_idx):
         page = pdf[i]
         try:
             bitmap = page.render(scale=scale)
@@ -470,6 +487,8 @@ def main():
     output_dir = sys.argv[2]
     dpi = int(sys.argv[3]) if len(sys.argv) > 3 else 300
     max_pages = int(sys.argv[4]) if len(sys.argv) > 4 else None
+    start_page = int(sys.argv[5]) if len(sys.argv) > 5 else None
+    end_page = int(sys.argv[6]) if len(sys.argv) > 6 else None
     # Allow OCR_MAX_PAGES override (defense-in-depth on top of the Node guard).
     env_max = os.environ.get("OCR_MAX_PAGES")
     if env_max:
@@ -496,6 +515,8 @@ def main():
             preprocess_mode,
             min_dpi,
             target_dpi,
+            start_page,
+            end_page,
         )
         print(json.dumps(result))
     except ValueError as e:

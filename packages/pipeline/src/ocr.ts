@@ -1,9 +1,9 @@
-import { execFile } from "node:child_process";
 import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPythonCommand } from "./ocr-providers/types";
+import { runPython } from "./utils/python-runner";
 
 export { estimateConfidence, createOcrProvider, OcrManager } from "./ocr-provider";
 export type { OcrProvider } from "./ocr-provider";
@@ -92,42 +92,22 @@ export async function splitPdfPages(
   try {
     await writeFile(pdfPath, fileBuffer);
 
-    const python = getPythonCommand();
-    const resultJson = await new Promise<string>((resolve, reject) => {
-      let stderr = "";
-      const proc = execFile(
-        python,
-        [scriptPath, pdfPath, tempDir, String(dpi), String(MAX_PDF_PAGES)],
-        {
-          timeout: 1800_000,
-          maxBuffer: 50 * 1024 * 1024,
-          encoding: "utf-8",
-          env: {
-            ...process.env,
-            ...buildPreprocessEnv(preprocess),
-            PYTHONIOENCODING: "utf-8",
-          },
-        },
-        (err, stdout, stderr) => {
-          if (err) {
-            const detail = stderr?.trim() || stdout?.trim() || err.message;
-            reject(new Error(`PDF_SPLIT_EXECUTION_FAILED: ${detail}`));
-            return;
-          }
-          resolve(stdout.trim());
-        },
-      );
-      proc.stderr?.on("data", (chunk: string) => {
-        stderr += chunk;
-      });
-      proc.on("error", reject);
+    const resultJson = await runPython({
+      args: [scriptPath, pdfPath, tempDir, String(dpi), String(MAX_PDF_PAGES)],
+      env: {
+        ...process.env,
+        ...buildPreprocessEnv(preprocess),
+        PYTHONIOENCODING: "utf-8",
+      },
+      timeout: 1_800_000,
+      maxBuffer: 50 * 1024 * 1024,
     });
 
     let result:
       | { pages: { number: number; path: string }[]; pageCount: number; error?: string }
       | { error: string };
     try {
-      result = JSON.parse(resultJson);
+      result = JSON.parse(resultJson.stdout);
     } catch {
       throw new Error(`PDF_SPLIT_PARSE_FAILED: Could not parse split output`);
     }

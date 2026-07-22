@@ -14,6 +14,26 @@ export { SuryaOcrProvider } from "./ocr-providers/surya";
 export { GeminiOcrProvider } from "./ocr-providers/gemini";
 export { TesseractOcrProvider } from "./ocr-providers/tesseract";
 
+import {
+  createProviderHealth,
+  sortProvidersByHealth,
+  recordProviderSuccess,
+  recordProviderFailure,
+} from "./provider-health";
+
+export {
+  createProviderHealth,
+  getOrCreateRecord,
+  recordProviderSuccess,
+  recordProviderFailure,
+  getProviderState,
+  scoreProvider,
+  sortProvidersByHealth,
+  type ProviderHealth,
+  type ProviderHealthRecord,
+  type ProviderHealthOptions,
+} from "./provider-health";
+
 export function createOcrProvider(type: OcrEngineType) {
   switch (type) {
     case "google":
@@ -33,8 +53,8 @@ export function createOcrProvider(type: OcrEngineType) {
 //     Drive with drive.file scope, then deletes). These are non-default and only run when
 //     explicitly configured via OCR_PROVIDERS or OCR_CLOUD_ENABLED=true.
 // Providers are attempted strictly in the configured order (see config.ts: local-first by
-// default). A cloud provider is therefore only reached AFTER every preceding local provider
-// is unavailable or fails — never as the default path.
+//   default). A cloud provider is therefore only reached AFTER every preceding local provider
+//   is unavailable or fails — never as the default path.
 export class OcrManager {
   private providers: InstanceType<
     | typeof GoogleDriveOcrProvider
@@ -42,16 +62,90 @@ export class OcrManager {
     | typeof GeminiOcrProvider
     | typeof TesseractOcrProvider
   >[];
+  private health: ReturnType<typeof createProviderHealth>;
+  private adaptive: boolean;
 
   constructor(config: PipelineConfig) {
     const engineTypes =
       config.ocr.providers.length > 0 ? config.ocr.providers : [config.ocr.provider];
 
-    this.providers = engineTypes.map((type: OcrEngineType) => createOcrProvider(type));
+    this.adaptive = config.ocr.adaptiveProviderSelection !== false;
+    this.health = createProviderHealth();
+
+    if (this.adaptive) {
+      this.providers = sortProvidersByHealth(this.health, engineTypes).map((type: OcrEngineType) =>
+        createOcrProvider(type),
+      );
+    } else {
+      this.providers = engineTypes.map((type: OcrEngineType) => createOcrProvider(type));
+    }
   }
 
   getAvailableProviders() {
     return this.providers;
+  }
+
+  getHealth() {
+    return this.health;
+  }
+
+  isAdaptive() {
+    return this.adaptive;
+  }
+
+  private async tryExtract(
+    config: PipelineConfig,
+    mode: "text" | "pages",
+    ...args: [Buffer, string, string] | [(() => Promise<Buffer>)[], string]
+  ): Promise<OcrEngineResult> {
+    const errors: { provider: string; error: string }[] = [];
+
+    for (const provider of this.providers) {
+      const available = await provider.isAvailable(config);
+      if (!available) {
+        errors.push({ provider: provider.name, error: "NOT_AVAILABLE" });
+        continue;
+      }
+
+      const started = Date.now();
+      try {
+        const result =
+          mode === "text"
+            ? await provider.extractText(config, ...(args as [Buffer, string, string]))
+            : await provider.extractPages(config, ...(args as [(() => Promise<Buffer>)[], string]));
+
+        if (this.adaptive) {
+          recordProviderSuccess(this.health, provider.type, Date.now() - started);
+        }
+
+        if (errors.length > 0) {
+          logger.warn(`${provider.name} succeeded after ${errors.length} failure(s)`);
+        }
+        return result;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+
+        if (this.adaptive) {
+          recordProviderFailure(this.health, provider.type, msg, Date.now() - started);
+        }
+
+        logger.warn(`${provider.name} failed: ${msg}`);
+        errors.push({ provider: provider.name, error: msg });
+
+        // If adaptive, re-sort after failure
+        if (this.adaptive) {
+          const engineTypes =
+            config.ocr.providers.length > 0 ? config.ocr.providers : [config.ocr.provider];
+          this.providers = sortProvidersByHealth(this.health, engineTypes).map(
+            (type: OcrEngineType) => createOcrProvider(type),
+          );
+        }
+      }
+    }
+
+    throw new Error(
+      `ALL_OCR_PROVIDERS_FAILED: ${errors.map((e) => `${e.provider}:${e.error}`).join("; ")}`,
+    );
   }
 
   async extractText(
@@ -60,31 +154,7 @@ export class OcrManager {
     fileName: string,
     mimeType: string,
   ): Promise<OcrEngineResult> {
-    const errors: { provider: string; error: string }[] = [];
-
-    for (const provider of this.providers) {
-      const available = await provider.isAvailable(config);
-      if (!available) {
-        errors.push({ provider: provider.name, error: "NOT_AVAILABLE" });
-        continue;
-      }
-
-      try {
-        const result = await provider.extractText(config, fileBuffer, fileName, mimeType);
-        if (errors.length > 0) {
-          logger.warn(`${provider.name} succeeded after ${errors.length} failure(s)`);
-        }
-        return result;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        logger.warn(`${provider.name} failed: ${msg}`);
-        errors.push({ provider: provider.name, error: msg });
-      }
-    }
-
-    throw new Error(
-      `ALL_OCR_PROVIDERS_FAILED: ${errors.map((e) => `${e.provider}:${e.error}`).join("; ")}`,
-    );
+    return this.tryExtract(config, "text", fileBuffer, fileName, mimeType);
   }
 
   async extractPages(
@@ -92,30 +162,6 @@ export class OcrManager {
     pageGetters: (() => Promise<Buffer>)[],
     fileName: string,
   ): Promise<OcrEngineResult> {
-    const errors: { provider: string; error: string }[] = [];
-
-    for (const provider of this.providers) {
-      const available = await provider.isAvailable(config);
-      if (!available) {
-        errors.push({ provider: provider.name, error: "NOT_AVAILABLE" });
-        continue;
-      }
-
-      try {
-        const result = await provider.extractPages(config, pageGetters, fileName);
-        if (errors.length > 0) {
-          logger.warn(`${provider.name} succeeded after ${errors.length} failure(s)`);
-        }
-        return result;
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        logger.warn(`${provider.name} failed: ${msg}`);
-        errors.push({ provider: provider.name, error: msg });
-      }
-    }
-
-    throw new Error(
-      `ALL_OCR_PROVIDERS_FAILED: ${errors.map((e) => `${e.provider}:${e.error}`).join("; ")}`,
-    );
+    return this.tryExtract(config, "pages", pageGetters, fileName);
   }
 }

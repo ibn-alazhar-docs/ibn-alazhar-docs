@@ -1,19 +1,9 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@ibn-al-azhar-docs/database";
-import type { QueueDriver, JobEnvelope } from "../driver";
+import type { QueueDriver, JobEnvelope, ClaimedJob } from "../driver";
 import { JOB_QUEUES } from "../../types";
 
-export interface ClaimedJob {
-  id: string;
-  queue: string;
-  idempotencyKey: string;
-  payload: unknown;
-  priority: number;
-  attempts: number;
-  maxAttempts: number;
-  leaseToken: string;
-  lockedBy: string;
-}
+export const ALLOWED_QUEUES: ReadonlyArray<string> = Object.values(JOB_QUEUES);
 
 /** Builds the idempotency key scope: `queue + ':' + key`. */
 export function buildIdempotencyKey(queue: string, key: string): string {
@@ -29,13 +19,6 @@ export function nextRunAt(attempts: number, baseDelay: number): Date {
 export function canMutate(affectedRows: number): boolean {
   return affectedRows === 1;
 }
-
-/**
- * The only queue names the migration's `job_queue_queue_name_check` permits.
- * Derived from JOB_QUEUES so a new queue requires exactly one edit here plus a
- * migration; no string is duplicated across the driver.
- */
-export const ALLOWED_QUEUES: ReadonlyArray<string> = Object.values(JOB_QUEUES);
 
 /**
  * Per-queue base backoff delay (ms). Mirrors the BullMQ retry config in

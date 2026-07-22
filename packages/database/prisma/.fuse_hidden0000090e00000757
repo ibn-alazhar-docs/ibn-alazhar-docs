@@ -1,0 +1,445 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider     = "postgresql"
+  url          = env("DATABASE_URL")
+  directUrl    = env("DATABASE_URL_DIRECT")
+  relationMode = "prisma"
+}
+
+// ============================================
+// Users & Authentication
+// ============================================
+
+model User {
+  id                  String    @id @default(cuid())
+  name                String?
+  email               String    @unique
+  emailVerified       DateTime?
+  image               String?
+  passwordHash        String?
+  role                Role      @default(STUDENT)
+  locale              String    @default("ar")
+  timezone            String    @default("Africa/Cairo")
+  failedLoginAttempts Int       @default(0)
+  lockedAt            DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  deletedAt           DateTime?
+
+  accounts             Account[]
+  sessions             Session[]
+  documents            Document[]
+  folders              Folder[]
+  tags                 Tag[]
+  conversionJobs       ConversionJob[]
+  settings             UserSetting[]
+  shareLinks           ShareLink[]
+  bookmarks            DocumentBookmark[]
+  webhookSubscriptions WebhookSubscription[]
+
+  @@index([role])
+  @@index([deletedAt])
+  @@index([createdAt])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([expires])
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(255)
+  token      String   @unique @db.VarChar(255)
+  expires    DateTime
+  createdAt  DateTime @default(now())
+
+  @@index([identifier, token])
+  @@index([expires])
+  @@map("verification_tokens")
+}
+
+// ============================================
+// Documents & Organization
+// ============================================
+
+model Document {
+  id            String    @id @default(cuid())
+  userId        String
+  folderId      String?
+  title         String
+  description   String?
+  fileName      String
+  originalName  String
+  mimeType      String
+  fileSize      BigInt
+  storageKey    String    @unique
+  status        DocStatus @default(UPLOADED)
+  progress      Int       @default(0)
+  pageCount     Int?
+  pageRange     String?
+  outputFormats String[]  @default([])
+  outputKeys    Json?
+  errorCode     String?
+  errorMessage  String?
+  language      String    @default("ar")
+  isRtl         Boolean   @default(true)
+  // Set when OCR confidence fell below the configured threshold. The document
+  // still completes (graceful degradation) but is flagged for human review.
+  needsReview   Boolean   @default(false)
+
+  // Intermediate Representation (IR) for document structure preservation
+  documentIR    Json? // Stores DocumentIR structure
+  irVersion     String? // IR schema version (e.g., "1.0")
+  irGeneratedAt DateTime? // Timestamp when IR was generated
+
+  // Search fields (managed via raw SQL, not Prisma)
+  searchvector  String?   @map("searchvector")
+  searchPreview String?   @map("searchpreview") @db.Text
+  wordCount     Int?      @map("wordcount")
+  // GIN index on searchVector managed via raw SQL migration
+  // See prisma/migrations/20260615120000_db_updates for the initial setup
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user        User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folder      Folder?            @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  tags        TagDocument[]
+  conversions ConversionJob[]
+  shareLinks  ShareLink[]
+  bookmarks   DocumentBookmark[]
+
+  @@index([userId])
+  @@index([folderId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([userId, createdAt])
+  @@index([userId, deletedAt])
+  @@index([userId, deletedAt, createdAt])
+  @@index([deletedAt])
+  @@index([status, createdAt])
+  @@index([userId, status, deletedAt]) // PERFORMANCE: Composite index for filtering by user + status + soft-delete
+  @@index([userId, folderId, deletedAt]) // PERFORMANCE: Composite index for folder queries
+  @@map("documents")
+}
+
+model Folder {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  parentId  String?
+  color     String?
+  icon      String?
+  order     Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parent    Folder?    @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Restrict, onUpdate: Restrict)
+  children  Folder[]   @relation("FolderHierarchy")
+  documents Document[]
+
+  @@index([userId])
+  @@index([parentId])
+  @@index([userId, parentId])
+  @@index([userId, parentId, order])
+  @@index([userId, deletedAt])
+  @@index([deletedAt])
+  @@map("folders")
+}
+
+model Tag {
+  id        String    @id @default(cuid())
+  userId    String
+  name      String
+  color     String    @default("#16A34A")
+  createdAt DateTime  @default(now())
+  deletedAt DateTime?
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  documents TagDocument[]
+
+  @@unique([userId, name])
+  @@index([userId, deletedAt])
+  @@index([deletedAt])
+  @@map("tags")
+}
+
+model TagDocument {
+  tagId      String
+  documentId String
+
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([tagId, documentId])
+  @@index([tagId])
+  @@index([documentId])
+  @@map("tag_documents")
+}
+
+// ============================================
+// Conversion Pipeline
+// ============================================
+
+model ConversionJob {
+  id           String    @id @default(cuid())
+  userId       String
+  documentId   String
+  sourceFormat String
+  targetFormat String
+  status       JobStatus @default(PENDING)
+  progress     Int       @default(0)
+  inputKey     String
+  outputKey    String?
+  error        String?
+  attempts     Int       @default(0)
+  maxAttempts  Int       @default(3)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([documentId])
+  @@index([status])
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([createdAt])
+  @@map("conversion_jobs")
+}
+
+// ============================================
+// Sharing
+// ============================================
+
+model ShareLink {
+  id         String    @id @default(cuid())
+  token      String    @unique
+  documentId String
+  userId     String
+  expiresAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([documentId, userId])
+  @@index([documentId])
+  @@index([userId])
+  @@index([userId, expiresAt])
+  @@index([expiresAt])
+  @@map("share_links")
+}
+
+// ============================================
+// Settings & Audit
+// ============================================
+
+model UserSetting {
+  id     String @id @default(cuid())
+  userId String
+  key    String
+  value  String @db.Text
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, key])
+  @@index([userId])
+  @@map("user_settings")
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  action    String
+  entity    String?
+  entityId  String?
+  metadata  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([entity, entityId])
+  @@index([createdAt])
+  @@index([action, createdAt])
+  @@index([userId, createdAt])
+  @@map("audit_logs")
+}
+
+// ============================================
+// Enums
+// ============================================
+
+enum Role {
+  ADMIN
+  STUDENT
+  TEACHER
+}
+
+enum DocStatus {
+  UPLOADED
+  VALIDATING
+  SPLITTING
+  OCR_PROCESSING
+  CLEANING
+  GENERATING
+  COMPLETED
+  FAILED
+  ARCHIVED
+}
+
+enum JobStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum DeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+// ============================================
+// Bookmarks
+// ============================================
+
+model DocumentBookmark {
+  id         String   @id @default(cuid())
+  userId     String
+  documentId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@index([documentId])
+  @@map("document_bookmarks")
+}
+
+// ============================================
+// Webhooks
+// ============================================
+
+model WebhookSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  secret    String
+  events    String[] @default([])
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deliveries WebhookDelivery[]
+
+  @@index([userId])
+  @@index([active])
+  @@map("webhook_subscriptions")
+}
+
+model WebhookDelivery {
+  id             String         @id @default(cuid())
+  subscriptionId String
+  event          String
+  payload        Json
+  status         DeliveryStatus @default(PENDING)
+  statusCode     Int?
+  response       Json?
+  attempts       Int            @default(0)
+  nextRetryAt    DateTime?
+  deliveredAt    DateTime?
+  createdAt      DateTime       @default(now())
+
+  subscription WebhookSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+
+  @@index([subscriptionId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("webhook_deliveries")
+}
+
+// ============================================
+// PostgreSQL-backed Job Queue (replaces Redis/BullMQ)
+// ============================================
+
+model JobQueue {
+  id              BigInt    @id @default(autoincrement())
+  queue           String
+  idempotencyKey  String
+  payload         Json
+  status          String    @default("pending")
+  priority        Int       @default(0)
+  runAt           DateTime  @default(now())
+  attempts        Int       @default(0)
+  maxAttempts     Int       @default(3)
+  lastError       String?
+  leaseToken      String?
+  lockedBy        String?
+  lockedAt        DateTime?
+  // Heartbeat is nullable and only set at claim time — job recovery is driven by
+  // heartbeat absence over a short grace period, NOT by the full OCR lease.
+  heartbeatAt     DateTime?
+  deadLetterState Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([queue, idempotencyKey])
+  @@index([queue, status, runAt, priority])
+  @@map("job_queue")
+}

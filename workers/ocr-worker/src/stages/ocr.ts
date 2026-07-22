@@ -10,6 +10,7 @@ import {
   PermanentPipelineError,
   type ProcessingJob,
   type PipelineConfig,
+  type OcrEngineType,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { generateSearchablePdf, updateDocStatusWithProgress } from "../helpers";
@@ -30,39 +31,85 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
   const firstPageKey = `${config.paths.pages}/${data.id}/page-001.png`;
   let result;
 
-  try {
-    const pagesExist = await fileExists(config, firstPageKey);
-
-    if (pagesExist) {
-      jobLogger.info(`[ocr] Streaming pre-split pages for ${data.id}`);
-      const pageGetters: (() => Promise<Buffer>)[] = [];
-      let pageNum = 1;
-      let hasMorePages = true;
-      while (hasMorePages) {
-        const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-        const exists = await fileExists(config, pageKey);
-        if (exists) {
-          pageGetters.push(() => downloadFile(config, pageKey));
-          pageNum++;
-        } else {
-          hasMorePages = false;
+  // Native text fast path: skip OCR if split stage already extracted text
+  if (data.skipOcr && data.nativeText) {
+    jobLogger.info(`[ocr] Using native text extraction for ${data.id} (skipping OCR)`);
+    result = {
+      text: data.nativeText,
+      pages: [{ number: 1, text: data.nativeText, confidence: 0.95 }],
+      confidence: 0.95,
+      engine: "gemini" as OcrEngineType,
+    };
+  } else if (
+    data.mimeType === "application/pdf" &&
+    config.ocr.providers.some((p) => p === "gemini" || config.ocr.provider === "gemini")
+  ) {
+    // Gemini native PDF fast path: prefer original PDF chunking over rasterized PNGs
+    jobLogger.info(`[ocr] Using Gemini native PDF chunking for ${data.id}`);
+    const fileBuffer = await downloadFile(config, data.storageKey);
+    try {
+      result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
+    } catch (nativeError) {
+      jobLogger.warn(
+        nativeError,
+        `[ocr] Native PDF chunking failed for ${data.id}, falling back to pre-split pages`,
+      );
+      const pagesExist = await fileExists(config, firstPageKey);
+      if (pagesExist) {
+        const pageGetters: (() => Promise<Buffer>)[] = [];
+        let pageNum = 1;
+        let hasMorePages = true;
+        while (hasMorePages) {
+          const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+          const exists = await fileExists(config, pageKey);
+          if (exists) {
+            pageGetters.push(() => downloadFile(config, pageKey));
+            pageNum++;
+          } else {
+            hasMorePages = false;
+          }
         }
+        result = await manager.extractPages(config, pageGetters, data.fileName);
+        await generateSearchablePdf(data, pageGetters, config, result);
+      } else {
+        throw nativeError;
       }
-      jobLogger.info(`[ocr] Found ${pageGetters.length} pre-split pages for lazy extraction`);
-      result = await manager.extractPages(config, pageGetters, data.fileName);
-      await generateSearchablePdf(data, pageGetters, config, result);
-    } else {
-      jobLogger.info(`[ocr] No pre-split pages, extracting from full PDF for ${data.id}`);
+    }
+  } else {
+    try {
+      const pagesExist = await fileExists(config, firstPageKey);
+
+      if (pagesExist) {
+        jobLogger.info(`[ocr] Streaming pre-split pages for ${data.id}`);
+        const pageGetters: (() => Promise<Buffer>)[] = [];
+        let pageNum = 1;
+        let hasMorePages = true;
+        while (hasMorePages) {
+          const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
+          const exists = await fileExists(config, pageKey);
+          if (exists) {
+            pageGetters.push(() => downloadFile(config, pageKey));
+            pageNum++;
+          } else {
+            hasMorePages = false;
+          }
+        }
+        jobLogger.info(`[ocr] Found ${pageGetters.length} pre-split pages for lazy extraction`);
+        result = await manager.extractPages(config, pageGetters, data.fileName);
+        await generateSearchablePdf(data, pageGetters, config, result);
+      } else {
+        jobLogger.info(`[ocr] No pre-split pages, extracting from full PDF for ${data.id}`);
+        const fileBuffer = await downloadFile(config, data.storageKey);
+        result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
+      }
+    } catch (pageError: unknown) {
+      const pageErrorMsg = pageError instanceof Error ? pageError.message : String(pageError);
+      jobLogger.warn(
+        `[ocr] Page detection failed for ${data.id}: ${pageErrorMsg}. Falling back to full PDF.`,
+      );
       const fileBuffer = await downloadFile(config, data.storageKey);
       result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
     }
-  } catch (pageError: unknown) {
-    const pageErrorMsg = pageError instanceof Error ? pageError.message : String(pageError);
-    jobLogger.warn(
-      `[ocr] Page detection failed for ${data.id}: ${pageErrorMsg}. Falling back to full PDF.`,
-    );
-    const fileBuffer = await downloadFile(config, data.storageKey);
-    result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
   }
 
   const { minConfidence } = config.ocr;

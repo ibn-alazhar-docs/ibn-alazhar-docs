@@ -1,4 +1,3 @@
-import type { ClaimedJob } from "./drivers/pg-driver";
 import { PgQueueDriver } from "./drivers/pg-driver";
 import { RedisQueueDriver } from "./drivers/redis-driver";
 
@@ -11,6 +10,18 @@ export interface JobEnvelope {
   priority?: number;
   runAt?: Date;
   maxAttempts?: number;
+}
+
+export interface ClaimedJob {
+  id: string;
+  queue: string;
+  idempotencyKey: string;
+  payload: unknown;
+  priority: number;
+  attempts: number;
+  maxAttempts: number;
+  leaseToken: string;
+  lockedBy: string;
 }
 
 export interface QueueDriver {

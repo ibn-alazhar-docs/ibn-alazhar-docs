@@ -292,6 +292,12 @@
   }
 }
 
+/* Ensure the logo turns white in dark mode */
+.dark img[src*="logo.svg"],
+.dark img[src*="logo.png"] {
+  filter: brightness(0) invert(1);
+}
+
 @media print {
   body {
     color: #000;

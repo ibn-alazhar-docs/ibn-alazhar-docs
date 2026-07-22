@@ -37,10 +37,9 @@ export {
   createGenerationWorker,
   createExportWorker,
 } from "./workers";
-export { getQueueDriver, type QueueDriver, type QueueDriverName, type JobEnvelope } from "./driver";
+export { getQueueDriver, type QueueDriver, type QueueDriverName, type JobEnvelope, type ClaimedJob } from "./driver";
 export {
   PgQueueDriver,
-  type ClaimedJob,
   buildIdempotencyKey,
   nextRunAt,
   canMutate,

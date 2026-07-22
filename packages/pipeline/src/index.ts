@@ -6,7 +6,9 @@ export * from "./queue";
 export * from "./ocr";
 export * from "./ocr-provider";
 export * from "./text";
+export * from "./ir";
 export * from "./output";
 export * from "./google-drive";
+export * from "./document-router";
 
 import "dotenv/config";
