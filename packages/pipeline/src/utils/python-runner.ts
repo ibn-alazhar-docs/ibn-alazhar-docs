@@ -2,7 +2,7 @@ import { execFile } from "node:child_process";
 import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { getPythonCommand } from "./types";
+import { getPythonCommand } from "../ocr-providers/types";
 
 export interface RunPythonOptions {
   /** Command-line args passed after the script path. */
