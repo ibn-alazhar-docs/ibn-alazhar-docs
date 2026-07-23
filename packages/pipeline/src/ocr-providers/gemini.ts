@@ -22,6 +22,25 @@ function isTransientError(error: unknown): boolean {
   return false;
 }
 
+async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  const MAX_ATTEMPTS = 3;
+  let attempt = 0;
+  while (true) {
+    try {
+      return await fn();
+    } catch (err) {
+      attempt++;
+      if (attempt >= MAX_ATTEMPTS || !isTransientError(err)) {
+        throw err;
+      }
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 8000);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logger.warn({ attempt, delay, error: errMsg }, `Retrying ${label} after transient error`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
 async function tryWithModelFallbacks<T>(
   config: PipelineConfig,
   fn: (modelId: string) => Promise<T>,
@@ -31,7 +50,7 @@ async function tryWithModelFallbacks<T>(
 
   for (const modelId of models) {
     try {
-      return await fn(modelId);
+      return await withRetry(() => fn(modelId), `model ${modelId}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       logger.warn(`Model ${modelId} failed: ${msg}`);
@@ -74,7 +93,10 @@ export function splitGeminiBatchPages(
   return pages;
 }
 
-function estimateQualityMetrics(pages: OcrPageResult[], rawText: string): {
+function estimateQualityMetrics(
+  pages: OcrPageResult[],
+  rawText: string,
+): {
   arabicRatio: number;
   diacriticsRatio: number;
   tableHints: number;
@@ -83,8 +105,7 @@ function estimateQualityMetrics(pages: OcrPageResult[], rawText: string): {
   const arabic = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
   const total = rawText.replace(/\s+/g, " ").length;
   const tableHints = (rawText.match(/\|/g) || []).length;
-  const diacritics =
-    rawText.match(/[\u064B-\u065F\u0670\u06D6-\u06DC]/g) || [];
+  const diacritics = rawText.match(/[\u064B-\u065F\u0670\u06D6-\u06DC]/g) || [];
   return {
     arabicRatio: total === 0 ? 0 : arabic / total,
     diacriticsRatio: rawText.length === 0 ? 0 : diacritics.length / rawText.length,
@@ -281,14 +302,17 @@ export class GeminiOcrProvider implements OcrProvider {
         ranges.push({ start, end });
 
         const chunk = await PDFDocument.create();
-        const pages = await chunk.copyPages(pdfDoc, Array.from({ length: end - start }, (_, i) => start + i));
+        const pages = await chunk.copyPages(
+          pdfDoc,
+          Array.from({ length: end - start }, (_, i) => start + i),
+        );
         pages.forEach((page) => chunk.addPage(page));
         const bytes = await chunk.save();
         chunks.push(Buffer.from(bytes));
       }
 
       logger.info(
-        `Native PDF chunking: ${totalPages} pages -> ${chunks.length} chunks on ${modelId}`
+        `Native PDF chunking: ${totalPages} pages -> ${chunks.length} chunks on ${modelId}`,
       );
 
       const pages: OcrPageResult[] = [];
@@ -332,9 +356,7 @@ export class GeminiOcrProvider implements OcrProvider {
 
       const metrics = estimateQualityMetrics(pages, fullText);
       const confidence =
-        pages.length > 0
-          ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length
-          : 0;
+        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
 
       return {
         text: fullText.trim(),
@@ -476,4 +498,3 @@ Separate each page's text with a horizontal rule (---) on its own line.
     });
   }
 }
-

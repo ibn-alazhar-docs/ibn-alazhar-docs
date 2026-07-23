@@ -18,6 +18,7 @@ import {
   getDriveClient,
   downloadFromDrive,
   uploadExportBuffer,
+  getPythonCommand,
   type ProcessingJob,
   type PipelineConfig,
   type OcrEngineResult,
@@ -167,12 +168,7 @@ export async function generateSearchablePdf(
       const lines = pageLayout?.lines || [];
       await writeFile(jsonPath, JSON.stringify({ lines }));
 
-      await execFileAsync(process.env.PYTHON_CMD || "python3", [
-        scriptPath,
-        imgPath,
-        jsonPath,
-        pdfPath,
-      ]);
+      await execFileAsync(getPythonCommand(), [scriptPath, imgPath, jsonPath, pdfPath]);
 
       const pdfBuf = await readFile(pdfPath);
       const doc = await PDFDocument.load(pdfBuf);

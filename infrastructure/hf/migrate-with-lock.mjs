@@ -120,6 +120,21 @@ async function main() {
     for (const name of listMigrationNames()) {
       run(["migrate", "resolve", "--applied", name]);
     }
+
+    // Re-create any critical columns that a previous `db push --accept-data-loss`
+    // may have dropped. The searchvector / searchpreview / wordcount trio lives
+    // in Prisma but is managed via raw SQL, so a destructive push can silently
+    // remove them while the migration history still claims they were applied.
+    run(["db", "execute", "--stdin"], {
+      input:
+        'ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchvector tsvector;\n' +
+        "ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchpreview text;\n" +
+        "ALTER TABLE documents ADD COLUMN IF NOT EXISTS wordcount integer;\n" +
+        "CREATE INDEX IF NOT EXISTS documents_searchvector_idx ON documents USING GIN (searchvector);\n" +
+        'DROP TRIGGER IF EXISTS trg_update_searchvector ON documents;\n' +
+        "DROP FUNCTION IF EXISTS update_searchvector();\n",
+    });
+
     console.log("[migrate] schema synced and migrations baselined ✓");
   } finally {
     if (client) {
