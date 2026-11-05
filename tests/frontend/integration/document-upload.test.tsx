@@ -38,9 +38,15 @@ describe("Document upload integration (component ↔ hook ↔ /api/upload)", () 
   });
 
   it("uploads the selected file as multipart FormData", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => ({ jobId: "job-xyz" }),
+    const fetchMock = vi.fn().mockImplementation((url: string) => {
+      if (url === "/api/health/ready") {
+        return Promise.resolve({ ok: true, status: 200 });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ jobId: "job-xyz" }),
+      });
     });
     vi.stubGlobal("fetch", fetchMock);
 
@@ -61,7 +67,11 @@ describe("Document upload integration (component ↔ hook ↔ /api/upload)", () 
     fireEvent.click(screen.getByRole("button", { name: "رفع" }));
 
     await waitFor(() => expect(screen.getByTestId("progress").textContent).toBe("100"));
-    const [url, opts] = fetchMock.mock.calls[0]!;
+    // useFileUpload pre-checks /api/health/ready before POSTing, so find the
+    // upload call rather than assuming it is the first fetch.
+    const uploadCall = fetchMock.mock.calls.find((c: any[]) => c[0] === "/api/upload");
+    expect(uploadCall).toBeDefined();
+    const [url, opts] = uploadCall!;
     expect(url).toBe("/api/upload");
     expect(opts.method).toBe("POST");
     const body = opts.body as FormData;
@@ -82,9 +92,16 @@ describe("Document upload integration (component ↔ hook ↔ /api/upload)", () 
   it("surfaces upload failure to the UI", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({
-        ok: false,
-        json: async () => ({ error: { message: "الملف كبير جداً" } }),
+      vi.fn().mockImplementation((url: string) => {
+        if (url === "/api/health/ready") {
+          return Promise.resolve({ ok: true, status: 200 });
+        }
+        return Promise.resolve({
+          ok: false,
+          status: 400,
+          text: async () => JSON.stringify({ error: { message: "الملف كبير جداً" } }),
+          json: async () => ({ error: { message: "الملف كبير جداً" } }),
+        });
       }),
     );
     render(<UploadHarness />);

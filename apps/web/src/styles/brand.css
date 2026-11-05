@@ -1,27 +1,52 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
 @theme {
-  --color-primary-50: #f0faf6;
-  --color-primary-100: #d1f2e5;
-  --color-primary-200: #a7e6cc;
-  --color-primary-300: #74d4ad;
-  --color-primary-400: #43bd8e;
-  --color-primary-500: #16a34a;
-  --color-primary-600: #16a34a;
-  --color-primary-700: #086941;
-  --color-primary-800: #065232;
-  --color-primary-900: #043e25;
+  /* Brand palette — Visual Identity (docs/BRAND_IMPLEMENTATION.md)
+     Primary teal #127E87 · Gold #DA9E2C · Prussian #083B40 */
+  --color-primary-50: #ecf5f5;
+  --color-primary-100: #d4e8e9;
+  --color-primary-200: #acd2d5;
+  --color-primary-300: #7db8bd;
+  --color-primary-400: #469aa1;
+  --color-primary-500: #127e87;
+  --color-primary-600: #106f77;
+  --color-primary-700: #0d5b61;
+  --color-primary-800: #0a454a;
+  --color-primary-900: #073033;
 
-  --color-gold-50: #faf6eb;
-  --color-gold-100: #f5edd0;
-  --color-gold-200: #eadb9d;
-  --color-gold-300: #dfc46b;
-  --color-gold-400: #ca8a04;
-  --color-gold-500: #ca8a04;
-  --color-gold-600: #ca8a04;
-  --color-gold-700: #7e601e;
-  --color-gold-800: #5d4514;
-  --color-gold-900: #412f0c;
+  --color-teal-50: #ecf5f5;
+  --color-teal-100: #d4e8e9;
+  --color-teal-200: #acd2d5;
+  --color-teal-300: #7db8bd;
+  --color-teal-400: #469aa1;
+  --color-teal-500: #127e87;
+  --color-teal-600: #106f77;
+  --color-teal-700: #0d5b61;
+  --color-teal-800: #0a454a;
+  --color-teal-900: #073033;
+
+  --color-gold-50: #fcf7ee;
+  --color-gold-100: #f8eed9;
+  --color-gold-200: #f2ddb5;
+  --color-gold-300: #ebca8b;
+  --color-gold-400: #e2b35a;
+  --color-gold-500: #da9e2c;
+  --color-gold-600: #c08b27;
+  --color-gold-700: #9d7220;
+  --color-gold-800: #785718;
+  --color-gold-900: #533c11;
+
+  --color-prussian-50: #ebeff0;
+  --color-prussian-100: #d3dcdd;
+  --color-prussian-200: #a9babc;
+  --color-prussian-300: #779396;
+  --color-prussian-400: #3e666a;
+  --color-prussian-500: #083b40;
+  --color-prussian-600: #073438;
+  --color-prussian-700: #062a2e;
+  --color-prussian-800: #042023;
+  --color-prussian-900: #031618;
+  --color-prussian: #083b40;
 
   --color-neutral-50: #faf8f3;
   --color-neutral-100: #f5f0e8;
@@ -40,17 +65,21 @@
   --color-error-600: #dc2626;
   --color-warning-50: #fffbeb;
   --color-warning-500: #f59e0b;
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e;
+  --color-success-50: #ecf5f5;
+  --color-success-500: #127e87;
   --color-info-50: #eff6ff;
   --color-info-500: #3b82f6;
 
   --color-manuscript-brown: #92400e;
 
-  --font-family-cairo: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
-  --font-family-amiri: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-family-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-family-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  /* Brand fonts: Almarai (body/UI) + Thmanyah (display, stack-based) */
+  --font-family-almarai: var(--font-almarai), "Almarai", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-family-thmanyah: "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
+  --font-family-display: var(--font-family-thmanyah);
+  --font-family-body: var(--font-family-almarai);
+  /* Backwards-compatible aliases (reading.css / landing.css still use these) */
+  --font-family-cairo: var(--font-family-almarai);
+  --font-family-amiri: var(--font-family-thmanyah);
   --font-family-mono:
     var(--font-mono), "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   --font-weight-regular: 400;
@@ -74,7 +103,6 @@
   --color-badge: var(--badge-bg);
   --color-line: var(--border-line);
   --color-subtle: var(--border-subtle);
-  /* Moved text color mappings to explicit utility layer below to avoid Tailwind 4 palette merging issues */
   --color-btn-primary: var(--btn-primary-bg);
   --color-btn-primary-text: var(--btn-primary-text);
   --color-hover: var(--hover-bg);
@@ -104,7 +132,6 @@
   --color-background: var(--surface);
   --color-muted: var(--hover-bg);
 
-  /* Map text colors so Tailwind 4 generates text-primary-color, text-secondary-color, etc. */
   --color-primary-color: var(--text-primary);
   --color-secondary-color: var(--text-secondary);
   --color-muted-color: var(--text-tertiary);
@@ -112,6 +139,12 @@
 }
 
 :root {
+  /* Brand lockup rules (docs/BRAND_IMPLEMENTATION.md) */
+  --brand-teal: #127e87;
+  --brand-gold: #da9e2c;
+  --brand-prussian: #083b40;
+  --logo-clear-space: 190px;
+  --logo-min-size: 152px;
   --page-bg: #fafafa;
   --surface: #ffffff;
   --card-bg: #ffffff;
@@ -121,96 +154,96 @@
   --text-secondary: #525252;
   --text-tertiary: #5f5f5f;
   --text-inverse: #fffdf7;
-  --btn-primary-bg: #086941;
+  --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
   --btn-ghost-border: rgba(31, 41, 55, 0.12);
   --hover-bg: rgba(31, 41, 55, 0.04);
   --active-bg: rgba(31, 41, 55, 0.06);
-  --badge-bg: rgba(22, 163, 74, 0.1);
+  --badge-bg: rgba(18, 126, 135, 0.1);
   --overlay: rgba(31, 41, 55, 0.5);
   --input-bg: #fdfcfa;
   --input-border: #e8e2d8;
-  --input-focus: #16a34a;
-  --success: #16a34a;
-  --success-bg: #f0faf6;
-  --success-border: #a7e6cc;
+  --input-focus: #127e87;
+  --success: #127e87;
+  --success-bg: #ecf5f5;
+  --success-border: #acd2d5;
   --danger: #dc2626;
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
   --info: #3b82f6;
   --info-bg: #eff6ff;
-  --gold: #ca8a04;
-  --gold-bg: #faf6eb;
-  --gold-border: #eadb9d;
+  --gold: #da9e2c;
+  --gold-bg: #fcf7ee;
+  --gold-border: #f2ddb5;
   --icon-color: #1f2937;
   --icon-muted: #78716c;
-  --ring-focus: #16a34a;
+  --ring-focus: #127e87;
   --shadow-color: 0 0 0;
-  --font-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
-  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
-  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
+  --font-display: var(--font-family-thmanyah);
+  --font-body: var(--font-family-almarai);
+  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.45);
   --glass-bg: hsla(40, 30%, 98%, 0.7);
-  --glass-border: rgba(202, 138, 4, 0.08);
+  --glass-border: rgba(218, 158, 44, 0.12);
   --glass-shadow: 0 16px 32px -8px rgba(31, 41, 55, 0.08);
 }
 
 .dark {
-  --page-bg: #0a0a0a;
-  --surface: #171717;
-  --card-bg: #171717;
-  --border-line: #262626;
-  --border-subtle: #171717;
+  --page-bg: #042023;
+  --surface: #083b40;
+  --card-bg: #0a454a;
+  --border-line: #0d5b61;
+  --border-subtle: #073033;
   --text-primary: #fafafa;
   --text-secondary: #a3a3a3;
   --text-tertiary: #8c8c8c;
-  --text-inverse: #1a1614;
-  --btn-primary-bg: #086941;
+  --text-inverse: #083b40;
+  --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
   --btn-ghost-border: rgba(245, 240, 232, 0.1);
   --hover-bg: rgba(245, 240, 232, 0.05);
   --active-bg: rgba(245, 240, 232, 0.08);
   --badge-bg: rgba(22, 163, 74, 0.15);
   --overlay: rgba(26, 22, 20, 0.8);
-  --input-bg: #241f1c;
-  --input-border: #3d3632;
-  --input-focus: #16a34a;
-  --success: #16a34a;
-  --success-bg: rgba(22, 163, 74, 0.1);
-  --success-border: rgba(22, 163, 74, 0.2);
+  --input-bg: #062a2e;
+  --input-border: #0d5b61;
+  --input-focus: #127e87;
+  --success: #127e87;
+  --success-bg: rgba(18, 126, 135, 0.12);
+  --success-border: rgba(18, 126, 135, 0.25);
   --danger: #ef4444;
   --danger-bg: rgba(239, 68, 68, 0.1);
   --danger-border: rgba(239, 68, 68, 0.2);
   --info: #60a5fa;
   --info-bg: rgba(96, 165, 250, 0.1);
-  --gold: #ca8a04;
-  --gold-bg: rgba(202, 138, 4, 0.1);
-  --gold-border: rgba(202, 138, 4, 0.2);
+  --gold: #da9e2c;
+  --gold-bg: rgba(218, 158, 44, 0.12);
+  --gold-border: rgba(218, 158, 44, 0.25);
   --icon-color: #f5f0e8;
   --icon-muted: #a8a29e;
-  --ring-focus: #16a34a;
+  --ring-focus: #127e87;
   --shadow-color: 0 0 0;
-  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
-  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
-  --glass-bg: rgba(36, 31, 28, 0.65);
+  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.45);
+  --glass-bg: rgba(8, 59, 64, 0.65);
   --glass-border: rgba(245, 240, 232, 0.08);
   --glass-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.8);
 
   /* Dark overrides for @theme neutral tokens (used by reading.css and others) */
-  --color-neutral-50: #1a1614;
-  --color-neutral-100: #241f1c;
-  --color-neutral-200: #2e2824;
-  --color-neutral-300: #3d3632;
+  --color-neutral-50: #042023;
+  --color-neutral-100: #062a2e;
+  --color-neutral-200: #073438;
+  --color-neutral-300: #0d5b61;
   --color-neutral-400: #57534e;
   --color-neutral-500: #78716c;
   --color-neutral-600: #a8a29e;
   --color-neutral-700: #d6cec2;
   --color-neutral-800: #f5f0e8;
   --color-neutral-900: #faf8f3;
-  --color-gold-50: rgba(202, 138, 4, 0.08);
-  --color-gold-100: rgba(202, 138, 4, 0.12);
-  --color-gold-200: rgba(202, 138, 4, 0.18);
-  --color-gold-400: #ca8a04;
+  --color-gold-50: rgba(218, 158, 44, 0.08);
+  --color-gold-100: rgba(218, 158, 44, 0.12);
+  --color-gold-200: rgba(218, 158, 44, 0.18);
+  --color-gold-400: #da9e2c;
 }
 
 @layer base {
@@ -290,6 +323,20 @@
       box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
     }
   }
+}
+
+/* Logo clear space (190px all sides) and minimum size (152px) */
+.brand-clear-space {
+  padding: var(--logo-clear-space);
+}
+.brand-logo-min {
+  min-width: var(--logo-min-size);
+  min-height: var(--logo-min-size);
+}
+.brand-logo {
+  min-width: var(--logo-min-size);
+  min-height: var(--logo-min-size);
+  margin: var(--logo-clear-space);
 }
 
 /* Ensure the logo turns white in dark mode */

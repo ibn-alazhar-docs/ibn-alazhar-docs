@@ -13,11 +13,11 @@ export class TagUseCases {
   ) {}
 
   async getTags(session: AuthSession) {
-    // كل مستخدم يرى وسومه فقط
-    return this.tagRepository.findMany({
-      deletedAt: null,
-      userId: session.user.id,
-    });
+    const where: { deletedAt: null; userId?: string } = { deletedAt: null };
+    if (session.user.role !== "ADMIN") {
+      where.userId = session.user.id;
+    }
+    return this.tagRepository.findMany(where);
   }
 
   async getTagById(id: string, session: AuthSession) {

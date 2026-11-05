@@ -58,10 +58,10 @@ export class SearchUseCases {
     const normalizedQuery = this.normalizeArabic(query);
     if (!normalizedQuery) throw new ValidationError("Invalid search query");
 
-    // كل مستخدم يبحث في مستنداته فقط
+    // كل مستخدم يبحث في مستنداته فقط — المدير يبحث في كل المستندات
     const searchParams = {
       userId,
-      isAdmin: false,
+      isAdmin: role === "ADMIN",
       normalizedQuery,
       rawQuery: query,
       type,

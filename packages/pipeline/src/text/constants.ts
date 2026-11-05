@@ -78,6 +78,9 @@ export interface CleanOptions {
 
 export const DEFAULT_OPTIONS: CleanOptions = {
   normalizeUnicode: true,
+  // General docs: normalize Arabic letter variants (أإآ→ا etc.) — this is the
+  // canonical cleanArabicText behavior (search/comparison-friendly). Exam
+  // documents opt out via EXAM_OPTIONS to preserve MCQ labels and stems.
   normalizeArabic: true,
   removeTashkeel: false,
   removeTatweel: true,
@@ -104,7 +107,9 @@ export const DEFAULT_OPTIONS: CleanOptions = {
  */
 export const EXAM_OPTIONS: CleanOptions = {
   normalizeUnicode: true,
-  normalizeArabic: true,
+  // Preserve أإآ so MCQ labels (أ)(ب)(ج)(د) and stems keep their hamza/madda —
+  // normalizing to bare ا mangles answer choices (see text-exam-cleaning tests).
+  normalizeArabic: false,
   removeTashkeel: false,
   removeTatweel: true,
   normalizeDigits: false,
@@ -115,7 +120,8 @@ export const EXAM_OPTIONS: CleanOptions = {
   removeRepeatedTokens: true,
   // Keep lines that look like garbage — answer choices like (أ - ب - ج) score low
   removeGarbageSymbols: false,
-  normalizePunctuation: true,
+  // Preserve fill-in-the-blank dot runs (......) — don't collapse them to …
+  normalizePunctuation: false,
   // Don't drop short fragments — answer stubs are intentionally short
   removeIsolatedFragments: false,
   collapseRepeatedWords: true,
@@ -131,8 +137,11 @@ export const EXAM_OPTIONS: CleanOptions = {
 
 // Patterns that identify exam/Q&A documents
 // Support both Arabic numerals (١٢٣) and Hindu-Arabic/Western numerals (123)
+// Parenthetical question form requires a colon ("(3): ...") — bare "(1) title"
+// is general-doc heading numbering (HEADING_NUMBERED_PAREN), not an exam marker.
+// Without this, "(1) عنوان" double-counts as question+choice → misclassified exam.
 export const EXAM_QUESTION_PATTERN =
-  /^(س\s*[\d\u0660-\u0669\u06F0-\u06F9]+|سؤال\s*[\d\u0660-\u0669\u06F0-\u06F9]*|س\s*[:：]|\([\d\u0660-\u0669\u06F0-\u06F9]+\)\s*[:：]?)/m;
+  /^(س\s*[\d\u0660-\u0669\u06F0-\u06F9]+|سؤال\s*[\d\u0660-\u0669\u06F0-\u06F9]*|س\s*[:：]|\(\d+\)\s*[:：])/m;
 export const EXAM_ANSWER_PATTERN = /^(ج\s*[:：]|جواب\s*[:：]|الإجابة\s*[:：]|الجواب\s*[:：])/m;
 export const EXAM_CHOICE_PATTERN =
   /^\s*[([]\s*[أابجدهوزحطيكلمنسعفصقرشت١٢٣٤٥٦٧٨٩\u0660-\u0669\u06F0-\u06F90-9]\s*[)\]]/m;

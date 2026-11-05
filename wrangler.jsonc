@@ -8,4 +8,15 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "ibnalazhardocs",
+    },
+  ],
+  "vars": {
+    "QUEUE_DRIVER": "pg",
+    "STORAGE_DRIVER": "s3",
+    "NODE_ENV": "production",
+  },
 }

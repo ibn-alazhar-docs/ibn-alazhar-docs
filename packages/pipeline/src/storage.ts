@@ -3,8 +3,7 @@ import { join } from "node:path";
 import type { PipelineConfig, StorageObject, StorageDriver } from "./types";
 import { getStorageDriver } from "./config";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
-import { getStorageClient } from "./minio-driver";
-import { validatePdf } from "./validation";
+import { getStorageClient, minioCleanupOrphanedFiles } from "./storage/minio-driver";
 import {
   localPath,
   localEnsureRoot,
@@ -13,12 +12,12 @@ import {
   localDownloadFile,
   localDeleteFile,
   localFileExists,
-} from "./local-driver";
+} from "./storage/local-driver";
 
 const logger = baseLogger.child({ module: "storage" });
 
-export { getStorageClient } from "./minio-driver";
-export { validatePdf } from "./validation";
+export { getStorageClient } from "./storage/minio-driver";
+export { validatePdf } from "./storage/validation";
 
 function getDriver(config: PipelineConfig): StorageDriver {
   return config.storage?.driver ?? getStorageDriver();
@@ -122,11 +121,11 @@ export async function downloadFile(config: PipelineConfig, key: string): Promise
     const chunks: Buffer[] = [];
     let totalSize = 0;
     mc.getObject(config.minio.bucket, key)
-      .then((stream) => {
+      .then((stream: NodeJS.ReadableStream) => {
         stream.on("data", (chunk: Buffer) => {
           totalSize += chunk.length;
           if (totalSize > MAX_DOWNLOAD_SIZE) {
-            stream.destroy();
+            (stream as { destroy?: () => void }).destroy?.();
             reject(new Error("File too large"));
             return;
           }
@@ -158,6 +157,44 @@ export async function deleteFile(config: PipelineConfig, key: string): Promise<v
   }
   const mc = getStorageClient(config);
   await mc.removeObject(config.minio.bucket, key);
+}
+
+export async function listObjects(config: PipelineConfig, prefix: string): Promise<string[]> {
+  if (getDriver(config) === "local") {
+    const base = localPath(config, prefix);
+    const result: string[] = [];
+    const walk = async (dir: string, rel: string): Promise<void> => {
+      let entries;
+      try {
+        entries = await import("node:fs/promises").then((m) =>
+          m.readdir(dir, { withFileTypes: true }),
+        );
+      } catch {
+        return;
+      }
+      for (const entry of entries) {
+        const full = join(dir, entry.name);
+        const key = rel ? `${rel}/${entry.name}` : entry.name;
+        if (entry.isDirectory()) {
+          await walk(full, key);
+        } else if (entry.isFile()) {
+          result.push(prefix ? `${prefix.replace(/\/$/, "")}/${key}`.replace(/\/+/g, "/") : key);
+        }
+      }
+    };
+    await walk(base, "");
+    return result;
+  }
+  const mc = getStorageClient(config);
+  return new Promise((resolve, reject) => {
+    const keys: string[] = [];
+    const stream = mc.listObjects(config.minio.bucket, prefix, true);
+    stream.on("data", (obj: { name?: string }) => {
+      if (obj.name) keys.push(obj.name);
+    });
+    stream.on("end", () => resolve(keys));
+    stream.on("error", reject);
+  });
 }
 
 export async function fileExists(config: PipelineConfig, key: string): Promise<boolean> {

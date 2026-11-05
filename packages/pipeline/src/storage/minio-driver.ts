@@ -1,7 +1,6 @@
 import { Client as MinioClient } from "minio";
 import type { PipelineConfig, StorageDriver } from "../types";
 import { getStorageDriver } from "../config";
-import { logger } from "@ibn-al-azhar-docs/shared";
 
 let client: MinioClient | null = null;
 let lastEndpoint = "";

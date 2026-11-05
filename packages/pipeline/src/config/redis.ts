@@ -10,8 +10,7 @@ export function buildRedisConfig(): {
   if (url) {
     try {
       const parsed = new URL(url);
-      const password =
-        parsed.password || process.env.REDIS_PASSWORD || undefined;
+      const password = parsed.password || process.env.REDIS_PASSWORD || undefined;
       return {
         host: parsed.hostname,
         port: Number(parsed.port || 6379),

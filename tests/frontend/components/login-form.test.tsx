@@ -14,13 +14,22 @@ vi.mock("@/i18n/navigation", () => ({
   Link: ({ children, ...props }: any) => <a {...props}>{children}</a>,
 }));
 
+// LoginForm calls the server action preCheckLogin before signIn; the real
+// action touches next/headers, Prisma and Redis and cannot run in jsdom.
+vi.mock("@/ui/auth/actions", () => ({
+  preCheckLogin: vi.fn(() => Promise.resolve({ error: null })),
+}));
+
 import { signIn } from "next-auth/react";
+import { preCheckLogin } from "@/ui/auth/actions";
 import { LoginForm } from "@/ui/auth/login-form";
 
 describe("LoginForm (component)", () => {
   beforeEach(() => {
     vi.mocked(signIn).mockReset();
     vi.mocked(signIn).mockResolvedValue({ error: null });
+    vi.mocked(preCheckLogin).mockReset();
+    vi.mocked(preCheckLogin).mockResolvedValue({ error: null });
   });
 
   it("renders email + password fields and submit button", () => {

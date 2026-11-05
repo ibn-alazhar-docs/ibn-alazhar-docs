@@ -1,4 +1,3 @@
-import { existsSync } from "node:fs";
 import type { PipelineConfig, StorageDriver } from "../types";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
@@ -34,17 +33,12 @@ export function buildStorageConfig(
         };
       }
 
-      const rawEndpoint =
-        process.env.S3_ENDPOINT ?? process.env.MINIO_ENDPOINT ?? "localhost";
+      const rawEndpoint = process.env.S3_ENDPOINT ?? process.env.MINIO_ENDPOINT ?? "localhost";
       let endpoint = rawEndpoint;
       let port = Number(process.env.S3_PORT ?? process.env.MINIO_PORT ?? 9000);
-      let useSSL =
-        process.env.S3_USE_SSL === "true" || process.env.MINIO_USE_SSL === "true";
+      let useSSL = process.env.S3_USE_SSL === "true" || process.env.MINIO_USE_SSL === "true";
 
-      if (
-        rawEndpoint.startsWith("http://") ||
-        rawEndpoint.startsWith("https://")
-      ) {
+      if (rawEndpoint.startsWith("http://") || rawEndpoint.startsWith("https://")) {
         try {
           const parsed = new URL(rawEndpoint);
           endpoint = parsed.hostname;
@@ -59,10 +53,17 @@ export function buildStorageConfig(
         }
       }
 
-      const accessKey =
-        process.env.S3_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY;
-      const secretKey =
-        process.env.S3_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY;
+      const accessKey = process.env.S3_ACCESS_KEY_ID ?? process.env.MINIO_ACCESS_KEY;
+      const secretKey = process.env.S3_SECRET_ACCESS_KEY ?? process.env.MINIO_SECRET_KEY;
+
+      // Fail fast in production: an S3/MinIO driver without credentials would
+      // otherwise boot with placeholder keys and fail obscurely at runtime.
+      if (process.env.NODE_ENV === "production" && !accessKey) {
+        throw new Error("S3_ACCESS_KEY_ID is required in production");
+      }
+      if (process.env.NODE_ENV === "production" && !secretKey) {
+        throw new Error("S3_SECRET_ACCESS_KEY is required in production");
+      }
 
       return {
         endpoint,
@@ -70,8 +71,7 @@ export function buildStorageConfig(
         useSSL,
         accessKey: accessKey ?? "minioadmin",
         secretKey: secretKey ?? "minioadmin",
-        bucket:
-          process.env.S3_BUCKET ?? process.env.MINIO_BUCKET ?? "ibnalazhardocs",
+        bucket: process.env.S3_BUCKET ?? process.env.MINIO_BUCKET ?? "ibnalazhardocs",
       };
     })(),
   };

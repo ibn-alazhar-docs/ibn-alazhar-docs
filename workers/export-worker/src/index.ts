@@ -1,6 +1,5 @@
 import {
   closeQueueConnections,
-  recordJobFailure,
   classifyError,
   isFinalAttempt,
   PgWorker,
@@ -27,7 +26,7 @@ import { buildExportPgHandlers, EXPORT_WORKER_ID } from "./pg/handlers";
 const onExportFailed = async (
   job: Job<ExportRequest>,
   error: Error,
-  queueName: string,
+  _queueName: string,
 ): Promise<void> => {
   const data = job.data;
   const { code } = classifyError(error);

@@ -14,7 +14,7 @@ import {
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatusWithProgress, parsePageRange } from "../helpers";
-import { classifyDocument, extractNativePdfText } from "@ibn-al-azhar-docs/pipeline";
+import { routeDocument } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -48,34 +48,29 @@ export async function processSplittingStage(
   let skipOcr = false;
 
   if (data.mimeType === "application/pdf") {
-    // Try native text extraction fast path first
-    const classification = await classifyDocument(fileBuffer, data.mimeType, data.fileName);
+    // السلسلة 1 — Direct pdf-parse: التوجيه الموحّد (classify → extract → decide).
+    // native فقط إن النص الأصلي سليم (تغطية ≥60%، ≥25 كلمة/صفحة، lam-swap <6%).
+    // وإلا route=ocr ⇒ تقسيم الصفحات ثم Tesseract → Gemini keypool في مرحلة ocr.
+    const decision = await routeDocument(fileBuffer, data.mimeType, data.fileName);
     jobLogger.info(
-      { type: classification.type, hasEmbeddedText: classification.hasEmbeddedText },
-      `[split] Document classified for ${data.id}`,
+      {
+        type: decision.classification.type,
+        hasEmbeddedText: decision.classification.hasEmbeddedText,
+        route: decision.route,
+        reason: decision.reason,
+      },
+      `[split] Document routed for ${data.id}`,
     );
 
-    if (classification.type === "pdf-text" && classification.hasEmbeddedText) {
-      try {
-        const nativeResult = await extractNativePdfText(fileBuffer);
-        nativeText = nativeResult.text;
-        skipOcr = true;
-        jobLogger.info(
-          { pages: nativeResult.pageCount },
-          `[split] Extracted native text for ${data.id} (skipping OCR)`,
-        );
-        storedPagesCount = nativeResult.pageCount;
-        await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
-          pageCount: storedPagesCount,
-        });
-      } catch (nativeErr) {
-        jobLogger.warn(
-          nativeErr,
-          `[split] Native text extraction failed for ${data.id}, falling back to OCR`,
-        );
-        skipOcr = false;
-        nativeText = undefined;
-      }
+    if (decision.route === "native" && decision.nativeText) {
+      nativeText = decision.nativeText;
+      skipOcr = true;
+      storedPagesCount =
+        decision.classification.pageCount ?? decision.nativeText.split("===PAGE_BREAK===").length;
+      jobLogger.info(`[split] Extracted native text for ${data.id} (skipping OCR)`);
+      await updateDocStatusWithProgress(data.documentId, "SPLITTING", {
+        pageCount: storedPagesCount,
+      });
     }
 
     if (!skipOcr) {

@@ -1,22 +1,67 @@
 import { detectDocumentType } from "../analyze";
+
+import { normalizeUnicode, normalizeArabicLetters, removeTashkeel, removeTatweel } from "./unicode";
+import { normalizeDigits } from "./numbers";
+import { normalizeWhitespace } from "./whitespace";
 import {
-  DEFAULT_OPTIONS,
-  EXAM_OPTIONS,
-  type CleanOptions,
-} from "../constants";
+  removeBrokenHtml,
+  removeAsciiNoise,
+  normalizeArabicPunctuation,
+  finalCleanup,
+} from "./html";
+import {
+  collapseRepeatedParagraphs,
+  reconstructArabicLines,
+  detectArabicHeadings,
+  detectPostReconstructionHeadings,
+  removePageNoise,
+  removeRepeatedTokens,
+  removeGarbageSymbols,
+  removeIsolatedFragments,
+  collapseRepeatedWords,
+} from "./structure";
+import { applyQuranicFixes } from "./quranic";
+import { applyStructuralFixes } from "./structural";
+import { DEFAULT_OPTIONS, EXAM_OPTIONS, type CleanOptions } from "../constants";
 
 export { analyzeText } from "../analyze";
+export type { CleanOptions } from "../constants";
 
 export interface CleanArabicTextOptions extends CleanOptions {
   confidence?: number;
+  quranicFixes?: boolean;
+  structuralCheck?: boolean;
+  structuralFixes?: boolean;
 }
 
 export {
   normalizeUnicode,
+  normalizePresentationForms,
+  repairMojibake,
+  expandPuaHonorifics,
   normalizeArabicLetters,
   removeTashkeel,
   removeTatweel,
 } from "./unicode";
+
+export { AZHAR_CORRECTION_RULES, applyQuranicFixes } from "./quranic";
+
+export {
+  auditStructuralIntegrity,
+  auditStructural,
+  checkStructuralIntegrity,
+  checkStructural,
+  validateStructural,
+  validateStructure,
+  structuralAudit,
+  analyzeStructuralIntegrity,
+  analyzeStructure,
+  detectStructuralIssues,
+  applyStructuralFixes,
+  normalizeStructural,
+  type StructuralAuditResult,
+  type StructuralAuditIssue,
+} from "./structural";
 
 export { normalizeDigits } from "./numbers";
 
@@ -47,7 +92,7 @@ export async function enhanceArabicText(text: string): Promise<string> {
   const { join, dirname } = await import("node:path");
   const { tmpdir } = await import("node:os");
   const { fileURLToPath } = await import("node:url");
-  const { runPython } = await import("../utils/python-runner");
+  const { runPython } = await import("../../utils/python-runner");
 
   const tempDir = await mkdtemp(join(tmpdir(), "diacritics-"));
   const inputPath = join(tempDir, "input.json");
@@ -134,5 +179,55 @@ export function cleanArabicText(raw: string, options?: CleanArabicTextOptions): 
   if (opts.collapseRepeatedParagraphs) text = collapseRepeatedParagraphs(text);
   if (opts.finalCleanup) text = finalCleanup(text);
 
+  if (options?.quranicFixes) {
+    text = applyQuranicFixes(text);
+  }
+
+  if (options?.structuralFixes || options?.structuralCheck) {
+    text = applyStructuralFixes(text);
+  }
+
   return text;
 }
+
+export {
+  UTHMANI_DATASET,
+  UTHMANI_SOURCE,
+  uthmaniSkeleton,
+  getUthmaniAyah,
+  findUthmaniMatches,
+  verifyQuranicText,
+  type UthmaniAyah,
+  type UthmaniMatch,
+  type UthmaniVerification,
+} from "./uthmani";
+
+export {
+  normalizeForSimilarity,
+  calculateArabicSimilarity,
+  microscopicDiff,
+  MICROSCOPIC_DIFF_MAX_CHARS,
+  type ArabicSimilarityResult,
+  type DiffOp,
+  type DiffOpType,
+  type MicroscopicDiffResult,
+} from "./similarity";
+
+export {
+  auditContextualGrammar,
+  checkContextualGrammar,
+  contextualAudit,
+  auditContextual,
+  type ContextualIssue,
+  type ContextualSeverity,
+  type ContextualAuditResult,
+} from "./contextual";
+
+export {
+  runSevenStageAudit,
+  textCleaner,
+  type StageResult,
+  type SevenStageAuditOptions,
+  type SevenStageAuditReport,
+  type TextCleaner,
+} from "./text-cleaner";

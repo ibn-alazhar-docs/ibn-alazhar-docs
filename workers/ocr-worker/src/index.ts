@@ -5,8 +5,6 @@ import {
   recordJobFailure,
   classifyError,
   isFinalAttempt,
-  sendAlert,
-  enqueueValidation,
   type ProcessingJob,
   type FailedJob,
 } from "@ibn-al-azhar-docs/pipeline";

@@ -59,13 +59,15 @@ export class DocumentRepository implements IDocumentRepository {
   }
 
   async updateSearchVector(id: string, title?: string, description?: string | null) {
+    // Normalize text before indexing so stored vectors match normalized
+    // search queries (see normalize_arabic in prisma/migrations 20260615120000).
     return this.prisma.$executeRaw`
       UPDATE documents
       SET searchvector =
-        setweight(to_tsvector('simple', coalesce(${title || ""}, '')), 'A') ||
-        setweight(to_tsvector('simple', coalesce("fileName", '')), 'B') ||
-        setweight(to_tsvector('simple', coalesce(${description || ""}, '')), 'C') ||
-        setweight(to_tsvector('simple', coalesce((SELECT searchpreview FROM documents WHERE id = ${id}), '')), 'D')
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${title || ""}, ''))), 'A') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce("fileName", ''))), 'B') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${description || ""}, ''))), 'C') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce((SELECT searchpreview FROM documents WHERE id = ${id}), ''))), 'D')
       WHERE id = ${id}
     `;
   }

@@ -34,6 +34,22 @@ vi.mock("@ibn-al-azhar-docs/pipeline", () => {
       failed: 0,
       delayed: 1,
     }),
+    getMetricsViaDriver: vi.fn().mockResolvedValue({
+      ocrQueue: {
+        waiting: 2,
+        active: 1,
+        completed: 10,
+        failed: 0,
+        delayed: 1,
+      },
+      exportQueue: {
+        waiting: 0,
+        active: 0,
+        completed: 0,
+        failed: 0,
+        delayed: 0,
+      },
+    }),
   };
 });
 

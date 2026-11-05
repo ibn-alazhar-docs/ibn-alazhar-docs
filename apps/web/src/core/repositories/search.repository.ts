@@ -107,12 +107,19 @@ export class SearchRepository implements ISearchRepository {
   }
 
   private buildWhereClause(params: SearchQueryParams) {
-    const { userId, normalizedQuery, rawQuery, type, folderId, status, tagId } = params;
+    const { userId, isAdmin, normalizedQuery, rawQuery, type, folderId, status, tagId } = params;
 
-    // كل مستخدم يبحث في مستنداته فقط
-    let whereClause = `d."userId" = $1 AND d."deletedAt" IS NULL`;
-    const sqlParams: (string | number)[] = [userId!];
-    let paramIndex = 2;
+    // كل مستخدم يبحث في مستنداته فقط — المدير يبحث في كل المستندات
+    const sqlParams: (string | number)[] = [];
+    let paramIndex = 1;
+    let whereClause: string;
+    if (isAdmin) {
+      whereClause = `d."deletedAt" IS NULL`;
+    } else {
+      whereClause = `d."userId" = $${paramIndex} AND d."deletedAt" IS NULL`;
+      sqlParams.push(userId!);
+      paramIndex++;
+    }
 
     if (type === "title") {
       whereClause += ` AND (d.searchvector @@ plainto_tsquery('simple', $${paramIndex}) OR d.title ILIKE '%' || $${paramIndex + 1} || '%')`;

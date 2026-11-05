@@ -27,14 +27,21 @@ import {
 import { NextResponse } from "next/server";
 
 vi.mock("@ibn-al-azhar-docs/shared", () => ({
-  logger: { child: vi.fn(() => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn() })) },
+  logger: { child: vi.fn(() => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() })) },
 }));
 
 vi.mock("@/shared/logger", () => ({
   logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
 }));
 
-vi.mock("node:fs/promises", () => ({ stat: vi.fn() }));
+vi.mock("node:fs/promises", () => ({
+  stat: vi.fn(),
+  mkdir: vi.fn(),
+  writeFile: vi.fn(),
+  readFile: vi.fn(),
+  rm: vi.fn(),
+  access: vi.fn(),
+}));
 
 import { mockInstance as mockIORedisInstance, __setCreateClient } from "../../tests/mocks/ioredis";
 import { mockMinioClient } from "../../tests/mocks/minio";
@@ -49,6 +56,7 @@ function makePdfBuffer(
 
 function getMinimalConfig(): PipelineConfig {
   return {
+    storage: { driver: "s3", localDir: "/tmp/opencode/storage-test" },
     minio: {
       endpoint: "localhost",
       port: 9000,

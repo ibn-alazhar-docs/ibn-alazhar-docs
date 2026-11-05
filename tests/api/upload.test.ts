@@ -115,7 +115,7 @@ describe("Upload API (/api/upload)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error.code).toBe("VALIDATION_ERROR");
+    expect(data.error.code).toBe("UPLOAD_UNSUPPORTED_TYPE");
   });
 
   it("should reject missing file with 400", async () => {
@@ -145,7 +145,7 @@ describe("Upload API (/api/upload)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error.code).toBe("VALIDATION_ERROR");
+    expect(data.error.code).toBe("UPLOAD_FILE_TOO_LARGE");
     expect(useCases.uploadDocument.execute).not.toHaveBeenCalled();
   });
 });
