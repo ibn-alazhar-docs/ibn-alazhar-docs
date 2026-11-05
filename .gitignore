@@ -86,3 +86,6 @@ openuser.config.json
 # Session logs and local credential notes must never be committed
 .opencode-session-summary.md
 *-session-summary.md
+
+# FUSE/ntfs-3g leftovers from a file deleted while a process held it open
+.fuse_hidden*
