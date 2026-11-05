@@ -82,3 +82,7 @@ openuser.config.json
 .mcp.json
 .coderabbit.yaml
 .ruff_cache/
+
+# Session logs and local credential notes must never be committed
+.opencode-session-summary.md
+*-session-summary.md
