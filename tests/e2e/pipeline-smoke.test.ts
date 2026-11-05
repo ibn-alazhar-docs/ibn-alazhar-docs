@@ -85,6 +85,10 @@ test.describe("Ibn Al-Azhar Docs — Pipeline E2E", () => {
     page,
     context,
   }) => {
+    test.skip(
+      process.env.E2E_RUN_PIPELINE !== "1",
+      "Skipping: full OCR pipeline needs running OCR workers (set E2E_RUN_PIPELINE=1 locally)",
+    );
     const fixture = resolveFixturePdf();
     test.skip(!fixture, "Skipping: no sample PDF found in test-data/source");
     const { pdfPath, pdfName } = fixture!;
