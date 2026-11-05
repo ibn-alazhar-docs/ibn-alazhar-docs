@@ -50,7 +50,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          ssh deploy bash -s <<'SSH_EOF'
+          ssh deploy bash -s <<SSH_EOF
             set -euo pipefail
 
             cd "${APP_DIR}"
@@ -71,7 +71,7 @@ jobs:
 
             # Wait for health endpoint
             if [ -n "${HEALTH_URL}" ]; then
-              for i in $(seq 1 30); do
+              for i in \$(seq 1 30); do
                 if curl -fsS "${HEALTH_URL}" > /dev/null 2>&1; then
                   echo "Health check passed"
                   exit 0
@@ -84,4 +84,4 @@ jobs:
             else
               echo "DEPLOY_HEALTH_URL not set; skipping healthcheck"
             fi
-SSH_EOF
+          SSH_EOF

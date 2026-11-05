@@ -88,7 +88,7 @@ jobs:
           # The Space will pull and run the PR-specific image
           cat > /tmp/Dockerfile <<'SPACE_DOCKERFILE'
           FROM ghcr.io/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
-SPACE_DOCKERFILE
+          SPACE_DOCKERFILE
 
           huggingface-cli upload "$HF_SPACE_NAME" /tmp/Dockerfile --repo-type model
 
