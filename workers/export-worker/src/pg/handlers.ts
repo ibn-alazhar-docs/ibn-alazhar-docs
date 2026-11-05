@@ -1,9 +1,6 @@
-import {
-  JOB_QUEUES,
-  type PipelineConfig,
-  type ClaimedJob,
-} from "@ibn-al-azhar-docs/pipeline";
-import { createPgHandlerWrapper } from "@ibn-al-azhar-docs/pipeline/queue/pg-handler-factory";
+import { JOB_QUEUES, type PipelineConfig, type ClaimedJob } from "@ibn-al-azhar-docs/pipeline";
+import { createPgHandlerWrapper } from "@ibn-al-azhar-docs/pipeline";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 import { processExportStage } from "../export-handler";
 
@@ -21,7 +18,7 @@ export function buildExportPgHandlers(
   const wrapper = createPgHandlerWrapper({
     config,
     queueName: JOB_QUEUES.EXPORT,
-    logger: console,
+    logger,
   });
 
   return {

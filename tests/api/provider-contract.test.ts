@@ -264,6 +264,9 @@ vi.mock("@/clients/redis", () => ({
 vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
   enqueueExport: vi.fn().mockResolvedValue("job-123"),
   loadConfig: vi.fn().mockReturnValue({}),
+  // /api/health imports isRedisHealthy from the pipeline package; without
+  // it the probe throws and the endpoint reports 503.
+  isRedisHealthy: vi.fn().mockResolvedValue(true),
 }));
 
 function defaultError(): Response {
@@ -408,7 +411,7 @@ describe("Provider Contract — Public Endpoint Response Shapes", () => {
   it("GET /api/actuator/info → 200", async () => {
     const { GET } = await import("@/app/api/actuator/info/route");
     const req = new Request("http://localhost/api/actuator/info", {
-      headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN}` },
+      headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN}` },
     });
     const res = await GET(req as any);
     expect(res.status).toBe(200);

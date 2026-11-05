@@ -44,6 +44,7 @@ const publicPagePrefixes = [
   "/share",
   "/docs",
   "/journeys",
+  "/tools",
 ];
 
 // Routes that should NOT be accessible when logged in

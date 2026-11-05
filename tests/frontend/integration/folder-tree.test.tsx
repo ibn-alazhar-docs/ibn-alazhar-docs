@@ -51,7 +51,9 @@ describe("FolderTree integration (component ↔ useFolders ↔ /api/folders)", (
     // loading skeleton present
     expect(document.querySelectorAll(".animate-pulse").length).toBeGreaterThan(0);
     expect(await screen.findByText("محاضرات")).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledWith("/api/folders");
+    // useFolders fetches via apiFetch, which always passes an init object
+    // (Headers instance for CSRF) — assert on the URL, not an exact arity.
+    expect(fetchMock).toHaveBeenCalledWith("/api/folders", expect.anything());
   });
 
   it("renders an empty state and a create affordance when there are no folders", async () => {

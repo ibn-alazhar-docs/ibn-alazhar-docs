@@ -19,7 +19,16 @@ const mockPrisma = {
   $queryRaw: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
   $transaction: vi.fn().mockImplementation((cb) => cb(mockPrisma)),
   user: {
-    findUnique: vi.fn(),
+    // Route handlers (e.g. /api/upload) verify the session user exists via
+    // findUnique; a bare vi.fn() returned undefined, so authenticated requests
+    // were rejected with 401 ("user not found"). Default to a valid user.
+    findUnique: vi.fn().mockResolvedValue({
+      id: "test-user-id",
+      name: "Test User",
+      email: "test@example.com",
+      role: "USER",
+      deletedAt: null,
+    }),
     findMany: vi.fn().mockResolvedValue([]),
     create: vi.fn(),
     update: vi.fn(),
@@ -98,6 +107,44 @@ const mockPrisma = {
 };
 
 export { mockSession, mockPrisma };
+
+// Route handlers import the Prisma client from @/transport/db (not
+// @prisma/client). Without mocking it, they hit the real DB and the
+// "user exists" check 401s for mock users that don't exist in the DB.
+vi.mock("@/transport/db", async () => {
+  const { prisma: realPrisma } = await import("@ibn-al-azhar-docs/database");
+  // Proxy the REAL client so repositories get the full delegate surface
+  // (findFirst, aggregate, upsert, $transaction, ...). Only user.findUnique
+  // falls back to a synthetic user for fake session ids (upload/contract
+  // tests use users that don't exist in the DB).
+  const wrappedUser = new Proxy(realPrisma.user, {
+    get(target, prop) {
+      if (prop === "findUnique") {
+        return async (args: any) => {
+          const found = await (target.findUnique as any)(args);
+          if (found) return found;
+          // Only id-based existence checks (upload/contract session users)
+          // get the synthetic fallback. Email lookups must return null for
+          // unknown emails, otherwise registration always sees a conflict.
+          if (args?.where?.id) {
+            return { id: args.where.id, name: "Test User", email: "test@example.com", role: "USER", deletedAt: null };
+          }
+          return null;
+        };
+      }
+      const v = Reflect.get(target, prop, target);
+      return typeof v === "function" ? v.bind(target) : v;
+    },
+  });
+  const wrapped = new Proxy(realPrisma, {
+    get(target, prop) {
+      if (prop === "user") return wrappedUser;
+      const v = Reflect.get(target, prop, target);
+      return typeof v === "function" ? v.bind(target) : v;
+    },
+  });
+  return { prisma: wrapped };
+});
 
 vi.mock("@/middleware/auth-guards", () => {
   return {

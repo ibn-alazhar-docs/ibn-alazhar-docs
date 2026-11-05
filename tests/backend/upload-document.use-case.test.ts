@@ -8,6 +8,7 @@ vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
     storage: { driver: "local", localDir: "/data" },
   })),
   enqueueValidation: vi.fn(async () => ({ id: "doc-1" })),
+  enqueueViaDriver: vi.fn(async () => ({ id: "job-1" })),
   classifyError: vi.fn((err: unknown) => {
     const e = err instanceof Error ? err : new Error(String(err));
     return { code: e.message.includes("Redis") ? "REDIS_ERROR" : "UNKNOWN_ERROR" };
@@ -64,6 +65,7 @@ function makeRepos(
     uploadFile: overrides.uploadFile ?? vi.fn(async () => undefined),
     deleteFile: overrides.deleteFile ?? vi.fn(async () => undefined),
     uploadKey: overrides.uploadKey ?? vi.fn((...a: unknown[]) => `docs/${String(a[1])}.pdf`),
+    fileExists: overrides.fileExists ?? vi.fn(async () => true),
   } as unknown as IStorageRepository;
   return { documentRepository, folderRepository, storage };
 }
@@ -80,7 +82,7 @@ describe("UploadDocumentUseCase", () => {
   it("uploads, persists and enqueues on success (201 path)", async () => {
     const repos = makeRepos();
     const uc = makeUseCase(repos);
-    const { enqueueValidation } = await import("@ibn-al-azhar-docs/pipeline");
+    const { enqueueViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
 
     const doc = await uc.execute({
       file: makeFile(),
@@ -91,9 +93,9 @@ describe("UploadDocumentUseCase", () => {
 
     expect((repos.documentRepository as any).createDocument).toHaveBeenCalledTimes(1);
     expect((repos.storage as any).uploadFile).toHaveBeenCalledTimes(1);
-    expect(enqueueValidation).toHaveBeenCalledTimes(1);
+    expect(enqueueViaDriver).toHaveBeenCalledTimes(1);
     // job id === document id so a manual retry cannot double-enqueue.
-    const enqueued = (enqueueValidation as any).mock.calls[0][1];
+    const enqueued = (enqueueViaDriver as any).mock.calls[0][2];
     expect(enqueued.id).toBe(doc.id);
     expect(doc.status).toBe("UPLOADED");
   });
@@ -105,14 +107,14 @@ describe("UploadDocumentUseCase", () => {
       }),
     });
     const uc = makeUseCase(repos);
-    const { enqueueValidation } = await import("@ibn-al-azhar-docs/pipeline");
+    const { enqueueViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
 
     await expect(
       uc.execute({ file: makeFile(), folderId: null, userId: "user-1", pageRange: null }),
     ).rejects.toBeInstanceOf(AppError);
 
     expect((repos.documentRepository as any).createDocument).not.toHaveBeenCalled();
-    expect(enqueueValidation).not.toHaveBeenCalled();
+    expect(enqueueViaDriver).not.toHaveBeenCalled();
     // the staged temp file is cleaned up regardless of failure.
     expect((repos.storage as any).deleteFile).not.toHaveBeenCalled();
   });
@@ -121,7 +123,7 @@ describe("UploadDocumentUseCase", () => {
     const repos = makeRepos();
     const uc = makeUseCase(repos);
     const pipeline = await import("@ibn-al-azhar-docs/pipeline");
-    (pipeline.enqueueValidation as any)
+    (pipeline.enqueueViaDriver as any)
       .mockRejectedValueOnce(new Error("Redis connection failed: ECONNREFUSED"))
       .mockRejectedValueOnce(new Error("Redis connection failed: ECONNREFUSED")); // delayed retry also fails
 
@@ -138,14 +140,14 @@ describe("UploadDocumentUseCase", () => {
     expect(updateCall).toHaveBeenCalledTimes(1);
     expect(updateCall.mock.calls[0][2]).toMatchObject({ status: "FAILED" });
     expect(pipeline.recordJobFailure).toHaveBeenCalledTimes(1);
-    expect((pipeline.enqueueValidation as any).mock.calls.length).toBe(2);
+    expect((pipeline.enqueueViaDriver as any).mock.calls.length).toBe(2);
   });
 
   it("requeues with a delay and sets PENDING when immediate enqueue fails", async () => {
     const repos = makeRepos();
     const uc = makeUseCase(repos);
     const pipeline = await import("@ibn-al-azhar-docs/pipeline");
-    (pipeline.enqueueValidation as any)
+    (pipeline.enqueueViaDriver as any)
       .mockRejectedValueOnce(new Error("Redis connection failed: ECONNREFUSED"))
       .mockResolvedValueOnce({ id: "doc-1" }); // delayed retry succeeds
 
@@ -156,8 +158,8 @@ describe("UploadDocumentUseCase", () => {
       pageRange: null,
     });
 
-    expect((pipeline.enqueueValidation as any).mock.calls.length).toBe(2);
-    const delayedOpts = (pipeline.enqueueValidation as any).mock.calls[1][2];
+    expect((pipeline.enqueueViaDriver as any).mock.calls.length).toBe(2);
+    const delayedOpts = (pipeline.enqueueViaDriver as any).mock.calls[1][3];
     expect(delayedOpts).toMatchObject({ delay: 15_000 });
     // The delayed job is queued, so we must NOT mark the doc FAILED, and we keep
     // it in the canonical UPLOADED (awaiting worker pickup) state — no status
@@ -169,12 +171,12 @@ describe("UploadDocumentUseCase", () => {
   it("does not create a duplicate job on a single execute call", async () => {
     const repos = makeRepos();
     const uc = makeUseCase(repos);
-    const { enqueueValidation } = await import("@ibn-al-azhar-docs/pipeline");
+    const { enqueueViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
 
     await uc.execute({ file: makeFile(), folderId: null, userId: "user-1", pageRange: null });
 
     // Exactly one enqueue per upload — the reprocess endpoint reuses the same
     // document id, so BullMQ deduplicates rather than creating a second job.
-    expect(enqueueValidation).toHaveBeenCalledTimes(1);
+    expect(enqueueViaDriver).toHaveBeenCalledTimes(1);
   });
 });

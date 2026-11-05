@@ -8,6 +8,7 @@ import {
   JOB_QUEUES,
   classifyError,
   PermanentPipelineError,
+  runQaOnResult,
   type ProcessingJob,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
@@ -38,15 +39,49 @@ export async function processCleaningStage(
   const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
   const rawText: string = ocrData.text;
   const ocrConfidence: number = ocrData.confidence || 0.5;
+  const qaFromOcr = ocrData.qa ?? null;
 
   const baseCleaned = cleanArabicText(rawText, { confidence: ocrConfidence });
   const cleaned = await enhanceArabicText(baseCleaned);
+
+  // توثيق QA بعد التنظيف — لا يُعيد OCR هنا (الإعادة كانت في مرحلة ocr)،
+  // فقط: تقرير qa.json مُحدَّث + needsReview عند فشل صارخ دون إسقاط المهمة.
+  let qaPostClean: import("@ibn-al-azhar-docs/pipeline").QaReport | null = qaFromOcr;
+  try {
+    const fakeResult = {
+      text: cleaned,
+      pages: [{ number: 1, text: cleaned, confidence: ocrConfidence }],
+      confidence: ocrConfidence,
+      engine: "gemini" as const,
+    };
+    qaPostClean = runQaOnResult(fakeResult, ocrData.pages || 1);
+    await uploadBuffer(
+      config,
+      `${config.paths.ocrResults}/${data.id}/qa.json`,
+      Buffer.from(JSON.stringify(qaPostClean), "utf-8"),
+      "application/json",
+    ).catch(() => {});
+    if (!qaPostClean.pass) {
+      jobLogger.warn(
+        {
+          exitCode: qaPostClean.exitCode,
+          checks: qaPostClean.checks.filter((c) => !c.ok && !c.warn).map((c) => c.name),
+        },
+        `[clean] QA-after-clean failed for ${data.id} — proceeding degraded`,
+      );
+      await updateDocStatusWithProgress(data.documentId, "CLEANING", {
+        needsReview: true,
+      }).catch(() => {});
+    }
+  } catch {
+    // QA غير حرج: أي خطأ هنا لا يُسقط التنظيف.
+  }
 
   const cleanedKey = `${config.paths.ocrResults}/${data.id}/cleaned.json`;
   await uploadBuffer(
     config,
     cleanedKey,
-    Buffer.from(JSON.stringify({ text: cleaned, confidence: ocrConfidence })),
+    Buffer.from(JSON.stringify({ text: cleaned, confidence: ocrConfidence, qa: qaPostClean })),
     "application/json",
   );
 

@@ -57,10 +57,7 @@ export function createStuckDocumentsSweeper({
         });
       }
     } catch (err) {
-      logger.warn(
-        { error: err instanceof Error ? err.message : String(err) },
-        "[sweeper] Failed",
-      );
+      logger.warn({ error: err instanceof Error ? err.message : String(err) }, "[sweeper] Failed");
     }
   };
 

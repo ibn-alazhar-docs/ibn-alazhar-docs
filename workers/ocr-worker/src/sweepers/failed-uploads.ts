@@ -1,6 +1,6 @@
 import { prisma } from "@ibn-al-azhar-docs/database";
 import { logger } from "@ibn-al-azhar-docs/shared";
-import { enqueueValidation, type ProcessingJob } from "@ibn-al-azhar-docs/pipeline";
+import { enqueueValidation, loadConfig, type ProcessingJob } from "@ibn-al-azhar-docs/pipeline";
 
 export type FailedUploadsSweeperOptions = {
   intervalMs?: number;
@@ -11,6 +11,7 @@ export function createFailedUploadsSweeper({
   intervalMs = 60_000,
   windowMs = 60_000,
 }: FailedUploadsSweeperOptions = {}) {
+  const config = loadConfig();
   const sweep = async () => {
     try {
       const cutoff = new Date(Date.now() - windowMs);
@@ -46,7 +47,7 @@ export function createFailedUploadsSweeper({
         };
 
         try {
-          await enqueueValidation(job);
+          await enqueueValidation(config, job);
           await prisma.document
             .update({
               where: { id: doc.id },

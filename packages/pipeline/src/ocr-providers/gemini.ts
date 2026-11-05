@@ -3,6 +3,7 @@ import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } fr
 import type { OcrProvider } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 import { getCloudOcrRemainingBudget, recordCloudOcrUsage } from "../cloud-cost-guard";
+import { KeyPool, keyFingerprint, loadGeminiKeys } from "../keypool";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
 
@@ -25,6 +26,8 @@ function isTransientError(error: unknown): boolean {
 async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   const MAX_ATTEMPTS = 3;
   let attempt = 0;
+  // Intentional infinite retry loop: exits via return/throw below.
+  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       return await fn();
@@ -41,21 +44,53 @@ async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
   }
 }
 
+/**
+ * Rota عبر خانات (مفتاح × موديل) من KeyPool — نقل من arabic-pdf-to-book §3.
+ * في الأصل (gemini_ocr.py) لم يُستخدم KeyPool فعليًا؛ هنا يُربط فعليًا:
+ *   - consume(key, model) بعد كل نجاح (حصة يومية بالطلبات، بصمة sha256 لا المفتاح)
+ *   - خطأ حصة/مفتاح (429/403/401) → تخطّي الخانة إلى التالية، لا إسقاط العملية
+ *   - خطأ عابر → إعادة 3 مرات ثم الخانة التالية (سلوك fallback السابق)
+ *   - خطأ غير عابر وغير حصة → يُرمى فورًا كما كان
+ */
 async function tryWithModelFallbacks<T>(
   config: PipelineConfig,
-  fn: (modelId: string) => Promise<T>,
+  fn: (modelId: string, apiKey: string) => Promise<T>,
+  pages = 1,
 ): Promise<T> {
   const models = [config.gemini.model, ...config.gemini.modelFallbacks];
+  const keys = [...new Set([config.gemini.apiKey, ...loadGeminiKeys()].filter(Boolean))];
+  const pool = new KeyPool({ models, keys });
+  const slots = pool.plan();
   const errors: { model: string; error: string }[] = [];
 
-  for (const modelId of models) {
+  if (keys.length > 0 && slots.length === 0) {
+    throw new Error(
+      "KEYPOOL_EXHAUSTED: no (key, model) slot left today — daily quota consumed; use Tesseract/local or wait for reset",
+    );
+  }
+
+  // بلا مفاتيح مكتشفة: مسار قديم بمفتاح config الواحد (سيُرمى لاحقًا إن غاب).
+  const attempts =
+    slots.length > 0
+      ? slots
+      : models.map((model) => ({ key: config.gemini.apiKey, model, used: 0, left: 0 }));
+
+  for (const slot of attempts) {
     try {
-      return await withRetry(() => fn(modelId), `model ${modelId}`);
+      const result = await withRetry(
+        () => fn(slot.model, slot.key),
+        `model ${slot.model} key ${keyFingerprint(slot.key)}`,
+      );
+      if (slots.length > 0) pool.consume(slot.key, slot.model, pages);
+      return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      logger.warn(`Model ${modelId} failed: ${msg}`);
-      errors.push({ model: modelId, error: msg });
+      logger.warn(`Model ${slot.model} failed: ${msg}`);
+      errors.push({ model: slot.model, error: msg });
 
+      if (KeyPool.isQuotaError(err) || KeyPool.isKeyError(err)) {
+        continue; // نفاد/مفتاح ميت: خانة أخرى قد تنجح
+      }
       if (!isTransientError(err)) {
         throw err;
       }
@@ -127,7 +162,7 @@ Convert the provided document into high-fidelity Markdown with ZERO information 
 
 ## SCIENTIFIC PRECISION (CRITICAL)
 1. **LaTeX for All Formulas**: Wrap ALL chemical formulas, mathematical equations, and scientific notation in LaTeX.
-   - Inline: $H_2SO_4$, $C_6H_{12}O_6$, $\int f(x)dx$
+   - Inline: $H_2SO_4$, $C_6H_{12}O_6$, $\\int f(x)dx$
    - Block: $$2H_2 + O_2 \\rightarrow 2H_2O$$
    - States of matter: $(s)$, $(l)$, $(g)$, $(aq)$
 2. **Subscripts/Superscripts**: Preserve all subscripts and superscripts in LaTeX.
@@ -155,7 +190,36 @@ When processing multiple pages, separate each page's content with a horizontal r
 Process only pages ${start} to ${end} from the provided material. Maintain continuity with surrounding content.`,
 };
 
-const DEFAULT_NATIVE_CHUNK_SIZE = 4;
+/**
+ * حجم القطعة القياسي 10 صفحات (gemini_ocr.py: --chunk 10)،
+ * وحجم إعادة المحاولة بعد فشل QA = 6 صفحات (pipeline.py: --chunk 6).
+ * 36 صفحة × (10 ثم 6) هي صيغة الأصل المثبتة عمليًّا.
+ */
+export const GEMINI_DEFAULT_CHUNK_SIZE = 10;
+export const GEMINI_RETRY_CHUNK_SIZE = 6;
+const DEFAULT_NATIVE_CHUNK_SIZE = GEMINI_DEFAULT_CHUNK_SIZE;
+
+/**
+ * حجم القطعة بعد فشل QA: إن كانت المحاولة الأولى (10 أو قيمة config)،
+ * أعد بـ6؛ وإن كانت أصلًا 6 أو أصغر، لا صِغر أكثر — أبقها (لا تفيد إعادة
+ * ثالثة أنحف، الأفضل القبول مع needsReview كما في الأصل).
+ */
+export function retryChunkSizeOnQaFailure(currentChunkSize: number): number {
+  return currentChunkSize > GEMINI_RETRY_CHUNK_SIZE ? GEMINI_RETRY_CHUNK_SIZE : currentChunkSize;
+}
+
+/**
+ * QA خفيف على مستوى قطعة واحدة (نصّ مقابل عدد صفحات متوقعة).
+ * يُستخدم داخل extractPdfChunksNative لتسجيل القطع الفاشلة؛
+ * الحكم النهائي ببوابة evaluateQaGates الكاملة في ocr-chain.
+ */
+export function isChunkQaFailed(text: string, expectedPages: number): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  if (trimmed.length > 12_000 * Math.max(1, expectedPages)) return true; // حلقة تكرار (gemini_ocr.generate)
+  const charsPerPage = trimmed.length / Math.max(1, expectedPages);
+  return charsPerPage < 250; // عتبة chars-per-page في qa-gates
+}
 
 export class GeminiOcrProvider implements OcrProvider {
   readonly name = "Gemini OCR (configurable model)";
@@ -207,14 +271,14 @@ export class GeminiOcrProvider implements OcrProvider {
     }
 
     if (mimeType === "application/pdf") {
-      const chunkSize = config.gemini.nativeChunkSize ?? 4;
+      const chunkSize = config.gemini.nativeChunkSize ?? GEMINI_DEFAULT_CHUNK_SIZE;
       return this.extractPdfChunksNative(config, fileBuffer, fileName, chunkSize);
     }
 
     const prompt = PROMPTS.arabic_scientific;
 
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
       logger.info(`Trying Gemini model ${modelId} for single-image OCR`);
@@ -287,8 +351,8 @@ export class GeminiOcrProvider implements OcrProvider {
       }
     }
 
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
       const { PDFDocument } = await import("pdf-lib");
@@ -318,10 +382,14 @@ export class GeminiOcrProvider implements OcrProvider {
       const pages: OcrPageResult[] = [];
       let fullText = "";
       let processedPages = 0;
+      const chunkQaFailed: { start: number; end: number; chars: number }[] = [];
 
       for (let c = 0; c < chunks.length; c++) {
-        const base64Chunk = chunks[c].toString("base64");
-        const { start, end } = ranges[c];
+        const chunk = chunks[c];
+        const range = ranges[c];
+        if (!chunk || !range) continue;
+        const base64Chunk = chunk.toString("base64");
+        const { start, end } = range;
 
         const promptText = PROMPTS.arabic_scientific_chunk(start + 1, end);
 
@@ -336,6 +404,13 @@ export class GeminiOcrProvider implements OcrProvider {
         ]);
 
         const text = result.response.text();
+        // QA خفيف لكل قطعة: الفاشلة تُسجَّل (تُعيد ocr-chain كل المستند بـ6 عند فشل QA الكلي).
+        if (isChunkQaFailed(text, end - start)) {
+          chunkQaFailed.push({ start: start + 1, end, chars: text.length });
+          logger.warn(
+            `Chunk ${start + 1}-${end} QA-fail (chars=${text.length}, chunkSize=${chunkSize}) — retry policy: chunk ${GEMINI_RETRY_CHUNK_SIZE} عند فشل QA الكلي`,
+          );
+        }
         const chunkPages = splitGeminiBatchPages(text, start, end - start);
         pages.push(...chunkPages);
         for (const p of chunkPages) {
@@ -434,11 +509,12 @@ Separate each page's text with a horizontal rule (---) on its own line.
 ❌ NO removal of "unimportant" sections
 ✅ ONLY raw, faithful transcription in Markdown format`;
 
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
-      const BATCH_SIZE = 10;
+      // دفعات الصور = حجم القطعة (10 أولًا، 6 بعد فشل QA عبر config override في ocr-chain).
+      const BATCH_SIZE = config.gemini.nativeChunkSize ?? GEMINI_DEFAULT_CHUNK_SIZE;
       const pages: OcrPageResult[] = [];
       let fullText = "";
 

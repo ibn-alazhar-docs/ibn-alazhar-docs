@@ -5,7 +5,7 @@ import {
   type PipelineConfig,
   type ClaimedJob,
   type JobLike,
-} from "@ibn-al-azhar-docs/pipeline";
+} from "../index";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -21,8 +21,11 @@ export interface PgHandlerOptions {
 }
 
 export function createPgHandlerWrapper({ config, queueName, logger }: PgHandlerOptions) {
-  return async (cj: ClaimedJob, stageFn: (payload: unknown, cfg: PipelineConfig) => Promise<void>) => {
-    const payload = cj.payload;
+  return async <TPayload>(
+    cj: ClaimedJob,
+    stageFn: (payload: TPayload, cfg: PipelineConfig) => Promise<void>,
+  ) => {
+    const payload = cj.payload as TPayload;
     const jobLogger = logger.child({
       jobId: cj.idempotencyKey,
       documentId: (payload as { documentId?: string }).documentId ?? cj.idempotencyKey,

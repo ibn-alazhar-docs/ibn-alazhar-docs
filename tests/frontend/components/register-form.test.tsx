@@ -79,21 +79,22 @@ describe("RegisterForm (component)", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
 
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "/api/auth/register",
-        expect.objectContaining({
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: "أحمد",
-            email: "a@b.com",
-            password: "Passw0rd",
-            confirmPassword: "Passw0rd",
-          }),
-        }),
-      ),
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/auth/register", expect.objectContaining({ method: "POST" }));
+    });
+    // RegisterForm now sends via apiFetch, which normalises headers to a
+    // Headers instance (for CSRF token injection) instead of a plain object.
+    const [, opts] = fetchMock.mock.calls[0]!;
+    expect(opts.method).toBe("POST");
+    expect(opts.body).toBe(
+      JSON.stringify({
+        name: "أحمد",
+        email: "a@b.com",
+        password: "Passw0rd",
+        confirmPassword: "Passw0rd",
+      }),
     );
+    expect(opts.headers.get("content-type")).toBe("application/json");
   });
 
   it("shows registerError when server responds non-2xx", async () => {

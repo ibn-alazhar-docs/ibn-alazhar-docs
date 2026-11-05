@@ -103,13 +103,16 @@ describe("PgWorker runtime (live PostgreSQL, phase 4)", () => {
 
   beforeEach(async () => {
     if (TRUNCATE_ENABLED && reachable && client) {
-      await client.query(`TRUNCATE TABLE job_queue RESTART IDENTITY CASCADE`);
+      // Queue-scoped cleanup (not a whole-table TRUNCATE): sibling pg-queue
+      // suites run against this same table in parallel and must not wipe each
+      // other's in-flight rows.
+      await client.query(`DELETE FROM job_queue WHERE queue = $1`, [QUEUE]);
     }
   });
 
   afterEach(async () => {
     if (TRUNCATE_ENABLED && reachable && client) {
-      await client.query(`TRUNCATE TABLE job_queue RESTART IDENTITY CASCADE`);
+      await client.query(`DELETE FROM job_queue WHERE queue = $1`, [QUEUE]);
     }
   });
 
@@ -146,8 +149,8 @@ describe("PgWorker runtime (live PostgreSQL, phase 4)", () => {
     // Insert directly via raw SQL (NO pg_notify) to simulate a lost notification.
     const idem = `lost-${rand()}`;
     await client.query(
-      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, priority, "runAt", attempts, "maxAttempts")
-       VALUES ($1, $2, '{}'::jsonb, 'pending', 0, now(), 0, 3)`,
+      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, priority, "runAt", attempts, "maxAttempts", "createdAt", "updatedAt")
+       VALUES ($1, $2, '{}'::jsonb, 'pending', 0, now(), 0, 3, now(), now())`,
       [QUEUE, idem],
     );
 

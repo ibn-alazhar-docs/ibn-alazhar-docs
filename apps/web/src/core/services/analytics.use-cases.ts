@@ -39,14 +39,14 @@ export class AnalyticsUseCases {
   constructor(private readonly dataSource: IAnalyticsDataSource) {}
 
   async getAnalytics(session: AuthSession, days: number = 30): Promise<AnalyticsSummary> {
-    // كل مستخدم يرى إحصائياته فقط
+    // Regular users see only their own analytics; admins retain global oversight.
     const whereClause = ownedWhere({ deletedAt: null }, session);
-    const auditWhere = { userId: session.user.id };
+    const auditWhere = session.user.role === "ADMIN" ? {} : { userId: session.user.id };
 
     const [documents, tags, storage] = await Promise.all([
       this.getDocumentAnalytics(whereClause, auditWhere, days),
       this.getTagAnalytics(whereClause),
-      this.getStorageAnalytics(whereClause),
+      this.getStorageAnalytics(whereClause, session),
     ]);
 
     return { documents, tags, storage };
@@ -209,8 +209,9 @@ export class AnalyticsUseCases {
 
   private async getStorageAnalytics(
     whereClause: Record<string, unknown>,
+    session: AuthSession,
   ): Promise<StorageAnalytics> {
-    const [totalSizeResult, averageSize, largestDocs] = await Promise.all([
+    const [totalSizeResult, averageSize, largestDocs, storageByUser] = await Promise.all([
       this.dataSource.document.aggregate({
         where: whereClause as never,
         _sum: { fileSize: true },
@@ -225,6 +226,19 @@ export class AnalyticsUseCases {
         orderBy: { fileSize: "desc" },
         take: 5,
       }),
+      session.user.role === "ADMIN"
+        ? this.dataSource.user.findMany({
+            where: { deletedAt: null },
+            include: {
+              _count: { select: { documents: true } },
+              documents: {
+                where: { deletedAt: null },
+                select: { fileSize: true },
+              },
+            },
+            orderBy: { createdAt: "desc" },
+          })
+        : Promise.resolve([]),
     ]);
 
     return {
@@ -235,7 +249,15 @@ export class AnalyticsUseCases {
         fileSize: Number(doc.fileSize),
         mimeType: doc.mimeType,
       })),
-      storageByUser: [], // لا نعرض إحصائيات المستخدمين الآخرين
+      storageByUser: storageByUser.map((user) => ({
+        userId: user.id,
+        userName: user.name ?? "",
+        totalSize: user.documents.reduce(
+          (total, document) => total + Number(document.fileSize ?? 0),
+          0,
+        ),
+        documentCount: user._count.documents ?? user.documents.length,
+      })),
     };
   }
 }

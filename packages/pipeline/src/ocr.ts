@@ -2,7 +2,6 @@ import { mkdtemp, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPythonCommand } from "./ocr-providers/types";
 import { runPython } from "./utils/python-runner";
 
 export { estimateConfidence, createOcrProvider, OcrManager } from "./ocr-provider";

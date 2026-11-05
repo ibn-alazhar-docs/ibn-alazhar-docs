@@ -34,12 +34,13 @@ describe("Search → PostgreSQL Integration", () => {
   });
 
   async function updateSearchVector(id: string, title: string, description?: string) {
+    // Use normalize_arabic() so indexed vectors match normalized queries.
     return prisma.$executeRaw`
       UPDATE documents
       SET searchvector =
-        setweight(to_tsvector('simple', coalesce(${title}, '')), 'A') ||
-        setweight(to_tsvector('simple', coalesce("fileName", '')), 'B') ||
-        setweight(to_tsvector('simple', coalesce(${description || ""}, '')), 'C')
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${title}, ''))), 'A') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce("fileName", ''))), 'B') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${description || ""}, ''))), 'C')
       WHERE id = ${id}
     `;
   }

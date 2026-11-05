@@ -22,12 +22,13 @@ export class DocumentCrudUseCases {
       take?: number;
     },
   ) {
-    // كل مستخدم يرى مستنداته فقط، حتى المشرفين
-    // المشرفون لديهم صلاحيات إضافية لكن لا يرون مستندات الآخرين
+    // Admins list all users' documents for oversight; regular users see only their own.
     const where: Prisma.DocumentWhereInput = {
-      userId,
       deletedAt: filters.deleted ? { not: null } : null,
     };
+    if (role !== "ADMIN") {
+      where.userId = userId;
+    }
 
     if (filters.search) {
       where.OR = [

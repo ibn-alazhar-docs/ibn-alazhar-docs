@@ -22,6 +22,9 @@ vi.mock("@/clients/redis", () => ({
 vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
   loadConfig: vi.fn().mockReturnValue({}),
   enqueueSplitting: mockEnqueueSplitting,
+  // Production use-case now enqueues via the driver abstraction.
+  enqueueViaDriver: mockEnqueueSplitting,
+  JOB_QUEUES: { SPLITTING: "splitting", OCR: "ocr", EXPORT: "export" },
 }));
 
 describe("Conversion API", () => {

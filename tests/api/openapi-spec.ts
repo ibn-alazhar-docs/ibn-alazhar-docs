@@ -664,6 +664,128 @@ export const spec: OpenAPI.Document = {
         },
       },
     },
+    "/api/health/detailed": {
+      get: {
+        tags: ["Health"],
+        summary: "Detailed health with per-check breakdown",
+        responses: {
+          "200": {
+            description: "Detailed health",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/HealthResponse" } },
+            },
+          },
+          "503": {
+            description: "Unhealthy or degraded",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/HealthResponse" } },
+            },
+          },
+        },
+      },
+    },
+    "/api/test/fixtures": {
+      get: {
+        tags: ["Test"],
+        summary: "List test fixtures (test-only endpoint)",
+        responses: {
+          "200": {
+            description: "Fixtures",
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+          },
+        },
+      },
+    },
+    "/api/documents/{id}/audit/latest": {
+      get: {
+        tags: ["Documents"],
+        summary: "Get the latest audit session for a document",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": {
+            description: "Latest audit session",
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+          "404": {
+            description: "Not found",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+        },
+      },
+    },
+    "/api/documents/{id}/audit/save": {
+      post: {
+        tags: ["Documents"],
+        summary: "Save an audit session for a document",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        requestBody: {
+          required: true,
+          content: { "application/json": { schema: { type: "object" } } },
+        },
+        responses: {
+          "200": {
+            description: "Saved",
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+          "404": {
+            description: "Not found",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+        },
+      },
+    },
+    "/api/documents/{id}/audit/sessions": {
+      get: {
+        tags: ["Documents"],
+        summary: "List audit sessions for a document",
+        security: [{ bearerAuth: [] }],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": {
+            description: "Audit sessions",
+            content: {
+              "application/json": { schema: { type: "object" } },
+            },
+          },
+          "401": {
+            description: "Unauthorized",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+          "404": {
+            description: "Not found",
+            content: {
+              "application/json": { schema: { $ref: "#/components/schemas/ErrorResponse" } },
+            },
+          },
+        },
+      },
+    },
     "/api/documents/{id}/bookmark": {
       get: {
         tags: ["Documents"],

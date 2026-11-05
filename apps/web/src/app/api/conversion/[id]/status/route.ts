@@ -11,7 +11,7 @@ export const GET = withAuth(async (_request, { session, params }) => {
     const id = params.id;
     if (!id)
       return NextResponse.json(
-        { error: { code: "VALIDATION_ERROR", message: "Missing id" } },
+        { error: { code: "VALIDATION_ERROR", message: "المعرف مطلوب" } },
         { status: 400 },
       );
 

@@ -147,6 +147,71 @@ export default defineConfig({
           alias: rootAlias,
         },
       },
+      // Robustness: edge cases (self-contained boundary/timeout/state tests)
+      {
+        test: {
+          name: "edge",
+          environment: "node",
+          globals: true,
+          setupFiles: ["./tests/setup.ts"],
+          include: ["tests/edge/**/*.test.ts"],
+          testTimeout: 30000,
+        },
+        resolve: {
+          alias: rootAlias,
+        },
+      },
+      // Robustness: fuzz (mocked API-route input fuzzing)
+      {
+        test: {
+          name: "fuzz",
+          environment: "node",
+          globals: true,
+          // Same setup as the api project: tests/api/setup.ts registers the
+          // auth-guard / transport-db mocks in a setupFile (before test-file
+          // imports are evaluated). Fuzz files import mockSession from it,
+          // but importing it from the test file is too late — the route
+          // module graph loads first and pulls in real next-auth, which
+          // fails to resolve next/server outside the Next runtime.
+          setupFiles: ["./tests/setup.ts", "./tests/api/setup.ts"],
+          include: ["tests/fuzz/**/*.test.ts"],
+          testTimeout: 30000,
+        },
+        resolve: {
+          alias: rootAlias,
+        },
+      },
+      // Robustness: pentest (OWASP-style self-contained checks)
+      {
+        test: {
+          name: "pentest",
+          environment: "node",
+          globals: true,
+          setupFiles: ["./tests/setup.ts"],
+          include: ["tests/pentest/**/*.test.ts"],
+          testTimeout: 30000,
+        },
+        resolve: {
+          alias: rootAlias,
+        },
+      },
+      // Robustness: recovery (live Postgres/Redis, serialized to avoid
+      // cross-file DB interference)
+      {
+        test: {
+          name: "recovery",
+          environment: "node",
+          globals: true,
+          setupFiles: ["./tests/setup.ts"],
+          include: ["tests/recovery/**/*.test.ts"],
+          pool: "forks",
+          poolOptions: { forks: { singleFork: true } },
+          testTimeout: 60000,
+        },
+        resolve: {
+          alias: rootAlias,
+        },
+      },
       // Frontend tests (jsdom)
       {
         test: {

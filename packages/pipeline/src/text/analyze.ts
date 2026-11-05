@@ -18,12 +18,24 @@ export function detectDocumentType(text: string): DocumentType {
   let score = 0;
   if (EXAM_QUESTION_PATTERN.test(sample)) score += 3;
   if (EXAM_ANSWER_PATTERN.test(sample)) score += 2;
-  if (EXAM_CHOICE_PATTERN.test(sample)) score += 2;
+  // EXAM_CHOICE_PATTERN is ^-anchored (line-start only), but real exam text
+  // often places choices inline after "اختر:" or on the same line. Also
+  // accept inline choices like "اختر: (أ) خيار".
+  if (
+    EXAM_CHOICE_PATTERN.test(sample) ||
+    /[([]\s*[أابجدهوزحطيكلمنسعفصقرشت١٢٣٤٥٦٧٨٩\u0660-\u0669\u06F0-\u06F90-9]\s*[)\]]/.test(sample)
+  )
+    score += 2;
   if (EXAM_FILL_PATTERN.test(sample)) score += 1;
   if (EXAM_MCQ_PATTERN.test(sample)) score += 2;
   // Count occurrence density: multiple question markers = strong signal
-  // Support both س\d+ (Hindu-Arabic numerals) and س[\u0660-\u0669] (Arabic-Indic numerals)
-  const qCount = (sample.match(/س\s*[\d\u0660-\u0669\u06F0-\u06F9]+/g) || []).length;
+  // Support both س\d+ (Hindu-Arabic numerals) and س[\u0660-\u0669] (Arabic-Indic numerals).
+  // Also count سؤال markers — previously qCount only matched س\d+, so
+  // "سؤال ١" ×4 scored only +3 and missed the >=4 threshold.
+  const qCount = (
+    sample.match(/سؤال\s*[\d\u0660-\u0669\u06F0-\u06F9]*|س\s*[\d\u0660-\u0669\u06F0-\u06F9]+/g) ||
+    []
+  ).length;
   if (qCount >= 3) score += 3;
   return score >= 4 ? "exam" : "general";
 }

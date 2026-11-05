@@ -23,6 +23,7 @@ import {
 } from "../enqueue";
 import { getAllQueueMetrics } from "../metrics";
 import type { PipelineConfig, ProcessingJob } from "../../types";
+import { getRetryConfigForQueue } from "../retry-policy";
 
 const QUEUE_BUILDERS: Record<string, (config: PipelineConfig) => unknown> = {
   "pipeline-validation": createValidationQueue,
@@ -106,6 +107,11 @@ export class RedisQueueDriver implements QueueDriver {
 
   async heartbeat(_id: string, _workerId: string, _leaseToken: string): Promise<boolean> {
     return true;
+  }
+
+  /** Shared retry policy (kept in sync with the pg driver). */
+  getRetryConfig(queue: string) {
+    return getRetryConfigForQueue(queue);
   }
 
   async getMetrics(): Promise<unknown> {

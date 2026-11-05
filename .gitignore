@@ -82,3 +82,7 @@ openuser.config.json
 .mcp.json
 .coderabbit.yaml
 .ruff_cache/
+
+# Fuse temporary files
+.fuse_hidden*
+*/.fuse_hidden*

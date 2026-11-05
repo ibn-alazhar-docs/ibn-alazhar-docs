@@ -315,6 +315,14 @@ vi.mock("@/clients/redis", () => ({
   rateLimitResponse: vi.fn(),
 }));
 
+vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
+  // /api/health imports loadConfig/isRedisHealthy from the pipeline barrel;
+  // the real barrel is very slow to transform under vitest and blew the
+  // 30s test timeout. Health only needs the probe result here.
+  loadConfig: vi.fn().mockReturnValue({}),
+  isRedisHealthy: vi.fn().mockResolvedValue(true),
+}));
+
 function defaultError() {
   return new Response(JSON.stringify({ error: { code: "INTERNAL_ERROR", message: "Error" } }), {
     status: 500,

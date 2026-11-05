@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import type { Metadata, Viewport } from "next";
 import { headers } from "next/headers";
-import { firaCode, cairo, amiri } from "@/ui/fonts";
+import { firaCode, almarai } from "@/ui/fonts";
 import "@/styles/globals.css";
 
 interface RootLayoutProps {
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#16A34A",
+  themeColor: "#127E87",
   colorScheme: "light dark",
 };
 
@@ -75,7 +75,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
         />
       </head>
       <body
-        className={`${firaCode.variable} ${cairo.variable} ${amiri.variable} bg-page min-h-screen antialiased`}
+        className={`${firaCode.variable} ${almarai.variable} bg-page min-h-screen antialiased`}
       >
         {children}
       </body>

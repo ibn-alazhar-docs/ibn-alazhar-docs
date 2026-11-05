@@ -1,6 +1,9 @@
 export { validateQueueConfig } from "./validate-config";
 export { PermanentPipelineError } from "./errors";
 export { categorizeFailure } from "./categorize";
+export * from "./manifest";
+export * from "./retry-policy";
+export { createPgHandlerWrapper, type PgHandlerOptions } from "./pg-handler-factory";
 export { sendAlert, type AlertInput, type AlertSeverity } from "../alerts";
 export { getConnection, getQueue, closeQueueConnections, isRedisHealthy } from "./connection";
 export { setupDlq, recordFailedJob, getFailedJobs, cleanupFailedJob } from "./dlq";
@@ -37,7 +40,13 @@ export {
   createGenerationWorker,
   createExportWorker,
 } from "./workers";
-export { getQueueDriver, type QueueDriver, type QueueDriverName, type JobEnvelope, type ClaimedJob } from "./driver";
+export {
+  getQueueDriver,
+  type QueueDriver,
+  type QueueDriverName,
+  type JobEnvelope,
+  type ClaimedJob,
+} from "./driver";
 export {
   PgQueueDriver,
   buildIdempotencyKey,
