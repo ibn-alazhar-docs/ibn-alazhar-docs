@@ -87,13 +87,14 @@ export function createCloudCostGuard(
       };
     },
 
-  async recordUsage(provider: string, pages: number) {
-    await increment(provider, pages);
-  },
+    async recordUsage(provider: string, pages: number) {
+      await increment(provider, pages);
+    },
 
-  async resetIfNewDay() {
-    await resetIfNewDay();
-  },
+    async resetIfNewDay() {
+      await resetIfNewDay();
+    },
+  };
 }
 
 const PROVIDER_BUDGETS: Record<string, number> = {
@@ -112,7 +113,10 @@ function ensureProviderBudgetState(): void {
   }
 }
 
-export function getCloudOcrRemainingBudget(provider: "gemini" | "google", dailyBudget: number): number {
+export function getCloudOcrRemainingBudget(
+  provider: "gemini" | "google",
+  dailyBudget: number,
+): number {
   ensureProviderBudgetState();
   const used = PROVIDER_BUDGETS[provider] ?? 0;
   return Math.max(0, dailyBudget - used);

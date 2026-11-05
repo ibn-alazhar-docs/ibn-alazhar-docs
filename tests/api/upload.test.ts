@@ -1,4 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from "vitest";
+import { access, constants, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { POST as uploadPost } from "@/app/api/upload/route";
 import { mockSession } from "./setup";
 
@@ -115,7 +118,7 @@ describe("Upload API (/api/upload)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error.code).toBe("VALIDATION_ERROR");
+    expect(data.error.code).toBe("UPLOAD_UNSUPPORTED_TYPE");
   });
 
   it("should reject missing file with 400", async () => {
@@ -125,6 +128,40 @@ describe("Upload API (/api/upload)", () => {
 
     expect(res.status).toBe(400);
     expect(data.error.code).toBe("VALIDATION_ERROR");
+  });
+
+  it("should create a missing local storage root and accept the upload", async () => {
+    // Regression: the upload route's storage preflight used fs.access() on the
+    // configured root without creating it, so environments where the dir does
+    // not exist yet (fresh CI runners, fresh hosts) failed every upload with
+    // 503 UPLOAD_STORAGE_UNAVAILABLE. The preflight now creates the root (like
+    // the readiness probe / localEnsureRoot) and only fails when the root
+    // exists but is genuinely not writable.
+    const base = await mkdtemp(join(tmpdir(), "upload-storage-test-"));
+    const storageDir = join(base, "missing-storage-root");
+    const previousDir = process.env.STORAGE_LOCAL_DIR;
+    const previousDriver = process.env.STORAGE_DRIVER;
+    process.env.STORAGE_DRIVER = "local";
+    process.env.STORAGE_LOCAL_DIR = storageDir;
+    try {
+      const file = new File([new Uint8Array([1, 2, 3])], "test.pdf", {
+        type: "application/pdf",
+      });
+      const req = createUploadRequest(file);
+      const res = await uploadPost(req, { params: Promise.resolve({}) } as any);
+      const data = await res.json();
+
+      expect(res.status).toBe(201);
+      expect(data.success).toBe(true);
+      // The preflight provisioned the root.
+      await access(storageDir, constants.W_OK);
+    } finally {
+      if (previousDir === undefined) delete process.env.STORAGE_LOCAL_DIR;
+      else process.env.STORAGE_LOCAL_DIR = previousDir;
+      if (previousDriver === undefined) delete process.env.STORAGE_DRIVER;
+      else process.env.STORAGE_DRIVER = previousDriver;
+      await rm(base, { recursive: true, force: true }).catch(() => {});
+    }
   });
 
   it("should reject files that exceed the max upload size with 400", async () => {
@@ -145,7 +182,7 @@ describe("Upload API (/api/upload)", () => {
     const data = await res.json();
 
     expect(res.status).toBe(400);
-    expect(data.error.code).toBe("VALIDATION_ERROR");
+    expect(data.error.code).toBe("UPLOAD_FILE_TOO_LARGE");
     expect(useCases.uploadDocument.execute).not.toHaveBeenCalled();
   });
 });

@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./fonts.css";
 @import "./brand.css";
 @import "./reading.css";
 @import "./discovery.css";
@@ -71,7 +72,7 @@ button,
   }
 
   ::selection {
-    background-color: hsla(41, 96%, 40%, 0.25);
+    background-color: rgba(218, 158, 44, 0.28);
     color: var(--text-primary);
   }
 

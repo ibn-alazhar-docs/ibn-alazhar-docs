@@ -1,6 +1,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@ibn-al-azhar-docs/database";
 import type { QueueDriver, JobEnvelope, ClaimedJob } from "../driver";
+import { baseDelayFor as sharedBaseDelayFor } from "../retry-policy";
 import { JOB_QUEUES } from "../../types";
 
 export const ALLOWED_QUEUES: ReadonlyArray<string> = Object.values(JOB_QUEUES);
@@ -25,17 +26,14 @@ export function canMutate(affectedRows: number): boolean {
  * `queue/workers.ts`: OCR uses a longer delay (5000ms), every other queue
  * uses the default 2000ms.
  */
-const QUEUE_BASE_DELAY_MS: Readonly<Partial<Record<string, number>>> = {
-  [JOB_QUEUES.OCR]: 5000,
-};
-
-const DEFAULT_BASE_DELAY_MS = 2000;
+// Retry base delays are sourced from the shared retry-policy module so the
+// Postgres and Redis paths stay in sync.
 
 /** Default stale-recovery grace window (ms) — heartbeat-driven, not the 2h OCR lease. */
 const DEFAULT_STALE_GRACE_MS = 30_000;
 
 function baseDelayFor(queue: string): number {
-  return QUEUE_BASE_DELAY_MS[queue] ?? DEFAULT_BASE_DELAY_MS;
+  return sharedBaseDelayFor(queue);
 }
 
 /**

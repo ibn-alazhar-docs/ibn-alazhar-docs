@@ -40,6 +40,12 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
           </span>
         </Link>
         <nav aria-label={t("mainNav")} className="flex items-center gap-2">
+          <Link
+            href="/tools"
+            className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+          >
+            {t("tools")}
+          </Link>
           <LocaleToggle />
           <ThemeToggle />
           {isLoggedIn ? (

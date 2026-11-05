@@ -119,8 +119,19 @@ export const POST = withAuth(async (request, { session }) => {
           }
         },
         storage: async () => {
-          const { access, constants } = await import("node:fs/promises");
-          await access(process.env.STORAGE_LOCAL_DIR || "/data", constants.W_OK);
+          // Respect the configured storage driver, matching the pipeline
+          // storage layer (getStorageDriver): local unless STORAGE_DRIVER
+          // is explicitly "s3". In S3 mode no local directory is required —
+          // the use-case's ensureBucket() enforces MinIO availability there.
+          if (process.env.STORAGE_DRIVER === "s3") return;
+          // Create the local root if missing (like the readiness probe and
+          // localEnsureRoot) and verify it is writable, so a missing dir on
+          // a fresh host does not fail the upload before the write path
+          // itself can provision it.
+          const { mkdir, access, constants } = await import("node:fs/promises");
+          const root = process.env.STORAGE_LOCAL_DIR || "/data";
+          await mkdir(root, { recursive: true });
+          await access(root, constants.W_OK);
         },
       },
       { timeoutMs: 2000 },

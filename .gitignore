@@ -34,7 +34,13 @@ pnpm-debug.log*
 
 # Test artifacts
 test-results/
-test-data/
+# Keep generated test-data out of git, but track the minimal committed E2E
+# fixture PDFs under test-data/source/ (pipeline-smoke / e2e-scenarios /
+# comprehensive-journey) so CI can run without a manual download step.
+test-data/*
+!test-data/source/
+!test-data/source/*.pdf
+!test-data/source/README.md
 playwright-report/
 .nyc_output/
 
@@ -82,10 +88,10 @@ openuser.config.json
 .mcp.json
 .coderabbit.yaml
 .ruff_cache/
-
 # Session logs and local credential notes must never be committed
 .opencode-session-summary.md
 *-session-summary.md
 
 # FUSE/ntfs-3g leftovers from a file deleted while a process held it open
 .fuse_hidden*
+*/.fuse_hidden*

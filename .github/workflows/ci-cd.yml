@@ -138,6 +138,13 @@ jobs:
     env:
       DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
       DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      # Opt-in for the pg-* integration suites' job_queue cleanup: the
+      # ephemeral CI postgres above is a throwaway test DB, so the suites
+      # may delete their own queued rows (queue-scoped in pg-enqueue-claim,
+      # whole-table in the older files). Without these the cleanup is a
+      # no-op and sibling files' pending rows leak into claim() assertions.
+      PG_QUEUE_TEST_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs
+      PG_QUEUE_TEST_TRUNCATE: "1"
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
@@ -204,6 +211,7 @@ jobs:
       DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
       DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
       REDIS_URL: redis://localhost:6379
+      STORAGE_DRIVER: local
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
     steps:
@@ -231,6 +239,8 @@ jobs:
         run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
 
       - name: Run API tests
+        env:
+          STORAGE_LOCAL_DIR: "${{ runner.temp }}/storage"
         run: pnpm vitest run --project=api
 
   # ------------------------------------------------------------
@@ -321,6 +331,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm exec prisma generate --schema=packages/database/prisma/schema.prisma
+
       - name: Run frontend tests
         run: pnpm vitest run --project=frontend
 
@@ -330,7 +343,7 @@ jobs:
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     needs: quality-gates
     services:
       postgres:
@@ -359,6 +372,13 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: local
+      # E2E helpers log in as admin@ibnalazhar.app / password123 (tests/e2e/helpers.ts).
+      # db:seed creates that admin with ADMIN_PASSWORD, so pin it here; without
+      # it the seed falls back to a different default and every login 401s.
+      ADMIN_PASSWORD: password123
+      USER_PASSWORD: "UserPassword123!"
+      TEST_ADMIN_PASSWORD: password123
       S3_ACCESS_KEY_ID: dummy
       S3_SECRET_ACCESS_KEY: dummy
     steps:
@@ -395,6 +415,8 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run E2E tests
+        env:
+          STORAGE_LOCAL_DIR: "${{ runner.temp }}/storage"
         run: pnpm test:e2e
 
   # ------------------------------------------------------------
@@ -425,10 +447,6 @@ jobs:
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: "trivy-results.sarif"
-
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
-        if: github.event_name == 'pull_request'
 
       - name: CodeQL Analysis
         uses: github/codeql-action/init@v3

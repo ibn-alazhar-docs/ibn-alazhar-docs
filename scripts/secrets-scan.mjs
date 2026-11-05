@@ -16,7 +16,10 @@ const PREFIXED_SECRETS = [
   { name: "npm token", regex: /\bnpm_[A-Za-z0-9]{30,}/ },
   { name: "Stripe key", regex: /\b[sr]k_(?:live|test)_[A-Za-z0-9]{20,}/ },
   { name: "JWT", regex: /\beyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/ },
-  { name: "Private key block", regex: /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----[A-Za-z0-9+/\s]{40}/ },
+  {
+    name: "Private key block",
+    regex: /-----BEGIN (?:RSA |EC |DSA |OPENSSH )?PRIVATE KEY-----[A-Za-z0-9+/\s]{40}/,
+  },
 ];
 
 const URL_CREDENTIALS = /\b[a-z][a-z0-9+.-]*:\/\/([^/\s:@"']*):([^/\s@"']{2,})@([^\s/"']+)/i;
@@ -43,7 +46,8 @@ const LOCAL_HOSTS = /^(?:localhost|127\.0\.0\.1|::1|0\.0\.0\.0|host\.docker\.int
 const PLACEHOLDER_MARK =
   /REPLACE[_-]?ME|CHANGE[_-]?ME|CHANGEME|YOUR[_-]|_FOR_|FOR_DEVELOPMENT|DUMMY|MOCK|FAKE|EXAMPLE|PLACEHOLDER|REDACTED|INSERT[_-]|GENERATE|xxx/i;
 
-const TEMPLATE_CONTEXT = /\$\{[^}]*\}|\$[A-Z_]{3,}|process\.env|import\.meta\.env|os\.environ|getenv|dotenv|secrets\.[A-Za-z_]+|env\.[A-Za-z_]+/i;
+const TEMPLATE_CONTEXT =
+  /\$\{[^}]*\}|\$[A-Z_]{3,}|process\.env|import\.meta\.env|os\.environ|getenv|dotenv|secrets\.[A-Za-z_]+|env\.[A-Za-z_]+/i;
 
 const PLACEHOLDER_VALUE =
   /^(?:[\s<>\[\]{}()*'"`]|x{3,}|change[_-]?me|replace[_-]?(?:with|me)|your[_-]|example|placeholder|redacted|removed|deleted|todo|fixme|dummy|sample|insert[_-]|generate[_-]|none|null|nil|undefined|false|true|skip)/i;
@@ -74,7 +78,8 @@ const ASSIGNMENT_EXCLUDED = /\.md$/i;
 const QUOTED_LITERAL_REQUIRED = /\.(?:ts|tsx|js|jsx|mjs|cjs|py|java|kt|go|rs)$/i;
 
 // Prose is where an operator writes a password down: notes, configs, scripts.
-const PROSE_FILE = /\.(?:md|txt|rst|adoc|sh|bash|ya?ml|json|toml|ini|cfg|conf|properties|example|env)$/i;
+const PROSE_FILE =
+  /\.(?:md|txt|rst|adoc|sh|bash|ya?ml|json|toml|ini|cfg|conf|properties|example|env)$/i;
 const QUOTED_VALUE = /^\s*["'`]/;
 
 // Test, fixture and documentation trees assign fake credentials constantly;
@@ -85,8 +90,27 @@ const NON_PRODUCTION_PATH =
 const ALLOW_COMMENT = /allowlist:\s*secret|pragma:\s*allowlist\s*secret|gitleaks:allow/i;
 
 const SKIP_EXTENSIONS = new Set([
-  ".png", ".jpg", ".jpeg", ".gif", ".webp", ".ico", ".woff", ".woff2", ".ttf", ".otf",
-  ".eot", ".mp4", ".webm", ".pdf", ".zip", ".gz", ".br", ".so", ".node", ".wasm", ".avif",
+  ".png",
+  ".jpg",
+  ".jpeg",
+  ".gif",
+  ".webp",
+  ".ico",
+  ".woff",
+  ".woff2",
+  ".ttf",
+  ".otf",
+  ".eot",
+  ".mp4",
+  ".webm",
+  ".pdf",
+  ".zip",
+  ".gz",
+  ".br",
+  ".so",
+  ".node",
+  ".wasm",
+  ".avif",
 ]);
 
 const SKIP_PATHS = /(^|\/)(node_modules|dist|build|\.next|\.venv|venv|coverage|__snapshots__)\//;
@@ -120,7 +144,13 @@ const shouldSkip = (file) =>
 function isTemplateValue(value) {
   const bare = value.replace(/^["'`]+|["'`;,\s*#)]+$/g, "");
   // A value that opens a shell/compose expansion can never be a literal.
-  if (/^\$\{?\(/.test(bare) || /^\$\{/.test(bare) || /^\$[A-Za-z_]/.test(bare) || /^[-+?!:=#%]/.test(bare)) return true;
+  if (
+    /^\$\{?\(/.test(bare) ||
+    /^\$\{/.test(bare) ||
+    /^\$[A-Za-z_]/.test(bare) ||
+    /^[-+?!:=#%]/.test(bare)
+  )
+    return true;
   if (bare.length < 4) return true;
   if (TEMPLATE_CONTEXT.test(bare) || PLACEHOLDER_MARK.test(bare)) return true;
   if (PLACEHOLDER_VALUE.test(bare)) return true;

@@ -8,9 +8,20 @@ import { PgQueueDriver, JOB_QUEUES } from "@ibn-al-azhar-docs/pipeline";
 
 const driver = new PgQueueDriver();
 
-async function truncateIfRequested() {
+// Queue-scoped cleanup (not a whole-table TRUNCATE): this file shares the
+// `pipeline-validation` queue — and the job_queue table — with sibling
+// pg-* suites (pg-requeue-recycle, pg-no-redis, pg-handlers-transition, ...)
+// and, when run in the same vitest invocation, with the backend
+// pg-queue-driver / pg-queue-worker suites (which own pipeline-generation /
+// pipeline-export). A whole-table TRUNCATE would wipe those suites'
+// in-flight rows, and no cleanup at all leaves their pending rows behind,
+// so claim(VALIDATION, ..., 5) returns more than this file's one job.
+// Deleting only this queue's rows before and after the suite keeps the
+// exact assertions below deterministic without touching sibling rows.
+// Same opt-in gate as the other pg suites: never run against a real DB.
+async function cleanupValidationQueue() {
   if (process.env.PG_QUEUE_TEST_URL && process.env.PG_QUEUE_TEST_TRUNCATE === "1") {
-    await prisma.$executeRaw`TRUNCATE job_queue RESTART IDENTITY CASCADE`;
+    await prisma.$executeRaw`DELETE FROM job_queue WHERE queue = ${JOB_QUEUES.VALIDATION}`;
   }
 }
 
@@ -20,10 +31,11 @@ describe("pg-queue integration: enqueue → claim → complete", () => {
   let leaseToken: string | undefined;
 
   beforeAll(async () => {
-    await truncateIfRequested();
+    await cleanupValidationQueue();
   });
 
   afterAll(async () => {
+    await cleanupValidationQueue();
     await prisma.$disconnect();
   });
 

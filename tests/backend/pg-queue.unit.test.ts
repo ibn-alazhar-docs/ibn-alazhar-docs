@@ -38,9 +38,20 @@ describe("pg-queue unit", () => {
 
   it("nextRunAt returns exponential backoff", () => {
     const base = 1000;
-    expect(nextRunAt(0, base).getTime()).toBeGreaterThanOrEqual(Date.now() + base - 5);
-    expect(nextRunAt(1, base).getTime()).toBeGreaterThanOrEqual(Date.now() + 2 * base - 5);
-    expect(nextRunAt(3, base).getTime()).toBeGreaterThanOrEqual(Date.now() + 8 * base - 5);
+    const before = Date.now();
+    const first = nextRunAt(0, base).getTime();
+    const second = nextRunAt(1, base).getTime();
+    const fourth = nextRunAt(3, base).getTime();
+    const after = Date.now();
+
+    // Allow for the elapsed wall-clock time between capturing `before`
+    // and each call, instead of comparing against a later Date.now().
+    expect(first).toBeGreaterThanOrEqual(before + base);
+    expect(first).toBeLessThanOrEqual(after + base);
+    expect(second).toBeGreaterThanOrEqual(before + 2 * base);
+    expect(second).toBeLessThanOrEqual(after + 2 * base);
+    expect(fourth).toBeGreaterThanOrEqual(before + 8 * base);
+    expect(fourth).toBeLessThanOrEqual(after + 8 * base);
   });
 
   it("canMutate validates fencing result", () => {

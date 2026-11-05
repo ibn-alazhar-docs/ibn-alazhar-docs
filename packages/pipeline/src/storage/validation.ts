@@ -1,5 +1,3 @@
-import type { PipelineConfig, StorageObject } from "../types";
-
 export interface PdfValidationResult {
   valid: boolean;
   error?: string;

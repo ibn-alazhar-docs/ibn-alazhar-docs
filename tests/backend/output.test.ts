@@ -7,6 +7,7 @@ import {
   generateEpub,
   generatePdf,
 } from "../../packages/pipeline/src/output";
+import { convertHtmlTablesToMarkdown } from "../../packages/pipeline/src/output/docx-generator";
 import type { CleanedText } from "../../packages/pipeline/src/types";
 
 function makeCleaned(overrides: Partial<CleanedText> = {}): CleanedText {
@@ -442,5 +443,28 @@ describe("generatePdf", () => {
     const textWithHeadings = makeCleaned({ markdown: "# Heading 1\n\n## Heading 2\n\nSome text" });
     const buffer = await generatePdf(textWithHeadings);
     expect(buffer).toBeInstanceOf(Buffer);
+  });
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// convertHtmlTablesToMarkdown (docx-generator preprocessing)
+// ═══════════════════════════════════════════════════════════════════════════════
+
+describe("convertHtmlTablesToMarkdown", () => {
+  it("returns text unchanged when no table present", () => {
+    const input = "نص عادي بدون جداول";
+    expect(convertHtmlTablesToMarkdown(input)).toBe(input);
+  });
+
+  it("converts a simple HTML table to a Markdown table", () => {
+    const input = "<table><tr><td>أ</td><td>ب</td></tr><tr><td>1</td><td>2</td></tr></table>";
+    const out = convertHtmlTablesToMarkdown(input);
+    expect(out).toContain("| أ | ب |");
+    expect(out).toContain("| --- | --- |");
+    expect(out).toContain("| 1 | 2 |");
+  });
+
+  it("handles empty input", () => {
+    expect(convertHtmlTablesToMarkdown("")).toBe("");
   });
 });

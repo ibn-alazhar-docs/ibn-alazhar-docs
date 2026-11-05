@@ -1,7 +1,8 @@
-import type { PipelineConfig, JobStage, JOB_QUEUES, JOB_STAGE_MAP } from "../types";
+import type { PipelineConfig, JobStage } from "../types";
+import { JOB_QUEUES, QUEUE_STAGE_MAP, JOB_TIMEOUTS } from "../types";
 import { getQueue } from "./connection";
 
-export { JOB_STAGE_MAP };
+export { QUEUE_STAGE_MAP };
 
 export async function getJobStatus(
   config: PipelineConfig,

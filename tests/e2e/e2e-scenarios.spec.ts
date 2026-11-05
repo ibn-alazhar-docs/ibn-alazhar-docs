@@ -1,5 +1,29 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
+import fs from "node:fs";
+
+// E2E fixture fallback: prefer the larger Arabic source PDF when present,
+// otherwise use the minimal committed `sample.pdf`. Skip when no PDF exists.
+function resolveE2eFixture(): string | null {
+  const arabicPdf = path.resolve(
+    __dirname,
+    "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
+  );
+  if (fs.existsSync(arabicPdf)) return arabicPdf;
+  const samplePdf = path.resolve(__dirname, "../../test-data/source/sample.pdf");
+  if (fs.existsSync(samplePdf)) return samplePdf;
+  try {
+    const dir = path.resolve(__dirname, "../../test-data/source");
+    const pdf = fs
+      .readdirSync(dir)
+      .filter((f) => f.toLowerCase().endsWith(".pdf"))
+      .sort()[0];
+    if (pdf) return path.join(dir, pdf);
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 const BASE = "http://localhost:3000";
 const TEST_EMAIL = `testuser_${Date.now()}_${Math.random().toString(36).slice(2, 8)}@ibnalazhar.app`;
@@ -64,13 +88,11 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await login(page);
     await page.goto(`${BASE}/ar/files`);
 
-    const testFilePath = path.resolve(
-      __dirname,
-      "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
-    );
+    const testFilePath = resolveE2eFixture();
+    test.skip(!testFilePath, "Skipping: no PDF fixture found in test-data/source");
 
     await page.waitForLoadState("networkidle");
-    await page.setInputFiles('[data-testid="file-input"]', testFilePath);
+    await page.setInputFiles('[data-testid="file-input"]', testFilePath!);
 
     await page.getByTestId("upload-button").click({ timeout: 15000 });
 

@@ -54,6 +54,20 @@ export function categorizeFailure(error: Error): { category: FailureCategory; co
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
   if (msg.includes("TESSERACT_FAILED"))
     return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
+  if (msg.includes("ALL_OCR_PROVIDERS_FAILED")) {
+    if (
+      msg.includes("503") ||
+      msg.includes("Service Unavailable") ||
+      msg.includes("429") ||
+      msg.includes("rate limit") ||
+      msg.includes("resource exhausted") ||
+      msg.includes("overloaded") ||
+      msg.includes("high demand")
+    ) {
+      return { category: FAILURE_CATEGORIES.TRANSIENT, code: "OCR_ENGINE_FAILED" };
+    }
+    return { category: FAILURE_CATEGORIES.PERMANENT, code: "OCR_ENGINE_FAILED" };
+  }
   if (msg.includes("PDF_SPLIT_EXECUTION_FAILED") || msg.includes("PDF_SPLIT_PARSE_FAILED"))
     return { category: FAILURE_CATEGORIES.TRANSIENT, code: "PDF_SPLIT_FAILED" };
   if (msg.includes("DIACRITICS_EXECUTION_FAILED"))

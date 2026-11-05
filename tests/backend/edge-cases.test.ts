@@ -598,6 +598,7 @@ describe("validatePdf — storage.ts: empty buffer", () => {
 
 describe("loadConfig — config.ts: production mode & edge cases", () => {
   function withKeys(): void {
+    process.env.STORAGE_DRIVER = "s3";
     process.env.S3_ACCESS_KEY_ID = "test-key";
     process.env.S3_SECRET_ACCESS_KEY = "test-secret";
   }
@@ -607,6 +608,7 @@ describe("loadConfig — config.ts: production mode & edge cases", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
     vi.stubEnv("NODE_ENV", "production");
+    process.env.STORAGE_DRIVER = "s3";
     delete process.env.S3_ACCESS_KEY_ID;
     delete process.env.MINIO_ACCESS_KEY;
     delete process.env.S3_SECRET_ACCESS_KEY;
@@ -646,6 +648,7 @@ describe("loadConfig — config.ts: production mode & edge cases", () => {
 
   it("OCR_PROVIDERS with whitespace returns default list", () => {
     withKeys();
+    delete process.env.OCR_CLOUD_ENABLED;
     process.env.OCR_PROVIDERS = "  ,  , ";
     const c = loadConfig();
     expect(c.ocr.providers).toEqual(["surya", "tesseract"]);

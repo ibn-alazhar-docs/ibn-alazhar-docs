@@ -11,7 +11,7 @@ export function loadConfig(): PipelineConfig {
 
   return {
     ...buildStorageConfig(storageDriver),
-    ...buildRedisConfig(),
+    redis: buildRedisConfig(),
     ...buildGoogleConfig(),
     ...buildOcrConfig(),
     paths: {

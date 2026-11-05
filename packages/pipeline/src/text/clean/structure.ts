@@ -80,6 +80,20 @@ export function reconstructArabicLines(text: string): string {
       continue;
     }
 
+    // Page-noise lines (e.g. "صفحة 5", "- 5 -", standalone digit) must stay
+    // standalone so removePageNoise (which runs after reconstruction) can
+    // drop them. Without this they get merged into the buffered paragraph
+    // ("بسم الله صفحة 5") and survive as content.
+    if (PAGE_NUM_PATTERNS.some((p) => p.test(trimmed))) {
+      if (buffer.length > 0) {
+        result.push(buffer.join(" "));
+        buffer = [];
+      }
+      prevEndsContinuative = false;
+      result.push(trimmed);
+      continue;
+    }
+
     if (
       /^\[?\s*\d+\s*\]?[\s\-.)]/.test(trimmed) ||
       /^\(\d+\)/.test(trimmed) ||
@@ -117,7 +131,9 @@ export function reconstructArabicLines(text: string): string {
         result.push(buffer.join(" "));
         buffer = [];
       } else {
-        result.push(trimmed);
+        // Buffer the first short line so consecutive short lines merge
+        // (was result.push, which flushed each line separately — no merging).
+        buffer.push(trimmed);
       }
       prevEndsContinuative = endsContinuative;
       continue;
@@ -249,7 +265,10 @@ export function removeGarbageSymbols(text: string, confidence?: number): string 
         return "";
       }
 
-      if (/^[？？！.،،،\-\s]{5,}$/.test(trimmed)) {
+      // Pure-punctuation lines are noise: includes Arabic ؟ and ؛ alongside the
+      // fullwidth/ASCII marks. Threshold {4,} so a "؟؟؟؟" line is dropped while
+      // short ellipsis fragments stay untouched.
+      if (/^[？？！.،؛؟\-\s]{4,}$/.test(trimmed)) {
         return "";
       }
 

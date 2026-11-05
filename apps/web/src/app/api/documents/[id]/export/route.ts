@@ -19,7 +19,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: { code: "BAD_REQUEST", message: "Invalid JSON" } },
+      { error: { code: "BAD_REQUEST", message: "طلب غير صالح: JSON غير سليم" } },
       { status: 400 },
     );
   }
@@ -27,7 +27,7 @@ export const POST = withAuth(async (request, { session, params }) => {
   const exportSchema = z
     .object({
       format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
-        message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
+        message: "الصيغة يجب أن تكون md أو txt أو docx أو epub أو json أو pdf أو searchable-pdf",
       }),
       options: z
         .object({
@@ -45,7 +45,7 @@ export const POST = withAuth(async (request, { session, params }) => {
       {
         error: {
           code: "VALIDATION_ERROR",
-          message: firstError?.message || "Invalid payload",
+          message: firstError?.message || "بيانات غير صالحة",
         },
       },
       { status: 400 },
@@ -59,7 +59,7 @@ export const POST = withAuth(async (request, { session, params }) => {
 
     if (document.status !== "COMPLETED") {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Document processing is not completed" } },
+        { error: { code: "BAD_REQUEST", message: "معالجة المستند لم تكتمل بعد" } },
         { status: 400 },
       );
     }

@@ -1,9 +1,5 @@
 import { OCR_EXCLAMATION } from "../constants";
-import {
-  BULLET_START,
-  ALLOWED_TRAILING,
-  GARBAGE_THRESHOLD,
-} from "../constants";
+import { BULLET_START, ALLOWED_TRAILING, GARBAGE_THRESHOLD } from "../constants";
 
 export function removeBrokenHtml(text: string): string {
   text = text.replace(/<br\s*\/?>/gi, "\n");
@@ -78,36 +74,45 @@ export function normalizeArabicPunctuation(text: string): string {
 }
 
 export function finalCleanup(text: string): string {
-  return text
-    .split("\n")
-    .map((line) => {
-      let l = line;
-      l = l.replace(OCR_EXCLAMATION, "$1$2");
-      if (
-        !l.startsWith("## ") &&
-        !l.startsWith("# ") &&
-        !l.startsWith("### ") &&
-        !l.startsWith("- ") &&
-        !l.startsWith("> ") &&
-        !BULLET_START.test(l)
-      ) {
-        l = l.replace(/^[^\u0600-\u06FF\w\d]+/, "");
-      }
-      l = l.replace(ALLOWED_TRAILING, "");
-      return l;
-    })
-    .filter((line) => {
-      const trimmed = line.trim();
-      if (!trimmed) return false;
-      if (/^[\s\-–—•·*]+$/.test(trimmed)) return false;
-      const chars = trimmed.replace(/\s/g, "");
-      if (chars.length < 3) return true;
+  const mapped = text.split("\n").map((line) => {
+    let l = line;
+    l = l.replace(OCR_EXCLAMATION, "$1$2");
+    if (
+      !l.startsWith("## ") &&
+      !l.startsWith("# ") &&
+      !l.startsWith("### ") &&
+      !l.startsWith("- ") &&
+      !l.startsWith("> ") &&
+      !BULLET_START.test(l)
+    ) {
+      l = l.replace(/^[^\u0600-\u06FF\w\d]+/, "");
+    }
+    l = l.replace(ALLOWED_TRAILING, "");
+    return l;
+  });
+  // Keep paragraph breaks: blank lines are the separators that
+  // reconstructArabicLines / collapseRepeatedParagraphs produce. Dropping
+  // them here made cleanArabicText non-idempotent — a second pass merged
+  // the (now adjacent) short paragraphs into one line. Collapse runs of
+  // blank lines to a single separator and trim the edges instead.
+  const kept: string[] = [];
+  for (const line of mapped) {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (kept.length > 0 && kept[kept.length - 1] !== "") kept.push("");
+      continue;
+    }
+    if (/^[\s\-–—•·*]+$/.test(trimmed)) continue;
+    const chars = trimmed.replace(/\s/g, "");
+    if (chars.length >= 3) {
       const arabic = (chars.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
       const english = (chars.match(/[a-zA-Z0-9]/g) || []).length;
-      const punct = (chars.match(/[-.,!?:;،؟؛\](){}"'>&*%=@#«»]/g) || []).length;
+      const punct = (chars.match(/[-.,!?:;،؟؛\]{}">'>&*%=@#«»]/g) || []).length;
       const known = arabic + english + punct;
       const ratio = chars.length > 0 ? known / chars.length : 1;
-      return ratio >= 1 - GARBAGE_THRESHOLD;
-    })
-    .join("\n");
+      if (ratio < 1 - GARBAGE_THRESHOLD) continue;
+    }
+    kept.push(line);
+  }
+  return kept.join("\n").trim();
 }

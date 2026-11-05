@@ -2,26 +2,12 @@ import { Worker, type Job } from "bullmq";
 import type { PipelineConfig, ProcessingJob, ExportRequest } from "../types";
 import { JOB_QUEUES, JOB_TIMEOUTS, JOB_CONCURRENCY } from "../types";
 import { getConnection } from "./connection";
+export { getRetryConfigForQueue, getRetryConfigForQueue as getRetryConfig } from "./retry-policy";
 
 export type JobHandler<T> = (job: Job<T>) => Promise<void>;
 export type JobFailedHandler<T> = (job: Job<T>, error: Error, queueName: string) => Promise<void>;
 
-export function getRetryConfigForQueue(queueName: string) {
-  const baseConfig = {
-    attempts: 3,
-    backoff: { type: "exponential" as const, delay: 2000 },
-  };
-
-  if (queueName === JOB_QUEUES.OCR) {
-    return {
-      attempts: Math.max(1, parseInt(process.env.OCR_MAX_RETRIES ?? "3") || 3),
-      backoff: { type: "exponential" as const, delay: 5000 },
-    };
-  }
-
-  return baseConfig;
-}
-
+// getRetryConfigForQueue is re-exported from ./retry-policy (shared with both drivers).
 export function getDefaultJobOptions(queueName: string) {
   const timeout = JOB_TIMEOUTS[queueName];
   if (timeout) {

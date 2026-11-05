@@ -4,7 +4,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach, vi } 
 // cold/throttled Neon pooler connection does not trip vitest's 5000ms default.
 vi.setConfig({ testTimeout: 30_000 });
 import type { Client } from "pg";
-import { PgQueueDriver, recoverStale } from "@ibn-al-azhar-docs/pipeline/queue";
+import { PgQueueDriver, recoverStale, baseDelayFor } from "@ibn-al-azhar-docs/pipeline/queue";
 import type { JobEnvelope } from "@ibn-al-azhar-docs/pipeline/queue";
 
 /**
@@ -115,20 +115,26 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
 
   beforeEach(async () => {
     if (TRUNCATE_ENABLED && reachable && client) {
-      await client.query(`TRUNCATE TABLE job_queue RESTART IDENTITY CASCADE`);
+      // Queue-scoped cleanup (not a whole-table TRUNCATE): sibling pg-queue
+      // suites run against this same table in parallel and must not wipe each
+      // other's in-flight rows.
+      await client.query(`DELETE FROM job_queue WHERE queue = $1`, [QUEUE]);
     }
   });
 
   afterEach(async () => {
     if (TRUNCATE_ENABLED && reachable && client) {
-      await client.query(`TRUNCATE TABLE job_queue RESTART IDENTITY CASCADE`);
+      await client.query(`DELETE FROM job_queue WHERE queue = $1`, [QUEUE]);
     }
   });
 
-  // The migration's job_queue_queue_name_check only allows the 6 real pipeline
-  // queues. Tests reuse `pipeline-export` (lowest-contention) and stay isolated
-  // via TRUNCATE between cases + unique idempotencyKey per scenario.
-  const QUEUE = "pipeline-export";
+  // This suite uses `pipeline-generation` (not `pipeline-export`, which the
+  // worker suite owns, and not `pipeline-ocr`, whose 5000ms retry base would
+  // push the retries test past its 30s budget): both suites share one
+  // job_queue table and can run in parallel, so distinct queues +
+  // queue-scoped cleanup keep them isolated — a sibling file's workers must
+  // never steal these jobs or wipe these rows.
+  const QUEUE = "pipeline-generation";
 
   it("enqueue + claim returns exactly one reserved ClaimedJob", async () => {
     if (!reachable || !client || !driver) return;
@@ -257,10 +263,12 @@ describe("PgQueueDriver (live PostgreSQL, phase 3)", () => {
       maxAttempts,
     });
 
-    // Per-queue base backoff (ms) — mirrors QUEUE_BASE_DELAY_MS in pg-driver.
-    // A willRetry fail schedules the next runAt = now + base * 2^attempts, so we
-    // must wait out the backoff before the next claim is eligible.
-    const baseDelay = 2000;
+    // Per-queue base backoff — read from the shared retry policy (the same
+    // source PgQueueDriver uses) instead of assuming a constant: the OCR
+    // queue's base is 5000ms, others default to 2000ms. A willRetry fail
+    // schedules the next runAt = now + base * 2^attempts, so we must wait out
+    // the backoff before the next claim is eligible.
+    const baseDelay = baseDelayFor(queue);
     const backoffFor = (attempt: number) => baseDelay * 2 ** attempt;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {

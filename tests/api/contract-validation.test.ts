@@ -80,10 +80,17 @@ describe("Upload API — Contract Validation", () => {
       role: "USER",
     } as any;
     mockValidateUploadFile.mockImplementation((file: File | null) => {
-      if (!file) return { valid: false, error: "الملف مطلوب", status: 400 };
+      if (!file)
+        return { valid: false, error: "الملف مطلوب", status: 400, code: "VALIDATION_ERROR" };
       if (!file.name.endsWith(".pdf"))
-        return { valid: false, error: "نوع الملف غير مدعوم", status: 400 };
-      if (file.size > 10_485_760) return { valid: false, error: "الملف كبير جداً", status: 413 };
+        return {
+          valid: false,
+          error: "نوع الملف غير مدعوم",
+          status: 400,
+          code: "VALIDATION_ERROR",
+        };
+      if (file.size > 10_485_760)
+        return { valid: false, error: "الملف كبير جداً", status: 413, code: "VALIDATION_ERROR" };
       return { valid: true };
     });
     mockHandleRouteError.mockReturnValue(

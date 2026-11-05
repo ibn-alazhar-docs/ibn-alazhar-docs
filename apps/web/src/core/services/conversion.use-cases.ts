@@ -62,10 +62,11 @@ export class ConversionUseCases {
       Math.max(1, filters.limit || LIMITS.DEFAULT_PAGE_LIMIT),
     );
 
-    // كل مستخدم يرى وظائف التحويل الخاصة به فقط
-    const where: Prisma.ConversionJobWhereInput = {
-      userId: session.user.id,
-    };
+    // Admins list all users' conversion jobs for oversight; others see only their own.
+    const where: Prisma.ConversionJobWhereInput = {};
+    if (session.user.role !== "ADMIN") {
+      where.userId = session.user.id;
+    }
     if (filters.status) {
       (where as Record<string, unknown>).status = filters.status;
     }

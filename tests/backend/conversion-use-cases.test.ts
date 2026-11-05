@@ -6,7 +6,17 @@ vi.mock("@/core/authorization", () => ({
 
 vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
   loadConfig: vi.fn(() => ({ queue: { splitting: "splitting" } })),
+  enqueueViaDriver: vi.fn(async () => undefined),
   enqueueSplitting: vi.fn(async () => ({ id: "job-1" })),
+  JOB_QUEUES: {
+    VALIDATION: "pipeline-validation",
+    SPLITTING: "pipeline-splitting",
+    OCR: "pipeline-ocr",
+    CLEANING: "pipeline-cleaning",
+    GENERATION: "pipeline-generation",
+    EXPORT: "pipeline-export",
+    FAILED: "pipeline-failed",
+  },
 }));
 
 import { ConversionUseCases } from "@/core/services/conversion.use-cases";
@@ -54,7 +64,7 @@ describe("ConversionUseCases.startConversion", () => {
   });
 
   it("persists a ConversionJob row before enqueuing", async () => {
-    const { enqueueSplitting } = await import("@ibn-al-azhar-docs/pipeline");
+    const { enqueueViaDriver, JOB_QUEUES } = await import("@ibn-al-azhar-docs/pipeline");
     const result = await useCases.startConversion("doc-1", makeSession("STUDENT"));
 
     expect(result.jobId).toBe("doc-1");
@@ -64,7 +74,8 @@ describe("ConversionUseCases.startConversion", () => {
     expect(created.userId).toBe("user-1");
     expect(created.status).toBe("PROCESSING");
     expect(created.inputKey).toBe("docs/doc-1.pdf");
-    expect(enqueueSplitting).toHaveBeenCalledTimes(1);
+    expect(enqueueViaDriver).toHaveBeenCalledTimes(1);
+    expect((enqueueViaDriver as unknown as vi.Mock).mock.calls[0]![0]).toBe(JOB_QUEUES.SPLITTING);
   });
 
   it("throws NotFoundError when the document does not exist", async () => {
