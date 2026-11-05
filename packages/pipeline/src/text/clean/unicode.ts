@@ -133,6 +133,10 @@ export function normalizeUnicode(text: string): string {
 
 export function normalizeArabicLetters(text: string): string {
   text = text.replace(ALEF_PATTERNS, "ا");
+  // A madda (U+0653) directly after a bare alef is the decomposed spelling of
+  // alef-with-madda (آ). Normalizing it away keeps cleanArabicText idempotent:
+  // without it, NFKC on a second pass recomposes ا + U+0653 back into آ.
+  text = text.replace(/ا\u0653/g, "ا");
   text = text.replace(YAA_PATTERNS, "ي");
   text = text.replace(KAF_PATTERNS, "ك");
   text = text.replace(

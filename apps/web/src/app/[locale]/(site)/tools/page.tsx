@@ -82,10 +82,7 @@ export default async function ToolsPage({ params }: ToolsPageProps) {
         </div>
 
         <section aria-labelledby="guest-principles">
-          <h2
-            id="guest-principles"
-            className="mb-5 text-xl font-bold text-primary-color"
-          >
+          <h2 id="guest-principles" className="mb-5 text-xl font-bold text-primary-color">
             {tPrinciples("title")}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -94,12 +91,8 @@ export default async function ToolsPage({ params }: ToolsPageProps) {
                 key={item.title}
                 className="rounded-2xl border border-[var(--border-color,rgba(0,0,0,0.08))] bg-[var(--card-bg,#fff)] p-5"
               >
-                <h3 className="mb-2 text-sm font-bold text-primary-color">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-secondary-color">
-                  {item.description}
-                </p>
+                <h3 className="mb-2 text-sm font-bold text-primary-color">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-secondary-color">{item.description}</p>
               </article>
             ))}
           </div>

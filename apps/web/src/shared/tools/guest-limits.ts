@@ -25,11 +25,7 @@ export const GUEST_TOOLS_LIMITS = {
   deleteFileAfterJob: true,
 } as const;
 
-export const GUEST_ALLOWED_MIME_TYPES = [
-  "application/pdf",
-  "image/jpeg",
-  "image/png",
-] as const;
+export const GUEST_ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"] as const;
 
 export type GuestToolStatus = "available" | "sidecar-pending";
 
@@ -48,10 +44,38 @@ export interface GuestTool {
 }
 
 export const GUEST_TOOLS: readonly GuestTool[] = [
-  { id: "pdf-to-word", slug: "pdf-to-word", i18nKey: "pdf-to-word", status: "available", acceptsFiles: true, acceptsText: false },
-  { id: "ocr", slug: "ocr", i18nKey: "ocr", status: "available", acceptsFiles: true, acceptsText: false },
-  { id: "tashkeel", slug: "tashkeel", i18nKey: "tashkeel", status: "sidecar-pending", acceptsFiles: false, acceptsText: true },
-  { id: "transcription", slug: "transcription", i18nKey: "transcription", status: "sidecar-pending", acceptsFiles: true, acceptsText: false },
+  {
+    id: "pdf-to-word",
+    slug: "pdf-to-word",
+    i18nKey: "pdf-to-word",
+    status: "available",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
+  {
+    id: "ocr",
+    slug: "ocr",
+    i18nKey: "ocr",
+    status: "available",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
+  {
+    id: "tashkeel",
+    slug: "tashkeel",
+    i18nKey: "tashkeel",
+    status: "sidecar-pending",
+    acceptsFiles: false,
+    acceptsText: true,
+  },
+  {
+    id: "transcription",
+    slug: "transcription",
+    i18nKey: "transcription",
+    status: "sidecar-pending",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
 ] as const;
 
 export function getGuestTool(id: string): GuestTool | undefined {

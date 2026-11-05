@@ -7,12 +7,24 @@ const EMAIL = "admin@ibnalazhar.app";
 const PASSWORD = "password123";
 
 const SOURCE_DIR = path.resolve(__dirname, "../../test-data/source");
-const PDF_PATH = (() => {
-  const files = fs.readdirSync(SOURCE_DIR).filter((f) => f.toLowerCase().endsWith(".pdf"));
-  if (files.length === 0) throw new Error("no sample PDF found in test-data/source");
-  return path.join(SOURCE_DIR, files[0]);
-})();
-const PDF_NAME = path.basename(PDF_PATH);
+
+// Resolve lazily (inside tests, not at import time) so that
+// `playwright test --list` and test discovery never crash with ENOENT
+// when the fixture is absent. Missing/empty fixture => test.skip, not a
+// module-load failure. Prefer `sample.pdf` when present for determinism.
+function resolveFixturePdf(): { pdfPath: string; pdfName: string } | null {
+  let files: string[];
+  try {
+    files = fs.readdirSync(SOURCE_DIR).filter((f) => f.toLowerCase().endsWith(".pdf"));
+  } catch {
+    return null;
+  }
+  if (files.length === 0) return null;
+  files.sort();
+  const preferred = files.find((f) => f.toLowerCase() === "sample.pdf");
+  const chosen = preferred ?? files[0]!;
+  return { pdfPath: path.join(SOURCE_DIR, chosen), pdfName: chosen };
+}
 
 async function login(page: Page): Promise<void> {
   await page.goto(`${BASE}/ar/login`);
@@ -23,8 +35,12 @@ async function login(page: Page): Promise<void> {
   await page.waitForURL(/dashboard/, { timeout: 30000 });
 }
 
-async function uploadPdf(context: APIRequestContext): Promise<string> {
-  const buffer = fs.readFileSync(PDF_PATH);
+async function uploadPdf(
+  context: APIRequestContext,
+  pdfPath: string,
+  pdfName: string,
+): Promise<string> {
+  const buffer = fs.readFileSync(pdfPath);
 
   const csrfResp = await context.request.get("/api/csrf");
   const csrfBody = await csrfResp.json();
@@ -33,7 +49,7 @@ async function uploadPdf(context: APIRequestContext): Promise<string> {
 
   const resp = await context.request.post("/api/upload", {
     headers: { "X-CSRF-Token": csrfToken },
-    multipart: { file: { name: PDF_NAME, mimeType: "application/pdf", buffer } },
+    multipart: { file: { name: pdfName, mimeType: "application/pdf", buffer } },
   });
   expect(resp.status(), `upload status ${resp.status()}`).toBe(201);
   const body = await resp.json();
@@ -69,9 +85,12 @@ test.describe("Ibn Al-Azhar Docs — Pipeline E2E", () => {
     page,
     context,
   }) => {
+    const fixture = resolveFixturePdf();
+    test.skip(!fixture, "Skipping: no sample PDF found in test-data/source");
+    const { pdfPath, pdfName } = fixture!;
     await login(page);
 
-    const documentId = await uploadPdf(context);
+    const documentId = await uploadPdf(context, pdfPath, pdfName);
     console.log(`PASS: upload enqueued validation — documentId=${documentId}`);
 
     const finalStatus = await waitForCompletion(context, documentId);
@@ -88,8 +107,11 @@ test.describe("Ibn Al-Azhar Docs — Pipeline E2E", () => {
     page,
     context,
   }) => {
+    const fixture = resolveFixturePdf();
+    test.skip(!fixture, "Skipping: no sample PDF found in test-data/source");
+    const { pdfPath, pdfName } = fixture!;
     await login(page);
-    const documentId = await uploadPdf(context);
+    const documentId = await uploadPdf(context, pdfPath, pdfName);
     console.log(`PASS: uploaded doc ${documentId} for SSE test`);
 
     const cookies = await context.cookies(BASE);

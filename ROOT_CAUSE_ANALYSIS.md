@@ -298,7 +298,7 @@ required variable REDIS_PASSWORD is missing a value
 REDIS_PASSWORD=redis_strong_password_2026
 
 # Docker interpolates correctly:
-REDIS_URL: "redis://:redis_strong_password_2026@redis:6379"
+REDIS_URL: "redis://:redis_strong_password_2026@redis:6379"  # allowlist: secret (documentation sample)
            #         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
            #         ✅ Present and strong
 ```

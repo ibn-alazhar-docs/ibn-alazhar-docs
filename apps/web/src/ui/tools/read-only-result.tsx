@@ -51,13 +51,14 @@ export function ReadOnlyResult({ text }: { text: string | null }) {
   }
 
   return (
-    <section aria-label={t("title")} className="rounded-2xl border border-[var(--border-color,rgba(0,0,0,0.08))] bg-[var(--card-bg,#fff)] p-5">
+    <section
+      aria-label={t("title")}
+      className="rounded-2xl border border-[var(--border-color,rgba(0,0,0,0.08))] bg-[var(--card-bg,#fff)] p-5"
+    >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <h2 className="text-base font-bold text-primary-color">{t("title")}</h2>
         {hasResult && (
-          <span className="text-xs text-secondary-color">
-            {t("chars", { count: text.length })}
-          </span>
+          <span className="text-xs text-secondary-color">{t("chars", { count: text.length })}</span>
         )}
       </div>
 
@@ -84,9 +85,7 @@ export function ReadOnlyResult({ text }: { text: string | null }) {
             aria-readonly="true"
             className="mb-3 w-full rounded-xl border border-[var(--border-color,rgba(0,0,0,0.12))] bg-[var(--bg-soft,#f6f6f6)] p-3 font-mono text-sm leading-relaxed"
           />
-          {!hasMatches && (
-            <p className="mb-3 text-sm text-secondary-color">{t("noMatches")}</p>
-          )}
+          {!hasMatches && <p className="mb-3 text-sm text-secondary-color">{t("noMatches")}</p>}
           <div className="flex flex-wrap gap-2">
             <button
               type="button"

@@ -1,4 +1,5 @@
 import type { PipelineConfig } from "../types";
+import { randomUUID } from "node:crypto";
 import { uploadBuffer, downloadFile, listObjects } from "../storage";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
@@ -83,7 +84,7 @@ export async function saveAuditSession(
   const { scope, input } = resolveScope(documentIdOrInput, maybeInput);
   const sourceText = input.sourceText || "";
   const convertedMarkdown = input.convertedMarkdown || "";
-  const sessionId = `audit_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const sessionId = `audit_${Date.now()}_${randomUUID().slice(0, 8)}`;
   const meta: AuditSessionMeta = {
     id: sessionId,
     documentId: scope,

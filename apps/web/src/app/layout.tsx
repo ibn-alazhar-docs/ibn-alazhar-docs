@@ -74,9 +74,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
           }}
         />
       </head>
-      <body
-        className={`${firaCode.variable} ${almarai.variable} bg-page min-h-screen antialiased`}
-      >
+      <body className={`${firaCode.variable} ${almarai.variable} bg-page min-h-screen antialiased`}>
         {children}
       </body>
     </html>

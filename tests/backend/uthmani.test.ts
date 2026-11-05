@@ -57,7 +57,9 @@ describe("findUthmaniMatches / verifyQuranicText", () => {
   });
 
   it("returns no matches for unrelated prose", () => {
-    expect(findUthmaniMatches("هذا نص عادي عن الفقه المقارن والحديث النبوي الشريف")).toHaveLength(0);
+    expect(findUthmaniMatches("هذا نص عادي عن الفقه المقارن والحديث النبوي الشريف")).toHaveLength(
+      0,
+    );
   });
 
   it("verifyQuranicText flags a ﴿...﴾ span that matches no dataset verse", () => {

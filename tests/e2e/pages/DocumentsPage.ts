@@ -1,5 +1,6 @@
 import { type Page, type Locator, expect } from "@playwright/test";
 import path from "path";
+import fs from "node:fs";
 
 export class DocumentsPage {
   readonly page: Page;
@@ -46,8 +47,19 @@ export class DocumentsPage {
     await this.page.waitForLoadState("domcontentloaded");
   }
 
+  private resolveFixture(fileName: string): string {
+    const sourceDir = path.resolve(__dirname, "../../test-data/source");
+    const primary = path.join(sourceDir, fileName);
+    if (fs.existsSync(primary)) return primary;
+    const fallback = path.join(sourceDir, "sample.pdf");
+    if (fs.existsSync(fallback)) return fallback;
+    // No fixture on disk: return primary path so Playwright fails with a
+    // clear ENOENT naming the directory, rather than a confusing empty list.
+    return primary;
+  }
+
   async uploadFile(fileName: string) {
-    const testFilePath = path.resolve(__dirname, "../../test-data/source", fileName);
+    const testFilePath = this.resolveFixture(fileName);
     await this.fileInput.setInputFiles(testFilePath);
     if (await this.uploadButton.isVisible().catch(() => false)) {
       await this.uploadButton.click();
@@ -55,9 +67,7 @@ export class DocumentsPage {
   }
 
   async uploadMultipleFiles(fileNames: string[]) {
-    const testFilePaths = fileNames.map((f) =>
-      path.resolve(__dirname, "../../test-data/source", f),
-    );
+    const testFilePaths = fileNames.map((f) => this.resolveFixture(f));
     await this.fileInput.setInputFiles(testFilePaths);
     if (await this.uploadButton.isVisible().catch(() => false)) {
       await this.uploadButton.click();

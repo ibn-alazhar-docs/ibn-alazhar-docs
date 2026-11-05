@@ -75,9 +75,7 @@ describe("ConversionUseCases.startConversion", () => {
     expect(created.status).toBe("PROCESSING");
     expect(created.inputKey).toBe("docs/doc-1.pdf");
     expect(enqueueViaDriver).toHaveBeenCalledTimes(1);
-    expect((enqueueViaDriver as unknown as vi.Mock).mock.calls[0]![0]).toBe(
-      JOB_QUEUES.SPLITTING,
-    );
+    expect((enqueueViaDriver as unknown as vi.Mock).mock.calls[0]![0]).toBe(JOB_QUEUES.SPLITTING);
   });
 
   it("throws NotFoundError when the document does not exist", async () => {

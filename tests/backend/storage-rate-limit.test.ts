@@ -27,7 +27,9 @@ import {
 import { NextResponse } from "next/server";
 
 vi.mock("@ibn-al-azhar-docs/shared", () => ({
-  logger: { child: vi.fn(() => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() })) },
+  logger: {
+    child: vi.fn(() => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() })),
+  },
 }));
 
 vi.mock("@/shared/logger", () => ({

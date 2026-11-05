@@ -20,7 +20,7 @@
  *   - لا تُسجَّل المفاتيح كاملة أبدًا؛ لا في الحالة ولا في السجلات.
  */
 
-import { createHash } from "node:crypto";
+import { scryptSync } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
@@ -84,8 +84,24 @@ export function loadGeminiKeys(): string[] {
 }
 
 /** بصمة آمنة للمفتاح — لا تُستخدم المفاتيح كاملة كمفاتيح حالة. */
+const fingerprintCache = new Map<string, string>();
+
 export function keyFingerprint(key: string): string {
-  return createHash("sha256").update(key).digest("hex").slice(0, 12);
+  // Domain-separated scrypt fingerprint (slow KDF) so it can't be used to
+  // brute-force the API key from a leaked state file. Never persist or log
+  // the API key itself. Cached because scrypt is intentionally expensive.
+  // codeql[js/insufficient-password-hash]
+  const cached = fingerprintCache.get(key);
+  if (cached) return cached;
+  const fingerprint = scryptSync(key, "IbnAlAzhar API key fingerprint v1", 32, {
+    N: 16384,
+    r: 8,
+    p: 1,
+  })
+    .toString("hex")
+    .slice(0, 12);
+  fingerprintCache.set(key, fingerprint);
+  return fingerprint;
 }
 
 export interface KeySlot {

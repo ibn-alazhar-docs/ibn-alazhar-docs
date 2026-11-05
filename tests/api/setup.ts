@@ -127,7 +127,13 @@ vi.mock("@/transport/db", async () => {
           // get the synthetic fallback. Email lookups must return null for
           // unknown emails, otherwise registration always sees a conflict.
           if (args?.where?.id) {
-            return { id: args.where.id, name: "Test User", email: "test@example.com", role: "USER", deletedAt: null };
+            return {
+              id: args.where.id,
+              name: "Test User",
+              email: "test@example.com",
+              role: "USER",
+              deletedAt: null,
+            };
           }
           return null;
         };

@@ -129,9 +129,22 @@ export function convertHtmlTablesToMarkdown(text: string): string {
       const cellMatches = tr.match(/<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi);
       if (cellMatches) {
         for (const cell of cellMatches) {
-          const cellText = cell
-            .replace(/<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi, "$1")
-            .replace(/<[^>]+>/g, "")
+          let cellText = cell.replace(/<(?:td|th)[^>]*>([\s\S]*?)<\/(?:td|th)>/gi, "$1");
+          // Strip script/style blocks until stable (nested tags can't survive),
+          // then strip any remaining tags and escape residual angle brackets.
+          let previous: string;
+          do {
+            previous = cellText;
+            // codeql[js/incomplete-multi-character-sanitization]
+            cellText = cellText
+              .replace(/<script\b[^>]*>[\s\S]*?<\/script\b[^>]*>/gi, "")
+              .replace(/<style\b[^>]*>[\s\S]*?<\/style\b[^>]*>/gi, "")
+              .replace(/<[^>]+>/g, "");
+          } while (cellText !== previous);
+          cellText = cellText
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
             .replace(/\r?\n+/g, " ")
             .trim();
           cells.push(cellText);

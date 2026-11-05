@@ -39,8 +39,7 @@ export interface ContextualAuditResult {
   wordCount: number;
 }
 
-const stripTashkeel = (s: string) =>
-  s.replace(/[ً-ٰٟ-ٰۭ-ۯ]/g, "");
+const stripTashkeel = (s: string) => s.replace(/[ً-ٰٟ-ٰۭ-ۯ]/g, "");
 
 function push(
   issues: ContextualIssue[],
@@ -84,12 +83,26 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
 
     // 2) همزة/ألف منعكسة داخل الكلمة: «إأ» أو «أإ» متجاورتان
     if (/[إأ][إأ]/.test(line)) {
-      push(issues, "hamza-swap", "warning", "همزتان متجاورتان (إأ/أإ) — احتمال انعكاس OCR", lineNo, line);
+      push(
+        issues,
+        "hamza-swap",
+        "warning",
+        "همزتان متجاورتان (إأ/أإ) — احتمال انعكاس OCR",
+        lineNo,
+        line,
+      );
     }
 
     // 5) تنوين على ألف: «ًا» على ألف (الصواب تنوين على الحرف قبل الألف غالبًا)
     if (/ًا|ٌا|ٍا/.test(line)) {
-      push(issues, "tanween-on-alif", "minor", "تنوين على ألف (ًا) — يُراجع ضبط التنوين", lineNo, line);
+      push(
+        issues,
+        "tanween-on-alif",
+        "minor",
+        "تنوين على ألف (ًا) — يُراجع ضبط التنوين",
+        lineNo,
+        line,
+      );
     }
 
     // 6) «ال» منفصلة: كلمة «ال» وحدها ثم كلمة لا تبدأ بتعريف
@@ -99,7 +112,14 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
         // «ال» الصحيحة تنفصل عند الوقف فقط؛ إن تلاها حرف غير شمسي/قمري واضح
         // فالاشتباه ضعيف — نكتفي بالرصد عند تكرار النمط في السطر نفسه.
         if (!/^[اأإآبتثجحخدذرزسشصضطظعفغفقكلمنهوي]/.test(next)) {
-          push(issues, "detached-al", "minor", "«ال» منفصلة عن كلمة غير عربية-مبدوءة", lineNo, line);
+          push(
+            issues,
+            "detached-al",
+            "minor",
+            "«ال» منفصلة عن كلمة غير عربية-مبدوءة",
+            lineNo,
+            line,
+          );
         }
       }
     }
@@ -121,7 +141,9 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
     // نوحّد الألفات فقط (أ/إ/آ/ٱ→ا) دون مساس بالنهاية: normalizeArabicLetters
     // يحوّل ى→ي فسيُخفي الخلل الذي نبحث عنه.
     for (const w of words) {
-      const clean = stripTashkeel(w).replace(/[اأإآٱ]/g, "ا").replace(/[^\u0600-\u06FF]/g, "");
+      const clean = stripTashkeel(w)
+        .replace(/[اأإآٱ]/g, "ا")
+        .replace(/[^\u0600-\u06FF]/g, "");
       if (clean.length < 3) continue;
       const last = clean[clean.length - 1];
       if (last === "ى" || last === "ي") {

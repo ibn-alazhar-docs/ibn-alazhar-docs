@@ -74,7 +74,8 @@
 
   /* Brand fonts: Almarai (body/UI) + Thmanyah (display, stack-based) */
   --font-family-almarai: var(--font-almarai), "Almarai", "Noto Sans Arabic", system-ui, sans-serif;
-  --font-family-thmanyah: "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
+  --font-family-thmanyah:
+    "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
   --font-family-display: var(--font-family-thmanyah);
   --font-family-body: var(--font-family-almarai);
   /* Backwards-compatible aliases (reading.css / landing.css still use these) */

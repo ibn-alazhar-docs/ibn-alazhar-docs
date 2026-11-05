@@ -1,6 +1,31 @@
 import { test, expect } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 import path from "path";
+import fs from "node:fs";
+
+// E2E fixture fallback: prefer the larger Arabic source PDF when present,
+// otherwise use the minimal committed `sample.pdf`. When no PDF is present at
+// all, skip the test instead of crashing on ENOENT from setInputFiles.
+function resolveE2eFixture(): string | null {
+  const arabicPdf = path.resolve(
+    __dirname,
+    "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
+  );
+  if (fs.existsSync(arabicPdf)) return arabicPdf;
+  const samplePdf = path.resolve(__dirname, "../../test-data/source/sample.pdf");
+  if (fs.existsSync(samplePdf)) return samplePdf;
+  try {
+    const dir = path.resolve(__dirname, "../../test-data/source");
+    const pdf = fs
+      .readdirSync(dir)
+      .filter((f) => f.toLowerCase().endsWith(".pdf"))
+      .sort()[0];
+    if (pdf) return path.join(dir, pdf);
+  } catch {
+    return null;
+  }
+  return null;
+}
 
 test.describe("Comprehensive User Journey", () => {
   test("Full flow: Login -> Dashboard -> Upload -> Export -> Settings", async ({ page }) => {
@@ -20,11 +45,9 @@ test.describe("Comprehensive User Journey", () => {
     await page.waitForURL(/\/en\/files/);
 
     // 3. Uploading a file (verify the new framer-motion animations don't block clicks)
-    const testFilePath = path.resolve(
-      __dirname,
-      "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
-    );
-    await page.setInputFiles('input[type="file"]', testFilePath);
+    const testFilePath = resolveE2eFixture();
+    test.skip(!testFilePath, "Skipping: no PDF fixture found in test-data/source");
+    await page.setInputFiles('input[type="file"]', testFilePath!);
 
     // Wait for the Visual Range Selector to appear because it's a PDF
     const visualSelectorConfirm = page.getByRole("button", { name: /Confirm|تأكيد/i }).first();

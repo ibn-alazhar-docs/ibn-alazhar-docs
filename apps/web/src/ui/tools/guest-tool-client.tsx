@@ -3,11 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
-import {
-  GUEST_TOOLS_LIMITS,
-  validateGuestFile,
-  type GuestTool,
-} from "@/shared/tools/guest-limits";
+import { GUEST_TOOLS_LIMITS, validateGuestFile, type GuestTool } from "@/shared/tools/guest-limits";
 import { ReadOnlyResult } from "./read-only-result";
 
 function formatBytes(bytes: number): string {
@@ -80,8 +76,7 @@ export function GuestToolClient({ tool, name, tagline, cta }: GuestToolClientPro
       return;
     }
     setFile(selected);
-    const isPdf =
-      selected.type === "application/pdf" || /\.pdf$/i.test(selected.name);
+    const isPdf = selected.type === "application/pdf" || /\.pdf$/i.test(selected.name);
     if (isPdf) {
       setCounting(true);
       const pages = await countPdfPages(selected);
@@ -111,16 +106,12 @@ export function GuestToolClient({ tool, name, tagline, cta }: GuestToolClientPro
 
       <header>
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <h1 className="text-2xl font-extrabold text-primary-color sm:text-3xl">
-            {name}
-          </h1>
+          <h1 className="text-2xl font-extrabold text-primary-color sm:text-3xl">{name}</h1>
           <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800">
             {t("noAccountBadge")}
           </span>
         </div>
-        <p className="text-sm leading-relaxed text-secondary-color sm:text-base">
-          {tagline}
-        </p>
+        <p className="text-sm leading-relaxed text-secondary-color sm:text-base">{tagline}</p>
       </header>
 
       {isSidecar ? (
@@ -153,7 +144,10 @@ export function GuestToolClient({ tool, name, tagline, cta }: GuestToolClientPro
             </p>
           )}
           {err && (
-            <p role="alert" className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-800">
+            <p
+              role="alert"
+              className="mt-3 rounded-xl bg-red-50 p-3 text-sm font-medium text-red-800"
+            >
               {err}
             </p>
           )}
@@ -182,9 +176,7 @@ export function GuestToolClient({ tool, name, tagline, cta }: GuestToolClientPro
         </section>
       )}
 
-      <p className="text-xs leading-relaxed text-secondary-color">
-        {t("guest.readOnlyNote")}
-      </p>
+      <p className="text-xs leading-relaxed text-secondary-color">{t("guest.readOnlyNote")}</p>
 
       <ReadOnlyResult text={null} />
     </div>

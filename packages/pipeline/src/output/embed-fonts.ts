@@ -186,10 +186,8 @@ export function obfuscateFont(data: Buffer, key: string): Buffer {
 }
 
 const CT_FONT = "application/vnd.openxmlformats-officedocument.obfuscatedFont";
-const CT_FONTTABLE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml";
-const REL_FONT =
-  "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font";
+const CT_FONTTABLE = "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml";
+const REL_FONT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font";
 const REL_FONTTABLE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable";
 
@@ -259,7 +257,7 @@ export function embedAmiriFonts(
   const drelsBuf = parts.get(drelsName);
   if (!drelsBuf) throw new Error("word/_rels/document.xml.rels مفقود في DOCX");
   let drels = drelsBuf.toString("utf8");
-  if (!drels.includes(REL_FONTTABLE)) {
+  if (!drels.includes(`Type="${REL_FONTTABLE}"`)) {
     drels = drels.replace(
       "</Relationships>",
       `<Relationship Id="rIdFontTable" Type="${REL_FONTTABLE}" Target="fontTable.xml"/></Relationships>`,
@@ -272,10 +270,7 @@ export function embedAmiriFonts(
   if (!ctBuf) throw new Error("[Content_Types].xml مفقود في DOCX");
   let ct = ctBuf.toString("utf8");
   if (!ct.includes('Extension="odttf"')) {
-    ct = ct.replace(
-      "<Default ",
-      `<Default Extension="odttf" ContentType="${CT_FONT}"/><Default `,
-    );
+    ct = ct.replace("<Default ", `<Default Extension="odttf" ContentType="${CT_FONT}"/><Default `);
   }
   if (!ct.includes("/word/fontTable.xml")) {
     ct = ct.replace(
