@@ -1,7 +1,8 @@
 /** Brand wording — منصة ابن الأزهر (brandbook 01/02). */
 export const BRAND_NAME = { ar: "منصة ابن الأزهر", en: "Ibn Al-Azhar Platform" } as const;
 export const BRAND_TAGLINE = "في بيت كل طالب أزهري";
-export const BRAND_POSITIONING = "أول منصة شاملة للثانوية الأزهرية";
+export const BRAND_POSITIONING =
+  "منصة ابن الأزهر للمستندات — معالجة وتنظيم محتوى الثانوية الأزهرية";
 
 /** Brand palette — Visual Identity (docs/BRAND_IMPLEMENTATION.md) */
 export const BRAND_COLORS = {
