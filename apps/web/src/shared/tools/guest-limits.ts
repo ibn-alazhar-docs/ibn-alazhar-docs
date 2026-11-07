@@ -29,6 +29,14 @@ export const GUEST_ALLOWED_MIME_TYPES = [
   "application/pdf",
   "image/jpeg",
   "image/png",
+  "audio/mpeg",
+  "audio/wav",
+  "audio/x-wav",
+  "audio/mp4",
+  "audio/x-m4a",
+  "audio/ogg",
+  "audio/opus",
+  "audio/webm",
 ] as const;
 
 export type GuestToolStatus = "available" | "sidecar-pending";
@@ -48,10 +56,38 @@ export interface GuestTool {
 }
 
 export const GUEST_TOOLS: readonly GuestTool[] = [
-  { id: "pdf-to-word", slug: "pdf-to-word", i18nKey: "pdf-to-word", status: "available", acceptsFiles: true, acceptsText: false },
-  { id: "ocr", slug: "ocr", i18nKey: "ocr", status: "available", acceptsFiles: true, acceptsText: false },
-  { id: "tashkeel", slug: "tashkeel", i18nKey: "tashkeel", status: "sidecar-pending", acceptsFiles: false, acceptsText: true },
-  { id: "transcription", slug: "transcription", i18nKey: "transcription", status: "sidecar-pending", acceptsFiles: true, acceptsText: false },
+  {
+    id: "pdf-to-word",
+    slug: "pdf-to-word",
+    i18nKey: "pdf-to-word",
+    status: "available",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
+  {
+    id: "ocr",
+    slug: "ocr",
+    i18nKey: "ocr",
+    status: "available",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
+  {
+    id: "tashkeel",
+    slug: "tashkeel",
+    i18nKey: "tashkeel",
+    status: "available",
+    acceptsFiles: false,
+    acceptsText: true,
+  },
+  {
+    id: "transcription",
+    slug: "transcription",
+    i18nKey: "transcription",
+    status: "available",
+    acceptsFiles: true,
+    acceptsText: false,
+  },
 ] as const;
 
 export function getGuestTool(id: string): GuestTool | undefined {
@@ -78,12 +114,12 @@ export function validateGuestFile(
     return { valid: false, code: "MISSING", error: "لم يُرفق أي ملف" };
   }
   const mimeOk = (GUEST_ALLOWED_MIME_TYPES as readonly string[]).includes(file.type);
-  const extOk = /\.(pdf|jpe?g|png)$/i.test(file.name);
+  const extOk = /\.(pdf|jpe?g|png|mp3|wav|m4a|ogg|webm|opus|mp4)$/i.test(file.name);
   if (!mimeOk && !extOk) {
     return {
       valid: false,
       code: "UNSUPPORTED_TYPE",
-      error: "نوع الملف غير مدعوم. ارفع ملف PDF أو صورة (JPG/PNG).",
+      error: "نوع الملف غير مدعوم. ارفع ملف PDF أو صورة (JPG/PNG) أو ملف صوتي (MP3/WAV/M4A/OGG).",
     };
   }
   if (file.size > GUEST_TOOLS_LIMITS.maxFileSizeMB * 1024 * 1024) {

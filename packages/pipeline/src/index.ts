@@ -18,5 +18,6 @@ export * from "./ir";
 export * from "./output";
 export * from "./google-drive";
 export * from "./document-router";
+export * from "./transcription/gemini-transcribe";
 
 import "dotenv/config";

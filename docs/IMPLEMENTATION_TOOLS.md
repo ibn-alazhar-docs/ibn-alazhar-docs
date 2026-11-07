@@ -1,6 +1,6 @@
 # Tools Hub ضيف — وثيقة التنفيذ (IMPLEMENTATION_TOOLS)
 
-> الحالة: واجهة الضيف مكتملة (صفحات + i18n + حدود + نتائج read-only). نقطة المعالجة للضيوف (guest endpoint) لم تُربط بعد بخط المعالجة الحالي — مواصفتها في §7، والواجهة تعلن ذلك بصراحة بدل محاكاة نتائج.
+> الحالة: واجهة الضيف مكتملة (صفحات + i18n + حدود + نتائج read-only). نقطة المعالجة متحقق منها: `POST /api/tools/guest/jobs` تعمل (99MB/1000p/صفاف) — `pdf-to-word` و`ocr` و`tashkeel` و`transcription` كلها `available` عبر `apps/web/src/shared/tools/guest-limits.ts` (‏`diacritizeArabic` + `transcribeAudio` عبر Gemini، بلا نماذج محلية).
 > المرجع: `docs/MERGE_PLAN.md` (مبادئ arabi.tools) — مجاني/غير ربحي، عربي أولًا، Input stays in place، read-only results، تدهور رشيق.
 
 ## 1. الهدف
@@ -9,10 +9,10 @@ Hub عام للأدوات السريعة **بلا حساب** (`/tools`) بأرب
 
 | الأداة | المسار | الحالة |
 |---|---|---|
-| محول PDF إلى Word | `/tools/pdf-to-word` | واجهة ضيف جاهزة، بانتظار guest endpoint |
-| التعرّف الضوئي (OCR) | `/tools/ocr` | واجهة ضيف جاهزة، بانتظار guest endpoint |
-| تشكيل النصوص | `/tools/tashkeel` | خدمة خارجية (sidecar) لم تُربط — تدهور رشيق |
-| التفريغ الصوتي | `/tools/transcription` | خدمة خارجية (sidecar) لم تُربط — تدهور رشيق |
+| محول PDF إلى Word | `/tools/pdf-to-word` | `available` (نقطة معالجة عاملة) |
+| التعرّف الضوئي (OCR) | `/tools/ocr` | `available` |
+| تشكيل النصوص | `/tools/tashkeel` | `available` — نص صافي فقط عبر `diacritizeArabic` (Gemini) |
+| التفريغ الصوتي | `/tools/transcription` | `available` — صوت MP3/WAV/M4A/OGG/WebM عبر `transcribeAudio` (Gemini) |
 
 قرار P3 في MERGE_PLAN: التشكيل والتفريغ يبقيان خدمات HTTP خارجية — لا Rust داخل Workers، ولا نماذج ثقيلة في الواجهة. لذا الصفحتان تعرضان بطاقة "خدمة خارجية قادمة" وتبقيان بقية الموقع عاملة بالكامل.
 
@@ -92,23 +92,24 @@ GUEST_TOOLS_LIMITS = {
 | `apps/web/src/ui/layout/public-header.tsx` | رابط "الأدوات/Tools" في الترويسة العامة (اكتشاف الضيف) |
 | `apps/web/src/messages/{ar,en}.json` | نطاق `tools` + `nav.tools` |
 
-## 6. سلوك الواجهة اليوم (بلا endpoint)
+## 6. سلوك الواجهة الحالي
 
 - رفع ملف صالح → يعرض اسمه وحجمه وعدد صفحاته (PDF) وزر بدء.
-- ضغط بدء → رسالة صريحة أن نقطة معالجة الضيوف قيد الربط، بلا حساب مطلوب أبدًا، وبلا نتيجة وهمية أو شريط تقدم مزيف.
-- أدوات sidecar (`tashkeel`, `transcription`) → بطاقة تدهور رشيق، بلا نموذج رفع.
-- `ReadOnlyResult` بحال `text=null` → حالة فراغ صحيحة. عند وصول الـ endpoint تُمرَّر النتيجة الحقيقية فقط؛ البحث/النسخ/التنزيل فيها حقيقية وتعمل محليًا (Blob + clipboard).
+- ضغط بدء → تُنشأ مهمة `POST /api/tools/guest/jobs` بانتظار الرمز، ثم استطلاع `GET /api/tools/guest/jobs/[id]` حتى تكتمل.
+- `tashkeel` (نص فقط) → سطح نصي `textarea` + زر `submitText` (حقل `text` + `tool`).
+- `transcription` (صوت) → `accept=.mp3,.wav,.m4a,.ogg` والأسماء الموازية، والتنزيل عبر `?format=txt|json|docx` متاحًا للكل.
+- `ReadOnlyResult` بحال `text=null` → حالة فراغ صحيحة؛ عند اكتمال المهمة تُمرَّر النتيجة الحقيقية فقط (بحث/نسخ/تنزيل TXT/JSON/DOCX).
 
-## 7. مواصفة الـ guest endpoint المستقبلي (غير منفّذة بعد)
+## 7. الـ guest endpoint المنفَّذ (2026-11-07)
 
 ```
-POST /api/tools/guest/jobs        (multipart: file + tool)
+POST /api/tools/guest/jobs        (multipart: file|text + tool + lang?)
   - بلا withAuth؛ يُقيَّم بـ IP فقط (rate-limit: 1 نشطة/IP، 3/أداة، 4 إجمالًا)
-  - تحقق خادمي: نوع (PDF/JPG/PNG)، حجم ≤ 99MB، صفحات ≤ 1000 (عدّ خادمي إلزامي)
+  - تحقق خادمي: نوع (PDF/JPG/PNG/MP3/WAV/M4A/OGG/WebM/Opus)، حجم ≤ 99MB، صفحات ≤ 1000 (عدّ خادمي إلزامي)
   - CSRF: نفس سياسة middleware الحالية (Origin/Referer) — بلا استثناء
-  - معالجة عبر pipeline الحالي دون إنشاء Document/مكتبة
-  - حذف الملف فور انتهاء المهمة؛ النتيجة تُخزَّن 30 دقيقة ثم تُحذف (cron/queue TTL)
-  - استجابة: { jobId, status } ثم نتيجة read-only { text, format } قابلة للتنزيل TXT/JSON/DOCX
+  - معالجة: pdf-to-word/ocr عبر `processGuestInput` (native → OCR chain)؛ transcription عبر `transcribeAudio` (Gemini)؛ tashkeel عبر `processGuestText` → `diacritizeArabic` (Gemini، نص صافي فقط)
+  - حذف الملف فور انتهاء المهمة؛ النتيجة تُخزَّن 30 دقيقة ثم تُحذف
+  - استجابة: { job:{jobId,status} } ثم نتيجة read-only { text, format } قابلة للتنزيل TXT/JSON/DOCX
 GET  /api/tools/guest/jobs/[id]   (استطلاع/نتائج، نفس حدود IP)
 DELETE /api/tools/guest/jobs/[id] (حذف فوري من المستخدم قبل TTL)
 ```
@@ -123,9 +124,9 @@ DELETE /api/tools/guest/jobs/[id] (حذف فوري من المستخدم قبل 
 - دخان تشغيلي (`next start` + curl، بلا جلسة): `GET /ar/tools` → 200، `GET /en/tools/ocr` → 200، `GET /en/tools/tashkeel` → 200 — لا تحويل إلى `/login` (middleware يعمل)، وعناوين "أدوات الضيوف"/"Guest Tools" تظهر باللغتين.
 - سلامة `messages/{ar,en}.json`: JSON صالح، مفاتيح `tools.items` الأربعة متطابقة بين اللغتين، و`nav.tools` موجود.
 
-## 9. متابعات مرتبة
+## 9. متابعات مرتبة (مكتمل معظمه 2026-11-07)
 
-1. **P1**: تنفيذ guest endpoint (§7) وربط `GuestToolClient` به (إرسال + استطلاع + تمرير النتيجة الحقيقية إلى `ReadOnlyResult`).
-2. **P1**: تنزيل DOCX للضيوف عبر pipeline الحالي (لا توليد يدوي — pandoc/OMML حسب قرار MERGE_PLAN).
-3. **P3**: ربط sidecar التشكيل/التفريغ (HTTP خارجي) ثم رفع حالة الأداتين إلى `available` في `GUEST_TOOLS`.
-4. **QA**: Playwright بالعربية والإنجليزية (1280/390) لصفحات `/tools`، واختبار حدود: ملف 100MB مرفوض، PDF بأكثر من 1000 صفحة مرفوض، نتيجة تنتهي بعد 30 دقيقة.
+1. **P1**: guest endpoint (§7) منفَّذ ومربوط بـ `GuestToolClient` (إرسال + استطلاع + تمرير النتيجة الحقيقية).
+2. **P1**: تنزيل DOCX للضيوف عبر pipeline الحالي (متاح للكل).
+3. **P3**: ‏`tashkeel` و`transcription` مرفوعان إلى `available` عبر Gemini (لا Rust / لا نماذج محلية).
+4. **QA**: Playwright بالعربية والإنجليزية (1280/390) — مفتوح؛ اختبار حدود مضبوط في `tests/api/guest-tools-api.test.ts` (19 اختبارًا).

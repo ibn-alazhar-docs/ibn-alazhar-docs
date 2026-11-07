@@ -1,6 +1,12 @@
 import { detectDocumentType } from "../analyze";
 
-import { normalizeUnicode, normalizeArabicLetters, removeTashkeel, removeTatweel } from "./unicode";
+import {
+  normalizeUnicode,
+  normalizeArabicLetters,
+  reglueFloatingMarks,
+  removeTashkeel,
+  removeTatweel,
+} from "./unicode";
 import { normalizeDigits } from "./numbers";
 import { normalizeWhitespace } from "./whitespace";
 import {
@@ -21,11 +27,13 @@ import {
   collapseRepeatedWords,
 } from "./structure";
 import { applyQuranicFixes } from "./quranic";
+import { mapOutsideVerbatim } from "./verbatim-spans";
 import { applyStructuralFixes } from "./structural";
 import { DEFAULT_OPTIONS, EXAM_OPTIONS, type CleanOptions } from "../constants";
 
 export { analyzeText } from "../analyze";
 export type { CleanOptions } from "../constants";
+export { diacritizeArabic } from "./diacritize";
 
 export interface CleanArabicTextOptions extends CleanOptions {
   confidence?: number;
@@ -40,8 +48,13 @@ export {
   repairMojibake,
   expandPuaHonorifics,
   normalizeArabicLetters,
+  reglueFloatingMarks,
   removeTashkeel,
   removeTatweel,
+  consonantSpine,
+  toHarakaPattern,
+  containsHaraka,
+  harakaOrderProblem,
 } from "./unicode";
 
 export { AZHAR_CORRECTION_RULES, applyQuranicFixes } from "./quranic";
@@ -64,6 +77,25 @@ export {
 } from "./structural";
 
 export { normalizeDigits } from "./numbers";
+
+// Canonical Arabic detection surface (single source of truth lives in ../constants)
+export {
+  ARABIC_LETTER_RANGES,
+  ARABIC_LETTER_CLASS,
+  ARABIC_STRONG_MIN_RATIO,
+  MIN_KNOWN_TEXT_SHARE,
+  isGarbageLine,
+  MIN_ARABIC_CHARS_FOR_RTL,
+  TASHKEEL_SOURCE,
+  TATWEEL_SOURCE,
+  TASHKEEL,
+  TATWEEL,
+  arabicLetterRegex,
+  containsArabic,
+  countArabicLetters,
+  arabicLetterRatio,
+  hasArabicContent,
+} from "../constants";
 
 export { normalizeWhitespace } from "./whitespace";
 
@@ -148,15 +180,22 @@ export function cleanArabicText(raw: string, options?: CleanArabicTextOptions): 
     text = normalizeUnicode(text);
   }
 
+  // Citations (﴿ ﴾, « », ‹ ›) and honorific formulas hold the cited wording, so
+  // every pass below that rewrites letters, marks or punctuation runs only outside them.
+  // Tatweel goes first: deleting a kashida can glue a letter to a hamza/madda mark, so
+  // the letter pass must see that adjacency or the next pass recomposes it all over again.
+  if (opts.removeTatweel) text = mapOutsideVerbatim(text, removeTatweel);
+  // Same reason for the harakat the deletions below strand off their letter.
+  text = mapOutsideVerbatim(text, reglueFloatingMarks);
+
   if (opts.normalizeArabic) {
-    text = normalizeArabicLetters(text);
+    text = mapOutsideVerbatim(text, normalizeArabicLetters);
   }
 
-  if (opts.removeTashkeel) text = removeTashkeel(text);
-  if (opts.removeTatweel) text = removeTatweel(text);
+  if (opts.removeTashkeel) text = mapOutsideVerbatim(text, removeTashkeel);
 
   if (opts.normalizeDigits) {
-    text = normalizeDigits(text);
+    text = mapOutsideVerbatim(text, normalizeDigits);
   }
 
   if (opts.normalizeWhitespace) {
@@ -167,9 +206,9 @@ export function cleanArabicText(raw: string, options?: CleanArabicTextOptions): 
   if (opts.removeAsciiNoise) text = removeAsciiNoise(text);
   if (opts.removeRepeatedTokens) text = removeRepeatedTokens(text);
   if (opts.removeGarbageSymbols) text = removeGarbageSymbols(text, confidence);
-  if (opts.normalizePunctuation) text = normalizeArabicPunctuation(text);
+  if (opts.normalizePunctuation) text = mapOutsideVerbatim(text, normalizeArabicPunctuation);
   if (opts.removeIsolatedFragments) text = removeIsolatedFragments(text, confidence);
-  if (opts.collapseRepeatedWords) text = collapseRepeatedWords(text);
+  if (opts.collapseRepeatedWords) text = mapOutsideVerbatim(text, collapseRepeatedWords);
   if (opts.detectHeadings) text = detectArabicHeadings(text);
   if (opts.reconstructLines) {
     text = reconstructArabicLines(text);
