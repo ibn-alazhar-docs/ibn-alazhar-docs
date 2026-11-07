@@ -66,19 +66,29 @@ jobs:
     name: Deploy Preview to HF Spaces
     runs-on: ubuntu-24.04
     needs: [build-preview]
-    if: ${{ secrets.HF_TOKEN != '' }}
     environment:
       name: pr-${{ github.event.pull_request.number }}
       url: https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check HF token
+        id: token-check
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: echo "present=$([ -n "$HF_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
       # HF Spaces previews: create a Space per PR that pulls the pr-N image.
       # Kept as printf (no heredoc) — heredoc terminators inside YAML blocks
       # broke the workflow parse (fixed 2026-11-07).
+      # Guarded via an outputs-check step: `if: ${{ secrets.* }}` at job level
+      # is an invalid context and failed the whole workflow parse (fixed 2026-11-07).
       - name: Deploy to HF Spaces
+        if: steps.token-check.outputs.present == 'true'
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          IMAGE_PREFIX: ${{ env.IMAGE_PREFIX }}
+          REGISTRY: ${{ env.REGISTRY }}
           HF_SPACE_NAME: ${{ github.event.pull_request.number }}-ibn-al-azhar-docs
         run: |
           pip install --quiet huggingface_hub
