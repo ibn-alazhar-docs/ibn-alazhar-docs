@@ -16,9 +16,19 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
-    "@typescript-eslint/no-unused-vars": ["warn", { "argsIgnorePattern": "^_" }],
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
     "@typescript-eslint/no-explicit-any": "error",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": [
+      "warn",
+      {
+        "allow": ["warn", "error"]
+      }
+    ],
     "prefer-const": "error",
     "no-var": "error",
     "no-server-imports-in-client": "error"
@@ -36,7 +46,12 @@
     {
       "files": ["apps/web/src/core/services/**/*.ts"],
       "rules": {
-        "no-restricted-imports": ["error", { "paths": ["@prisma/client"] }]
+        "no-restricted-imports": [
+          "error",
+          {
+            "paths": ["@prisma/client"]
+          }
+        ]
       }
     },
     {
@@ -81,6 +96,8 @@
     "00_Inbox",
     "09_Archive",
     ".agents",
-    ".specify"
+    ".specify",
+    "**/public/pdfjs-wasm/**",
+    "packages/pipeline/assets/**"
   ]
 }

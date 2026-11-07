@@ -14,7 +14,30 @@ export {
   readDocxDocumentXml,
   countOmml,
 } from "./embed-fonts";
-export { generatePdf } from "./pdf";
+export {
+  generatePdf,
+  buildPdfHtml,
+  parseMarkdownBlocks,
+  orderShaddaFirst,
+  getWeasyprintPython,
+} from "./pdf";
+export type { PdfOptions, Block, ListItem, InlineToken } from "./pdf";
+export {
+  summarizePageGeometry,
+  geometryToPageCss,
+  geometryToSectPrPageXml,
+  ptToTwips,
+  parsePageGeometrySamples,
+  pageGeometryScriptPath,
+  pageGeometryFromStoredJson,
+  runPageGeometryScript,
+  measurePdfPageGeometry,
+  DEFAULT_PAGE_MARGIN_PT,
+  GEOMETRY_MAX_PAGES,
+} from "./page-geometry";
+export type { PageBoxPt, PageGeometry, PageGeometrySample } from "./page-geometry";
+export { applyRtlEpub, setRootDirection, setSpineProgression } from "./epub-rtl";
+export type { RtlEpubOptions } from "./epub-rtl";
 
 // IR-based format generators (structure-preserving export pipeline)
 export type { FormatGenerator, GeneratorOptions } from "./generator-base";

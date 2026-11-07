@@ -1,14 +1,15 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
 import { validateUploadFile } from "@/shared/validators/document";
+import { safeFileName } from "@/shared/safe-file-name";
 
 // NOTE: Previously this file re-implemented `simulateUploadValidation` as a copy of the
 // app's upload validation logic. It now imports the REAL `validateUploadFile` from
 // `apps/web/src/lib/shared/validators/document.ts` and asserts against the actual
 // implementation, so security coverage tracks the production behavior.
 
-function sanitizeFileName(name: string): string {
-  return name.replace(/[^a-zA-Z0-9._\u0600-\u06FF\u0660-\u0669-]/g, "_").slice(0, 200);
-}
+// كان هذا الملف يعيد كتابة المُعقِّم محليًا بنطاق 0600–06FF الضيق، فتقوله الأمان
+// يقيس نسخًا من الكود لا الكود نفسه؛ الصياغة الإنتاجية واحدة الآن.
+const sanitizeFileName = safeFileName;
 
 function buildStorageKey(userId: string, jobId: string, safeName: string): string {
   return `uploads/${userId}/${jobId}_${safeName}`;
@@ -181,6 +182,11 @@ describe("File Upload Security", () => {
 
     it("Arabic filename preserved (spaces become underscores)", () => {
       expect(sanitizeFileName("كتاب التفسير.pdf")).toBe("كتاب_التفسير.pdf");
+    });
+
+    it("manuscript letters (Extended-B / Extended-A) survive — كانوا يُستبدلون بـ _", () => {
+      const name = String.fromCodePoint(0x0645, 0x0870, 0x08a0) + ".pdf";
+      expect(sanitizeFileName(name)).toBe(name);
     });
 
     it("path traversal slashes sanitized, dots preserved", () => {

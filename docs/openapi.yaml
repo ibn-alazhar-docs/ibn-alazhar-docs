@@ -1362,10 +1362,98 @@ paths:
         "400":
           description: Invalid action or missing jobId
 
+  /api/tools/guest/jobs:
+    post:
+      tags: [Tools]
+      summary: Create an ephemeral guest tool job (no account, no session)
+      description: >-
+        The job id in the response is the only capability — there is no session
+        and no ownership check. Results are in-process and expire; a job that
+        cannot be processed FAILS with a code and never returns a simulated result.
+      operationId: createGuestJob
+      security: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, tool]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                tool:
+                  type: string
+                  enum: [pdf-to-word, ocr, tashkeel, transcription]
+      responses:
+        "202":
+          description: Job queued
+        "400":
+          description: Missing file or unknown tool
+        "413":
+          description: File too large or too many pages
+        "415":
+          description: Unsupported media type
+        "429":
+          description: Rate limited or a guest queue slot is full
+
+  /api/tools/guest/jobs/{id}:
+    get:
+      tags: [Tools]
+      summary: Poll a guest job, or fetch its result as txt/json/docx
+      operationId: readGuestJob
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: format
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [txt, json, docx]
+      responses:
+        "200":
+          description: Job view (JSON) or generated file; always Cache-Control: no-store
+        "404":
+          description: Unknown, expired or deleted job
+        "409":
+          description: Job has not completed yet
+        "429":
+          description: Rate limited
+        "503":
+          description: OCR or DOCX export unavailable — the job is failed, not faked
+    delete:
+      tags: [Tools]
+      summary: Delete a guest job before its TTL and free its queue slot
+      operationId: deleteGuestJob
+      security: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Deleted
+        "404":
+          description: Unknown or already-expired job
+        "429":
+          description: Rate limited
+
   /api/debug/exec:
     post:
       tags: [Health]
-      summary: Run a shell command for diagnostics (admin, disabled in production)
+      summary: Run an allowlisted diagnostic probe (admin, disabled in production)
+      description: >-
+        Only names from the fixed diagnostic registry are accepted; the argv of
+        each probe is a hardcoded constant run without a shell, so nothing from
+        the request can become a command.
       operationId: debugExec
       security:
         - sessionAuth: []
@@ -1376,43 +1464,37 @@ paths:
           application/json:
             schema:
               type: object
-              required: [command]
+              required: [probe]
               properties:
-                command:
+                probe:
                   type: string
       responses:
         "200":
-          description: Command output
+          description: Diagnostic output
+        "400":
+          description: Missing or unknown probe name
         "403":
           description: Debug API disabled or not admin
         "500":
-          description: Command failed
+          description: Probe failed
 
   /api/debug/pg:
-    post:
+    get:
       tags: [Health]
-      summary: Run a read-only SQL query for diagnostics (admin, disabled in production)
+      summary: Deployment readiness view (admin, disabled in production)
+      description: >-
+        Reports driver configuration and whether the Arabic export assets
+        (reference_rtl.docx, Amiri fonts) actually resolved on this host.
+        Booleans and paths only — never a secret value.
       operationId: debugPg
       security:
         - sessionAuth: []
         - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [query]
-              properties:
-                query:
-                  type: string
       responses:
         "200":
-          description: Query result
+          description: Driver, storage and Arabic-export asset readiness
         "403":
           description: Debug API disabled or not admin
-        "500":
-          description: Query failed
 
   /api/test/fixtures:
     get:

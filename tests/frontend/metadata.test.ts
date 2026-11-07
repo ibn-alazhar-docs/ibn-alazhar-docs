@@ -38,7 +38,7 @@ describe("getLocaleUrl", () => {
 
 describe("siteName constants", () => {
   it("siteName is Ibn Al-Azhar", () => {
-    expect(siteName).toBe("Ibn Al-Azhar Docs");
+    expect(siteName).toBe("Ibn Al-Azhar Platform");
   });
 
   it("siteNameAr is defined", () => {
@@ -47,13 +47,14 @@ describe("siteName constants", () => {
 });
 
 describe("generatePageMetadata", () => {
-  it("returns correct title with site name appended", () => {
+  it("passes the title through verbatim — the brand suffix is OG-only", () => {
     const meta = generatePageMetadata({
       locale: "en",
       title: "Home",
       description: "Welcome",
     });
     expect(meta.title).toBe("Home");
+    expect(meta.openGraph?.title).toBe("Home — Ibn Al-Azhar Platform");
   });
 
   it("returns correct description", () => {
@@ -155,7 +156,12 @@ describe("generatePageMetadata", () => {
       image: "https://example.com/og.png",
     });
     expect(meta.openGraph?.images).toEqual([
-      { url: "https://example.com/og.png", width: 1200, height: 630 },
+      {
+        url: "https://example.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "Ibn Al-Azhar Platform",
+      },
     ]);
   });
 

@@ -56,6 +56,23 @@ function isPublicPage(pathnameWithoutLocale: string): boolean {
   );
 }
 
+// Files served straight from `public/` (and Next's own build output) that must
+// never see auth redirects, i18n rewrites or CSRF cookies. The matcher cannot
+// express this — see the note on `config` at the bottom of the file — so the
+// skip happens here instead.
+const STATIC_PATH_PREFIXES = ["/_next", "/brand/", "/pdfjs-wasm/"];
+// An extension of 2-5 chars, plus the two longer ones this app actually serves
+// (`.webmanifest`, `.woff2` is inside the 5-char range). Kept narrow on purpose:
+// a route segment containing a dot (`/share/a.b`) is a path, not a file.
+const STATIC_EXTENSIONS = /\.(?:[a-zA-Z0-9]{2,5}|webmanifest)$/;
+
+function isStaticAsset(pathname: string): boolean {
+  return (
+    STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    STATIC_EXTENSIONS.test(pathname)
+  );
+}
+
 function getLocaleFromRequest(request: NextRequest): string {
   // Check Accept-Language header
   const acceptLanguage = request.headers.get("accept-language");
@@ -81,8 +98,9 @@ export async function middleware(request: NextRequest) {
   // Generate request ID for tracing
   const requestId = request.headers.get("x-request-id") || generateRequestId();
 
-  // Skip static/internal Next.js paths (only skip actual file extensions, not dots in paths)
-  if (pathname.startsWith("/_next") || /\.[a-zA-Z0-9]{2,5}$/.test(pathname)) {
+  // Skip static/internal paths before anything else (no auth, i18n or CSRF on
+  // files Next serves directly).
+  if (isStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
@@ -188,12 +206,19 @@ export async function middleware(request: NextRequest) {
     // else for the API path — prevents the header being written twice (which
     // some proxies surface as a duplicated "id, id" string).
     response.headers.set("x-request-id", requestId);
-    if (request.method === "GET" && pathname !== "/api/csrf") {
-      ensureCsrfCookie(response, request);
-      response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
-    } else {
-      response.headers.set("Cache-Control", "private, no-store");
-    }
+    const isApiGet = request.method === "GET" && pathname !== "/api/csrf";
+    if (isApiGet) ensureCsrfCookie(response, request);
+    // Guest job results are anonymous capability URLs (the 32-hex id in the path IS
+    // the secret), so they must never enter a shared cache — not even for 10s with
+    // stale-while-revalidate. `startsWith` rather than an exact match because the id
+    // is a real path segment here, unlike the query-param reads above.
+    const isCapabilityUrl = pathname.startsWith("/api/tools/guest/jobs/");
+    response.headers.set(
+      "Cache-Control",
+      isApiGet && !isCapabilityUrl
+        ? "private, max-age=10, stale-while-revalidate=30"
+        : "private, no-store",
+    );
     // Security headers for API routes
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("X-Frame-Options", "DENY");
@@ -264,8 +289,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Match all pathnames except static files
-    "/((?!_next|favicon.ico|logo.svg|manifest.json|manifest.webmanifest|sw.js|robots.ts|sitemap.ts).*)",
-  ],
+  // Next 16 compiles matchers with path-to-regexp v8, which rejects the old
+  // `(?!…)` negative-lookahead idiom outright ("Pattern cannot start with \"?\"")
+  // and refuses to boot the dev server. Static paths are skipped in `middleware`
+  // itself instead (see `isStaticAsset`), so the matcher only needs to run everywhere.
+  matcher: ["/:path*"],
 };

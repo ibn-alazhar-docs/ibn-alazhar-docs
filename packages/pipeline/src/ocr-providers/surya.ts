@@ -7,7 +7,7 @@ import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-surya" });
 import type { OcrProvider } from "./types";
-import { getPythonCommand } from "./types";
+import { getPythonCommand, placedOcrLines } from "./types";
 
 const SURYA_TIMEOUT = Math.max(60_000, Number(process.env.OCR_TIMEOUT ?? 1_500_000) || 1_500_000);
 
@@ -20,6 +20,14 @@ interface SuryaPageResult {
   text: string;
   confidence: number;
   needsRetry?: boolean;
+  /** سطور OCR بمواضعها ببكسلات صورة الصفحة نفسها — لا نقاط ولا dpi آخر. */
+  lines?: SuryaOcrLine[];
+}
+
+interface SuryaOcrLine {
+  text: string;
+  confidence: number;
+  bbox?: number[] | null;
 }
 
 export class SuryaOcrProvider implements OcrProvider {
@@ -158,11 +166,15 @@ export class SuryaOcrProvider implements OcrProvider {
         }
       }
 
-      const pages: OcrPageResult[] = allResults.map((r, i) => ({
-        number: i + 1,
-        text: r.text,
-        confidence: r.confidence,
-      }));
+      const pages: OcrPageResult[] = allResults.map((r, i) => {
+        const layerLines = placedOcrLines(r.lines);
+        return {
+          number: i + 1,
+          text: r.text,
+          confidence: r.confidence,
+          ...(layerLines.length > 0 ? { layout: { lines: layerLines } } : {}),
+        };
+      });
 
       const text = pages
         .filter((p) => p.text.length > 0)
@@ -221,6 +233,30 @@ det_predictor = DetectionPredictor()
 foundation = FoundationPredictor()
 rec_predictor = RecognitionPredictor(foundation)
 
+def line_bbox(line):
+    # صندوق [x0,y0,x1,y1] ببكسلات الصورة كما هي: surya ترجع polygon أو bbox بحسب
+    # الإصدار، وكلاهما إحداثيات الصورة الأصلية بلا تحجيم — لا تُختلق عند غيبوبتهما.
+    poly = getattr(line, "polygon", None)
+    box = None
+    if poly is not None:
+        try:
+            pts = [(float(p[0]), float(p[1])) for p in poly]
+            if pts:
+                box = [min(x for x, _ in pts), min(y for _, y in pts),
+                       max(x for x, _ in pts), max(y for _, y in pts)]
+        except (TypeError, ValueError, IndexError):
+            box = None
+    if box is None:
+        bb = getattr(line, "bbox", None)
+        if bb is not None:
+            try:
+                vals = [float(v) for v in bb]
+            except (TypeError, ValueError):
+                vals = []
+            if len(vals) == 4:
+                box = vals
+    return box
+
 with open(sys.argv[1], "r") as f:
     paths = json.load(f)
 BATCH_SIZE = ${batchSize}
@@ -270,7 +306,7 @@ for start in range(0, total, BATCH_SIZE):
         continue
 
     for vi, res in zip(valid_indices, ocr_results):
-        lines = [{"text": l.text, "confidence": l.confidence} for l in res.text_lines]
+        lines = [{"text": l.text, "confidence": float(l.confidence), "bbox": line_bbox(l)} for l in res.text_lines]
         avg_conf = sum(l.confidence for l in res.text_lines) / len(res.text_lines) if res.text_lines else 0.0
         
         all_results[start + vi] = {
@@ -319,7 +355,7 @@ print(json.dumps(all_results))
           }
           try {
             const allResults: {
-              lines: { text: string; confidence: number }[];
+              lines: { text: string; confidence: number; bbox?: number[] | null }[];
               needs_retry: boolean;
             }[] = JSON.parse(stdout.trim());
 
@@ -334,6 +370,7 @@ print(json.dumps(all_results))
                 text,
                 confidence,
                 needsRetry: pageData.needs_retry || confidence < CONFIDENCE_THRESHOLD_RETRY,
+                lines,
               };
             });
             resolve(results);

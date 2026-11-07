@@ -91,7 +91,7 @@ describe("Validation Throughput Load Test", () => {
 
   describe("Folder schema", () => {
     it("parse 1000 folder creates", () => {
-      const input = { name: "مجلد جديد", color: "#16A34A" };
+      const input = { name: "مجلد جديد", color: "#127E87" };
       const start = performance.now();
 
       for (let i = 0; i < 1000; i++) {

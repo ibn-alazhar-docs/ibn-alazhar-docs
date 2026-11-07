@@ -6,9 +6,11 @@ import {
   generateDocx,
   generateEpub,
   generatePdf,
+  buildPdfHtml,
 } from "../../packages/pipeline/src/output";
 import { convertHtmlTablesToMarkdown } from "../../packages/pipeline/src/output/docx-generator";
 import type { CleanedText } from "../../packages/pipeline/src/types";
+import { HAS_PDF_ENGINE } from "./pdf-engine";
 
 function makeCleaned(overrides: Partial<CleanedText> = {}): CleanedText {
   return {
@@ -241,7 +243,7 @@ describe("generateTxt", () => {
     it("header present if requested", () => {
       const r = generateTxt(makeCleaned(), true);
       expect(r).toContain("=");
-      expect(r).toContain("Ibn Al-Azhar Docs");
+      expect(r).toContain("Ibn Al-Azhar Platform");
     });
 
     it("header has Pages field", () => {
@@ -261,7 +263,7 @@ describe("generateTxt", () => {
 
     it("header disabled with false", () => {
       const r = generateTxt(makeCleaned(), false);
-      expect(r).not.toContain("Ibn Al-Azhar Docs");
+      expect(r).not.toContain("Ibn Al-Azhar Platform");
       expect(r).not.toContain("Pages:");
     });
   });
@@ -407,43 +409,46 @@ describe("generateEpub", () => {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 describe("generatePdf", () => {
-  it("returns a valid PDF buffer", async () => {
-    const buffer = await generatePdf(makeCleaned());
-    expect(buffer).toBeInstanceOf(Buffer);
-    expect(buffer.length).toBeGreaterThan(0);
-
-    // PDF files should start with %PDF-
-    expect(buffer[0]).toBe(0x25); // '%'
-    expect(buffer[1]).toBe(0x50); // 'P'
-    expect(buffer[2]).toBe(0x44); // 'D'
-    expect(buffer[3]).toBe(0x46); // 'F'
-    expect(buffer[4]).toBe(0x2d); // '-'
+  // أمانة المخرج نفسها (الاتجاه، التشكيل، الخط المضمَّن) مقاسة في
+  // tests/backend/pdf-rtl.test.ts على PDF حقيقي. هنا لا subprocess لكل خيار:
+  // الخيارات تُقاس في HTML الذي يَصير إلى المحرّك، والمحرّك في اختبار دخان واحد.
+  it("passes fontSize and watermark into the rendered document", () => {
+    const html = buildPdfHtml("نص الماركداون الطويل في المستند", {
+      fontSize: 20,
+      watermark: "TEST WATERMARK",
+    });
+    expect(html).toContain("font-size: 20pt");
+    expect(html).toContain('<div class="watermark">TEST WATERMARK</div>');
   });
 
-  it("respects fontSize option", async () => {
-    const buffer = await generatePdf(makeCleaned(), { fontSize: 20 });
-    expect(buffer).toBeInstanceOf(Buffer);
-    expect(buffer.length).toBeGreaterThan(0);
+  it("keeps heading levels as heading elements", () => {
+    const html = buildPdfHtml("# Heading 1\n\n## Heading 2\n\nSome text");
+    expect(html).toContain("<h1");
+    expect(html).toContain("<h2");
+    expect(html).toContain("<p");
   });
 
-  it("respects watermark option", async () => {
-    const buffer = await generatePdf(makeCleaned(), { watermark: "TEST WATERMARK" });
-    expect(buffer).toBeInstanceOf(Buffer);
-    expect(buffer.length).toBeGreaterThan(0);
+  it("builds a document even when the source text is empty", () => {
+    const empty = makeCleaned({ cleaned: "", markdown: "" });
+    expect(buildPdfHtml(empty.markdown || empty.cleaned)).toContain("</html>");
   });
 
-  it("handles empty text", async () => {
-    const emptyCleaned = makeCleaned({ cleaned: "", markdown: "" });
-    const buffer = await generatePdf(emptyCleaned);
-    expect(buffer).toBeInstanceOf(Buffer);
-    expect(buffer.length).toBeGreaterThan(0);
-  });
+  it.skipIf(!HAS_PDF_ENGINE)(
+    "returns a valid PDF buffer",
+    async () => {
+      const buffer = await generatePdf(makeCleaned());
+      expect(buffer).toBeInstanceOf(Buffer);
+      expect(buffer.length).toBeGreaterThan(0);
 
-  it("handles heading levels", async () => {
-    const textWithHeadings = makeCleaned({ markdown: "# Heading 1\n\n## Heading 2\n\nSome text" });
-    const buffer = await generatePdf(textWithHeadings);
-    expect(buffer).toBeInstanceOf(Buffer);
-  });
+      // PDF files should start with %PDF-
+      expect(buffer[0]).toBe(0x25); // '%'
+      expect(buffer[1]).toBe(0x50); // 'P'
+      expect(buffer[2]).toBe(0x44); // 'D'
+      expect(buffer[3]).toBe(0x46); // 'F'
+      expect(buffer[4]).toBe(0x2d); // '-'
+    },
+    180_000,
+  );
 });
 
 // ═══════════════════════════════════════════════════════════════════════════════

@@ -2,6 +2,8 @@ import type { IDocumentRepository } from "../../domain/repositories/document.rep
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
 import type { AuthSession } from "../../domain/types";
 import { NotFoundError } from "@/shared/errors";
+import { stripArabicMarks } from "@/shared/arabic-ranges";
+import { normalizeArabicForSearch } from "@/shared/arabic-search-normalize";
 
 export interface TagSuggestion {
   name: string;
@@ -18,7 +20,16 @@ interface AutoTagDocument {
   tags: { tag: { id: string; name: string; color: string } }[];
 }
 
-const ARABIC_DIACRITICS = /[ؐ-ًؚ-ْٰ]/g;
+// الوسم المُقترح يُعرض كما كُتب في الأصل بحروفه، بلا تشكيل فقط (المُنتَج نسخة
+// من الأصل)؛ أما المقارنة وإلغاء التكرار فيعملان على التطبيع القياسي للبحث —
+// المصدر واحد: @/shared/arabic-search-normalize (المقفول على normalize_arabic
+// في SQL). كان الطي يُخزَّن داخل اسم الوسم نفسه فتُعرض «صحه» بدل «صحة».
+interface TagToken {
+  /** شكل العرض: أصل الحروف مع إزالة علامات التشكيل فقط. */
+  display: string;
+  /** شكل المقارنة: تطبيع البحث القياسي. */
+  norm: string;
+}
 
 const STOPWORDS = new Set<string>([
   // Arabic
@@ -99,24 +110,21 @@ const STOPWORDS = new Set<string>([
   "copy",
 ]);
 
-function normalizeToken(token: string): string {
-  return token
-    .replace(ARABIC_DIACRITICS, "")
-    .replace(/[إأآا]/g, "ا")
-    .replace(/ى/g, "ي")
-    .replace(/ؤ/g, "و")
-    .replace(/ئ/g, "ي")
-    .replace(/ة/g, "ه")
-    .toLowerCase()
-    .trim();
+function toTagToken(token: string): TagToken {
+  return {
+    display: token.trim(),
+    norm: normalizeArabicForSearch(token),
+  };
 }
 
-function tokenize(text: string): string[] {
-  const cleaned = text.replace(/[^\p{L}\p{N}\s]/gu, " ");
+// تُنزَع العلامات قبل التقسيم: تنظيف «ما ليس حرفًا» يستبدلها بمسافة، فلو بقي
+// التشكيل لانشقّت «صحّة» إلى «صح» + «ة» وضاع الوسم أصلًا.
+function tokenize(text: string): TagToken[] {
+  const cleaned = stripArabicMarks(text).replace(/[^\p{L}\p{N}\s]/gu, " ");
   return cleaned
     .split(/\s+/)
-    .map(normalizeToken)
-    .filter((t) => t.length >= 2 && !STOPWORDS.has(t));
+    .map(toTagToken)
+    .filter((t) => t.norm.length >= 2 && !STOPWORDS.has(t.norm));
 }
 
 export class AutoTagUseCases {
@@ -141,32 +149,37 @@ export class AutoTagUseCases {
       .filter(Boolean)
       .join(" ");
     const corpusTokens = tokenize(corpus);
-    const corpusSet = new Set(corpusTokens);
+    const corpusSet = new Set(corpusTokens.map((t) => t.norm));
     const frequency = new Map<string, number>();
+    const displayByNorm = new Map<string, string>();
     for (const token of corpusTokens) {
-      frequency.set(token, (frequency.get(token) ?? 0) + 1);
+      frequency.set(token.norm, (frequency.get(token.norm) ?? 0) + 1);
+      if (!displayByNorm.has(token.norm)) displayByNorm.set(token.norm, token.display);
     }
 
-    const appliedNames = new Set(document.tags.map((td) => normalizeToken(td.tag.name)));
-    const existingNameNorm = new Set(existingTags.map((t) => normalizeToken(t.name)));
+    const appliedNames = new Set(document.tags.map((td) => normalizeArabicForSearch(td.tag.name)));
+    const existingNameNorm = new Set(existingTags.map((t) => normalizeArabicForSearch(t.name)));
     const existingTokenNorm = new Set<string>();
     for (const tag of existingTags) {
-      for (const tk of tokenize(tag.name)) existingTokenNorm.add(tk);
+      for (const tk of tokenize(tag.name)) existingTokenNorm.add(tk.norm);
     }
 
     const suggestions: TagSuggestion[] = [];
 
     for (const tag of existingTags) {
-      const tagNameNorm = normalizeToken(tag.name);
+      const tagNameNorm = normalizeArabicForSearch(tag.name);
       if (appliedNames.has(tagNameNorm)) continue;
 
       const tagTokens = tokenize(tag.name);
       if (tagTokens.length === 0) continue;
 
       let matched = 0;
-      for (const tk of tagTokens) if (corpusSet.has(tk)) matched += 1;
+      for (const tk of tagTokens) if (corpusSet.has(tk.norm)) matched += 1;
 
-      if (matched === 0 && corpus.toLowerCase().includes(tag.name.toLowerCase()))
+      if (
+        matched === 0 &&
+        normalizeArabicForSearch(corpus).includes(normalizeArabicForSearch(tag.name))
+      )
         matched = tagTokens.length;
       if (matched === 0) continue;
 
@@ -181,16 +194,16 @@ export class AutoTagUseCases {
 
     const maxFreq = Math.max(1, ...frequency.values());
     const candidateFreq = new Map<string, number>();
-    for (const [token, count] of frequency) {
-      if (existingTokenNorm.has(token)) continue;
-      if (existingNameNorm.has(token)) continue;
-      candidateFreq.set(token, count);
+    for (const [norm, count] of frequency) {
+      if (existingTokenNorm.has(norm)) continue;
+      if (existingNameNorm.has(norm)) continue;
+      candidateFreq.set(norm, count);
     }
     const newCandidates = [...candidateFreq.entries()]
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
-      .map(([name, count]) => ({
-        name,
+      .map(([norm, count]) => ({
+        name: displayByNorm.get(norm) ?? norm,
         score: Math.round((count / maxFreq) * 100) / 100,
         type: "new" as const,
         reason: "كلمة بارزة مقترحة من المستند",

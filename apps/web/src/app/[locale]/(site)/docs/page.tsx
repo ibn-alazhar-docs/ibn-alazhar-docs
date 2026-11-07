@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { generatePageMetadata } from "@/ui/metadata";
+import { BRAND_NAME } from "@/ui/brand";
 import {
   getContentCollection,
   getCategoryDescription,
@@ -19,7 +20,10 @@ interface DocsIndexPageProps {
 
 export async function generateMetadata({ params }: DocsIndexPageProps): Promise<Metadata> {
   const { locale } = await params;
-  const title = locale === "ar" ? "المكتبة — ابن الأزهر دوكس" : "Library — Ibn Al-Azhar Docs";
+  // `generatePageMetadata` appends the brand only to the Open Graph title, so the
+  // `<title>` suffix is written here — from BRAND_NAME, never typed out.
+  const brand = locale === "ar" ? BRAND_NAME.ar : BRAND_NAME.en;
+  const title = locale === "ar" ? `المكتبة — ${brand}` : `Library — ${brand}`;
   const description =
     locale === "ar"
       ? "تصفح مستندات المكتبة ومنصة المعرفة العربية"

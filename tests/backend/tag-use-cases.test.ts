@@ -17,7 +17,7 @@ function makeTag(overrides: Record<string, unknown> = {}) {
     id: "tag-1",
     userId: "user-1",
     name: "Important",
-    color: "#16A34A",
+    color: "#127E87",
     createdAt: new Date(),
     _count: { documents: 0 },
     ...overrides,

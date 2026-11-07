@@ -17,14 +17,30 @@ import { inflateRawSync } from "node:zlib";
 import { readFileSync, existsSync } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
+/**
+ * Vendored Amiri first (OFL 1.1 — see `assets/fonts/OFL.txt`). The system and home
+ * paths are only fallbacks: resolving a font from a developer's `~/.fonts` made
+ * DOCX font embedding silently no-op in Docker, CI, and every real deployment.
+ * `../../assets` is correct from both `src/output` and a built `dist/output`.
+ *
+ * `import.meta.dirname` is undefined once Next bundles this package, which threw at
+ * module evaluation and 500-ed every route importing it — hence the URL form, which
+ * is already the convention in `ocr.ts`, `output/pdf.ts` and `text/clean/index.ts`.
+ */
+const MODULE_DIR = path.dirname(fileURLToPath(import.meta.url));
+const VENDORED_FONT_DIR = path.resolve(MODULE_DIR, "../../assets/fonts");
+
 const FONT_REGULAR_CANDIDATES = [
+  path.join(VENDORED_FONT_DIR, "Amiri-Regular.ttf"),
   "/usr/share/fonts/opentype/fonts-hosny-amiri/Amiri-Regular.ttf",
   path.join(homedir(), ".fonts/Amiri-Regular.ttf"),
   path.join(homedir(), ".local/share/fonts/Amiri-Regular.ttf"),
 ];
 const FONT_BOLD_CANDIDATES = [
+  path.join(VENDORED_FONT_DIR, "Amiri-Bold.ttf"),
   "/usr/share/fonts/opentype/fonts-hosny-amiri/Amiri-Bold.ttf",
   path.join(homedir(), ".fonts/Amiri-Bold.ttf"),
   path.join(homedir(), ".local/share/fonts/Amiri-Bold.ttf"),
@@ -186,10 +202,8 @@ export function obfuscateFont(data: Buffer, key: string): Buffer {
 }
 
 const CT_FONT = "application/vnd.openxmlformats-officedocument.obfuscatedFont";
-const CT_FONTTABLE =
-  "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml";
-const REL_FONT =
-  "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font";
+const CT_FONTTABLE = "application/vnd.openxmlformats-officedocument.wordprocessingml.fontTable+xml";
+const REL_FONT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/font";
 const REL_FONTTABLE =
   "http://schemas.openxmlformats.org/officeDocument/2006/relationships/fontTable";
 
@@ -272,10 +286,7 @@ export function embedAmiriFonts(
   if (!ctBuf) throw new Error("[Content_Types].xml مفقود في DOCX");
   let ct = ctBuf.toString("utf8");
   if (!ct.includes('Extension="odttf"')) {
-    ct = ct.replace(
-      "<Default ",
-      `<Default Extension="odttf" ContentType="${CT_FONT}"/><Default `,
-    );
+    ct = ct.replace("<Default ", `<Default Extension="odttf" ContentType="${CT_FONT}"/><Default `);
   }
   if (!ct.includes("/word/fontTable.xml")) {
     ct = ct.replace(

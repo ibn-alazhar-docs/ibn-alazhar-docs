@@ -10,6 +10,7 @@ import { unlink, writeFile, mkdir, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { randomUUID } from "node:crypto";
+import { safeFileName } from "@/shared/safe-file-name";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 import type { IStorageRepository } from "@/domain/repositories/storage.repository.interface";
@@ -82,9 +83,7 @@ export class UploadDocumentUseCase {
 
     const jobId = randomUUID();
     const fileName = file.name;
-    const safeName = fileName
-      .replace(/[^a-zA-Z0-9._\u0600-\u06FF\u0660-\u0669-]/g, "_")
-      .slice(0, 200);
+    const safeName = safeFileName(fileName);
     // The temp file is staged before the real storage write. On Hugging Face
     // Spaces the app runs as uid 1000 while the persistent volume (/data) is
     // prepared by the entrypoint as root, so the configured tmp dir may not

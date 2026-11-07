@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { generatePageMetadata } from "@/ui/metadata";
 import { Container } from "@/ui/container";
+import { Badge } from "@/ui/badge";
 import { GUEST_TOOLS, GUEST_TOOLS_LIMITS } from "@/shared/tools/guest-limits";
 import { ToolCard } from "@/ui/tools/tool-card";
 
@@ -42,9 +43,9 @@ export default async function ToolsPage({ params }: ToolsPageProps) {
         <header className="mb-8">
           <div className="mb-3 flex flex-wrap items-center gap-2">
             <h1 className="text-3xl font-extrabold text-primary-color">{t("title")}</h1>
-            <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-800">
+            <Badge variant="success" className="px-3 py-1">
               {t("noAccountBadge")}
-            </span>
+            </Badge>
           </div>
           <p className="max-w-2xl text-base leading-relaxed text-secondary-color">
             {t("subtitle")}
@@ -52,20 +53,14 @@ export default async function ToolsPage({ params }: ToolsPageProps) {
         </header>
 
         <ul className="mb-10 flex flex-wrap gap-2 text-xs font-medium text-secondary-color">
-          <li className="rounded-full border border-[var(--border-color,rgba(0,0,0,0.12))] px-3 py-1.5">
-            {t("limits.maxSize")}
-          </li>
-          <li className="rounded-full border border-[var(--border-color,rgba(0,0,0,0.12))] px-3 py-1.5">
-            {t("limits.maxPages")}
-          </li>
-          <li className="rounded-full border border-[var(--border-color,rgba(0,0,0,0.12))] px-3 py-1.5">
+          <li className="rounded-full border border-line px-3 py-1.5">{t("limits.maxSize")}</li>
+          <li className="rounded-full border border-line px-3 py-1.5">{t("limits.maxPages")}</li>
+          <li className="rounded-full border border-line px-3 py-1.5">
             {t("limits.queue")} ({GUEST_TOOLS_LIMITS.maxConcurrentJobsTotal}/
             {GUEST_TOOLS_LIMITS.maxConcurrentJobsPerTool}/
             {GUEST_TOOLS_LIMITS.maxConcurrentJobsPerIp})
           </li>
-          <li className="rounded-full border border-[var(--border-color,rgba(0,0,0,0.12))] px-3 py-1.5">
-            {t("limits.ttl")}
-          </li>
+          <li className="rounded-full border border-line px-3 py-1.5">{t("limits.ttl")}</li>
         </ul>
 
         <div className="mb-12 grid gap-5 sm:grid-cols-2">
@@ -82,24 +77,14 @@ export default async function ToolsPage({ params }: ToolsPageProps) {
         </div>
 
         <section aria-labelledby="guest-principles">
-          <h2
-            id="guest-principles"
-            className="mb-5 text-xl font-bold text-primary-color"
-          >
+          <h2 id="guest-principles" className="mb-5 text-xl font-bold text-primary-color">
             {tPrinciples("title")}
           </h2>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {principles.map((item) => (
-              <article
-                key={item.title}
-                className="rounded-2xl border border-[var(--border-color,rgba(0,0,0,0.08))] bg-[var(--card-bg,#fff)] p-5"
-              >
-                <h3 className="mb-2 text-sm font-bold text-primary-color">
-                  {item.title}
-                </h3>
-                <p className="text-sm leading-relaxed text-secondary-color">
-                  {item.description}
-                </p>
+              <article key={item.title} className="rounded-brand-lg border border-line bg-card p-5">
+                <h3 className="mb-2 text-sm font-bold text-primary-color">{item.title}</h3>
+                <p className="text-sm leading-relaxed text-secondary-color">{item.description}</p>
               </article>
             ))}
           </div>

@@ -4,8 +4,20 @@ import type { OcrProvider } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 import { getCloudOcrRemainingBudget, recordCloudOcrUsage } from "../cloud-cost-guard";
 import { KeyPool, keyFingerprint, loadGeminiKeys } from "../keypool";
+import { TASHKEEL, arabicLetterRatio } from "../text/constants";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
+
+/**
+ * Sidecar linkage to SKILL `arabic-pdf-to-book` (specs/012-amazing-merge US3 /
+ * T033, FR-004): API-key discovery comes from `loadGeminiKeys()` (keypool.ts),
+ * which reads `~/.config/ocr/gemini_key` (legacy) and
+ * `~/.config/ocr/gemini_keys` (multi-key) — the skill's key location. The skill
+ * itself is NOT installed or invoked as code here; only its chunk sizing
+ * (10 → 6 on QA failure), PAGE_BREAK splitting, and QA gates are mirrored.
+ * No heavy local models are introduced (constraint). If the key files are
+ * absent, `loadGeminiKeys()` falls back to `GEMINI_API_KEY` env vars.
+ */
 
 function isTransientError(error: unknown): boolean {
   if (error instanceof Error) {
@@ -137,12 +149,10 @@ function estimateQualityMetrics(
   tableHints: number;
   averageLength: number;
 } {
-  const arabic = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
-  const total = rawText.replace(/\s+/g, " ").length;
   const tableHints = (rawText.match(/\|/g) || []).length;
-  const diacritics = rawText.match(/[\u064B-\u065F\u0670\u06D6-\u06DC]/g) || [];
+  const diacritics = rawText.match(TASHKEEL) || [];
   return {
-    arabicRatio: total === 0 ? 0 : arabic / total,
+    arabicRatio: arabicLetterRatio(rawText),
     diacriticsRatio: rawText.length === 0 ? 0 : diacritics.length / rawText.length,
     tableHints,
     averageLength: pages.length === 0 ? 0 : rawText.length / pages.length,

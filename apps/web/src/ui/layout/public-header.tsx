@@ -1,11 +1,11 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
 import { LocaleToggle } from "@/ui/locale/locale-toggle";
 import { BRAND_NAME } from "@/ui/brand";
+import { BrandLogo } from "@/ui/brand-logo";
 
 interface PublicHeaderProps {
   locale: string;
@@ -17,6 +17,7 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
   const t = useTranslations("nav");
+  const tTools = useTranslations("tools");
   const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
 
   return (
@@ -27,14 +28,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
     >
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
-          <Image
-            src="/logo.svg"
-            alt={brand}
-            width={40}
-            height={40}
-            className="h-10 w-auto"
-            priority
-          />
+          <BrandLogo alt={brand} className="h-10 w-auto" priority />
           <span className="heading-display-sm hidden truncate text-sm font-bold tracking-tight text-primary-color sm:inline">
             {brand}
           </span>
@@ -71,6 +65,37 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
               </Link>
             </>
           )}
+        </nav>
+      </div>
+      <div className="border-t border-line/60">
+        <nav
+          aria-label={tTools("title")}
+          className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-1 gap-y-0.5 px-4 py-1.5 sm:gap-x-2 sm:px-6"
+        >
+          <Link
+            href="/tools/pdf-to-word"
+            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+          >
+            {tTools("items.pdf-to-word.name")}
+          </Link>
+          <Link
+            href="/tools/ocr"
+            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+          >
+            {tTools("items.ocr.name")}
+          </Link>
+          <Link
+            href="/tools/tashkeel"
+            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+          >
+            {tTools("items.tashkeel.name")}
+          </Link>
+          <Link
+            href="/tools/transcription"
+            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+          >
+            {tTools("items.transcription.name")}
+          </Link>
         </nav>
       </div>
     </header>

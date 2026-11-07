@@ -15,7 +15,7 @@
     },
   ],
   "vars": {
-    "QUEUE_DRIVER": "pg",
+    // NOTE: QUEUE_DRIVER deliberately omitted — keeps driver.ts default "redis" per PHASE5 rules.
     "STORAGE_DRIVER": "s3",
     "NODE_ENV": "production",
   },

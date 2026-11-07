@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BRAND_NAME } from "./brand";
+import { BRAND_NAME, BRAND_OG_ALT, BRAND_OG_IMAGE } from "./brand";
 import { SITE_URL } from "@/shared/constants";
 
 export const siteName = BRAND_NAME.en;
@@ -27,7 +27,7 @@ export function generatePageMetadata({
   path = "",
   ogType = "website",
   publishedTime,
-  image,
+  image = BRAND_OG_IMAGE,
 }: PageMetadataOptions): Metadata {
   const url = getLocaleUrl(locale, path);
   const isAr = locale === "ar";
@@ -53,15 +53,20 @@ export function generatePageMetadata({
       locale: ogLocale,
       type: ogType,
       ...(publishedTime && ogType === "article" && { publishedTime }),
-      ...(image && {
-        images: [{ url: image, width: 1200, height: 630 }],
-      }),
+      images: [
+        {
+          url: image,
+          width: 1200,
+          height: 630,
+          alt: isAr ? BRAND_OG_ALT.ar : BRAND_OG_ALT.en,
+        },
+      ],
     },
     twitter: {
       card: "summary_large_image",
       title: fullTitle,
       description,
-      ...(image && { images: [image] }),
+      images: [image],
     },
     robots: {
       index: true,

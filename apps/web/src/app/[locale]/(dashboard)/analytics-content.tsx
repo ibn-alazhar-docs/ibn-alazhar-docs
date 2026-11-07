@@ -103,7 +103,7 @@ function StatCard({
   accentColor?: string;
 }) {
   return (
-    <div className="relative overflow-hidden rounded-xl border border-line bg-[var(--card-bg)] p-5 shadow-[var(--shadow-sm)]">
+    <div className="relative overflow-hidden rounded-xl border border-line bg-card p-5 shadow-[var(--shadow-sm)]">
       <div
         className="absolute inset-x-0 top-0 h-0.5 rounded-t-xl opacity-60"
         style={{

@@ -19,6 +19,7 @@
  */
 
 import { cleanStructureText } from "./clean-structure";
+import { containsArabic } from "./text/constants";
 import {
   QuranIndex,
   HadithIndex,
@@ -87,7 +88,7 @@ function docxMetricsFromXml(xml: string): {
   return {
     paragraphs: nonEmpty.length,
     chars: text.length,
-    arabic: /[\u0600-\u06FF]/.test(text),
+    arabic: containsArabic(text),
     badMarkup: /(```|<br\s*\/?>)/i.test(text),
   };
 }

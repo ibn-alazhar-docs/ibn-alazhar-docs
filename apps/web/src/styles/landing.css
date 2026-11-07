@@ -101,29 +101,45 @@
     background-color: var(--btn-primary-bg);
     color: var(--btn-primary-text);
     transition:
-      opacity 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      opacity var(--motion-base) var(--motion-ease),
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease);
   }
   .landing-btn-primary:hover {
-    opacity: 0.92;
+    opacity: 0.94;
     transform: translateY(-1px);
-    box-shadow: 0 6px 20px var(--btn-shadow-lg);
+    box-shadow: var(--btn-shadow-lg);
   }
   .landing-btn-primary:active {
     transform: translateY(0);
   }
 
-  /* Manuscript-inspired card */
+  /* Secondary CTA on deep Prussian grounds: gold hairline outline, inverse text. */
+  .landing-btn-ghost {
+    border: 1px solid var(--gold-border);
+    color: var(--gold);
+    background: transparent;
+    transition:
+      background-color var(--motion-base) var(--motion-ease),
+      border-color var(--motion-base) var(--motion-ease);
+  }
+  .landing-btn-ghost:hover {
+    background-color: var(--gold-bg);
+    border-color: var(--gold);
+  }
+
+  /* Manuscript-inspired card — surface ground, gold hairline spine on hover. */
   .card-manuscript {
     background-color: var(--card-bg);
     border: 1px solid var(--border-line);
-    border-radius: 0.75rem;
+    border-radius: var(--radius-brand-lg);
+    box-shadow: var(--shadow-sm);
     position: relative;
     overflow: hidden;
     transition:
-      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-color var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease),
+      transform var(--motion-base) var(--motion-ease);
   }
   .card-manuscript::before {
     content: "";
@@ -134,14 +150,14 @@
     height: 100%;
     background: linear-gradient(180deg, var(--gold), var(--btn-primary-bg));
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--motion-base) var(--motion-ease);
   }
   .card-manuscript:hover::before {
     opacity: 1;
   }
   .card-manuscript:hover {
     border-color: var(--gold-border);
-    box-shadow: 0 8px 24px rgba(202, 138, 4, 0.08);
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--gold) 10%, transparent);
   }
 
   /* Signature — Islamic geometric pattern */
@@ -169,16 +185,15 @@
     color: var(--gold);
   }
 
-  /* Display heading treatment */
+  /* Display heading treatment — Amiri display face (brand.css). */
   .heading-display {
-    font-family: var(--font-family-display);
+    font-family: var(--font-display);
     font-weight: 700;
     line-height: 1.15;
-    letter-spacing: -0.01em;
   }
 
   .heading-display-sm {
-    font-family: var(--font-family-display);
+    font-family: var(--font-display);
     font-weight: 700;
     line-height: 1.2;
   }
@@ -189,15 +204,16 @@
     overflow: hidden;
     background: var(--card-bg);
     border: 1px solid var(--border-line);
-    border-radius: 1rem;
+    border-radius: var(--radius-brand-lg);
+    box-shadow: var(--shadow-sm);
     transition:
-      border-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-color var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease),
+      transform var(--motion-base) var(--motion-ease);
   }
   .stat-card-premium:hover {
     border-color: var(--btn-primary-bg);
-    box-shadow: 0 8px 24px var(--btn-shadow);
+    box-shadow: var(--btn-shadow);
     transform: translateY(-2px);
   }
   .stat-card-premium::before {
@@ -209,7 +225,7 @@
     height: 2px;
     background: linear-gradient(90deg, var(--btn-primary-bg), var(--gold));
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transition: opacity var(--motion-base) var(--motion-ease);
   }
   .stat-card-premium:hover::before {
     opacity: 1;

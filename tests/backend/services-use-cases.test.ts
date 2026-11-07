@@ -2165,9 +2165,9 @@ describe("Zip builder", () => {
         tags: [],
       });
       tagRepo.findMany.mockResolvedValue([
-        { id: "t1", name: "مالي", color: "#16A34A" },
-        { id: "t2", name: "تقرير", color: "#16A34A" },
-        { id: "t3", name: "قانوني", color: "#16A34A" },
+        { id: "t1", name: "مالي", color: "#127E87" },
+        { id: "t2", name: "تقرير", color: "#127E87" },
+        { id: "t3", name: "قانوني", color: "#127E87" },
       ]);
 
       const result = await useCases.suggestTags("doc-1", makeSession());
@@ -2184,9 +2184,9 @@ describe("Zip builder", () => {
         description: null,
         originalName: "x.pdf",
         fileName: "x.pdf",
-        tags: [{ tag: { id: "t1", name: "مالي", color: "#16A34A" } }],
+        tags: [{ tag: { id: "t1", name: "مالي", color: "#127E87" } }],
       });
-      tagRepo.findMany.mockResolvedValue([{ id: "t1", name: "مالي", color: "#16A34A" }]);
+      tagRepo.findMany.mockResolvedValue([{ id: "t1", name: "مالي", color: "#127E87" }]);
 
       const result = await useCases.suggestTags("doc-1", makeSession());
       expect(result.find((s) => s.name === "مالي")).toBeUndefined();

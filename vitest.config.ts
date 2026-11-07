@@ -233,6 +233,22 @@ export default defineConfig({
           alias: frontendAlias,
         },
       },
+      // Regression sanity suite — بلا هذا المشروع كان `vitest run tests/regression/…`
+      // يُخرج «No test files found» لأن المسار خارج include لكل المشاريع، فيفشل
+      // `pnpm ci:quick` دائمًا قبل الوصول إلى هذا السطر.
+      {
+        test: {
+          name: "regression",
+          environment: "node",
+          globals: true,
+          setupFiles: ["./tests/setup.ts"],
+          include: ["tests/regression/**/*.test.ts"],
+          testTimeout: 30000,
+        },
+        resolve: {
+          alias: rootAlias,
+        },
+      },
     ],
   },
 });

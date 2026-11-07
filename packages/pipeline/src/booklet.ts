@@ -15,6 +15,8 @@
  * تحوّلها إلى Markdown موسوم (س١: …) ثم عبر pandoc، أو إلى IR.
  */
 
+import { TASHKEEL } from "./text/constants";
+
 export const LETTERS = "أبجدهوزحطيكلمنسعفصقرشتثخذضظغ";
 export const ORDINALS = [
   "",
@@ -57,7 +59,7 @@ export function toArDigits(t: string): string {
 }
 
 export function stripTashkeel(s: string): string {
-  return s.replace(/[\u064B-\u0652\u0670]/g, "");
+  return s.replace(TASHKEEL, "");
 }
 
 export function isInstruction(line: string): boolean {

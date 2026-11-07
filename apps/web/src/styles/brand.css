@@ -1,8 +1,14 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
-@theme {
-  /* Brand palette — Visual Identity (docs/BRAND_IMPLEMENTATION.md)
-     Primary teal #127E87 · Gold #DA9E2C · Prussian #083B40 */
+/* `static`: Tailwind 4 only emits theme variables a utility actually uses, and
+   these are consumed through `var()` in plain CSS (globals.css `html`/`h1-h6`,
+   landing.css, reading.css). Without `static` the whole font chain —
+   `--font-family-almarai` → `--font-family-body` — is dropped from the output,
+   every element falls back to the UA serif, and Almarai/Amiri never load. */
+@theme static {
+  /* Brand palette — منصة ابن الأزهر Visual Identity (docs/BRAND_IMPLEMENTATION.md)
+     Classic Teal #127E87 · Antique Gold #DA9E2C · Pure White · Prussian Blue #083B40
+     Warm paper #FBF5E9 (the brandbook's own page ground). */
   --color-primary-50: #ecf5f5;
   --color-primary-100: #d4e8e9;
   --color-primary-200: #acd2d5;
@@ -48,6 +54,14 @@
   --color-prussian-900: #031618;
   --color-prussian: #083b40;
 
+  /* Warm paper — the brandbook ground tone and its neighbours. */
+  --color-paper-50: #fefcf7;
+  --color-paper-100: #fbf5e9;
+  --color-paper-200: #f5e8d2;
+  --color-paper-300: #eddcc0;
+  --color-paper-400: #e0c9a4;
+  --color-paper-500: #cfae80;
+
   --color-neutral-50: #faf8f3;
   --color-neutral-100: #f5f0e8;
   --color-neutral-200: #e8e2d8;
@@ -64,40 +78,58 @@
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
   --color-warning-50: #fffbeb;
-  --color-warning-500: #f59e0b;
+  --color-warning-500: #da9e2c;
+  /* The brandbook has no green: status hue comes from teal depth, not a new colour. */
   --color-success-50: #ecf5f5;
   --color-success-500: #127e87;
+  --color-success-600: #0d5b61;
   --color-info-50: #eff6ff;
   --color-info-500: #3b82f6;
 
   --color-manuscript-brown: #92400e;
 
-  /* Brand fonts: Almarai (body/UI) + Thmanyah (display, stack-based) */
+  /* Brand fonts: Amiri display + Almarai body/UI.
+     Thmanyah is the brandbook's primary face but is commercial and unlicensed here
+     (AGENTS.md forbids taking it without a licence file), so the stack names it
+     first and falls through to OFL faces until licensed files are self-hosted. */
   --font-family-almarai: var(--font-almarai), "Almarai", "Noto Sans Arabic", system-ui, sans-serif;
-  --font-family-thmanyah: "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
-  --font-family-display: var(--font-family-thmanyah);
+  --font-family-thmanyah:
+    "Thmanyah Sans", "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
+  --font-family-display:
+    var(--font-amiri), "Amiri", "Noto Naskh Arabic", var(--font-family-thmanyah);
   --font-family-body: var(--font-family-almarai);
   /* Backwards-compatible aliases (reading.css / landing.css still use these) */
   --font-family-cairo: var(--font-family-almarai);
-  --font-family-amiri: var(--font-family-thmanyah);
+  --font-family-amiri: var(--font-family-display);
   --font-family-mono:
     var(--font-mono), "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* `--font-*` is the Tailwind namespace that produces utilities, so these two
+     turn the `font-body` / `font-display` class names used across the UI into
+     real rules instead of inert strings. */
+  --font-body: var(--font-family-almarai);
+  --font-display: var(--font-family-display);
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+  --shadow-xs: 0 1px 2px rgb(8 59 64 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(8 59 64 / 0.07), 0 1px 2px rgb(8 59 64 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(8 59 64 / 0.08), 0 2px 4px -2px rgb(8 59 64 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(8 59 64 / 0.1), 0 4px 6px -4px rgb(8 59 64 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(8 59 64 / 0.11), 0 8px 10px -6px rgb(8 59 64 / 0.06);
+
+  --radius-brand-sm: 8px;
+  --radius-brand-md: 14px;
+  --radius-brand-lg: 20px;
+  --radius-brand-xl: 28px;
 
   --color-ring: var(--color-primary-500);
   --ring-offset-width: 2px;
   --ring-offset-color: var(--surface);
 
   --color-page: var(--page-bg);
+  --color-paper: var(--page-bg);
   --color-surface: var(--surface);
   --color-card: var(--card-bg);
   --color-badge: var(--badge-bg);
@@ -143,28 +175,32 @@
   --brand-teal: #127e87;
   --brand-gold: #da9e2c;
   --brand-prussian: #083b40;
+  --brand-paper: #fbf5e9;
+  /* Print clear space from the brandbook (190px at the reference artwork size). */
   --logo-clear-space: 190px;
   --logo-min-size: 152px;
-  --page-bg: #fafafa;
+  /* On-screen safe space is proportional to the rendered mark, not the print value. */
+  --logo-safe-inline: 0.75em;
+  --page-bg: #fbf5e9;
   --surface: #ffffff;
   --card-bg: #ffffff;
-  --border-line: #e5e5e5;
-  --border-subtle: #f0f0f0;
-  --text-primary: #171717;
-  --text-secondary: #525252;
-  --text-tertiary: #5f5f5f;
+  --border-line: #e8e2d8;
+  --border-subtle: #f2ece1;
+  --text-primary: #12282b;
+  --text-secondary: #4b5c5e;
+  --text-tertiary: #6f7e80;
   --text-inverse: #fffdf7;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(31, 41, 55, 0.12);
-  --hover-bg: rgba(31, 41, 55, 0.04);
-  --active-bg: rgba(31, 41, 55, 0.06);
+  --btn-ghost-border: rgba(8, 59, 64, 0.14);
+  --hover-bg: rgba(8, 59, 64, 0.05);
+  --active-bg: rgba(8, 59, 64, 0.08);
   --badge-bg: rgba(18, 126, 135, 0.1);
-  --overlay: rgba(31, 41, 55, 0.5);
-  --input-bg: #fdfcfa;
-  --input-border: #e8e2d8;
+  --overlay: rgba(8, 59, 64, 0.5);
+  --input-bg: #fffdf8;
+  --input-border: #e0d8ca;
   --input-focus: #127e87;
-  --success: #127e87;
+  --success: #0d5b61;
   --success-bg: #ecf5f5;
   --success-border: #acd2d5;
   --danger: #dc2626;
@@ -175,17 +211,23 @@
   --gold: #da9e2c;
   --gold-bg: #fcf7ee;
   --gold-border: #f2ddb5;
-  --icon-color: #1f2937;
+  --icon-color: #083b40;
   --icon-muted: #78716c;
   --ring-focus: #127e87;
-  --shadow-color: 0 0 0;
-  --font-display: var(--font-family-thmanyah);
-  --font-body: var(--font-family-almarai);
+  --shadow-color: rgba(8, 59, 64, 0.1);
   --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
   --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.45);
-  --glass-bg: hsla(40, 30%, 98%, 0.7);
-  --glass-border: rgba(218, 158, 44, 0.12);
-  --glass-shadow: 0 16px 32px -8px rgba(31, 41, 55, 0.08);
+  --glass-bg: hsla(40, 45%, 97%, 0.72);
+  --glass-border: rgba(218, 158, 44, 0.16);
+  --glass-shadow: 0 16px 32px -8px rgba(8, 59, 64, 0.1);
+  /* Brand wording (brandbook 01 / 02) */
+  --brand-tagline: "في بيت كل طالب أزهري";
+  --brand-positioning: "أول منصة شاملة للثانوية الأزهرية";
+  /* Motion — Warm Academic Polish: short, eased, never bouncy. */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .dark {
@@ -194,37 +236,37 @@
   --card-bg: #0a454a;
   --border-line: #0d5b61;
   --border-subtle: #073033;
-  --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-tertiary: #8c8c8c;
+  --text-primary: #f7f3ea;
+  --text-secondary: #b9c9ca;
+  --text-tertiary: #92a5a6;
   --text-inverse: #083b40;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(245, 240, 232, 0.1);
-  --hover-bg: rgba(245, 240, 232, 0.05);
-  --active-bg: rgba(245, 240, 232, 0.08);
-  --badge-bg: rgba(22, 163, 74, 0.15);
-  --overlay: rgba(26, 22, 20, 0.8);
+  --btn-ghost-border: rgba(245, 240, 232, 0.12);
+  --hover-bg: rgba(245, 240, 232, 0.06);
+  --active-bg: rgba(245, 240, 232, 0.09);
+  --badge-bg: rgba(18, 126, 135, 0.2);
+  --overlay: rgba(3, 22, 24, 0.8);
   --input-bg: #062a2e;
   --input-border: #0d5b61;
-  --input-focus: #127e87;
-  --success: #127e87;
-  --success-bg: rgba(18, 126, 135, 0.12);
-  --success-border: rgba(18, 126, 135, 0.25);
+  --input-focus: #469aa1;
+  --success: #469aa1;
+  --success-bg: rgba(18, 126, 135, 0.14);
+  --success-border: rgba(70, 154, 161, 0.3);
   --danger: #ef4444;
   --danger-bg: rgba(239, 68, 68, 0.1);
   --danger-border: rgba(239, 68, 68, 0.2);
   --info: #60a5fa;
   --info-bg: rgba(96, 165, 250, 0.1);
-  --gold: #da9e2c;
+  --gold: #e2b35a;
   --gold-bg: rgba(218, 158, 44, 0.12);
-  --gold-border: rgba(218, 158, 44, 0.25);
+  --gold-border: rgba(226, 179, 90, 0.28);
   --icon-color: #f5f0e8;
   --icon-muted: #a8a29e;
-  --ring-focus: #127e87;
-  --shadow-color: 0 0 0;
-  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
-  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.45);
+  --ring-focus: #469aa1;
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.5);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.6);
   --glass-bg: rgba(8, 59, 64, 0.65);
   --glass-border: rgba(245, 240, 232, 0.08);
   --glass-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.8);
@@ -240,6 +282,9 @@
   --color-neutral-700: #d6cec2;
   --color-neutral-800: #f5f0e8;
   --color-neutral-900: #faf8f3;
+  --color-paper-50: #062a2e;
+  --color-paper-100: #073438;
+  --color-paper-200: #0d5b61;
   --color-gold-50: rgba(218, 158, 44, 0.08);
   --color-gold-100: rgba(218, 158, 44, 0.12);
   --color-gold-200: rgba(218, 158, 44, 0.18);
@@ -270,7 +315,7 @@
   }
 
   .premium-gradient-text {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--success) 100%);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--brand-teal) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -302,8 +347,8 @@
 
   .hover-lift {
     transition:
-      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease);
   }
 
   .hover-lift:hover {
@@ -317,15 +362,52 @@
 
   @keyframes pulseGlow {
     0% {
-      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+      box-shadow: 0 0 0 0 rgba(18, 126, 135, 0.4);
     }
     100% {
-      box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+      box-shadow: 0 0 0 8px rgba(18, 126, 135, 0);
     }
+  }
+
+  /* "Subtle Geometric Motifs" (brandbook 05): a rotated-square lattice. Keep the
+     opacity near zero — it is texture, not decoration. */
+  .brand-motif {
+    background-image:
+      linear-gradient(45deg, var(--gold) 1px, transparent 1px),
+      linear-gradient(-45deg, var(--gold) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.07;
+  }
+
+  .brand-motif-panel {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .brand-motif-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(45deg, var(--gold) 1px, transparent 1px),
+      linear-gradient(-45deg, var(--gold) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.06;
+    mask-image: linear-gradient(to bottom, black, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+  }
+
+  /* Gold hairline rule, as used on the brandbook page headers. */
+  .brand-rule {
+    border-bottom: 2px solid var(--gold);
   }
 }
 
-/* Logo clear space (190px all sides) and minimum size (152px) */
+/* Logo clear space (190px all sides) and minimum size (152px) — print and
+   brand-sheet rules. On-screen headers use --logo-safe-inline; 190px of padding
+   inside a nav bar is never correct. */
 .brand-clear-space {
   padding: var(--logo-clear-space);
 }
@@ -337,12 +419,6 @@
   min-width: var(--logo-min-size);
   min-height: var(--logo-min-size);
   margin: var(--logo-clear-space);
-}
-
-/* Ensure the logo turns white in dark mode */
-.dark img[src*="logo.svg"],
-.dark img[src*="logo.png"] {
-  filter: brightness(0) invert(1);
 }
 
 @media print {

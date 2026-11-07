@@ -86,3 +86,4 @@ openuser.config.json
 # Fuse temporary files
 .fuse_hidden*
 */.fuse_hidden*
+tests/api/test-results.json

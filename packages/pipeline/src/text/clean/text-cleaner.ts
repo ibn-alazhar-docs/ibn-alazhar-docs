@@ -14,30 +14,24 @@
  * النص المُنظَّف يُرجع مع التقرير حتى لا تُعيد الطبقة الرقيقة حساب مرحلة 1–3.
  */
 
-import { normalizeUnicode, normalizeArabicLetters, removeTatweel } from "./unicode";
+import {
+  normalizeUnicode,
+  normalizeArabicLetters,
+  reglueFloatingMarks,
+  removeTatweel,
+} from "./unicode";
 import { normalizeWhitespace } from "./whitespace";
-import {
-  auditStructuralIntegrity,
-  type StructuralAuditResult,
-} from "./structural";
-import {
-  AZHAR_CORRECTION_RULES,
-  applyQuranicFixes,
-} from "./quranic";
-import {
-  verifyQuranicText,
-  type UthmaniVerification,
-} from "./uthmani";
+import { auditStructuralIntegrity, type StructuralAuditResult } from "./structural";
+import { AZHAR_CORRECTION_RULES, applyQuranicFixes } from "./quranic";
+import { verifyQuranicText, type UthmaniVerification } from "./uthmani";
 import {
   calculateArabicSimilarity,
   microscopicDiff,
+  MICROSCOPIC_DIFF_MAX_CHARS,
   type ArabicSimilarityResult,
   type MicroscopicDiffResult,
 } from "./similarity";
-import {
-  auditContextualGrammar,
-  type ContextualAuditResult,
-} from "./contextual";
+import { auditContextualGrammar, type ContextualAuditResult } from "./contextual";
 import { cleanArabicText } from "./index";
 
 export interface StageResult {
@@ -72,8 +66,11 @@ export interface SevenStageAuditReport {
 
 function stage1Normalize(text: string): string {
   let t = normalizeUnicode(text);
-  t = normalizeArabicLetters(t);
+  // Removing the kashida first lets the letter pass see the letter+mark adjacency it
+  // creates; otherwise the next normalization recomposes it and drifts.
   t = removeTatweel(t);
+  t = reglueFloatingMarks(t);
+  t = normalizeArabicLetters(t);
   t = normalizeWhitespace(t);
   return t;
 }
@@ -169,7 +166,11 @@ export function runSevenStageAudit(
 
   // — المرحلة 7: الفرق المجهري + الحكم —
   let diff: MicroscopicDiffResult | null = null;
-  if (options.reference !== undefined && cleaned.length <= 4000 && options.reference.length <= 4000) {
+  if (
+    options.reference !== undefined &&
+    cleaned.length <= MICROSCOPIC_DIFF_MAX_CHARS &&
+    options.reference.length <= MICROSCOPIC_DIFF_MAX_CHARS
+  ) {
     diff = microscopicDiff(cleaned, options.reference);
     stages.push({
       stage: 7,
@@ -182,9 +183,10 @@ export function runSevenStageAudit(
       stage: 7,
       name: "microscopic-diff",
       ok: true,
-      detail: options.reference === undefined
-        ? "لا مرجع — الفرق تخطّي"
-        : "النص يتجاوز حد الفرق المجهري (4000 حرف) — تخطّي موثّق",
+      detail:
+        options.reference === undefined
+          ? "لا مرجع — الفرق تخطّي"
+          : `النص يتجاوز حد الفرق المجهري (${MICROSCOPIC_DIFF_MAX_CHARS} حرف) — تخطّي موثّق`,
     });
   }
 

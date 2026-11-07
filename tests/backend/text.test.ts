@@ -48,17 +48,20 @@ describe("cleanArabicText — Unicode normalization", () => {
 // ─── 2. Arabic Normalization (8 tests) ────────────────────────────────────────
 
 describe("cleanArabicText — Arabic normalization", () => {
-  it("alef forms normalized: آ→ا, أ→ا, إ→ا", () => {
+  it("alef forms are preserved by default: آ أ إ stay as printed", () => {
     const input = "آمن أمن إيمان";
-    const result = cleanArabicText(input);
+    expect(cleanArabicText(input)).toBe("آمن أمن إيمان");
+  });
+
+  it("alef forms fold only when the caller asks: آ→ا, أ→ا, إ→ا", () => {
+    const input = "آمن أمن إيمان";
+    const result = cleanArabicText(input, { normalizeArabic: true });
     expect(result).toBe("امن امن ايمان");
   });
 
-  it("yaa forms: ى→ي (alef maksura to standard yaa)", () => {
-    const input = "على";
-    const result = cleanArabicText(input);
-    // ى (\u0649) → ي (\u064A), so على → علي
-    expect(result).toBe("علي");
+  it("yaa forms: ى stays ى by default (على is not علي)", () => {
+    expect(cleanArabicText("على")).toBe("على");
+    expect(cleanArabicText("على", { normalizeArabic: true })).toBe("علي");
   });
 
   it("broken definite article rejoined: ال كتاب → الكتاب", () => {
@@ -88,10 +91,11 @@ describe("cleanArabicText — Arabic normalization", () => {
 
   it("multiple normalizations in same text", () => {
     const input = "آيةُ الْكِتَابِ";
-    // After normalization: آ→ا, removing tashkeel (ُ, ْ, ِ): اية الكتاب
-    // Broken article: ال book (no broken article here since الْك is not separated by space)
+    // Tashkeel is a mark pass, not a spelling pass: آية keeps its madda and
+    // الْكتاب loses only the marks. The detached article repair ("ال كتاب") runs
+    // from the artifact table, so it is unaffected by normalizeArabic being off.
     const result = cleanArabicText(input, { removeTashkeel: true });
-    expect(result).toContain("اية");
+    expect(result).toContain("آية");
     expect(result).toContain("الكتاب");
   });
 
@@ -366,17 +370,28 @@ describe("cleanArabicText — punctuation normalization", () => {
     expect(result).toContain(":");
   });
 
-  it("dash variants → –", () => {
-    const input = "أحد — اثنان ー ثلاثة";
+  it("dashes: the source dash survives, only the CJK chōonpu is repaired", () => {
+    const input = "أحد — اثنان ー ثلاثة ‒ أربعة";
     const result = cleanArabicText(input);
-    // Both — (U+2014) and ー (U+30FC) → – (U+2013)
-    expect(result).toContain("–");
+    expect(result).toContain("—"); // U+2014 stays U+2014 — a copy, not a rewrite
+    expect(result).toContain("‒"); // U+2012 stays too
+    expect(result).toContain("–"); // U+30FC → U+2013: mojibake repair, not restyle
+    expect(result).not.toContain("ー");
   });
 
-  it("ellipsis variants → …", () => {
-    const input = "بسم... الله⋯ الرحيم";
+  it("dot runs and ellipsis leaders are content, not noise", () => {
+    const input = "اكتب الكلمة المناسبة: ...... في الفراغ⋯ ثم أكمل";
     const result = cleanArabicText(input);
-    expect(result).toContain("…");
+    expect(result).toContain("......"); // fill-in-the-blank survives general mode
+    expect(result).toContain("⋯"); // U+22EF has no decomposition — it stays
+  });
+
+  it("the single-character ellipsis lands on dots (NFKC), never on deletion", () => {
+    // U+2026 HAS a compatibility decomposition to "...", so NFKC expands it. The
+    // rendering is identical; what must never happen is the run disappearing.
+    const result = cleanArabicText("ثم أكمل … هنا");
+    expect(result).toContain("...");
+    expect(result).toContain("هنا");
   });
 });
 

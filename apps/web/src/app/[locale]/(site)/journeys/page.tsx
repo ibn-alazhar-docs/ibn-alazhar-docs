@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { generatePageMetadata } from "@/ui/metadata";
+import { BRAND_NAME } from "@/ui/brand";
 import { getJourneys } from "@/shared/content/index";
 import { Container } from "@/ui/container";
 import { JourneyCard } from "@/ui/discovery/journey-card";
@@ -14,8 +15,10 @@ export async function generateStaticParams(): Promise<{ locale: string }[]> {
 
 export async function generateMetadata({ params }: JourneysIndexPageProps): Promise<Metadata> {
   const { locale } = await params;
-  const title =
-    locale === "ar" ? "مسارات القراءة — ابن الأزهر دوكس" : "Reading Journeys — Ibn Al-Azhar Docs";
+  // `<title>` brand suffix is the caller's job (generatePageMetadata only appends
+  // it to the Open Graph title) — taken from BRAND_NAME, never typed out.
+  const brand = locale === "ar" ? BRAND_NAME.ar : BRAND_NAME.en;
+  const title = locale === "ar" ? `مسارات القراءة — ${brand}` : `Reading Journeys — ${brand}`;
   const description =
     locale === "ar"
       ? "مسارات قراءة منظمة ومنسقة لاستكشاف المعرفة في المكتبة"

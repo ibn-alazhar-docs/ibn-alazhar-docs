@@ -6,11 +6,15 @@ import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { useCases } from "@/core/composition-root";
 import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
+import { EXPORT_FORMATS } from "@/core/services/export/types";
 
 const bulkExportSchema = z
   .object({
     documentIds: z.array(z.string().min(1)).min(1).max(50),
-    format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"]),
+    // `zip` كانت غائبة من هذا العدّ بينما `exportByBatch` لا يقبل سواها — فكل طلب
+    // صحيح بحسب المخطط يُرفض 400 في الخدمة، وكل طلب بـ zip يُرفض 400 في المخطط:
+    // مسار لا ينجح أبدًا. العدّ الآن هو المصدر الواحد (`EXPORT_FORMATS`).
+    format: z.enum(EXPORT_FORMATS, { error: "Unsupported format" }),
     options: z
       .object({
         profile: z.enum(["research", "archive", "plain", "developer"]).optional(),

@@ -1,6 +1,7 @@
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import { accessSync, constants } from "node:fs";
 import { join } from "node:path";
+import { ARABIC_STRONG_MIN_RATIO, arabicLetterRatio } from "../text/constants";
 
 export interface OcrProvider {
   readonly name: string;
@@ -19,13 +20,20 @@ export interface OcrProvider {
   ): Promise<OcrEngineResult>;
 }
 
+/**
+ * سُلَّم تقدير الثقة. `HIGH_ARABIC_SHARE` خاص بهذا التقدير وحده (لا يوجد له مقابل
+ * في عتبات الكشف)؛ العتبة السفلية هي بوابة العربية القياسية `ARABIC_STRONG_MIN_RATIO`
+ * نفسها — كانت مكتوبة 0.4 هنا باليد بينما تُعرَّف في text/constants.
+ */
+const HIGH_ARABIC_SHARE = 0.7;
+
 export function estimateConfidence(text: string): number {
-  const arabic = (text.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
-  const total = text.replace(/\s/g, "").length;
-  if (total === 0) return 0;
-  const ratio = arabic / total;
-  if (ratio > 0.7) return 0.9;
-  if (ratio > 0.4) return 0.7;
+  // صفحة بلا حروف ثقةُها صفر لا 0.5: لا يجوز أن تُقرأ نتيجة OCR فارغة أبدًا
+  // كنتيجة مقبولة عند عتبات القبول أو إعادة المحاولة.
+  if (text.replace(/\s/g, "").length === 0) return 0;
+  const ratio = arabicLetterRatio(text);
+  if (ratio > HIGH_ARABIC_SHARE) return 0.9;
+  if (ratio > ARABIC_STRONG_MIN_RATIO) return 0.7;
   return 0.5;
 }
 
@@ -35,6 +43,20 @@ export function toOcrPageResult(pages: { number: number; text: string }[]): OcrP
     text: p.text,
     confidence: estimateConfidence(p.text),
   }));
+}
+
+/** سطور OCR قابلة للوضع: نصٌّ غير فارغ وصندوقٌ رباعي حقيقي — بلا صندوق لا موضع. */
+export function placedOcrLines(
+  lines: { text?: string; bbox?: number[] | null }[] | undefined,
+): { text: string; bbox: number[] }[] {
+  const out: { text: string; bbox: number[] }[] = [];
+  for (const l of lines ?? []) {
+    const text = typeof l.text === "string" ? l.text.trim() : "";
+    if (text && Array.isArray(l.bbox) && l.bbox.length === 4) {
+      out.push({ text, bbox: l.bbox });
+    }
+  }
+  return out;
 }
 
 export function getPythonCommand(): string {

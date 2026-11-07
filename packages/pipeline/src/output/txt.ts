@@ -5,7 +5,7 @@ export function generateTxt(cleanedText: CleanedText, includeMetadata: boolean =
 
   if (includeMetadata) {
     parts.push("=".repeat(60));
-    parts.push(`Ibn Al-Azhar Docs — OCR Export`);
+    parts.push(`Ibn Al-Azhar Platform — OCR Export`);
     parts.push(`Generated: ${new Date().toISOString()}`);
     parts.push(`Pages: ${cleanedText.metadata.pageCount}`);
     parts.push(`Words: ${cleanedText.metadata.wordCount}`);

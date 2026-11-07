@@ -23,6 +23,8 @@
  *   (~/.cache/ar-verify). لا تنزيل من الشبكة داخل المكتبة.
  */
 
+import { TASHKEEL_SOURCE, TATWEEL_SOURCE } from "./text/constants";
+
 // ─────────────────────────── SequenceMatcher (difflib) ───────────────────────────
 
 export interface MatchingBlock {
@@ -207,9 +209,12 @@ export class SequenceMatcher<T extends string = string> {
 
 // ─────────────────────────── normalize عربي ───────────────────────────
 
-const MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/;
+// Canonical diacritic/tatweel sources (text/constants) — the verse keys and the
+// text/** skeleton must strip exactly the same marks, or a verified quote can
+// disagree with the cleaner's own normalization.
+const MARKS = new RegExp(`[${TASHKEEL_SOURCE}]`);
 // eslint-disable-next-line no-misleading-character-class -- diacritical/tatweel range is intentional (match code points)
-const IGNORE = /[\u0640\u06D6-\u06ED]/;
+const IGNORE = new RegExp(`[${TATWEEL_SOURCE}\\u06D6-\\u06ED]`);
 const PRESENTATION = /[\uFB50-\uFD3D\uFD40-\uFDFF\uFE70-\uFEFC]/;
 const FARSI = /[پچژگکی]/g;
 const AR_DIGITS_MAP: Record<string, string> = {

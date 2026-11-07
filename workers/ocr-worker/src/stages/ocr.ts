@@ -16,7 +16,11 @@ import {
   type OcrEngineResult,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { generateSearchablePdf, updateDocStatusWithProgress } from "../helpers";
+import {
+  generateSearchablePdf,
+  updateDocStatusWithProgress,
+  downloadDocumentBuffer,
+} from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -79,6 +83,19 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
     });
     result = out.result;
     qa = out.qa;
+    // الـPDF نشأةً رقميًا هو «المطابق للأصل» حرفيًا: يُنشر كما هو بدل إعادة بنائه
+    // صورةً بطبقة. بلا هذا كانت الصيغة تُعرض لكل مستند ثم تُرفض 409 إلى الأبد في native.
+    try {
+      const original = await downloadDocumentBuffer(data.storageKey, data.userId, config);
+      const pdfKey = `${config.paths.exports}/${data.id}/searchable.pdf`;
+      await uploadBuffer(config, pdfKey, original, "application/pdf");
+      jobLogger.info(`[ocr] Published original PDF as searchable output for ${data.id}`);
+    } catch (err) {
+      jobLogger.warn(
+        err,
+        `[ocr] Failed to publish original PDF as searchable output for ${data.id}`,
+      );
+    }
   } else {
     const pageGetters = await collectPageGetters(config, data.id);
     const fileBuffer = await downloadFile(config, data.storageKey);

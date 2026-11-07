@@ -98,7 +98,7 @@ describe("DB constraints — validators (integrity gate)", () => {
     });
     it("createFolder: validates color hex regex", () => {
       expect(createFolderSchema.safeParse({ name: "m", color: "red" }).success).toBe(false);
-      expect(createFolderSchema.safeParse({ name: "m", color: "#16A34A" }).success).toBe(true);
+      expect(createFolderSchema.safeParse({ name: "m", color: "#127E87" }).success).toBe(true);
     });
     it("renameFolder: name 1..100", () => {
       expect(renameFolderSchema.safeParse({ name: "a" }).success).toBe(true);
@@ -117,7 +117,7 @@ describe("DB constraints — validators (integrity gate)", () => {
   describe("tag validators", () => {
     it("createTag: name 1..50, default color", () => {
       const parsed = createTagSchema.parse({ name: "إسلام" });
-      expect(parsed.color).toBe("#16A34A");
+      expect(parsed.color).toBe("#127E87");
       expect(createTagSchema.safeParse({ name: "x".repeat(51) }).success).toBe(false);
     });
     it("updateTag: optional name + valid hex color", () => {

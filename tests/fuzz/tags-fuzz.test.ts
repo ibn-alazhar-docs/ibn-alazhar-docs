@@ -8,7 +8,7 @@ vi.mock("@/core/composition-root", () => ({
       getTags: vi.fn().mockResolvedValue([]),
       createTag: vi
         .fn()
-        .mockResolvedValue({ id: "tag-fuzz-1", name: "Test Tag", color: "#16A34A" }),
+        .mockResolvedValue({ id: "tag-fuzz-1", name: "Test Tag", color: "#127E87" }),
     },
   },
 }));
@@ -52,7 +52,7 @@ const postFuzzCases: Array<[string, unknown]> = [
   ["name with emoji", { name: "🏷️Test" }],
   ["prototype pollution", { name: "test", __proto__: { hacked: true } }],
   ["invalid color hex (short)", { name: "test", color: "#FFF" }],
-  ["invalid color hex (no hash)", { name: "test", color: "16A34A" }],
+  ["invalid color hex (no hash)", { name: "test", color: "127E87" }],
   ["SQL injection in color", { name: "test", color: "' OR 1=1--" }],
   ["XSS in color", { name: "test", color: "<script>alert(1)</script>" }],
   ["null color", { name: "test", color: null }],

@@ -60,7 +60,9 @@ export class DocumentRepository implements IDocumentRepository {
 
   async updateSearchVector(id: string, title?: string, description?: string | null) {
     // Normalize text before indexing so stored vectors match normalized
-    // search queries (see normalize_arabic in prisma/migrations 20260615120000).
+    // search queries. normalize_arabic is pinned char-for-char to
+    // @/shared/arabic-search-normalize (latest definition: prisma/migrations
+    // 20261105000000_normalize_arabic_single_source).
     return this.prisma.$executeRaw`
       UPDATE documents
       SET searchvector =

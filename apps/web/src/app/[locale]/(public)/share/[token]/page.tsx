@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { prisma } from "@/transport/db";
 import { loadConfig, downloadFile, fileExists } from "@ibn-al-azhar-docs/pipeline";
+import { BRAND_NAME } from "@/ui/brand";
 
 interface SharePageProps {
   params: Promise<{ locale: string; token: string }>;
@@ -340,7 +341,7 @@ export default async function SharePage({ params }: SharePageProps) {
       </main>
 
       <footer className="border-t border-line py-4 text-center text-muted-color text-sm">
-        Ibn Al-Azhar Docs
+        {locale === "ar" ? BRAND_NAME.ar : BRAND_NAME.en}
       </footer>
     </div>
   );

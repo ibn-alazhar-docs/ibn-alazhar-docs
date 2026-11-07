@@ -14,6 +14,7 @@ import {
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
 import { downloadDocumentBuffer, updateDocStatusWithProgress, parsePageRange } from "../helpers";
+import { writePageGeometry } from "../geometry";
 import { routeDocument } from "@ibn-al-azhar-docs/pipeline";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
@@ -61,6 +62,11 @@ export async function processSplittingStage(
       },
       `[split] Document routed for ${data.id}`,
     );
+
+    // هندسةُ الورقة تُقاس الآن مرةً واحدة: الأصلُ في الذاكرة هنا لكلَي المسارين،
+    // و`splitPdfPages` بعده تُخرج بكسلاتٍ بعد المعالجة القبلية لا تصلح مقاسًا للأصل.
+    // الفشلُ لا يُسقط المرحلة: بغير قياسٍ يعود التصديرُ إلى A4/٢سم كما كان.
+    await writePageGeometry(fileBuffer, data.id, config);
 
     if (decision.route === "native" && decision.nativeText) {
       nativeText = decision.nativeText;

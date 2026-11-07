@@ -8,12 +8,22 @@ import {
   QuoteChecker,
   type QuranCorpus,
 } from "../../packages/pipeline/src/verify-quotes";
-import { explode, splitNumbered, isMainQuestion, parseBooklet } from "../../packages/pipeline/src/booklet";
+import {
+  explode,
+  splitNumbered,
+  isMainQuestion,
+  parseBooklet,
+} from "../../packages/pipeline/src/booklet";
 import { cleanStructureText } from "../../packages/pipeline/src/clean-structure";
 import { evaluateQaGates, mdMetrics } from "../../packages/pipeline/src/qa-gates";
 import { runBookFactory } from "../../packages/pipeline/src/book-factory";
 import { generateDocx } from "../../packages/pipeline/src/output/pandoc";
-import { embedAmiriFonts, readZip, readDocxDocumentXml, countOmml } from "../../packages/pipeline/src/output/embed-fonts";
+import {
+  embedAmiriFonts,
+  readZip,
+  readDocxDocumentXml,
+  countOmml,
+} from "../../packages/pipeline/src/output/embed-fonts";
 
 const CORPUS: QuranCorpus = {
   data: {
@@ -45,7 +55,9 @@ describe("SequenceMatcher (difflib port)", () => {
   });
   it("matches Python: 'abcd' vs 'abce' ratio 0.75", () => {
     // Python: SequenceMatcher(None,'abcd','abce').ratio() == 0.75
-    expect(new SequenceMatcher("abcd".split(""), "abce".split(""), { autojunk: false }).ratio()).toBe(0.75);
+    expect(
+      new SequenceMatcher("abcd".split(""), "abce".split(""), { autojunk: false }).ratio(),
+    ).toBe(0.75);
   });
   it("matching blocks + opcodes", () => {
     const sm = new SequenceMatcher(["a", "b", "c"], ["a", "x", "c"], { autojunk: false });
@@ -89,18 +101,26 @@ describe("Quran index + checker", () => {
     const hadith = new HadithIndex([{ book: "البخاري", number: 1, text }]);
     // نصّ مخالف في كلمة واحدة وسط التغطية العالية ⇒ H002
     const chk = new QuoteChecker(new QuranIndex(CORPUS), hadith, false);
-    chk.checkText("x.md", "قال: «إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا قَصَدَ فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ»\n");
+    chk.checkText(
+      "x.md",
+      "قال: «إِنَّمَا الْأَعْمَالُ بِالنِّيَّاتِ وَإِنَّمَا لِكُلِّ امْرِئٍ مَا قَصَدَ فَمَنْ كَانَتْ هِجْرَتُهُ إِلَى اللَّهِ وَرَسُولِهِ»\n",
+    );
     expect(chk.findings.some((f) => f.code === "H002")).toBe(true);
     // حديث مجهول تمامًا ⇒ H001
     const chk2 = new QuoteChecker(new QuranIndex(CORPUS), hadith, false);
-    chk2.checkText("x.md", "قال: «مَنْ غَشَّنَا فَلَيْسَ مِنَّا وَالْمَكْرُ وَالْخَدَاعُ فِي النَّارِ يَوْمَ الْقِيَامَةِ»\n");
+    chk2.checkText(
+      "x.md",
+      "قال: «مَنْ غَشَّنَا فَلَيْسَ مِنَّا وَالْمَكْرُ وَالْخَدَاعُ فِي النَّارِ يَوْمَ الْقِيَامَةِ»\n",
+    );
     expect(chk2.findings.some((f) => f.code === "H001")).toBe(true);
   });
 });
 
 describe("explode()", () => {
   it("dash-before-digit (Egyptian books)", () => {
-    const out = explode("-١ ﴿قُلْ هُوَ اللَّهُ أَحَدٌ﴾ [الإخلاص: 1]. -٢ ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ﴾ [الفلق: 1].");
+    const out = explode(
+      "-١ ﴿قُلْ هُوَ اللَّهُ أَحَدٌ﴾ [الإخلاص: 1]. -٢ ﴿قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ﴾ [الفلق: 1].",
+    );
     expect(out).toHaveLength(2);
     expect(out[0]!.startsWith("١- ")).toBe(true);
     expect(out[1]!.startsWith("٢- ")).toBe(true);
@@ -110,7 +130,9 @@ describe("explode()", () => {
     expect(out).toHaveLength(4);
   });
   it("spaced dash options (OCR)", () => {
-    const out = explode("1 - كُن للقرآن الكريم تاليًا. 2 - اعتَنِ بالسنة النبوية. 3 - تأمل من الشعر نصًا. 4 - كَتَبَ التاريخ بطولات.");
+    const out = explode(
+      "1 - كُن للقرآن الكريم تاليًا. 2 - اعتَنِ بالسنة النبوية. 3 - تأمل من الشعر نصًا. 4 - كَتَبَ التاريخ بطولات.",
+    );
     expect(out).toHaveLength(4);
   });
   it("letters/single untouched", () => {
@@ -149,7 +171,11 @@ describe("cleanStructure", () => {
 
 describe("QA gates reflow + new checks", () => {
   it("reflow passes page-ratio regardless of page count", () => {
-    const md = "# عنوان\n\n" + "نص عربي طويل ".repeat(200) + "\n\n---PAGEBREAK---\n\n" + "نص آخر طويل جدا ".repeat(200);
+    const md =
+      "# عنوان\n\n" +
+      "نص عربي طويل ".repeat(200) +
+      "\n\n---PAGEBREAK---\n\n" +
+      "نص آخر طويل جدا ".repeat(200);
     const r = evaluateQaGates({
       md,
       inputPages: 100,
@@ -177,7 +203,9 @@ describe("QA gates reflow + new checks", () => {
 
 describe("book factory (skipBuild)", () => {
   it("wires structure + verify + QA", async () => {
-    const md = "# كتاب\n\n- ﴿قُلْ هُوَ اللَّهُ أَحْمَدُ﴾ [الإخلاص: 1]\n\n" + "فقرة عربية طويلة كافية ".repeat(40);
+    const md =
+      "# كتاب\n\n- ﴿قُلْ هُوَ اللَّهُ أَحْمَدُ﴾ [الإخلاص: 1]\n\n" +
+      "فقرة عربية طويلة كافية ".repeat(40);
     const res = await runBookFactory(
       { md, inputPages: 1, outputPages: 1 },
       { skipBuild: true, quranCorpus: CORPUS },
@@ -198,12 +226,17 @@ describe("OMML via pandoc + embed Amiri", () => {
     expect(countOmml(xml)).toBeGreaterThan(0);
   }, 30000);
   it("embedAmiri adds word/fonts/font1.odttf and fontTable", async () => {
-    const buf = await generateDocx({ markdown: "# عنوان عربي\n\nنص عربي للاختبار مع فقرات كافية للبناء الصحيح هنا." }, {});
+    const buf = await generateDocx(
+      { markdown: "# عنوان عربي\n\nنص عربي للاختبار مع فقرات كافية للبناء الصحيح هنا." },
+      {},
+    );
     const embedded = embedAmiriFonts(buf);
     const names = readZip(embedded).map((e) => e.name);
     expect(names).toContain("word/fonts/font1.odttf");
     expect(names).toContain("word/fontTable.xml");
-    const ft = readZip(embedded).find((e) => e.name === "word/fontTable.xml")!.data.toString("utf8");
+    const ft = readZip(embedded)
+      .find((e) => e.name === "word/fontTable.xml")!
+      .data.toString("utf8");
     expect(ft).toContain("embedRegular");
     // الناتج ZIP صالح يعيد قراءته
     expect(readDocxDocumentXml(embedded)).toContain("<w:document");

@@ -21,6 +21,7 @@ export const spec: OpenAPI.Document = {
     { name: "Users", description: "Admin user management" },
     { name: "Conversion", description: "Document format conversion" },
     { name: "Export", description: "Document export" },
+    { name: "Tools", description: "Guest tools hub — ephemeral, account-free conversions" },
     { name: "Share", description: "Document sharing" },
     { name: "Webhooks", description: "Webhook management" },
     { name: "Analytics", description: "Usage analytics" },
@@ -2525,10 +2526,91 @@ export const spec: OpenAPI.Document = {
         },
       },
     },
+    "/api/tools/guest/jobs": {
+      post: {
+        tags: ["Tools"],
+        summary: "Create an ephemeral guest tool job (no account, no session)",
+        operationId: "createGuestJob",
+        security: [],
+        requestBody: {
+          required: true,
+          content: {
+            "multipart/form-data": {
+              schema: {
+                type: "object",
+                required: ["file", "tool"],
+                properties: {
+                  file: { type: "string", format: "binary" },
+                  tool: {
+                    type: "string",
+                    enum: ["pdf-to-word", "ocr", "tashkeel", "transcription"],
+                  },
+                },
+              },
+            },
+          },
+        },
+        responses: {
+          "202": { description: "Job queued; the job id is the only capability" },
+          "400": { description: "Missing file or unknown tool" },
+          "413": { description: "File too large or too many pages" },
+          "415": { description: "Unsupported media type" },
+          "429": { description: "Rate limited or a guest queue slot is full" },
+        },
+      },
+      get: {
+        tags: ["Tools"],
+        summary: "Guest queue depth (counts only — no IPs, file names or job ids)",
+        operationId: "guestQueueSnapshot",
+        security: [],
+        responses: {
+          "200": { description: "Queue snapshot" },
+          "429": { description: "Rate limited" },
+        },
+      },
+    },
+    "/api/tools/guest/jobs/{id}": {
+      get: {
+        tags: ["Tools"],
+        summary: "Poll a guest job, or fetch its result as txt/json/docx",
+        operationId: "readGuestJob",
+        security: [],
+        parameters: [
+          { name: "id", in: "path", required: true, schema: { type: "string" } },
+          {
+            name: "format",
+            in: "query",
+            required: false,
+            schema: { type: "string", enum: ["txt", "json", "docx"] },
+          },
+        ],
+        responses: {
+          "200": {
+            description: "Job view (JSON) or generated file; always Cache-Control: no-store",
+          },
+          "404": { description: "Unknown, expired or deleted job" },
+          "409": { description: "Job has not completed yet" },
+          "429": { description: "Rate limited" },
+          "503": { description: "OCR or DOCX export unavailable — the job is failed, not faked" },
+        },
+      },
+      delete: {
+        tags: ["Tools"],
+        summary: "Delete a guest job before its TTL and free its queue slot",
+        operationId: "deleteGuestJob",
+        security: [],
+        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
+        responses: {
+          "200": { description: "Deleted" },
+          "404": { description: "Unknown or already-expired job" },
+          "429": { description: "Rate limited" },
+        },
+      },
+    },
     "/api/debug/exec": {
       post: {
         tags: ["Health"],
-        summary: "Run a shell command for diagnostics (admin, disabled in production)",
+        summary: "Run an allowlisted diagnostic probe (admin, disabled in production)",
         security: [{ bearerAuth: [] }],
         requestBody: {
           required: true,
@@ -2536,40 +2618,36 @@ export const spec: OpenAPI.Document = {
             "application/json": {
               schema: {
                 type: "object",
-                required: ["command"],
-                properties: { command: { type: "string" } },
+                required: ["probe"],
+                properties: { probe: { type: "string" } },
               },
             },
           },
         },
         responses: {
-          "200": { description: "Command output" },
+          "200": { description: "Diagnostic output" },
+          "400": { description: "Missing or unknown probe name" },
           "403": { description: "Debug API disabled or not admin" },
-          "500": { description: "Command failed" },
+          "500": { description: "Probe failed" },
         },
       },
     },
     "/api/debug/pg": {
-      post: {
+      get: {
         tags: ["Health"],
-        summary: "Run a read-only SQL query for diagnostics (admin, disabled in production)",
+        summary:
+          "Deployment readiness view (admin, disabled in production) — booleans and paths only, never secret values",
+        operationId: "debugPgReadiness",
         security: [{ bearerAuth: [] }],
-        requestBody: {
-          required: true,
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                required: ["query"],
-                properties: { query: { type: "string" } },
-              },
+        responses: {
+          "200": {
+            description: "Queue, storage, Arabic-export asset and OCR readiness",
+            headers: {
+              "Cache-Control": { schema: { type: "string" }, description: "private, no-store" },
             },
           },
-        },
-        responses: {
-          "200": { description: "Query result" },
           "403": { description: "Debug API disabled or not admin" },
-          "500": { description: "Query failed" },
+          "404": { description: "Debug API switched off" },
         },
       },
     },

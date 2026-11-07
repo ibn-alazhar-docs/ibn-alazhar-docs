@@ -10,6 +10,7 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { BRAND_NAME } from "@/ui/brand";
 
 interface ResetPasswordEmailProps {
   username?: string;
@@ -20,7 +21,7 @@ interface ResetPasswordEmailProps {
 export const ResetPasswordEmail = ({
   username = "المستخدم",
   resetUrl,
-  appName = "Ibn Al-Azhar Docs",
+  appName = BRAND_NAME.ar,
 }: ResetPasswordEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />

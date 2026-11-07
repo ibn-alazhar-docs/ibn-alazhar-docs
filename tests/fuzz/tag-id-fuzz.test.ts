@@ -5,7 +5,7 @@ import { mockSession } from "../api/setup";
 vi.mock("@/core/composition-root", () => ({
   useCases: {
     tag: {
-      getTagById: vi.fn().mockResolvedValue({ id: "tag-fuzz", name: "Test", color: "#16A34A" }),
+      getTagById: vi.fn().mockResolvedValue({ id: "tag-fuzz", name: "Test", color: "#127E87" }),
       updateTag: vi.fn().mockResolvedValue({ id: "tag-fuzz", name: "Updated" }),
       deleteTag: vi.fn().mockResolvedValue(undefined),
     },

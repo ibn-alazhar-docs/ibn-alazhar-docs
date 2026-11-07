@@ -1,12 +1,14 @@
-import { Almarai, Fira_Code } from "next/font/google";
+import { Almarai, Amiri, Fira_Code } from "next/font/google";
 
 /**
- * Brand fonts (see docs/BRAND_IMPLEMENTATION.md):
- * - Body/UI: Almarai (Google Fonts, loaded via next/font).
- * - Display/headings: Thmanyah — commercial font, not on Google Fonts.
- *   It is referenced by CSS family name in brand.css (`--font-thmanyah`)
- *   with Almarai/Amiri fallbacks until licensed files are self-hosted
- *   under `public/fonts/thmanyah/` and registered with @font-face.
+ * Brand fonts (see docs/BRAND_IMPLEMENTATION.md).
+ *
+ * The brandbook names Thmanyah Sans as the primary typeface, but it is a commercial
+ * font with no licence file in this repository, so it is not loaded: the display
+ * stack in brand.css names it first and falls through to these OFL faces.
+ *
+ * - Body/UI: Almarai (OFL)
+ * - Display/headings, Quranic and hadith surfaces: Amiri (OFL)
  */
 export const almarai = Almarai({
   subsets: ["arabic", "latin"],
@@ -15,17 +17,13 @@ export const almarai = Almarai({
   display: "swap",
 });
 
-/**
- * @deprecated Kept for backwards compatibility with existing imports.
- * Brand body font is now Almarai.
- */
-export const cairo = almarai;
-
-/**
- * @deprecated Kept for backwards compatibility with existing imports.
- * Brand display font is now Thmanyah (CSS stack) with Almarai fallback.
- */
-export const amiri = almarai;
+export const amiri = Amiri({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-amiri",
+  display: "swap",
+});
 
 export const firaCode = Fira_Code({
   subsets: ["latin"],

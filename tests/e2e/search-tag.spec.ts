@@ -20,7 +20,7 @@ test.describe("Search & Tag Operations", () => {
       await tags.expectTagVisible(`Important ${timestamp}`);
       await tags.createTag(`Reference ${timestamp}`, "#3B82F6");
       await tags.expectTagVisible(`Reference ${timestamp}`);
-      await tags.createTag(`Archive ${timestamp}`, "#10B981");
+      await tags.createTag(`Archive ${timestamp}`, "#127E87");
       await tags.expectTagVisible(`Archive ${timestamp}`);
     });
 

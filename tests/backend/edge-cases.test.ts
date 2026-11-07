@@ -6,7 +6,7 @@ import {
   generateJson,
   generateDocx,
   generateEpub,
-  generatePdf,
+  buildPdfHtml,
 } from "../../packages/pipeline/src/output";
 import type { CleanedText } from "../../packages/pipeline/src/types";
 import {
@@ -268,10 +268,20 @@ describe("analyzeText — text/analyze.ts: boundary values", () => {
     expect(a.pageCount).toBe(1);
   });
 
-  it("garbageRatio for all-garbage lines is > 0", () => {
-    const text = "xyzzyy\nabcdee\nqwerty";
+  it("garbageRatio for symbol-run lines is > 0", () => {
+    const text = "■■■■◆◆◇◇○○\n△△▽▽■■■■◇◆\n●●●●○○○○△△△△";
     const a = analyzeText(text);
     expect(a.garbageRatio).toBeGreaterThan(0);
+  });
+
+  it("garbageRatio is 0 for clean Latin prose — Arabic share is not a garbage test", () => {
+    // The old rule asked "is this Arabic enough (<0.3)?", so an English
+    // commentary scored garbageRatio 1 and qualityScore 0 in the metadata.
+    const text =
+      "The committee reviewed the report on Azhari methodology and found it consistent.\n" +
+      "A second reading confirmed the transliteration of the technical terms used here.";
+    const a = analyzeText(text);
+    expect(a.garbageRatio).toBe(0);
   });
 
   it("qualityScore for english text is low", () => {
@@ -461,26 +471,28 @@ describe("generateEpub — output/pandoc.ts: edge cases", () => {
 });
 
 describe("generatePdf — output/pdf.ts: edge cases", () => {
-  it("handles fontSize 0", async () => {
-    const buf = await generatePdf(makeCleaned(), { fontSize: 0 });
-    expect(buf.length).toBeGreaterThan(0);
+  // القيم الحدّية قراراتٌ في طبقة HTML لا في المحرّك، فتُقاس هناك: تصيير subprocess
+  // لكل واحدة يكلّف ثواني ولا يقيس شيئًا مما يختلف عن القرار المُدخل للمحرّك.
+  // دخان المحرّك نفسه (مخرج PDF صالح) في tests/backend/output.test.ts.
+  it("clamps fontSize 0 to the default size", () => {
+    expect(buildPdfHtml("نص نظيف", { fontSize: 0 })).toContain("font-size: 14pt");
   });
 
-  it("handles watermark with CJK chars", async () => {
-    const buf = await generatePdf(makeCleaned(), { watermark: "水印テスト" });
-    expect(buf.length).toBeGreaterThan(0);
+  it("escapes a watermark of any script into the markup", () => {
+    const html = buildPdfHtml("نص نظيف", { watermark: "水印テスト" });
+    expect(html).toContain('<div class="watermark">水印テスト</div>');
+    expect(html).not.toContain("<script");
   });
 
-  it("handles markdown with only headings", async () => {
-    const c = makeCleaned({ markdown: "# الأول\n\n## الثاني\n\n### الثالث" });
-    const buf = await generatePdf(c);
-    expect(buf.length).toBeGreaterThan(0);
+  it("keeps every heading level present in headings-only source", () => {
+    const html = buildPdfHtml("# الأول\n\n## الثاني\n\n### الثالث");
+    expect(html).toContain("<h1");
+    expect(html).toContain("<h2");
+    expect(html).toContain("<h3");
   });
 
-  it("handles empty markdown and cleaned", async () => {
-    const c = makeCleaned({ cleaned: "", markdown: "" });
-    const buf = await generatePdf(c);
-    expect(buf.length).toBeGreaterThan(0);
+  it("still builds a document when the source text is empty", () => {
+    expect(buildPdfHtml("")).toContain("</html>");
   });
 });
 

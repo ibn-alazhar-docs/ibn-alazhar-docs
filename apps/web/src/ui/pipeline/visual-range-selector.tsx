@@ -6,16 +6,12 @@ import * as pdfjsLib from "pdfjs-dist";
 
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
+import { applyPdfJsPaths, pdfJsAssetParams } from "@/lib/pdfjs-config";
 
-// Load the pdf.js worker from our own public/ directory (copied from
-// pdfjs-dist during the Docker build) using an absolute origin URL so it works
-// behind the HuggingFace Spaces proxy.
-if (typeof window !== "undefined") {
-  pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
-    "/pdf.worker.min.mjs",
-    window.location.origin,
-  ).href;
-}
+// The worker is served from our own public/ directory using an absolute origin URL so it
+// also resolves behind the HuggingFace Spaces proxy; the JBIG2/OpenJPEG decoders are passed
+// per document because pdf.js resolves its "wasm" default against the worker's own path.
+applyPdfJsPaths(pdfjsLib);
 
 interface Range {
   id: string;
@@ -42,7 +38,10 @@ export function VisualRangeSelector({ file, onConfirm, onCancel }: VisualRangeSe
       try {
         setIsLoading(true);
         const arrayBuffer = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const pdf = await pdfjsLib.getDocument({
+          data: arrayBuffer,
+          ...pdfJsAssetParams(),
+        }).promise;
         if (!active) return;
         setPdfDoc(pdf);
         setNumPages(pdf.numPages);

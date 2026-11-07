@@ -1,9 +1,15 @@
 import { describe, it, expect } from "vitest";
-import { runSevenStageAudit, textCleaner, normalizeForSimilarity } from "@ibn-al-azhar-docs/pipeline/text";
+import {
+  runSevenStageAudit,
+  textCleaner,
+  normalizeForSimilarity,
+} from "@ibn-al-azhar-docs/pipeline/text";
 
 describe("runSevenStageAudit", () => {
   it("produces 7 stages and passes clean text without a reference", () => {
-    const r = runSevenStageAudit("# عنوان\nالحمد لله رب العالمين والصلاة والسلام على رسول الله صلى الله عليه وسلم");
+    const r = runSevenStageAudit(
+      "# عنوان\nالحمد لله رب العالمين والصلاة والسلام على رسول الله صلى الله عليه وسلم",
+    );
     expect(r.stages).toHaveLength(7);
     expect(r.stages.map((s) => s.stage)).toEqual([1, 2, 3, 4, 5, 6, 7]);
     expect(r.pass).toBe(true);

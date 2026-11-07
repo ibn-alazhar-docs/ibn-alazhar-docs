@@ -486,6 +486,37 @@ export const AZHAR_CORRECTION_RULES: QuranCorrectionRule[] = [
     location: "سيل النقاط الناتجة عن التفريغ الآلي",
     explanation: "تطهير سيل النقاط المتكررة الساطية على المحتوى واستبدالها بتنبيه تطهير معتمد.",
   },
+  // القواعد الثلاث التالية منقولة من نسخة `server.ts > cleanMarkdown` في التطبيق
+  // المرجعي (الانحراف A/B/C): كانت موجودة هناك فقط، ولا نسخة منها هنا.
+  {
+    pattern: /فِي[ \t]+مَنَاكِلِهَا/g,
+    replacement: "فِي مَنَاكِبِهَا",
+    severity: "critical",
+    category: "quran_verse",
+    subject: "تفسير",
+    location: "النص القرآني داخل الشرح",
+    explanation:
+      'تحريف حرفي في الكلمة القرآنية؛ كُتبت "مَنَاكِلِهَا" بالكَاف والصواب: ﴿مَنَاكِبِهَا﴾ بالباء — خطأ OCR شائع في تمييز الكاف عن الباء.',
+  },
+  {
+    pattern: /فَصُحْقًا/g,
+    replacement: "فَسُحْقًا",
+    severity: "critical",
+    category: "quran_verse",
+    subject: "تفسير",
+    location: "النص القرآني داخل الشرح",
+    explanation: 'تحريف حرفي؛ كُتبت "فَصُحْقًا" بالصاد والصواب: ﴿فَسُحْقًا﴾ بالسين المهملة.',
+  },
+  {
+    pattern: /تَمَيَّزُ[ \t]+مِنَ[ \t]+الْفَيْضِ/g,
+    replacement: "تَمَيَّزُ مِنَ الْغَيْظِ",
+    severity: "critical",
+    category: "quran_verse",
+    subject: "تفسير",
+    location: "النص القرآني داخل الشرح",
+    explanation:
+      'تحريف كلمة قرآنية؛ كُتبت "الْفَيْضِ" والصواب: ﴿تَمَيَّزُ مِنَ الْغَيْظِ﴾ — خلط الفاء عن الغين والطاء عن الضاد.',
+  },
 ];
 export function applyQuranicFixes(text: string): string {
   if (!text) return text;

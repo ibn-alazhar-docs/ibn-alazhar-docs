@@ -1,4 +1,4 @@
-export { cleanArabicText, enhanceArabicText } from "./clean";
+export { cleanArabicText, enhanceArabicText, diacritizeArabic } from "./clean";
 export {
   normalizeUnicode,
   normalizePresentationForms,
@@ -18,6 +18,25 @@ export {
 export type { CleanOptions, CleanArabicTextOptions } from "./clean";
 export { analyzeText, detectDocumentType } from "./analyze";
 export type { TextAnalysis, DocumentType } from "./analyze";
+// Canonical Arabic detection — the only Arabic character class / threshold set
+// the pipeline may use (docs/MERGE_PLAN.md, تحديث 2026-11-04 — تقرير ZIP).
+export {
+  ARABIC_LETTER_RANGES,
+  ARABIC_LETTER_CLASS,
+  ARABIC_STRONG_MIN_RATIO,
+  MIN_KNOWN_TEXT_SHARE,
+  isGarbageLine,
+  MIN_ARABIC_CHARS_FOR_RTL,
+  TASHKEEL_SOURCE,
+  TATWEEL_SOURCE,
+  TASHKEEL,
+  TATWEEL,
+  arabicLetterRegex,
+  containsArabic,
+  countArabicLetters,
+  arabicLetterRatio,
+  hasArabicContent,
+} from "./constants";
 export {
   DEFAULT_OPTIONS,
   EXAM_OPTIONS,
@@ -59,3 +78,30 @@ export {
   type SevenStageAuditReport,
   type TextCleaner,
 } from "./clean";
+
+// Tashkeel (diacritization) module — honest engines only: real deterministic
+// rule engine + probe-gated Python backend; unavailable => coded failure.
+export {
+  diacritizeText,
+  isDiacritizerAvailable,
+  probeDiacritizers,
+  probePythonDiacritizer,
+  createPythonDiacritizer,
+  probePythonBackend,
+  deterministicDiacritizer,
+  deterministicDiacritize,
+  computeCoverage,
+  DiacritizeError,
+} from "./diacritize";
+export type {
+  Diacritizer,
+  DiacritizeOptions,
+  DiacritizeResult,
+  DiacritizeEngineId,
+  DiacritizeEnginePreference,
+  DiacritizeErrorCode,
+  DiacritizeWarningCode,
+  PythonBackendProbe,
+  DiacritizersStatus,
+  DiacritizeAvailability,
+} from "./diacritize";

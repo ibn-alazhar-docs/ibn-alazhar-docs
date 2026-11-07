@@ -99,6 +99,57 @@ describe("SuryaOcrProvider.extractPages — page alignment & errors", () => {
       provider.extractPages(baseConfig, [() => Promise.resolve(buffer)], "doc.pdf"),
     ).rejects.toThrow(/SURYA_PARSE_FAILED|SURYA_EXECUTION_FAILED/);
   });
+
+  it("threads surya ocr_with_boxes polygons into layout.lines (pixel space of the page image)", async () => {
+    mockExec(
+      JSON.stringify([
+        {
+          lines: [
+            { text: "السطر الأول", confidence: 0.9, bbox: [80, 200, 600, 250] },
+            { text: "السطر الثاني", confidence: 0.85, bbox: [60, 400, 780, 460] },
+          ],
+          needs_retry: false,
+        },
+      ]),
+    );
+
+    const provider = new SuryaOcrProvider();
+    const result = await provider.extractPages(
+      baseConfig,
+      [() => Promise.resolve(buffer)],
+      "doc.pdf",
+    );
+
+    expect(result.pages[0]!.layout).toBeDefined();
+    expect(result.pages[0]!.layout!.lines).toEqual([
+      { text: "السطر الأول", bbox: [80, 200, 600, 250] },
+      { text: "السطر الثاني", bbox: [60, 400, 780, 460] },
+    ]);
+  });
+
+  it("omits layout when no line carries a bbox — geometry is never invented", async () => {
+    mockExec(
+      JSON.stringify([
+        {
+          lines: [
+            { text: "بلا صندوق", confidence: 0.9, bbox: null },
+            { text: "كذلك", confidence: 0.8 },
+          ],
+          needs_retry: false,
+        },
+      ]),
+    );
+
+    const provider = new SuryaOcrProvider();
+    const result = await provider.extractPages(
+      baseConfig,
+      [() => Promise.resolve(buffer)],
+      "doc.pdf",
+    );
+
+    expect(result.pages[0]!.text).toBe("بلا صندوق\nكذلك");
+    expect(result.pages[0]!.layout).toBeUndefined();
+  });
 });
 
 describe("TesseractOcrProvider.extractPages — real path (mocked exec)", () => {
@@ -138,6 +189,53 @@ describe("TesseractOcrProvider.extractPages — real path (mocked exec)", () => 
     );
     expect(result.engine).toBe("tesseract");
     expect(result.pages[0]!.confidence).toBe(0.99);
+    vi.unstubAllEnvs();
+  });
+
+  it("threads image_to_data word boxes into per-line layout.lines", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("MOCK_OCR", "");
+    mockExec(
+      JSON.stringify([
+        {
+          text: "سطران متتابعون",
+          confidence: 0.83,
+          lines: [
+            { text: "سطران", bbox: [700, 120, 900, 160] },
+            { text: "متتابعون", bbox: [640, 200, 900, 240] },
+          ],
+        },
+      ]),
+    );
+
+    const provider = new TesseractOcrProvider();
+    const result = await provider.extractPages(
+      baseConfig,
+      [() => Promise.resolve(buffer)],
+      "doc.pdf",
+    );
+
+    expect(result.pages[0]!.layout!.lines).toEqual([
+      { text: "سطران", bbox: [700, 120, 900, 160] },
+      { text: "متتابعون", bbox: [640, 200, 900, 240] },
+    ]);
+    vi.unstubAllEnvs();
+  });
+
+  it("keeps results without a lines key parseable (no layout, no throw)", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("MOCK_OCR", "");
+    mockExec(JSON.stringify([{ text: "نص قديم", confidence: 0.7 }]));
+
+    const provider = new TesseractOcrProvider();
+    const result = await provider.extractPages(
+      baseConfig,
+      [() => Promise.resolve(buffer)],
+      "doc.pdf",
+    );
+
+    expect(result.pages[0]!.text).toBe("نص قديم");
+    expect(result.pages[0]!.layout).toBeUndefined();
     vi.unstubAllEnvs();
   });
 });

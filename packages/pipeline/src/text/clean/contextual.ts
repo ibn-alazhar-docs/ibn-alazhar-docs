@@ -15,6 +15,16 @@
  * كل مشكلة تُرجع موضعًا (رقم سطر + مقتطف) وخطورتها — دون أي تصحيح تلقائي.
  */
 
+import { ARABIC_LETTER_CLASS, ARABIC_LETTER_RANGES, TASHKEEL_SOURCE } from "../constants";
+import { removeTashkeel } from "./unicode";
+
+/** Everything outside the canonical Arabic letter range. */
+const NON_ARABIC_CHARS = new RegExp(`[^${ARABIC_LETTER_RANGES}]`, "g");
+
+/** فحوص بلا علم `g`: نفس الأنماط المشتركة لا تحمل حالة lastIndex بين سطرَيْن. */
+const ARABIC_LETTER_TEST = new RegExp(ARABIC_LETTER_CLASS);
+const HANGING_TASHKEEL_TEST = new RegExp(`\\s[${TASHKEEL_SOURCE}]`);
+
 export type ContextualSeverity = "critical" | "warning" | "minor";
 
 export interface ContextualIssue {
@@ -38,9 +48,6 @@ export interface ContextualAuditResult {
   issues: ContextualIssue[];
   wordCount: number;
 }
-
-const stripTashkeel = (s: string) =>
-  s.replace(/[ً-ٰٟ-ٰۭ-ۯ]/g, "");
 
 function push(
   issues: ContextualIssue[],
@@ -75,8 +82,8 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
 
     // 1) كلمة مكررة فورًا
     for (let k = 1; k < words.length; k++) {
-      const prev = stripTashkeel(words[k - 1]!);
-      const cur = stripTashkeel(words[k]!);
+      const prev = removeTashkeel(words[k - 1]!);
+      const cur = removeTashkeel(words[k]!);
       if (prev.length >= 3 && prev === cur) {
         push(issues, "repeated-word", "warning", `تكرار فوري للكلمة «${cur}»`, lineNo, line);
       }
@@ -84,36 +91,57 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
 
     // 2) همزة/ألف منعكسة داخل الكلمة: «إأ» أو «أإ» متجاورتان
     if (/[إأ][إأ]/.test(line)) {
-      push(issues, "hamza-swap", "warning", "همزتان متجاورتان (إأ/أإ) — احتمال انعكاس OCR", lineNo, line);
+      push(
+        issues,
+        "hamza-swap",
+        "warning",
+        "همزتان متجاورتان (إأ/أإ) — احتمال انعكاس OCR",
+        lineNo,
+        line,
+      );
     }
 
     // 5) تنوين على ألف: «ًا» على ألف (الصواب تنوين على الحرف قبل الألف غالبًا)
     if (/ًا|ٌا|ٍا/.test(line)) {
-      push(issues, "tanween-on-alif", "minor", "تنوين على ألف (ًا) — يُراجع ضبط التنوين", lineNo, line);
+      push(
+        issues,
+        "tanween-on-alif",
+        "minor",
+        "تنوين على ألف (ًا) — يُراجع ضبط التنوين",
+        lineNo,
+        line,
+      );
     }
 
     // 6) «ال» منفصلة: كلمة «ال» وحدها ثم كلمة لا تبدأ بتعريف
     for (let k = 0; k < words.length - 1; k++) {
-      if (stripTashkeel(words[k]!) === "ال") {
-        const next = stripTashkeel(words[k + 1]!);
+      if (removeTashkeel(words[k]!) === "ال") {
+        const next = removeTashkeel(words[k + 1]!);
         // «ال» الصحيحة تنفصل عند الوقف فقط؛ إن تلاها حرف غير شمسي/قمري واضح
         // فالاشتباه ضعيف — نكتفي بالرصد عند تكرار النمط في السطر نفسه.
         if (!/^[اأإآبتثجحخدذرزسشصضطظعفغفقكلمنهوي]/.test(next)) {
-          push(issues, "detached-al", "minor", "«ال» منفصلة عن كلمة غير عربية-مبدوءة", lineNo, line);
+          push(
+            issues,
+            "detached-al",
+            "minor",
+            "«ال» منفصلة عن كلمة غير عربية-مبدوءة",
+            lineNo,
+            line,
+          );
         }
       }
     }
 
     // 7) رقم داخل كلمة
     for (const w of words) {
-      if (/[؀-ॿ]/.test(w) && /[0-9٠-٩]/.test(w)) {
+      if (ARABIC_LETTER_TEST.test(w) && /[0-9٠-٩]/.test(w)) {
         push(issues, "digit-in-word", "warning", `رقم ملتصق بكلمة: «${w}»`, lineNo, line);
         break;
       }
     }
 
     // 8) تشكيل معلّق على فراغ: علامة تشكيل بعد مسافة
-    if (/\s[ً-ٟ]/.test(rawLine)) {
+    if (HANGING_TASHKEEL_TEST.test(rawLine)) {
       push(issues, "hanging-diacritic", "minor", "علامة تشكيل معلّقة بعد فراغ", lineNo, line);
     }
 
@@ -121,7 +149,9 @@ export function auditContextualGrammar(text: string): ContextualAuditResult {
     // نوحّد الألفات فقط (أ/إ/آ/ٱ→ا) دون مساس بالنهاية: normalizeArabicLetters
     // يحوّل ى→ي فسيُخفي الخلل الذي نبحث عنه.
     for (const w of words) {
-      const clean = stripTashkeel(w).replace(/[اأإآٱ]/g, "ا").replace(/[^\u0600-\u06FF]/g, "");
+      const clean = removeTashkeel(w)
+        .replace(/[اأإآٱ]/g, "ا")
+        .replace(NON_ARABIC_CHARS, "");
       if (clean.length < 3) continue;
       const last = clean[clean.length - 1];
       if (last === "ى" || last === "ي") {

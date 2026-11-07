@@ -59,6 +59,11 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libcairo2 \
     libpango-1.0-0 \
+    libpangoft2-1.0-0 \
+    libharfbuzz-subset0 \
+    fontconfig \
+    python3 \
+    python3-venv \
     libjpeg62-turbo \
     libgif7 \
     librsvg2-2 \
@@ -66,6 +71,20 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     openssl \
     pandoc \
     && rm -rf /var/lib/apt/lists/*
+
+# المحرّك الوحيد الذي يطبّق bidi داخل السطر هو Pango/HarfBuzz (قياسًا: pdfmake يطبع
+# الكلمات العربية بترتيبها المنطقي معكوسة). venv منفصل لأن تصدير PDF يحدث في
+# export-runner وweb حيث لا يوجد venv التعرف الضوئي.
+# PyMuPDF لازمٌ هنا مع WeasyPrint لا في venv التعرف وحده: `WEASYPRINT_PYTHON` أدناه
+# هو المفسّر الذي تراه `getWeasyprintPython()`، وبه يعمل سكربتان يستوردان fitz —
+# generate-searchable-pdf.py (طبقة النصّ فوق صورة الصفحة) وpage-geometry.py (قياس
+# ورقة الأصل وهوامشه). بغيره يخرجان SystemExit(3) في كل صورةٍ ترث base-runner
+# (ocr-runner وexport-runner وweb): لا PDF قابل للبحث، ولا هندسةَ فتُصدَّر A4/٢سم
+# بدل ورقة الأصل. hf-space يُثبّتهما معًا في /opt/ocr-venv لنفس السبب.
+RUN python3 -m venv /opt/pdf-venv && \
+    /opt/pdf-venv/bin/pip install --no-cache-dir "weasyprint==70.0" PyMuPDF
+
+ENV WEASYPRINT_PYTHON=/opt/pdf-venv/bin/python
 
 RUN groupadd --system --gid 1001 nodejs && useradd --system --uid 1001 nextjs
 
@@ -172,7 +191,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # Python & build tools
     python3 python3-pip python3-venv make g++ \
     # Runtime libs for canvas/PDF
-    libcairo2 libpango-1.0-0 libjpeg62-turbo libgif7 librsvg2-2 \
+    libcairo2 libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fontconfig \
+    libjpeg62-turbo libgif7 librsvg2-2 \
     libgl1 libglib2.0-0 libsm6 libxext6 libxrender1 \
     # OCR & document processing
     tesseract-ocr tesseract-ocr-ara ocrmypdf ghostscript poppler-utils pandoc \
@@ -185,15 +205,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && chmod +x /usr/local/bin/mc \
     # Install Prisma CLI
     && npm install -g prisma@6.5.0 \
-    # Create Python venv for OCR
+    # Create Python venv for OCR + text-PDF rendering (WeasyPrint)
     && python3 -m venv /opt/ocr-venv \
-    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy PyMuPDF \
+    && /opt/ocr-venv/bin/pip install --no-cache-dir pypdfium2 Pillow pytesseract opencv-python-headless numpy PyMuPDF "weasyprint==70.0" \
     # Cleanup to reduce layer size
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* \
     && npm cache clean --force
 
 ENV PATH="/opt/ocr-venv/bin:$PATH"
+ENV WEASYPRINT_PYTHON=/opt/ocr-venv/bin/python
 
 # Copy built artifacts in optimized order (smallest to largest)
 COPY --from=builder /app/packages/shared ./packages/shared

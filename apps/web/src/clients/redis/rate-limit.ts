@@ -22,6 +22,14 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/conversion/list": { limit: 30, windowMs: 60_000 },
   "/api/conversion/start": { limit: 10, windowMs: 60_000 },
   "/api/stream": { limit: 10, windowMs: 60_000 },
+  // Guest tools: unauthenticated and OCR-backed, so the tightest submit budget in
+  // the table. The concurrency caps in guest-jobs.service are a separate, tighter
+  // gate — this only limits request churn (retries, polling storms, scripted spam).
+  "/api/tools/guest/jobs": { limit: 10, windowMs: 60_000 },
+  // Polling MUST NOT share the submit bucket: the client polls every 2s, so a
+  // shared 10/min budget would 429 any job longer than ~20s and the guest would
+  // never see a result the server actually produced.
+  "/api/tools/guest/jobs/[id]": { limit: 120, windowMs: 60_000 },
 };
 
 // User-based rate limits for authenticated operations.
@@ -55,22 +63,26 @@ const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
 };
 
 export function getClientIp(request: Request): string {
+  // Cloudflare overwrites this header at the edge, so it is the only forwarded-IP
+  // source a client cannot forge. `x-forwarded-for` is read first by convention,
+  // but its leftmost entry is attacker-controlled on any deployment reachable
+  // without a proxy that scrubs it — which would let one script randomize the key
+  // and walk straight past both the rate limit and the per-IP guest queue cap.
+  const cf = request.headers.get("cf-connecting-ip");
+  if (cf && isIpLiteral(cf.trim())) return cf.trim();
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const parts = forwarded.split(",");
     const first = parts[0];
-    if (first) {
-      const ip = first.trim();
-      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || /^[0-9a-fA-F:]{2,39}$/.test(ip)) {
-        return ip;
-      }
-    }
+    if (first && isIpLiteral(first.trim())) return first.trim();
   }
   const realIp = request.headers.get("x-real-ip");
-  if (realIp && (/^\d{1,3}(\.\d{1,3}){3}$/.test(realIp) || /^[0-9a-fA-F:]{2,39}$/.test(realIp))) {
-    return realIp;
-  }
+  if (realIp && isIpLiteral(realIp)) return realIp;
   return "unknown";
+}
+
+function isIpLiteral(value: string): boolean {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(value) || /^[0-9a-fA-F:]{2,39}$/.test(value);
 }
 
 function memoryCheck(

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { signOut } from "next-auth/react";
@@ -9,6 +8,7 @@ import { LocaleToggle } from "@/ui/locale/locale-toggle";
 import { SearchBar } from "@/ui/search/search-bar";
 import { useRouter } from "@/i18n/navigation";
 import { MenuIcon, CloseIcon, LogoutIcon } from "@/ui/icons";
+import { BrandLogo } from "@/ui/brand-logo";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -49,13 +49,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             href="/dashboard"
             className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0"
           >
-            <Image
-              src="/logo.svg"
-              alt={t("name")}
-              width={32}
-              height={32}
-              className="h-6 sm:h-7 lg:h-8 w-auto shrink-0"
-            />
+            <BrandLogo alt={t("name")} className="h-6 sm:h-7 lg:h-8 w-auto shrink-0" />
             <span className="heading-display-sm text-[10px] sm:text-xs font-bold tracking-tight text-primary-color truncate max-w-[100px] sm:max-w-[120px] lg:max-w-none">
               {t("name")}
             </span>

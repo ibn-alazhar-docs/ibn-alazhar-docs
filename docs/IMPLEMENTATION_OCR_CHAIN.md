@@ -81,4 +81,63 @@ npx vitest run tests/backend/ocr-manager.test.ts tests/backend/ocr-providers-clo
 
 ## خارج النطاق
 
-`verify_quotes` (Q/H/T — SequenceMatcher)، استخراج مباشر `<60%` بدل 60% (قديمة ZIP)، bidi/reference-doc عربي، Tools Hub — كلها P1+ في `MERGE_PLAN.md`.
+`verify_quotes` (Q/H/T — SequenceMatcher) واستخراج مباشر `<60%` بدل 60% (قديمة ZIP) — P1+ في `MERGE_PLAN.md`.
+كان bidi خارج النطاق وأصبح معالجةً: `reference_rtl.docx` مبيعة داخل المستودع وطبقة OOXML تصحيحية (`output/docx-rtl.ts`) للمخرَج، والطبقة المخزّنة بالرصف البصري في *الإدخال* مرفوضة الآن ببوابة `shapedGlyphRate` أعلاه بدل أن تُسلَّم.
+
+## مسار النصّ الأصلي (native) — إصلاحات 2026-11-06
+
+### 1) الحِمل لم يكن يصل أبدًا (P0 صامت)
+
+PyMuPDF ≥ 1.28 يطبع `warning: The \`fitz\` API is deprecated…` على **stdout** لحظة
+استيراد `fitz`. المساعد كان `print(json)` ثم تُقرأ `JSON.parse(result.stdout)`،
+فيفشل التحليل على **كل** PDF، وتُعلَن طبقة النصّ غير متاحة، فتذهب كل ملفات النصّ
+إلى OCR السحابي (Gemini) بدل أن تُقرأ مجانًا. لم يظهر في الاختبارات لأنّ الـunit
+لم يكن يستدعي Python.
+
+الإصلاح: helper يكتب الحِمل إلى ملف يُمرَّر في `argv`، والقراءة من ذلك الملف —
+لا يفسده أي ثرثرة مكتبة. كما يفضّ الاستيراد إلى الاسم الحديث:
+`import pymupdf as fitz` مع `except ImportError: import fitz`.
+
+القياس بعد الإصلاح (كتاب حقيقي من `test-data/source`): `route: native`,
+`engine: native` — بلا أي طلب سحابي.
+
+الحرس: `tests/backend/document-router-native-text.test.ts` (يُقلّد stdout صاخبًا
+ويثبت أن الحِمل ينجو، و`argv` بأماكنها، و`not /print\(json/`).
+
+### 2) بوابتا «نسخة طبق الأصل» على طبقة النصّ (P0)
+
+مسار native صار يُقيَّم بمقياسين قبل تسليمه — لأن قاعدة المنتج أن يكون المُنتَج
+نسخة طبق الأصل من الأصل، ونصٌّ مقلوبُ الترتيب أسوأ من لا شيء:
+
+| المقياس | الدالة | العتبة | قياس حقيقي |
+|---|---|---|---|
+| نسبة الحروف المتشكّلة (presentation forms) | `shapedGlyphRate` | ≥ 2% ⇒ OCR | ملف بالرصف البصري: **97.9%** — ملف منطقي/كتاب حقيقي: **0.0%** |
+| الحروف التحكمية الشاردة لكل ألف حرف | `controlCharRate` | ≥ 2/ألف ⇒ OCR | خريطة ToUnicode مكسورة: **52/ألف** — نظيف: **0** |
+
+الحالتان المقياستُهن مُثبتتان كعيّنات اختبار في
+`tests/backend/document-router-native-text.test.ts` (عبارات من `get_text("words")`
+فعلًا لا من تأليف يدوي). الاستثناءات محسوبة: قوسا المصحف ﴿﴾ (U+FD3E/F وU+FEFB/C)
+والروابط الدينية ﷲ ﷺ (U+FDF0–FDFD) لا تُعدّ «تشكيلًا» أبدًا، والنصّ كامل التشكيل
+يُعدّ حرفًا بحرف فتبقى النسبة صفرًا.
+
+### 3) علامات التشكيل والترقيم في المُخرَج
+
+- `DEFAULT_OPTIONS.normalizeArabic` أُطفئت: تسطيح الهمزات (أإآ→ا، ى→ي) كان يخرج
+  آية قرآنية بصمة مختلفة عن الأصل. البحث لا يحتاجها — التطبيع يُجرى في SQL بـ
+  `normalize_arabic()` (`apps/web/src/core/repositories/document.repository.ts`).
+  الطي الاختياري متاح دائمًا بـ `{ normalizeArabic: true }`.
+- `garbageRatio`/`qualityScore` صارا يقيسان «هل الحروف معروفة» (`\p{L}\p{M}\p{N}\p{P}`)
+  بدل «كم منها عربي»: نصٌّ لاتيني نظيف أو مصحف كامل التشكيل لم يعد يُعلَّق عليه
+  `garbageRatio 1 / qualityScore 0`.
+- `normalizeArabicPunctuation` لم يعد يعيد كتابة الشُرَط ولا النِقاط: `—` تبقى `—`
+  و`......` تبقى كما هي (فارغة الاختبار)، ولا يُصلَح إلا `ー` (U+30FC) — حرف لا
+  يوجد في مصدر عربي. ملاحظة: NFKC تُوسّع `…` (U+2026) إلى `...` بحكم التفكك
+  التكافؤي؛ هذا طبيعي ولا يُفقِد أي محتوى.
+
+## التحقق (هذه القسم)
+
+```
+pnpm exec vitest run --project unit tests/backend/document-router-native-text.test.ts
+pnpm exec vitest run --project unit --project fuzz --project edge   # 96 ملف / 2846 اختبار
+pnpm check                                                          # prettier + eslint + tsc
+```

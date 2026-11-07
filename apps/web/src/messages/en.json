@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "Ibn Al-Azhar Docs",
-    "tagline": "Documents, elevated for research.",
+    "name": "Ibn Al-Azhar Platform",
+    "tagline": "A home for every Azhari student.",
     "loadingPreview": "Loading preview…",
     "previewDocument": "Preview document"
   },
@@ -47,7 +47,7 @@
   },
   "section": {
     "hero": {
-      "eyebrow": "Your File Conversion Platform",
+      "eyebrow": "The first comprehensive platform for Azhari secondary education",
       "title": "Smart Document Conversion & OCR",
       "subtitle": "Upload your PDFs or images, and we'll instantly extract the text and convert them into fully editable formats like Word or Markdown.",
       "cta": "Start Converting",
@@ -100,8 +100,8 @@
     }
   },
   "footer": {
-    "copyright": "Ibn Al-Azhar Docs © 2026",
-    "tagline": "For Academic Research"
+    "copyright": "Ibn Al-Azhar Platform © 2026",
+    "tagline": "The first comprehensive platform for Azhari secondary education"
   },
   "common": {
     "loading": "Loading...",
@@ -205,7 +205,7 @@
     "switchConfirm": "Confirm switch",
     "switchMessage": "The language will be switched",
     "switchTitle": "Switch language",
-    "tagline": "Your documents, searchable and actionable.",
+    "tagline": "A home for every Azhari student.",
     "theme": "Theme",
     "themeDescription": "Change the interface appearance",
     "title": "Title",
@@ -240,7 +240,7 @@
     "unexpectedError": "An unexpected error occurred. Please try again.",
     "accountLocked": "Account temporarily locked due to multiple failed login attempts. Please try again later.",
     "ipRateLimit": "Login temporarily blocked due to too many attempts. Please try again later.",
-    "tagline": "Your documents, searchable and actionable.",
+    "tagline": "A home for every Azhari student.",
     "continueWithGoogle": "Continue with Google",
     "forgotPasswordTitle": "Forgot password?",
     "forgotPasswordButton": "Send reset link",
@@ -312,8 +312,7 @@
       "large": "Large",
       "watermark": "Watermark (Optional)",
       "watermarkPlaceholder": "Enter text...",
-      "pageRange": "Page Range (Optional)",
-      "pageRangePlaceholder": "e.g. 1-5, 8",
+      "timeout": "Timed out waiting for the exported file. Try again.",
       "destination": "Destination",
       "download": "Direct Download",
       "drive": "Google Drive",
@@ -573,8 +572,8 @@
   "ui": {
     "menuOpen": "Open menu",
     "menuClose": "Close menu",
-    "name": "Ibn Al-Azhar Docs",
-    "tagline": "Your documents, searchable and actionable."
+    "name": "Ibn Al-Azhar Platform",
+    "tagline": "A home for every Azhari student."
   },
   "tags": {
     "title": "Tags",
@@ -733,6 +732,22 @@
     "title": "Guest Tools",
     "subtitle": "Fast tools without an account: upload a file, get the result, copy or download it. Your files are never saved to a library.",
     "noAccountBadge": "No account",
+    "upcoming": {
+      "title": "Coming inside this platform",
+      "body": "Vocalization (tashkeel) and audio transcription are features inside this platform itself — enabled via sidecar services and offered under the same guest limits without an account. They are shown here with clear navigation and degrade gracefully until the service is enabled.",
+      "items": {
+        "tashkeel": {
+          "name": "Tashkeel (Vocalization)",
+          "description": "Add full diacritics to Arabic text inside this platform via a sidecar service — currently degrades gracefully until fully enabled.",
+          "cta": "Open vocalization"
+        },
+        "transcription": {
+          "name": "Transcription",
+          "description": "Turn an audio recording into written text inside this platform via a sidecar service — currently degrades gracefully until fully enabled.",
+          "cta": "Open transcription"
+        }
+      }
+    },
     "limits": {
       "maxSize": "Up to 99MB per file",
       "maxPages": "Up to 1000 pages",
@@ -800,9 +815,18 @@
     "guest": {
       "queueTitle": "Guest queue",
       "queueBody": "Guest jobs are processed first-come-first-served within a cap of 4 active jobs (3 per tool, 1 per IP).",
-      "pendingBackend": "The guest UI is ready, but the guest processing endpoint is still being wired to the current pipeline. Try the tool once wiring lands — no account will be required at any stage.",
       "sidecarPending": "This tool depends on an external service that is not wired yet. Graceful degradation: the rest of the tools and the site stay fully available.",
-      "readOnlyNote": "Results are read-only: search, copy, compare, and download — they cannot be edited or saved to a library in guest mode."
+      "readOnlyNote": "Results are read-only: search, copy, compare, and download — they cannot be edited or saved to a library in guest mode.",
+      "uploading": "Uploading…",
+      "statusQueued": "Your job is queued — it starts as soon as a worker is free.",
+      "statusProcessing": "Processing now. Keep this page open.",
+      "runningHint": "The result auto-deletes 30 minutes after it finishes, and your file is erased as soon as processing ends.",
+      "queueFull": "The queue is full right now — you have an active job or the guest cap is reached. Try again shortly.",
+      "backendUnavailable": "The processing service is temporarily unavailable. Other tools keep working normally.",
+      "networkError": "The connection dropped during the job. Try submitting again.",
+      "genericError": "The guest job could not be completed. Try again.",
+      "retry": "Retry",
+      "retryInSeconds": "You can try again in about {seconds} seconds."
     },
     "result": {
       "title": "Result (read-only)",
@@ -816,7 +840,11 @@
       "downloadDocx": "Download DOCX",
       "docxPending": "Guest DOCX download arrives with the processing endpoint.",
       "chars": "{count} characters",
-      "expiresIn": "This result auto-deletes after 30 minutes"
+      "expiresIn": "This result auto-deletes after 30 minutes",
+      "matchCount": "{count} matching lines",
+      "via": "Source: {route} · Engine: {engine}",
+      "routeNative": "native text layer",
+      "routeOcr": "OCR"
     },
     "back": "← Back to Guest Tools",
     "open": "Open tool"

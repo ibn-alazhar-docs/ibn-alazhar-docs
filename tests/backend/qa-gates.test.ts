@@ -93,7 +93,12 @@ describe("seven-stage integration with qa-gates", () => {
   it("evaluateQaGatesWithSevenStage combines both verdicts", () => {
     const report = runSevenStageAudit(goodMd);
     const combined = evaluateQaGatesWithSevenStage(
-      { md: goodMd, inputPages: 10, outputPages: 10, cleanReport: { pages: 10, chars_per_page: 300 } },
+      {
+        md: goodMd,
+        inputPages: 10,
+        outputPages: 10,
+        cleanReport: { pages: 10, chars_per_page: 300 },
+      },
       report,
     );
     expect(combined.pass).toBe(true);

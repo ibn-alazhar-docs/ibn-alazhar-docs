@@ -113,9 +113,8 @@ describe("cleanArabicText", () => {
 
       // Garbage line should be removed
       expect(output).toContain("نص صحيح");
-      // Note: general cleaning normalizes alef variants (آخر→اخر); the
-      // assertions below verify garbage removal, not the alef form.
-      expect(output).toContain("نص اخر صحيح");
+      // Aمانة: the default no longer folds hamza, so آخر stays آخر.
+      expect(output).toContain("نص آخر صحيح");
       expect(output).not.toContain("@#$%^&*()");
     });
 
@@ -127,8 +126,8 @@ describe("cleanArabicText", () => {
       const output = cleanArabicText(input);
 
       // Should convert to markdown headings in general docs
-      // Heading text is normalized (الأول→الاول) in general cleaning.
-      expect(output).toContain("## الفصل الاول");
+      // Heading text keeps its hamza now (الأول, not الاول).
+      expect(output).toContain("## الفصل الأول");
       expect(output).toContain("## الفصل الثاني");
     });
   });

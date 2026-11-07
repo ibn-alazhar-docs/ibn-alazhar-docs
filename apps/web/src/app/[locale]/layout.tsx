@@ -6,6 +6,7 @@ import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { ThemeWrapper } from "@/ui/theme/theme-wrapper";
 import { generatePageMetadata } from "@/ui/metadata";
+import { BRAND_NAME, BRAND_POSITIONING } from "@/ui/brand";
 import { Toaster } from "sonner";
 
 interface LocaleLayoutProps {
@@ -48,13 +49,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Ibn Al-Azhar Docs",
-    description: "Document processing and text search",
+    name: BRAND_NAME[locale],
+    description: locale === "ar" ? BRAND_POSITIONING : "Arabic-first document platform",
     url: `${appUrl}/${locale}`,
     inLanguage: locale === "ar" ? "ar" : "en",
     publisher: {
       "@type": "Organization",
-      name: "Ibn Al-Azhar Docs",
+      name: BRAND_NAME[locale],
     },
   };
 
@@ -77,7 +78,9 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
           dir={locale === "ar" ? "rtl" : "ltr"}
           toastOptions={{
             style: {
-              fontFamily: locale === "ar" ? "Cairo, sans-serif" : "inherit",
+              // Toasts portal to <body>, so they need the brand token spelled out.
+              // "Cairo" here was a pre-brandbook leftover and matched no loaded face.
+              fontFamily: "var(--font-family-body)",
             },
           }}
         />

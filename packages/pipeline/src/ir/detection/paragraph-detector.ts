@@ -1,6 +1,7 @@
 import type { ParagraphNode } from "@ibn-al-azhar-docs/shared";
 import type { RawBlock } from "../converter-base";
 import { parseInline, normalizeInline } from "../utils";
+import { countArabicLetters } from "../../text/constants";
 
 export interface ParagraphDetectionResult {
   node: ParagraphNode;
@@ -32,7 +33,7 @@ export function detectParagraph(blocks: RawBlock[], count: number): ParagraphDet
 
 export function inferAlignment(text: string): ParagraphNode["alignment"] {
   if (!text) return undefined;
-  const arabic = (text.match(/[؀-ۿݐ-ݿﭐ-﷿ﹰ-ﹿ]/g) || []).length;
+  const arabic = countArabicLetters(text);
   const latin = (text.match(/[A-Za-z]/g) || []).length;
   // Treat predominantly Arabic text as right-aligned for RTL documents.
   if (arabic >= latin && arabic > 0) return "right";

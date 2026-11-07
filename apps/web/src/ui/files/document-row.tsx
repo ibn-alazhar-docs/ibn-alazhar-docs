@@ -59,7 +59,7 @@ function DocumentRowActions({
       <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap justify-end">
         {!isEditing && (
           <motion.button
-            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => setIsShareModalOpen(true)}
@@ -72,7 +72,7 @@ function DocumentRowActions({
         )}
         {!isEditing && (
           <motion.button
-            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => onStartEdit(doc)}
@@ -97,7 +97,7 @@ function DocumentRowActions({
               <SaveIcon />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+              whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onCancelEdit}

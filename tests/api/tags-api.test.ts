@@ -125,7 +125,7 @@ describe("Tags API", () => {
       const tagsToCreate = Array.from({ length: MAX_TAGS_PER_USER }).map((_, i) => ({
         userId: userA.id,
         name: `Max Tag ${i}`,
-        color: "#16A34A",
+        color: "#127E87",
       }));
       await prisma.tag.createMany({ data: tagsToCreate });
 
@@ -196,13 +196,13 @@ describe("Tags API", () => {
       const tag = await createTestTag(userA.id, { name: "Old Name" });
       const req = createApiRequest(`/api/tags/${tag.id}`, {
         method: "PATCH",
-        body: JSON.stringify({ name: "New Name", color: "#16A34A" }),
+        body: JSON.stringify({ name: "New Name", color: "#127E87" }),
       });
       const res = await updateTag(req, { params: Promise.resolve({ id: tag.id }) });
       expect(res.status).toBe(200);
       const data = await res.json();
       expect(data.tag.name).toBe("New Name");
-      expect(data.tag.color).toBe("#16A34A");
+      expect(data.tag.color).toBe("#127E87");
     });
 
     it("should return 404 if trying to update someone else's tag", async () => {

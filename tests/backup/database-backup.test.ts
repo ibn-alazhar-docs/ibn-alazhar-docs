@@ -177,7 +177,7 @@ describe("Database Backup & Restore", () => {
       const tagId = uid();
       tagIds.push(tagId);
       await prisma.tag.create({
-        data: { id: tagId, userId, name: `backup-tag-${i}`, color: "#16A34A" },
+        data: { id: tagId, userId, name: `backup-tag-${i}`, color: "#127E87" },
       });
     }
 

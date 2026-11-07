@@ -9,6 +9,7 @@ import {
   recordJobFailure,
   PermanentPipelineError,
   type ProcessingJob,
+  ARABIC_LETTER_RANGES,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
@@ -62,7 +63,10 @@ export async function processGenerationStage(
   });
 
   const outputKeys: Record<string, string> = {};
-  const titleSafe = title.replace(/[^a-zA-Z0-9.\u0600-\u06FF\u0660-\u0669-]/g, "_").slice(0, 100);
+  // النطاق من ARABIC_LETTER_RANGES القياسي: كانت 0600-06FF وحدها تُقبل، فاسم مخطوط بحروف Extended-B يخرج مستبدل الحروف بـ _.
+  const titleSafe = title
+    .replace(new RegExp(`[^a-zA-Z0-9._${ARABIC_LETTER_RANGES}-]`, "g"), "_")
+    .slice(0, 100);
 
   const mdKey = await uploadExportBufferForWorker(
     config,

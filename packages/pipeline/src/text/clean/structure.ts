@@ -10,7 +10,33 @@ import {
   HEADING_MAJOR,
   HEADING_SUB,
   HEADING_ORDINAL,
+  ARABIC_LETTER_CLASS,
+  ARABIC_LETTER_RANGES,
+  DIGIT_CLASS,
+  countArabicLetters,
 } from "../constants";
+
+/** Non-content characters (canonical Arabic letters, Latin, digits excluded). */
+const SYMBOL_CHARS = new RegExp(`[^${ARABIC_LETTER_RANGES}a-zA-Z0-9\\s]`, "g");
+/** A line that is only digits and rules is page furniture in any digit family. */
+const ONLY_DIGITS_AND_RULES = new RegExp(`^[${DIGIT_CLASS}\\s\\-–—|/\\\\]+$`);
+/** Arabic word/phrase echo runs produced by OCR line doubling. */
+// The capture group must wrap the whole repeated word: `(${ARABIC_LETTER_CLASS}){2,}` would
+// capture a single letter, making the `\1` backref match one char and `$1` delete the word.
+const REPEATED_ARABIC_WORD = new RegExp(`(${ARABIC_LETTER_CLASS}{2,})(\\s+\\1){2,}`, "g");
+const REPEATED_ARABIC_PHRASE = new RegExp(
+  `((?:${ARABIC_LETTER_CLASS}+\\s+){1,3}${ARABIC_LETTER_CLASS}+)(\\s+\\1){2,}`,
+  "g",
+);
+
+/**
+ * A line starting with `|` is one table row. It is structure, so no pass may treat it
+ * as garbage, page furniture, or a paragraph to merge — including the "| --- |" delimiter
+ * row, which is what makes the header parse as a table at all.
+ */
+function isTableRow(trimmed: string): boolean {
+  return trimmed.startsWith("|");
+}
 
 export function similarity(a: string, b: string): number {
   if (a === b) return 1;
@@ -80,6 +106,18 @@ export function reconstructArabicLines(text: string): string {
       continue;
     }
 
+    // Table rows are structural: each line is one row, so merging them into a
+    // paragraph (or severing a cell in half) destroys the table.
+    if (isTableRow(trimmed)) {
+      if (buffer.length > 0) {
+        result.push(buffer.join(" "));
+        buffer = [];
+      }
+      prevEndsContinuative = false;
+      result.push(trimmed);
+      continue;
+    }
+
     // Page-noise lines (e.g. "صفحة 5", "- 5 -", standalone digit) must stay
     // standalone so removePageNoise (which runs after reconstruction) can
     // drop them. Without this they get merged into the buffered paragraph
@@ -109,7 +147,6 @@ export function reconstructArabicLines(text: string): string {
     }
 
     const endsWithPunct = /[.?!،.؟\u060C\u061F!]$/.test(trimmed);
-    const isShort = trimmed.length < 40;
     const startsContinuative = LINE_START_CONTINUATIVE.test(trimmed);
     const endsContinuative = LINE_END_CONTINUATIVE.test(trimmed);
 
@@ -125,20 +162,11 @@ export function reconstructArabicLines(text: string): string {
       continue;
     }
 
-    if (isShort && !startsContinuative && !prevEndsContinuative && !endsContinuative) {
-      if (buffer.length > 0) {
-        buffer.push(trimmed);
-        result.push(buffer.join(" "));
-        buffer = [];
-      } else {
-        // Buffer the first short line so consecutive short lines merge
-        // (was result.push, which flushed each line separately — no merging).
-        buffer.push(trimmed);
-      }
-      prevEndsContinuative = endsContinuative;
-      continue;
-    }
-
+    // A short line that neither starts nor ends continuative used to FLUSH the
+    // buffer here. That split a paragraph whenever its last line was long: the
+    // flush left the buffer empty, so the sentence-final line was pushed on its
+    // own and only merged on a second pass — the pipeline had no fixed point.
+    // Short lines now take the same path as every other content line.
     buffer.push(trimmed);
     prevEndsContinuative = endsContinuative;
   }
@@ -222,13 +250,14 @@ export function removePageNoise(text: string): string {
     .filter((line) => {
       const trimmed = line.trim();
       if (!trimmed) return true;
+      if (isTableRow(trimmed)) return true;
 
       for (const pattern of PAGE_NUM_PATTERNS) {
         if (pattern.test(trimmed)) return false;
       }
 
       if (/^[•·\-–—*]+$/.test(trimmed)) return false;
-      if (/^[\d\s\-–—|/\\]+$/.test(trimmed)) return false;
+      if (ONLY_DIGITS_AND_RULES.test(trimmed)) return false;
       if (/^[A-Z\s]{3,}$/.test(trimmed) && trimmed.length < 20) return false;
 
       return true;
@@ -249,15 +278,15 @@ export function removeGarbageSymbols(text: string, confidence?: number): string 
     .map((line) => {
       const trimmed = line.trim();
       if (!trimmed) return line;
+      if (isTableRow(trimmed)) return line;
 
       const chars = trimmed.replace(/\s/g, "");
       if (chars.length < 2) return line;
 
-      const arabic = (chars.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
+      const arabic = countArabicLetters(chars);
       const latin = (chars.match(/[a-zA-Z]/g) || []).length;
       const digits = (chars.match(/[0-9]/g) || []).length;
-      const symbols = (chars.match(/[^\u0600-\u06FF\u0750-\u077F\u08A0-\u08FFa-zA-Z0-9\s]/g) || [])
-        .length;
+      const symbols = (chars.match(SYMBOL_CHARS) || []).length;
 
       const realContent = arabic + latin + digits;
 
@@ -290,12 +319,10 @@ export function removeIsolatedFragments(text: string, confidence?: number): stri
         return line;
 
       if (trimmed.length <= minLength) {
-        const arabic = (trimmed.match(/[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/g) || []).length;
+        const arabic = countArabicLetters(trimmed);
         const latin = (trimmed.match(/[a-zA-Z]/g) || []).length;
         const digits = (trimmed.match(/[0-9]/g) || []).length;
-        const symbols = (
-          trimmed.match(/[^a-zA-Z0-9\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\s]/g) || []
-        ).length;
+        const symbols = (trimmed.match(SYMBOL_CHARS) || []).length;
 
         if (arabic > 0 || latin > 0 || digits > 0) return line;
 
@@ -308,7 +335,7 @@ export function removeIsolatedFragments(text: string, confidence?: number): stri
 }
 
 export function collapseRepeatedWords(text: string): string {
-  text = text.replace(/([\u0600-\u06FF]{2,})(\s+\1){2,}/g, "$1");
-  text = text.replace(/((?:[\u0600-\u06FF]+\s+){1,3}[\u0600-\u06FF]+)(\s+\1){2,}/g, "$1");
+  text = text.replace(REPEATED_ARABIC_WORD, "$1");
+  text = text.replace(REPEATED_ARABIC_PHRASE, "$1");
   return text;
 }

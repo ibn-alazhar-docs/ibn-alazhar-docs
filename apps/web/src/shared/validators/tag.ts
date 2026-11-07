@@ -1,18 +1,19 @@
 import { z } from "zod";
+import { DEFAULT_TAG_COLOR } from "../constants";
 
 const MAX_TAGS_PER_USER = 50;
 
 export const TAG_COLORS = [
-  "#16A34A",
+  DEFAULT_TAG_COLOR,
+  "#DA9E2C",
+  "#083B40",
   "#2563EB",
   "#DC2626",
-  "#CA8A04",
   "#9333EA",
   "#EA580C",
-  "#0891B2",
   "#DB2777",
   "#4F46E5",
-  "#059669",
+  "#57534E",
 ] as const;
 
 export const createTagSchema = z
@@ -22,7 +23,7 @@ export const createTagSchema = z
       .string()
       .regex(/^#[0-9A-Fa-f]{6}$/, "اللون غير صالح")
       .optional()
-      .default("#16A34A"),
+      .default(DEFAULT_TAG_COLOR),
   })
   .strip();
 

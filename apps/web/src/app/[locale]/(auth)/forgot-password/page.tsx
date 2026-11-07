@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/ui/metadata";
 import { ForgotPasswordForm } from "@/ui/auth/forgot-password-form";
+import { BrandLogo } from "@/ui/brand-logo";
 
 interface ForgotPasswordPageProps {
   params: Promise<{ locale: string }>;
@@ -28,14 +28,7 @@ export default async function ForgotPasswordPage(props: ForgotPasswordPageProps)
   return (
     <div className="text-center">
       <Link href="/" className="inline-block mb-6">
-        <Image
-          src="/logo.svg"
-          alt={tApp("name")}
-          width={48}
-          height={48}
-          className="mx-auto h-12 w-auto"
-          priority
-        />
+        <BrandLogo alt={tApp("name")} className="mx-auto h-12 w-auto" priority />
       </Link>
       <div className="gold-divider mx-auto mb-6" />
       <h2 className="heading-display text-xl font-bold tracking-[0.02em] text-primary-color sm:text-2xl">

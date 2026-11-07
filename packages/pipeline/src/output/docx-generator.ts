@@ -2,6 +2,7 @@ import type { DocumentIR } from "@ibn-al-azhar-docs/shared";
 import { FormatGenerator, GeneratorOptions } from "./generator-base";
 import { MarkdownGenerator } from "./markdown-generator";
 import { generateDocx as pandocDocx, generateEpub as pandocEpub } from "./pandoc";
+import { containsArabic } from "../text/constants";
 
 /**
  * DOCX generator driven by the IR. The IR is rendered to structured Markdown
@@ -13,6 +14,7 @@ export class DocxGenerator implements FormatGenerator {
   private markdown = new MarkdownGenerator();
 
   async generate(ir: DocumentIR, options?: GeneratorOptions): Promise<Buffer> {
+    const { rtl, csFont, geometry } = options ?? {};
     const md = await this.markdown.generate(ir, options);
     const mdStr = md.toString("utf-8");
     // Preprocess: convert any HTML tables embedded in the IR-rendered Markdown
@@ -20,13 +22,19 @@ export class DocxGenerator implements FormatGenerator {
     // drop or misrender them (HTML tables are not part of Pandoc's Markdown
     // table grammar and would otherwise be stripped).
     const converted = convertHtmlTablesToMarkdown(mdStr);
-    // TODO(bidi/fonts): RTL paragraph direction (w:bidi) and Arabic complex-script
-    // fonts (cs/hAnsi/eastAsia) must be configured in the Pandoc template /
-    // reference doc (--reference-doc / --template), NOT re-implemented as manual
-    // docx post-processing here. The IR->Pandoc path stays authoritative; only
-    // preprocessing happens above. Pass template/referenceDoc via pandoc options
-    // when wiring a custom Arabic template.
-    return pandocDocx({ markdown: converted, cleaned: converted });
+    // bidi/fonts تُضبط في طبقة OOXML (docx-rtl.ts) داخل pandocDocx: `w:bidi` لكل فقرة
+    // عربية (ولا يُفرض على اللاتينية)، `w:bidiVisual` للجداول، `w:bidi` للمقاطع والترقيم،
+    // و`w:rFonts w:cs`/`w:szCs`/`w:lang w:bidi` للـ runs — فتُعرض العربية بخط عربي مضمون.
+    // تمرير rtl/csFont هنا يخضع للطبقة؛ `-M dir=rtl` وحده لا يكفي (كان أعمى).
+    // الهندسة تمرّ مع الطبقة نفسها: `w:pgSz`/`w:pgMar` من الأصل لا من المرجع الثابت.
+    return pandocDocx(
+      { markdown: converted, cleaned: converted },
+      {
+        rtl: rtl !== false,
+        csFont: typeof csFont === "string" ? csFont : undefined,
+        geometry,
+      },
+    );
   }
 
   getMimeType(): string {
@@ -42,8 +50,11 @@ export class EpubGenerator implements FormatGenerator {
   private markdown = new MarkdownGenerator();
 
   async generate(ir: DocumentIR, options?: GeneratorOptions): Promise<Buffer> {
+    const { rtl } = options ?? {};
     const md = await this.markdown.generate(ir, options);
-    return pandocEpub({ markdown: md.toString("utf-8") });
+    // الاتجاه ليس إراديًا هنا: `-M dir=rtl` لا تكتب شيئًا في EPUB، فتُبنى `dir`
+    // على جذر كل XHTML و spine RTL في الطبقة داخل pandocEpub (انظر epub-rtl.ts).
+    return pandocEpub({ markdown: md.toString("utf-8") }, { rtl: rtl !== false });
   }
 
   getMimeType(): string {
@@ -74,8 +85,7 @@ export interface ScriptSegment {
   isArabic: boolean;
 }
 
-const isArabicSegment = (text: string): boolean =>
-  /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(text);
+const isArabicSegment = (text: string): boolean => containsArabic(text);
 
 export function segmentByScript(text: string): ScriptSegment[] {
   if (!text) return [];

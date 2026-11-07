@@ -33,6 +33,10 @@ export const POST = withAuth(async (request, { session, params }) => {
         .object({
           destination: z.enum(["local", "drive"]).optional(),
           profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
+          // تُمرَّر فعليًا إلى مولّد الـ PDF؛ بلا هذا كانت الواجهة تعرض حجم خط
+          // وعلامة مائية ثم تسقطهما الطبقة التالية (`.strip()`).
+          fontSize: z.coerce.number().min(8).max(72).optional(),
+          watermark: z.string().max(120).optional(),
         })
         .optional(),
     })
@@ -90,6 +94,20 @@ export const POST = withAuth(async (request, { session, params }) => {
     const outputKey = `${config.paths.exports}/${document.id}/export.${format}`;
 
     if (format === "searchable-pdf") {
+      // لا طابور لهذا الصيغة: يولّده طور التوليد. الإبلاغ عن جاهزية ملف غير موجود
+      // كان يجعل الواجهة تُحمّل رابطًا يفشل عند التنزيل.
+      const existingKey = (document.outputKeys as Record<string, string> | null)?.[format];
+      if (!existingKey) {
+        return NextResponse.json(
+          {
+            error: {
+              code: "NOT_READY",
+              message: "لم يُنشأ ملف PDF المطابق للأصل لهذا المستند.",
+            },
+          },
+          { status: 409 },
+        );
+      }
       return NextResponse.json({ success: true, jobId: document.id, message: "Export ready" });
     }
 
@@ -102,6 +120,16 @@ export const POST = withAuth(async (request, { session, params }) => {
       outputKey,
       pageCount: document.pageCount || undefined,
       options,
+    });
+
+    // المفتاح القديم يشير إلى ملف طور التوليد؛ لو تُرك كان فحص الحالة يعلن
+    // "جاهز" فورًا فيُنزَّل نسخة قديمة لا تحمل هذه الخيارات.
+    const freshKeys = { ...((document.outputKeys as Record<string, string>) || {}) };
+    delete freshKeys[format];
+    const { prisma } = await import("@/transport/db");
+    await prisma.document.update({
+      where: { id: document.id },
+      data: { outputKeys: freshKeys },
     });
 
     return NextResponse.json({ success: true, jobId, message: "Export job enqueued" });

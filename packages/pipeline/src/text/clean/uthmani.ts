@@ -12,7 +12,7 @@
  * تُسقط اختلافات الضبط الحكم على نص OCR صحيح، لكن التحقق يُرجع النص الأصلي.
  */
 
-import { normalizeArabicLetters, removeTashkeel, removeTatweel } from "./unicode";
+import { normalizeForSimilarity } from "./similarity";
 import rawDataset from "./uthmani-data.json" with { type: "json" };
 
 export interface UthmaniAyah {
@@ -26,14 +26,14 @@ export const UTHMANI_SOURCE =
 
 export const UTHMANI_DATASET: readonly UthmaniAyah[] = rawDataset as UthmaniAyah[];
 
-/** هيكل المقارنة: بلا تشكيل ولا تطويل، أحرف موحّدة، مسافات مضغوطة. */
-export function uthmaniSkeleton(text: string): string {
-  return removeTatweel(removeTashkeel(normalizeArabicLetters(text)))
-    .replace(/ٱ/g, "ا") // ألف الوصلة → ألف وصل موحّدة
-    .replace(/[﴿﴾۝]/g, "") // علامات زخرفية لا تدخل في المطابقة
-    .replace(/\s+/g, " ")
-    .trim();
-}
+/**
+ * هيكل المقارنة: بلا تشكيل ولا تطويل، أحرف موحّدة، مسافات مضغوطة.
+ *
+ * Canonical implementation lives in similarity.ts (`normalizeForSimilarity`);
+ * this is the same skeleton under the uthmani name so the verse matcher and the
+ * similarity scorer can never drift apart again (MERGE_PLAN divergence A/B/C).
+ */
+export const uthmaniSkeleton = normalizeForSimilarity;
 
 export function getUthmaniAyah(surah: number, ayah: number): UthmaniAyah | undefined {
   return UTHMANI_DATASET.find((e) => e.surah === surah && e.ayah === ayah);

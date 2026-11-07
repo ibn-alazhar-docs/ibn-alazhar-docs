@@ -80,7 +80,10 @@ describe("RegisterForm (component)", () => {
     fireEvent.click(screen.getByRole("button", { name: "registerButton" }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith("/api/auth/register", expect.objectContaining({ method: "POST" }));
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/auth/register",
+        expect.objectContaining({ method: "POST" }),
+      );
     });
     // RegisterForm now sends via apiFetch, which normalises headers to a
     // Headers instance (for CSRF token injection) instead of a plain object.
