@@ -375,7 +375,9 @@ describeReal("نهاية إلى نهاية: pandoc 3.1.3 الحقيقي", () => 
     expectVoidTag(arabicPara, "bidi");
 
     expect(xml).toContain("<w:bidiVisual/>");
-    expect(xml).toMatch(/<w:sectPr[^>]*>\s*<w:bidi\s*\/>/);
+    // bidi داخل sectPr قد يسبقه pgSz/pgMar حسب ترتيب CT_SectPr في ECMA-376؛
+    // الضيق السابق (bidi كأول ابن فورًا) يفشل مع خرج pandoc الحقيقي في CI.
+    expect(xml).toMatch(/<w:sectPr[^>]*>(?:(?!<\/w:sectPr>)[\s\S])*?<w:bidi\s*\/>/);
     expect(xml.match(/<w:jc w:val="left"/g) ?? []).toHaveLength(0);
     expect(xml).toContain(`w:cs="${ARABIC_COMPLEX_FONT}"`);
     expect(entryOf(buf, "word/styles.xml")).not.toContain("w:cstheme");

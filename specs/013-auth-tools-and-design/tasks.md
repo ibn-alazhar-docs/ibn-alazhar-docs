@@ -4,11 +4,16 @@
 
 ## Phase 1: D1 — هدم الضيوف وبناء الداخلي
 
-- [ ] T010 [US1/US2] [FR-001,FR-002] حذف `(site)/tools/**` + `api/tools/guest/**` + `core/services/guest/**` + `domain/guest-tools.ts` + `shared/guest-route-response.ts` + `shared/tools/guest-limits.ts` + `ui/tools/guest-tool-client.tsx|tool-card.tsx|read-only-result.tsx` + `packages/pipeline/src/transcription/**` وتصديره
-- [ ] T011 [FR-001] middleware: `/tools` يخرج من publicPagePrefixes + حذف استثناء `/api/tools/guest`؛ sitemap: حذف 5 روابط tools؛ public-header: حذف روابط الأدوات
-- [ ] T012 [FR-003] `POST /api/tools/tashkeel` خلف الجلسة + صفحة `/dashboard/tools` بأداة تشكيل (نص ≤20k، متزامنة)
-- [ ] T013 [FR-004] messages ar/en: حذف `tools.*` الضيفي و`transcription`؛ eyebrow/footer بلا superlative؛ keys `dashboardTools.*`
-- [ ] T014 [FR-002] tests/docs: حذف `guest-tools-api.test.ts` و`guest-text-path.test.ts` و`transcription.test.ts`؛ تحديث `openapi-spec.ts`/`openapi.yaml`/`IMPLEMENTATION_TOOLS.md §7`/`headers-config.test.ts` إن يلزم
+- [x] T010 [US1/US2] [FR-001,FR-002] حذف `(site)/tools/**` + `api/tools/guest/**` + `core/services/guest/**` + `domain/guest-tools.ts` + `shared/guest-route-response.ts` + `shared/tools/guest-limits.ts` + `ui/tools/guest-tool-client.tsx|tool-card.tsx|read-only-result.tsx` + `packages/pipeline/src/transcription/**` وتصديره
+  ملف: commit 003a9b6 (44 ملفًا، −4027 سطرًا). فحص: `grep guest apps/web/src` = صفر؛ `grep transcription apps/web/src` = صفر؛ `pnpm check` exit 0؛ build ✓؛ test:unit 79/79 (1621 PASS).
+- [x] T011 [FR-001] middleware: `/tools` يخرج من publicPagePrefixes + حذف استثناء `/api/tools/guest`؛ sitemap: حذف 5 روابط tools؛ public-header: حذف روابط الأدوات
+  ملف: `middleware.ts` · `app/sitemap.ts` · `ui/layout/public-header.tsx` (003a9b6). فحص: `pnpm check` exit 0 بعد التعديل.
+- [x] T012 [FR-003] `POST /api/tools/tashkeel` خلف الجلسة + صفحة `/dashboard/tools` بأداة تشكيل (نص ≤20k، متزامنة)
+  ملف: `app/api/tools/tashkeel/route.ts` + `app/[locale]/(dashboard)/tools/page.tsx` + `tools-content.tsx`. فحص: build يعرض `ƒ /api/tools/tashkeel`؛ diacritize.test 40/40.
+- [x] T013 [FR-004] messages ar/en: حذف `tools.*` الضيفي و`transcription`؛ eyebrow/footer بلا superlative؛ keys `dashboardTools.*`
+  ملف: `messages/ar.json` · `en.json` (003a9b6؛ eyebrow/footer يكملهما T035). فحص: JSON parse OK ضمن pnpm check.
+- [x] T014 [FR-002] tests/docs: حذف `guest-tools-api.test.ts` و`guest-text-path.test.ts` و`transcription.test.ts`؛ تحديث `openapi-spec.ts`/`openapi.yaml`/`IMPLEMENTATION_TOOLS.md §7`/`headers-config.test.ts` إن يلزم
+  ملف: commit 003a9b6. فحص: spec-drift PASS + headers-config 30/30 ضمن test:unit.
 - [ ] T020 [US1] اختبار بوابة: guest endpoint يعيد 401/404 و`/tools` يحوِّل للدخول (curl بعد النشر = T050)
 
 ## Phase 2: D2 — تصميم ومنطق
