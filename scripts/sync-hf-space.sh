@@ -177,6 +177,26 @@ cd "$WORK_DIR"
 git init -q
 git config user.email "deploy@ibn-alazhar-docs.local"
 git config user.name "HF Space Sync"
+# HF Spaces (Xet storage) reject raw binary blobs — binaries MUST be LFS
+# pointers. Declare them BEFORE `git add -A` so the clean filter converts
+# fonts/docx/images to LFS at staging time (2026-11-07).
+cat > .gitattributes <<'LFS_ATTRS'
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+*.woff filter=lfs diff=lfs merge=lfs -text
+*.woff2 filter=lfs diff=lfs merge=lfs -text
+*.docx filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.webp filter=lfs diff=lfs merge=lfs -text
+LFS_ATTRS
+if command -v git-lfs >/dev/null 2>&1; then
+  git lfs install --local >/dev/null 2>&1 || true
+else
+  echo "❌ git-lfs is required to deploy binaries to HuggingFace. Install it and retry." >&2
+  exit 1
+fi
 git add -A
 git commit -q -m "Deploy $(git rev-parse --short "$COMMIT_REF" 2>/dev/null || echo "$COMMIT_REF") — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "✓ Prepared deployment commit in temp tree at: $WORK_DIR"
