@@ -198,11 +198,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     tesseract-ocr tesseract-ocr-ara ocrmypdf ghostscript poppler-utils pandoc \
     # Utilities
     curl wget openssl \
-    # Download MinIO (S3-compatible storage)
-    && wget -q -O /usr/local/bin/minio https://dl.min.io/server/minio/release/linux-amd64/minio \
-    && chmod +x /usr/local/bin/minio \
-    && wget -q -O /usr/local/bin/mc https://dl.min.io/client/mc/release/linux-amd64/mc \
-    && chmod +x /usr/local/bin/mc \
+    # MinIO is NOT embedded anymore (2026-11-07): dl.min.io binary downloads now
+    # return HTTP 410 (archived) and the prod topology runs MinIO as its own
+    # compose service; the app image default is STORAGE_DRIVER=local.
     # Install Prisma CLI
     && npm install -g prisma@6.5.0 \
     # Create Python venv for OCR + text-PDF rendering (WeasyPrint)

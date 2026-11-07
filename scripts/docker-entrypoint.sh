@@ -196,7 +196,10 @@ fi
 # ---- 3) MinIO (S3-compatible object storage) --------------------------------
 # Only started when STORAGE_DRIVER=s3. In local-storage mode (default on HF
 # Spaces) files live on the persistent /data volume, so MinIO is skipped.
-if [ "$STORAGE_DRIVER" = "s3" ]; then
+# NOTE 2026-11-07: the image no longer embeds the minio/mc binaries (dl.min.io
+# returns 410) — STORAGE_DRIVER=s3 therefore assumes an EXTERNAL endpoint
+# (S3_ENDPOINT, e.g. the compose `minio` service or Cloudflare R2).
+if [ "$STORAGE_DRIVER" = "s3" ] && command -v minio >/dev/null 2>&1; then
   echo "[entrypoint] starting MinIO (STORAGE_DRIVER=s3)..."
   minio server "$MINIO_DATA" --address 127.0.0.1:9000 --console-address 127.0.0.1:9001 >"$APP_DATA/minio.log" 2>&1 &
   for i in $(seq 1 60); do
@@ -206,7 +209,11 @@ if [ "$STORAGE_DRIVER" = "s3" ]; then
   mc alias set local http://127.0.0.1:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1
   mc mb -p "local/$S3_BUCKET" >/dev/null 2>&1 || true
 else
-  echo "[entrypoint] MinIO skipped (local filesystem storage initialized earlier)"
+  if [ "$STORAGE_DRIVER" = "s3" ]; then
+    echo "[entrypoint] STORAGE_DRIVER=s3: using EXTERNAL S3 endpoint (no embedded MinIO in image)"
+  else
+    echo "[entrypoint] MinIO skipped (local filesystem storage initialized earlier)"
+  fi
 fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
