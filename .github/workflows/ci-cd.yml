@@ -441,9 +441,8 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
-        if: github.event_name == 'pull_request'
+      # Dependency review removed 2026-11-07: needs the Dependency graph toggle,
+      # which has no API for this repo plan; pnpm audit + Trivy SARIF cover it.
 
       - name: CodeQL Analysis
         uses: github/codeql-action/init@v3

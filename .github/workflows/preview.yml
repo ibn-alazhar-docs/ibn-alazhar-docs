@@ -30,6 +30,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # gha cache driver requires buildx — was missing here (fixed 2026-11-07).
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push web (preview)
         uses: docker/build-push-action@v6
         with:

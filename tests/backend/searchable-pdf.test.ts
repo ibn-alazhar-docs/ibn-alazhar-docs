@@ -311,6 +311,9 @@ describeReal("تكافؤ ترتيب الشدّة: السكربت وorderShaddaFi
 });
 
 describeReal("نهاية إلى نهاية: صورةٌ ممسوحة ⇒ طبقةٌ منطقيةٌ بموضعها", () => {
+  // بدون محرّك PDF (مثلاً CI بلا PyMuPDF) لا نبني شيئًا: البناء المستعجَل أدناه
+  // كان يُطلق subprocess ويُنتج Unhandled Rejection حتى والمجموعة متخطّاة (2026-11-07).
+  if (!HAS_PDF_ENGINE) return;
   // تصييرٌ واحد لكل المجموعة: المحرّك subprocess، والقياساتُ كلُّها على نفس الملف.
   const built = (async () => {
     const dir = await mkdtemp(path.join(tmpdir(), "searchable-pdf-"));
