@@ -115,15 +115,12 @@ fi
 # ---- 2. Build clean tree from the current commit ----------------------------
 echo "• Exporting clean tree from $COMMIT_REF (git archive — excludes ignored/untracked)…"
 # Exclude `tests/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
-# on the Space) and binary assets under `apps/web/public` (HuggingFace's git
-# pre-receive hook rejects binary files). SVG files are text and safe to ship.
-# NOTE: logo.svg now embeds the exact institutional logo as base64-encoded PNG,
-# so it's the canonical logo asset. logo.png is kept locally but NOT shipped to
-# HF (binary file rejection).
-git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)apps/web/public' | tar -x -C "$WORK_DIR"
-# Re-include SVG assets from public/ (text files — not rejected by HF pre-receive)
-mkdir -p "$WORK_DIR/apps/web/public"
-find apps/web/public -name '*.svg' -exec cp --parents {} "$WORK_DIR/" \; 2>/dev/null || true
+# on the Space). ship the full `apps/web/public`: favicon PNGs, apple-touch-icon,
+# manifest.json, sw.js, pdfjs-wasm and the logo — the browser tab icon regressed
+# on the live Space because public/ was stripped (2026-11-07). Binaries pass the
+# HF pre-receive hook through this script's LFS pointer conversion below.
+git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' | tar -x -C "$WORK_DIR"
+cp -a apps/web/public "$WORK_DIR/apps/web/public"
 
 # Place HF Dockerfile + entrypoint at repo root (required by HF Spaces).
 cp "$HF_DOCKERFILE" "$WORK_DIR/Dockerfile"
@@ -190,6 +187,8 @@ cat > .gitattributes <<'LFS_ATTRS'
 *.png filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
 *.webp filter=lfs diff=lfs merge=lfs -text
+*.ico filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text
 LFS_ATTRS
 if command -v git-lfs >/dev/null 2>&1; then
   git lfs install --local >/dev/null 2>&1 || true

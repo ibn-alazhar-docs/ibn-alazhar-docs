@@ -14,7 +14,7 @@ import {
  * - `diacritizeText` NEVER returns the input silently labelled success.
  *   The deterministic engine reports what it did through `coverage` and
  *   `warnings`; a requested-but-unavailable Python engine throws
- *   `DiacritizeError` with code "ENGINE_UNAVAILABLE" (guest layer: HTTP 503).
+ *   `DiacritizeError` with code "ENGINE_UNAVAILABLE" (tool layer: HTTP 503).
  * - Worker-safe: no node builtins at module scope (the Python backend
  *   lazily imports `runPython` inside its functions).
  */

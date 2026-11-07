@@ -22,14 +22,6 @@ const RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
   "/api/conversion/list": { limit: 30, windowMs: 60_000 },
   "/api/conversion/start": { limit: 10, windowMs: 60_000 },
   "/api/stream": { limit: 10, windowMs: 60_000 },
-  // Guest tools: unauthenticated and OCR-backed, so the tightest submit budget in
-  // the table. The concurrency caps in guest-jobs.service are a separate, tighter
-  // gate — this only limits request churn (retries, polling storms, scripted spam).
-  "/api/tools/guest/jobs": { limit: 10, windowMs: 60_000 },
-  // Polling MUST NOT share the submit bucket: the client polls every 2s, so a
-  // shared 10/min budget would 429 any job longer than ~20s and the guest would
-  // never see a result the server actually produced.
-  "/api/tools/guest/jobs/[id]": { limit: 120, windowMs: 60_000 },
 };
 
 // User-based rate limits for authenticated operations.
@@ -67,7 +59,7 @@ export function getClientIp(request: Request): string {
   // source a client cannot forge. `x-forwarded-for` is read first by convention,
   // but its leftmost entry is attacker-controlled on any deployment reachable
   // without a proxy that scrubs it — which would let one script randomize the key
-  // and walk straight past both the rate limit and the per-IP guest queue cap.
+  // and walk straight past both the rate limit and per-IP queue caps.
   const cf = request.headers.get("cf-connecting-ip");
   if (cf && isIpLiteral(cf.trim())) return cf.trim();
   const forwarded = request.headers.get("x-forwarded-for");

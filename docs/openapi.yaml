@@ -1362,89 +1362,31 @@ paths:
         "400":
           description: Invalid action or missing jobId
 
-  /api/tools/guest/jobs:
+  /api/tools/tashkeel:
     post:
       tags: [Tools]
-      summary: Create an ephemeral guest tool job (no account, no session)
-      description: >-
-        The job id in the response is the only capability — there is no session
-        and no ownership check. Results are in-process and expire; a job that
-        cannot be processed FAILS with a code and never returns a simulated result.
-      operationId: createGuestJob
-      security: []
+      summary: Diacritize Arabic text (signed-in users only)
+      operationId: diacritizeText
+      security:
+        - sessionAuth: []
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
-              required: [file, tool]
+              required: [text]
               properties:
-                file:
+                text:
                   type: string
-                  format: binary
-                tool:
-                  type: string
-                  enum: [pdf-to-word, ocr, tashkeel, transcription]
+                  maxLength: 20000
       responses:
-        "202":
-          description: Job queued
+        "200":
+          description: Diacritized text
         "400":
-          description: Missing file or unknown tool
-        "413":
-          description: File too large or too many pages
-        "415":
-          description: Unsupported media type
-        "429":
-          description: Rate limited or a guest queue slot is full
-
-  /api/tools/guest/jobs/{id}:
-    get:
-      tags: [Tools]
-      summary: Poll a guest job, or fetch its result as txt/json/docx
-      operationId: readGuestJob
-      security: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-        - name: format
-          in: query
-          required: false
-          schema:
-            type: string
-            enum: [txt, json, docx]
-      responses:
-        "200":
-          description: Job view (JSON) or generated file; always Cache-Control: no-store
-        "404":
-          description: Unknown, expired or deleted job
-        "409":
-          description: Job has not completed yet
-        "429":
-          description: Rate limited
-        "503":
-          description: OCR or DOCX export unavailable — the job is failed, not faked
-    delete:
-      tags: [Tools]
-      summary: Delete a guest job before its TTL and free its queue slot
-      operationId: deleteGuestJob
-      security: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Deleted
-        "404":
-          description: Unknown or already-expired job
-        "429":
-          description: Rate limited
+          description: Invalid input or text too long
+        "401":
+          description: Signed-in users only
 
   /api/debug/exec:
     post:

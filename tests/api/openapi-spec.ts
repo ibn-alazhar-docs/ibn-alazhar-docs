@@ -21,7 +21,6 @@ export const spec: OpenAPI.Document = {
     { name: "Users", description: "Admin user management" },
     { name: "Conversion", description: "Document format conversion" },
     { name: "Export", description: "Document export" },
-    { name: "Tools", description: "Guest tools hub — ephemeral, account-free conversions" },
     { name: "Share", description: "Document sharing" },
     { name: "Webhooks", description: "Webhook management" },
     { name: "Analytics", description: "Usage analytics" },
@@ -2526,84 +2525,30 @@ export const spec: OpenAPI.Document = {
         },
       },
     },
-    "/api/tools/guest/jobs": {
+    "/api/tools/tashkeel": {
       post: {
         tags: ["Tools"],
-        summary: "Create an ephemeral guest tool job (no account, no session)",
-        operationId: "createGuestJob",
-        security: [],
+        summary: "Diacritize Arabic text (signed-in users only)",
+        operationId: "diacritizeText",
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
-            "multipart/form-data": {
+            "application/json": {
               schema: {
                 type: "object",
-                required: ["file", "tool"],
+                required: ["text"],
                 properties: {
-                  file: { type: "string", format: "binary" },
-                  tool: {
-                    type: "string",
-                    enum: ["pdf-to-word", "ocr", "tashkeel", "transcription"],
-                  },
+                  text: { type: "string", maxLength: 20000 },
                 },
               },
             },
           },
         },
         responses: {
-          "202": { description: "Job queued; the job id is the only capability" },
-          "400": { description: "Missing file or unknown tool" },
-          "413": { description: "File too large or too many pages" },
-          "415": { description: "Unsupported media type" },
-          "429": { description: "Rate limited or a guest queue slot is full" },
-        },
-      },
-      get: {
-        tags: ["Tools"],
-        summary: "Guest queue depth (counts only — no IPs, file names or job ids)",
-        operationId: "guestQueueSnapshot",
-        security: [],
-        responses: {
-          "200": { description: "Queue snapshot" },
-          "429": { description: "Rate limited" },
-        },
-      },
-    },
-    "/api/tools/guest/jobs/{id}": {
-      get: {
-        tags: ["Tools"],
-        summary: "Poll a guest job, or fetch its result as txt/json/docx",
-        operationId: "readGuestJob",
-        security: [],
-        parameters: [
-          { name: "id", in: "path", required: true, schema: { type: "string" } },
-          {
-            name: "format",
-            in: "query",
-            required: false,
-            schema: { type: "string", enum: ["txt", "json", "docx"] },
-          },
-        ],
-        responses: {
-          "200": {
-            description: "Job view (JSON) or generated file; always Cache-Control: no-store",
-          },
-          "404": { description: "Unknown, expired or deleted job" },
-          "409": { description: "Job has not completed yet" },
-          "429": { description: "Rate limited" },
-          "503": { description: "OCR or DOCX export unavailable — the job is failed, not faked" },
-        },
-      },
-      delete: {
-        tags: ["Tools"],
-        summary: "Delete a guest job before its TTL and free its queue slot",
-        operationId: "deleteGuestJob",
-        security: [],
-        parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
-        responses: {
-          "200": { description: "Deleted" },
-          "404": { description: "Unknown or already-expired job" },
-          "429": { description: "Rate limited" },
+          "200": { description: "Diacritized text" },
+          "400": { description: "Invalid input or text too long" },
+          "401": { description: "Signed-in users only" },
         },
       },
     },

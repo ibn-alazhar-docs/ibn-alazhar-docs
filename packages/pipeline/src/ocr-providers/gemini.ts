@@ -191,7 +191,7 @@ When processing multiple pages, separate each page's content with a horizontal r
 ❌ NO interpretation, translation, or paraphrasing
 ❌ NO correction of spelling or grammar in the original
 ❌ NO removal of "unimportant" sections
-✅ ONLY raw, faithful transcription in Markdown format`,
+✅ ONLY raw, faithful text in Markdown format`,
 
   arabic_scientific_chunk: (start: number, end: number) =>
     `${PROMPTS.arabic_scientific}
@@ -517,7 +517,7 @@ Separate each page's text with a horizontal rule (---) on its own line.
 ❌ NO interpretation, translation, or paraphrasing
 ❌ NO correction of spelling or grammar in the original
 ❌ NO removal of "unimportant" sections
-✅ ONLY raw, faithful transcription in Markdown format`;
+✅ ONLY raw, faithful text in Markdown format`;
 
     return tryWithModelFallbacks(config, async (modelId, apiKey) => {
       const genAI = new GoogleGenerativeAI(apiKey);

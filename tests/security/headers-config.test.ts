@@ -195,7 +195,7 @@ describe("Security Headers & Configuration", () => {
       "/users",
     ];
 
-    const guestOnlyRoutes = ["/login", "/register"];
+    const authOnlyRoutes = ["/login", "/register"];
 
     it("protected routes list includes dashboard", () => {
       expect(protectedRoutes).toContain("/dashboard");
@@ -205,17 +205,17 @@ describe("Security Headers & Configuration", () => {
       expect(protectedRoutes).toContain("/files");
     });
 
-    it("no overlap between protected and guest-only routes", () => {
-      const overlap = protectedRoutes.filter((r) => guestOnlyRoutes.includes(r));
+    it("no overlap between protected and auth-only routes", () => {
+      const overlap = protectedRoutes.filter((r) => authOnlyRoutes.includes(r));
       expect(overlap).toHaveLength(0);
     });
 
-    it("login is guest-only (redirects logged-in users)", () => {
-      expect(guestOnlyRoutes).toContain("/login");
+    it("login is auth-only (redirects logged-in users)", () => {
+      expect(authOnlyRoutes).toContain("/login");
     });
 
-    it("register is guest-only", () => {
-      expect(guestOnlyRoutes).toContain("/register");
+    it("register is auth-only", () => {
+      expect(authOnlyRoutes).toContain("/register");
     });
   });
 

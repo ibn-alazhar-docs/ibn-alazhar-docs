@@ -100,21 +100,18 @@ GUEST_TOOLS_LIMITS = {
 - `transcription` (صوت) → `accept=.mp3,.wav,.m4a,.ogg` والأسماء الموازية، والتنزيل عبر `?format=txt|json|docx` متاحًا للكل.
 - `ReadOnlyResult` بحال `text=null` → حالة فراغ صحيحة؛ عند اكتمال المهمة تُمرَّر النتيجة الحقيقية فقط (بحث/نسخ/تنزيل TXT/JSON/DOCX).
 
-## 7. الـ guest endpoint المنفَّذ (2026-11-07)
+## 7. الأدوات الداخلية (قرار مستخدم 2026-11-07)
+
+كل الأدوات خلف تسجيل الدخول — لا صفحات عامة ولا مسارات ضيوف. أداة التفريغ الصوتي حُذفت نهائيًا من كل مكان. الأداة الوحيدة المتبقية:
 
 ```
-POST /api/tools/guest/jobs        (multipart: file|text + tool + lang?)
-  - بلا withAuth؛ يُقيَّم بـ IP فقط (rate-limit: 1 نشطة/IP، 3/أداة، 4 إجمالًا)
-  - تحقق خادمي: نوع (PDF/JPG/PNG/MP3/WAV/M4A/OGG/WebM/Opus)، حجم ≤ 99MB، صفحات ≤ 1000 (عدّ خادمي إلزامي)
-  - CSRF: نفس سياسة middleware الحالية (Origin/Referer) — بلا استثناء
-  - معالجة: pdf-to-word/ocr عبر `processGuestInput` (native → OCR chain)؛ transcription عبر `transcribeAudio` (Gemini)؛ tashkeel عبر `processGuestText` → `diacritizeArabic` (Gemini، نص صافي فقط)
-  - حذف الملف فور انتهاء المهمة؛ النتيجة تُخزَّن 30 دقيقة ثم تُحذف
-  - استجابة: { job:{jobId,status} } ثم نتيجة read-only { text, format } قابلة للتنزيل TXT/JSON/DOCX
-GET  /api/tools/guest/jobs/[id]   (استطلاع/نتائج، نفس حدود IP)
-DELETE /api/tools/guest/jobs/[id] (حذف فوري من المستخدم قبل TTL)
+POST /api/tools/tashkeel   (JSON { text }، withAuth)
+  - يلزم جلسة؛ text string بطول ≤ 20000 حرفًا وإلا 400 بكود TOO_LONG
+  - المعالجة: diacritizeText من @ibn-al-azhar-docs/pipeline
+  - استجابة: { result }
 ```
 
-قاعدة أمان: أي endpoint ضيف جديد يجب أن يمر بفحص "ماذا لو تسربت المفاتيح/الملفات؟" — لا معرفات مستخدم، لا إعادة استخدام مسارات `/api/upload` أو `/api/conversion/*` (كلاهما `withAuth` اليوم).
+الصفحة: `apps/web/src/app/[locale]/(dashboard)/tools/page.tsx` (داخل لوحة التحكم).
 
 ## 8. التحقق المنجز (2026-11-05)
 

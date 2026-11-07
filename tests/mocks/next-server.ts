@@ -30,7 +30,7 @@ function parseBody<T = unknown>(body: unknown): T {
 /**
  * `new Headers({ ...someHeaders })` looks harmless but silently produces an
  * empty set: object spread copies own enumerable properties, and a `Headers`
- * instance has none. Routes that pass a built `Headers` (e.g. the guest queue's
+ * instance has none. Routes that pass a built `Headers` (e.g. a route's
  * `Retry-After`) therefore lost every custom header under this mock.
  */
 function mergeHeaders(init?: any): Headers {

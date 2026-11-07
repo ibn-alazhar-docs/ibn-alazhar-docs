@@ -17,7 +17,6 @@ interface PublicHeaderProps {
 
 export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
   const t = useTranslations("nav");
-  const tTools = useTranslations("tools");
   const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
 
   return (
@@ -34,12 +33,6 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
           </span>
         </Link>
         <nav aria-label={t("mainNav")} className="flex items-center gap-2">
-          <Link
-            href="/tools"
-            className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
-          >
-            {t("tools")}
-          </Link>
           <LocaleToggle />
           <ThemeToggle />
           {isLoggedIn ? (
@@ -65,37 +58,6 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
               </Link>
             </>
           )}
-        </nav>
-      </div>
-      <div className="border-t border-line/60">
-        <nav
-          aria-label={tTools("title")}
-          className="mx-auto flex max-w-6xl flex-wrap items-center justify-center gap-x-1 gap-y-0.5 px-4 py-1.5 sm:gap-x-2 sm:px-6"
-        >
-          <Link
-            href="/tools/pdf-to-word"
-            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
-          >
-            {tTools("items.pdf-to-word.name")}
-          </Link>
-          <Link
-            href="/tools/ocr"
-            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
-          >
-            {tTools("items.ocr.name")}
-          </Link>
-          <Link
-            href="/tools/tashkeel"
-            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
-          >
-            {tTools("items.tashkeel.name")}
-          </Link>
-          <Link
-            href="/tools/transcription"
-            className="rounded-full px-2 py-1 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
-          >
-            {tTools("items.transcription.name")}
-          </Link>
         </nav>
       </div>
     </header>

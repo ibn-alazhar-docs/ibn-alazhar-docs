@@ -44,11 +44,10 @@ const publicPagePrefixes = [
   "/share",
   "/docs",
   "/journeys",
-  "/tools",
 ];
 
 // Routes that should NOT be accessible when logged in
-const guestOnlyRoutes = ["/login", "/register"];
+const authOnlyRoutes = ["/login", "/register"];
 
 function isPublicPage(pathnameWithoutLocale: string): boolean {
   return publicPagePrefixes.some(
@@ -208,16 +207,9 @@ export async function middleware(request: NextRequest) {
     response.headers.set("x-request-id", requestId);
     const isApiGet = request.method === "GET" && pathname !== "/api/csrf";
     if (isApiGet) ensureCsrfCookie(response, request);
-    // Guest job results are anonymous capability URLs (the 32-hex id in the path IS
-    // the secret), so they must never enter a shared cache — not even for 10s with
-    // stale-while-revalidate. `startsWith` rather than an exact match because the id
-    // is a real path segment here, unlike the query-param reads above.
-    const isCapabilityUrl = pathname.startsWith("/api/tools/guest/jobs/");
     response.headers.set(
       "Cache-Control",
-      isApiGet && !isCapabilityUrl
-        ? "private, max-age=10, stale-while-revalidate=30"
-        : "private, no-store",
+      isApiGet ? "private, max-age=10, stale-while-revalidate=30" : "private, no-store",
     );
     // Security headers for API routes
     response.headers.set("X-Content-Type-Options", "nosniff");
@@ -233,8 +225,8 @@ export async function middleware(request: NextRequest) {
   const locale = urlLocale === "ar" || urlLocale === "en" ? urlLocale : undefined;
   const pathnameWithoutLocale = locale ? pathname.slice(`/${locale}`.length) || "/" : pathname;
 
-  // If logged in and trying to access guest-only routes, redirect to dashboard
-  if (isLoggedIn && guestOnlyRoutes.some((route) => pathnameWithoutLocale.startsWith(route))) {
+  // If logged in and trying to access auth-only routes, redirect to dashboard
+  if (isLoggedIn && authOnlyRoutes.some((route) => pathnameWithoutLocale.startsWith(route))) {
     const targetLocale = locale || getLocaleFromRequest(request);
     return NextResponse.redirect(new URL(`/${targetLocale}/dashboard`, request.url));
   }

@@ -33,7 +33,7 @@ export interface DiacritizeResult {
   /**
    * Measured share (0..1) of Arabic letters in the result that carry at least
    * one tashkeel mark. Lets callers distinguish "did almost nothing" from a
-   * real result; a guest/UX layer should enforce a floor before presenting
+   * real result; a tool/UX layer should enforce a floor before presenting
    * the output as "tashkeel applied".
    */
   coverage: number;

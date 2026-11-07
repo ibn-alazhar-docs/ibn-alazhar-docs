@@ -42,8 +42,7 @@
     "saving": "Saving…",
     "theme": "Theme",
     "themeDescription": "Change the interface appearance",
-    "user": "User",
-    "tools": "Tools"
+    "user": "User"
   },
   "section": {
     "hero": {
@@ -729,124 +728,14 @@
     "storageFull": "Storage is full"
   },
   "tools": {
-    "title": "Guest Tools",
-    "subtitle": "Fast tools without an account: upload a file, get the result, copy or download it. Your files are never saved to a library.",
-    "noAccountBadge": "No account",
-    "upcoming": {
-      "title": "Coming inside this platform",
-      "body": "Vocalization (tashkeel) and audio transcription are features inside this platform itself — enabled via sidecar services and offered under the same guest limits without an account. They are shown here with clear navigation and degrade gracefully until the service is enabled.",
-      "items": {
-        "tashkeel": {
-          "name": "Tashkeel (Vocalization)",
-          "description": "Add full diacritics to Arabic text inside this platform via a sidecar service — currently degrades gracefully until fully enabled.",
-          "cta": "Open vocalization"
-        },
-        "transcription": {
-          "name": "Transcription",
-          "description": "Turn an audio recording into written text inside this platform via a sidecar service — currently degrades gracefully until fully enabled.",
-          "cta": "Open transcription"
-        }
-      }
-    },
-    "limits": {
-      "maxSize": "Up to 99MB per file",
-      "maxPages": "Up to 1000 pages",
-      "queue": "Fair queue: 4 jobs max, 3 per tool, 1 per IP address",
-      "ttl": "Results auto-delete after 30 minutes; uploaded files are deleted as soon as the job finishes"
-    },
-    "principles": {
-      "title": "How guest tools work",
-      "items": [
-        {
-          "title": "No account",
-          "description": "No sign-up, no email — open a tool and start immediately."
-        },
-        {
-          "title": "Input stays in place",
-          "description": "Your input is never copied into a library or tied to an account; it is processed and deleted."
-        },
-        {
-          "title": "Read-only results",
-          "description": "Results are for viewing, searching, copying, comparing, and downloading (TXT/JSON) — no editing, no saving to a library."
-        },
-        {
-          "title": "Auto-deletion",
-          "description": "The file is deleted as soon as the job ends; the result after 30 minutes at the latest."
-        }
-      ]
-    },
-    "items": {
-      "pdf-to-word": {
-        "name": "PDF to Word",
-        "tagline": "Convert a PDF document to an editable Word file, extracting Arabic text directly first — free — before any OCR.",
-        "cta": "Convert PDF to Word",
-        "badge": "Live"
-      },
-      "ocr": {
-        "name": "OCR",
-        "tagline": "Extract text from a PDF or scanned image, with optional Quranic and grammar auditing",
-        "cta": "Extract text",
-        "badge": "Live"
-      },
-      "tashkeel": {
-        "name": "Tashkeel (Vocalization)",
-        "tagline": "Add full diacritics to Arabic text (external service coming — degrades gracefully)",
-        "cta": "Vocalize text",
-        "badge": "Soon"
-      },
-      "transcription": {
-        "name": "Transcription",
-        "tagline": "Turn an audio recording into written text (external service coming — degrades gracefully)",
-        "cta": "Transcribe audio",
-        "badge": "Soon"
-      }
-    },
-    "upload": {
-      "label": "Choose a file (PDF or JPG/PNG)",
-      "dropHint": "or drag the file here",
-      "limitsHint": "Limit: 99MB and 1000 pages max. The file is deleted as soon as the job finishes.",
-      "tooLarge": "File exceeds the guest limit (99MB). Reduce its size or split it.",
-      "tooManyPages": "Page count exceeds the guest limit (1000 pages).",
-      "unsupportedType": "Unsupported file type. Upload a PDF or an image (JPG/PNG).",
-      "countingPages": "Counting pages…",
-      "pagesDetected": "Pages: {count}",
-      "selectedFile": "Selected file: {name} ({size})"
-    },
-    "guest": {
-      "queueTitle": "Guest queue",
-      "queueBody": "Guest jobs are processed first-come-first-served within a cap of 4 active jobs (3 per tool, 1 per IP).",
-      "sidecarPending": "This tool depends on an external service that is not wired yet. Graceful degradation: the rest of the tools and the site stay fully available.",
-      "readOnlyNote": "Results are read-only: search, copy, compare, and download — they cannot be edited or saved to a library in guest mode.",
-      "uploading": "Uploading…",
-      "statusQueued": "Your job is queued — it starts as soon as a worker is free.",
-      "statusProcessing": "Processing now. Keep this page open.",
-      "runningHint": "The result auto-deletes 30 minutes after it finishes, and your file is erased as soon as processing ends.",
-      "queueFull": "The queue is full right now — you have an active job or the guest cap is reached. Try again shortly.",
-      "backendUnavailable": "The processing service is temporarily unavailable. Other tools keep working normally.",
-      "networkError": "The connection dropped during the job. Try submitting again.",
-      "genericError": "The guest job could not be completed. Try again.",
-      "retry": "Retry",
-      "retryInSeconds": "You can try again in about {seconds} seconds."
-    },
-    "result": {
-      "title": "Result (read-only)",
-      "empty": "No result yet. The result appears here as soon as processing finishes and stays available for 30 minutes.",
-      "searchPlaceholder": "Search inside the result…",
-      "noMatches": "No matches for your search.",
-      "copy": "Copy",
-      "copied": "Copied",
-      "downloadTxt": "Download TXT",
-      "downloadJson": "Download JSON",
-      "downloadDocx": "Download DOCX",
-      "docxPending": "Guest DOCX download arrives with the processing endpoint.",
-      "chars": "{count} characters",
-      "expiresIn": "This result auto-deletes after 30 minutes",
-      "matchCount": "{count} matching lines",
-      "via": "Source: {route} · Engine: {engine}",
-      "routeNative": "native text layer",
-      "routeOcr": "OCR"
-    },
-    "back": "← Back to Guest Tools",
-    "open": "Open tool"
+    "title": "Text tools",
+    "tashkeel": {
+      "name": "Text diacritics",
+      "description": "Adds diacritics to the entered Arabic text",
+      "placeholder": "Paste text here",
+      "run": "Diacritize",
+      "result": "Result",
+      "copy": "Copy"
+    }
   }
 }
