@@ -16,6 +16,37 @@ interface Breadcrumb {
   name: string;
 }
 
+// Survival across navigation: the uploaded job id must not disappear when the
+// user leaves and returns to /files ("سايبت ملف ومش لاقيه").
+const ACTIVE_JOBS_STORAGE_KEY = "ibn-al-azhar-docs:active-jobs";
+const MAX_STORED_JOBS = 10;
+
+function readStoredJobs(): ActiveJob[] {
+  try {
+    const parsed: unknown = JSON.parse(sessionStorage.getItem(ACTIVE_JOBS_STORAGE_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (job): job is ActiveJob =>
+          typeof job === "object" &&
+          job !== null &&
+          typeof (job as ActiveJob).jobId === "string" &&
+          typeof (job as ActiveJob).fileName === "string",
+      )
+      .slice(0, MAX_STORED_JOBS);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredJobs(jobs: ActiveJob[]): void {
+  try {
+    sessionStorage.setItem(ACTIVE_JOBS_STORAGE_KEY, JSON.stringify(jobs.slice(0, MAX_STORED_JOBS)));
+  } catch {
+    // Storage disabled or full: job tracking continues in memory only.
+  }
+}
+
 export interface UseFilesManagerReturn {
   activeJobs: ActiveJob[];
   completedIds: string[];
@@ -169,6 +200,20 @@ export function useFilesManager(): UseFilesManagerReturn {
     loadBreadcrumbs(selectedFolderId);
     setSelectedDocs(new Set());
   }, [selectedFolderId, selectedTagIds, loadDocuments, loadBreadcrumbs]);
+
+  useEffect(() => {
+    const restored = readStoredJobs();
+    if (restored.length === 0) return;
+    setActiveJobs((prev) => {
+      const existingIds = new Set(prev.map((job) => job.jobId));
+      const missing = restored.filter((job) => !existingIds.has(job.jobId));
+      return missing.length > 0 ? [...missing, ...prev] : prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    writeStoredJobs(activeJobs);
+  }, [activeJobs]);
 
   // PERFORMANCE FIX: Poll only when needed, with smarter interval
   useEffect(() => {

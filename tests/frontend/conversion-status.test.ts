@@ -4,6 +4,7 @@ import {
   STATUS_NORMALIZE,
   normalizeStage,
   getProgressPercent,
+  clampProgressMonotonically,
   type Stage,
 } from "@/shared/conversion-status-utils";
 
@@ -164,5 +165,23 @@ describe("Timeline logic", () => {
     expect(timeline[4].done).toBe(false);
     expect(timeline[5].done).toBe(false);
     expect(timeline[6].done).toBe(false);
+  });
+});
+
+describe("clampProgressMonotonically", () => {
+  it("holds progress when the server reports a lower value", () => {
+    expect(clampProgressMonotonically(25, 10)).toBe(25);
+  });
+
+  it("advances when the server reports a higher value", () => {
+    expect(clampProgressMonotonically(25, 40)).toBe(40);
+  });
+
+  it("caps at 100 on completion", () => {
+    expect(clampProgressMonotonically(83, 100)).toBe(100);
+  });
+
+  it("ignores a spurious 0 mid-job", () => {
+    expect(clampProgressMonotonically(60, 0)).toBe(60);
   });
 });

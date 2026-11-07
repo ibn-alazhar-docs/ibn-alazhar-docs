@@ -2,6 +2,8 @@ import { defineConfig, devices } from "@playwright/test";
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  // pg-pipeline.e2e.spec.ts is a vitest file (import from "vitest"), not a Playwright test; it is managed by the vitest e2e project when E2E_FULL=1.
+  testIgnore: /.*\.e2e\.spec\.ts/,
   timeout: 300000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

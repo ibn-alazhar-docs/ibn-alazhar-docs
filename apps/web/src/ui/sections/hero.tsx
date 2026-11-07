@@ -35,6 +35,49 @@ const itemVariants = {
   },
 };
 
+function DocumentPreviewMock() {
+  return (
+    <div dir="rtl" lang="ar" aria-hidden="true" className="relative">
+      <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-brand border border-line bg-paper opacity-70" />
+      <div className="relative rounded-brand border border-line bg-paper p-5 shadow-[0_18px_45px_-18px_var(--shadow-color)] sm:p-6">
+        <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
+          <span className="heading-display text-sm font-bold text-primary-color">
+            مذكرة النحو — الثانوية الأزهرية
+          </span>
+          <span className="shrink-0 rounded-md border border-line px-1.5 py-0.5 text-[10px] text-very-muted">
+            PDF
+          </span>
+        </div>
+
+        <p className="heading-display mt-4 text-lg leading-[2] text-secondary-color sm:text-xl">
+          الحَمْدُ لِلَّهِ رَبِّ العَالَمِينَ، الرَّحْمٰنِ الرَّحِيمِ
+        </p>
+
+        <div className="mt-4 space-y-2">
+          <div className="h-2.5 w-full rounded-full bg-badge" />
+          <div className="h-2.5 w-4/5 rounded-full bg-badge" />
+          <div className="h-2.5 w-3/5 rounded-full bg-badge" />
+        </div>
+
+        <div className="mt-4 flex items-center gap-1.5" title="">
+          <span className="h-1.5 w-10 rounded-full bg-[var(--gold)] opacity-80" />
+          <span className="h-1.5 w-6 rounded-full bg-[var(--btn-primary-bg)] opacity-80" />
+          <span className="h-1.5 w-14 rounded-full bg-[var(--gold)] opacity-60" />
+          <span className="h-1.5 w-8 rounded-full bg-[var(--btn-primary-bg)] opacity-60" />
+          <span className="h-1.5 w-12 rounded-full bg-[var(--gold)] opacity-40" />
+        </div>
+
+        <div className="mt-5 flex items-center justify-between rounded-lg border border-success-border bg-success-bg px-3 py-2">
+          <span className="text-xs font-semibold text-success">
+            اكتملت القراءة الضوئية · ٢٤ صفحة
+          </span>
+          <span className="text-[10px] font-bold text-success">97%</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLoggedIn }: HeroProps) {
   const t = useTranslations("section.hero");
   const localeFromHook = useLocale();
@@ -77,7 +120,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         </svg>
       </div>
 
-      <div className="mx-auto flex min-h-[auto] max-w-6xl flex-col items-start justify-center px-6 pb-8 sm:min-h-[60dvh]">
+      <div className="mx-auto grid min-h-[auto] max-w-6xl items-center gap-10 px-6 pb-8 sm:min-h-[60dvh] sm:gap-14 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div
           className="max-w-3xl"
           variants={containerVariants}
@@ -85,14 +128,14 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
           animate="visible"
         >
           <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--gold-border)] bg-[var(--gold-bg)] px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-[var(--gold)] uppercase">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--gold-border)] bg-[var(--gold-bg)] px-4 py-1.5 text-[0.625rem] font-semibold text-[var(--gold)]">
               {eyebrow || t("eyebrow")}
             </span>
           </motion.div>
 
           <motion.h1
             variants={itemVariants}
-            className="heading-display text-balance text-3xl font-bold leading-[1.15] tracking-tight sm:text-5xl md:text-6xl lg:text-7xl"
+            className="heading-display text-balance text-3xl font-bold leading-[1.15] sm:text-5xl md:text-6xl lg:text-7xl"
             style={{ color: "var(--text-primary)" }}
           >
             {title || t("title")}
@@ -115,7 +158,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="/dashboard"
-                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {t("dashboardCTA")}
                   <span aria-hidden="true" className="flex items-center">
@@ -127,7 +170,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
                   href="/register"
-                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {cta || t("cta")}
                   <span aria-hidden="true" className="flex items-center">
@@ -137,6 +180,15 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
               </motion.div>
             )}
           </motion.div>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}
+          className="mx-auto w-full max-w-sm lg:max-w-none"
+        >
+          <DocumentPreviewMock />
         </motion.div>
       </div>
     </section>

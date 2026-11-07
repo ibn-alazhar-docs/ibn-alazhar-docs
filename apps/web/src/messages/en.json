@@ -46,7 +46,7 @@
   },
   "section": {
     "hero": {
-      "eyebrow": "The first comprehensive platform for Azhari secondary education",
+      "eyebrow": "Azhar secondary documents, in one place",
       "title": "Smart Document Conversion & OCR",
       "subtitle": "Upload your PDFs or images, and we'll instantly extract the text and convert them into fully editable formats like Word or Markdown.",
       "cta": "Start Converting",
@@ -100,7 +100,7 @@
   },
   "footer": {
     "copyright": "Ibn Al-Azhar Platform © 2026",
-    "tagline": "The first comprehensive platform for Azhari secondary education"
+    "tagline": "Ibn Al-Azhar document platform — processing and organizing Azhar secondary content"
   },
   "common": {
     "loading": "Loading...",
@@ -280,7 +280,8 @@
       "cleaning": "Cleaning content",
       "generating": "Generating files",
       "completed": "Done",
-      "failed": "Failed"
+      "failed": "Failed",
+      "preparing": "Preparing the document…"
     },
     "preview": {
       "back": "Back",
@@ -488,6 +489,14 @@
     "results": "Results"
   },
   "conversions": {
+    "stages": {
+      "queued": "Queued",
+      "processing": "Processing",
+      "ocr": "OCR",
+      "clean": "Cleaning",
+      "saving": "Saving",
+      "done": "Done"
+    },
     "title": "Processing",
     "subtitle": "Monitor your document processing in real-time.",
     "searchPlaceholder": "Job ID",
@@ -519,6 +528,9 @@
   "settings": {
     "title": "Settings",
     "comingSoon": "Coming soon",
+    "about": "About the platform",
+    "docsLink": "Documentation",
+    "toolsLink": "Tools",
     "profile": "Profile",
     "profileDescription": "Your account details",
     "name": "Name",

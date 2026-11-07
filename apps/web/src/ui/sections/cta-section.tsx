@@ -36,11 +36,11 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="max-w-2xl relative z-10"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold tracking-[0.12em] text-gold uppercase">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold text-gold">
             {t("eyebrow")}
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold tracking-tight text-primary-color sm:text-5xl lg:text-6xl">
+          <h2 className="heading-display text-balance text-4xl font-bold text-primary-color sm:text-5xl lg:text-6xl">
             {t("title")}
           </h2>
 
@@ -57,7 +57,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
               >
                 <Link
                   href="/dashboard"
-                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {t("dashboardCTA")}
                   <span aria-hidden="true" className="flex items-center">
@@ -73,7 +73,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
               >
                 <Link
                   href="/register"
-                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold tracking-[0.1em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
+                  className="landing-btn-primary inline-flex items-center justify-center gap-3 rounded-xl px-8 py-4 text-xs font-bold no-underline shadow-[0_4px_14px_0_var(--btn-shadow)]"
                 >
                   {t("button")}
                   <span aria-hidden="true" className="flex items-center">

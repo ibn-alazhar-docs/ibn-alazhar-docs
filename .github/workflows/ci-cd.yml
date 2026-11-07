@@ -141,6 +141,10 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: ${{ runner.temp }}/ibn-storage
+      PG_QUEUE_TEST_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      PG_QUEUE_TEST_TRUNCATE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -167,6 +171,9 @@ jobs:
 
       - name: Seed database
         run: pnpm db:seed
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
 
       - name: Run integration tests
         run: pnpm vitest run --project=integration
@@ -206,6 +213,8 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: ${{ runner.temp }}/ibn-storage
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -229,6 +238,9 @@ jobs:
 
       - name: Run migrations
         run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
 
       - name: Run API tests
         run: pnpm vitest run --project=api

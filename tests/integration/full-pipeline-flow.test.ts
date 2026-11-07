@@ -143,7 +143,7 @@ describe("Full Pipeline Flow: Upload → OCR → Clean → Markdown → Export",
       const cleaned = cleanArabicText(MIXED_TEXT);
       expect(cleaned).toContain("Chapter 1");
       expect(cleaned).toContain("الفقه");
-      expect(cleaned).toContain("ابو حن");
+      expect(cleaned).toContain("أبو حن");
     });
 
     it("OCR exclamation artifacts are removed from Arabic text", () => {

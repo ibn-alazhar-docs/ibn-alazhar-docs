@@ -2,7 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter, usePathname } from "@/i18n/navigation";
 import { useTheme } from "@/ui/theme/theme-provider";
 import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/card";
@@ -10,6 +10,7 @@ import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Badge } from "@/ui/badge";
+import { BrandLogo } from "@/ui/brand-logo";
 import { UI_TIMING } from "@/shared/constants";
 import { useState, useTransition } from "react";
 import { signOut, useSession } from "next-auth/react";
@@ -28,6 +29,7 @@ interface SettingsContentProps {
 export function SettingsContent({ user }: SettingsContentProps) {
   const tNav = useTranslations("nav");
   const t = useTranslations("settings");
+  const tFooter = useTranslations("footer");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
@@ -95,13 +97,11 @@ export function SettingsContent({ user }: SettingsContentProps) {
 
   return (
     <Container>
-      <div className="py-8 space-y-6 max-w-2xl">
+      <div className="py-8 space-y-6 max-w-5xl">
         {/* Page Header */}
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary-color">
-              {tNav("settings")}
-            </h1>
+            <h1 className="text-3xl font-bold text-primary-color">{tNav("settings")}</h1>
             <p className="mt-1 text-sm text-secondary-color">{t("profileDescription")}</p>
           </div>
           {isAdmin && (
@@ -169,59 +169,84 @@ export function SettingsContent({ user }: SettingsContentProps) {
           </CardContent>
         </Card>
 
-        {/* Language Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("language")}</CardTitle>
-            <CardDescription>{t("languageDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => handleLanguageSwitch("ar")}
-                disabled={isPending || locale === "ar"}
-                variant={locale === "ar" ? "default" : "outline"}
-              >
-                {t("arabic")}
-              </Button>
-              <Button
-                onClick={() => handleLanguageSwitch("en")}
-                disabled={isPending || locale === "en"}
-                variant={locale === "en" ? "default" : "outline"}
-              >
-                {t("english")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Language + Theme */}
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("language")}</CardTitle>
+              <CardDescription>{t("languageDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => handleLanguageSwitch("ar")}
+                  disabled={isPending || locale === "ar"}
+                  variant={locale === "ar" ? "default" : "outline"}
+                >
+                  {t("arabic")}
+                </Button>
+                <Button
+                  onClick={() => handleLanguageSwitch("en")}
+                  disabled={isPending || locale === "en"}
+                  variant={locale === "en" ? "default" : "outline"}
+                >
+                  {t("english")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
 
-        {/* Theme Section */}
+          {/* Theme Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle>{t("theme")}</CardTitle>
+              <CardDescription>{t("themeDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    if (theme !== "light") toggleTheme();
+                  }}
+                  variant={theme === "light" ? "default" : "outline"}
+                  className="flex items-center gap-2"
+                >
+                  <SunIcon className="h-4 w-4" />
+                  {t("light")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (theme !== "dark") toggleTheme();
+                  }}
+                  variant={theme === "dark" ? "default" : "outline"}
+                  className="flex items-center gap-2"
+                >
+                  <MoonIcon className="h-4 w-4" />
+                  {t("dark")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* About Section */}
         <Card>
           <CardHeader>
-            <CardTitle>{t("theme")}</CardTitle>
-            <CardDescription>{t("themeDescription")}</CardDescription>
+            <CardTitle>{t("about")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  if (theme !== "light") toggleTheme();
-                }}
-                variant={theme === "light" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <SunIcon className="h-4 w-4" />
-                {t("light")}
+            <div className="flex flex-wrap items-center gap-4">
+              <BrandLogo alt={tNav("name")} className="h-8 w-auto shrink-0" />
+              <p className="heading-display-sm min-w-[200px] flex-1 text-sm font-bold text-primary-color">
+                {tFooter("tagline")}
+              </p>
+            </div>
+            <div className="mt-4 flex gap-3">
+              <Button variant="outline" asChild>
+                <Link href="/docs">{t("docsLink")}</Link>
               </Button>
-              <Button
-                onClick={() => {
-                  if (theme !== "dark") toggleTheme();
-                }}
-                variant={theme === "dark" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <MoonIcon className="h-4 w-4" />
-                {t("dark")}
+              <Button variant="outline" asChild>
+                <Link href="/tools">{t("toolsLink")}</Link>
               </Button>
             </div>
           </CardContent>

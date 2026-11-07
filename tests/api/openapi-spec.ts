@@ -129,7 +129,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Actuator"],
         summary: "Process metrics",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Metrics",
@@ -152,7 +152,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Actuator"],
         summary: "Prometheus metrics (plain text)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": { description: "Prometheus metrics", content: { "text/plain": {} } },
           "401": {
@@ -363,7 +363,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "List documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [
           { name: "page", in: "query", schema: { type: "integer", minimum: 1, default: 1 } },
           {
@@ -394,7 +394,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Create a document (placeholder)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "405": { description: "Method not allowed — use upload" },
         },
@@ -404,7 +404,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Get document by ID",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -432,7 +432,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Documents"],
         summary: "Update document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: { content: { "application/json": { schema: { type: "object" } } } },
         responses: {
@@ -461,7 +461,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Documents"],
         summary: "Soft-delete document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -491,7 +491,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Bulk delete documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -524,7 +524,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Bulk export documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -560,7 +560,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Bulk move documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -596,7 +596,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Bulk tag documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -632,7 +632,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Bulk untag documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -702,7 +702,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Get the latest audit session for a document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -730,7 +730,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Save an audit session for a document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -762,7 +762,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "List audit sessions for a document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -790,7 +790,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Get bookmark status",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -812,7 +812,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Toggle bookmark",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -836,7 +836,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Documents"],
         summary: "Move document to folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -876,7 +876,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Documents"],
         summary: "Restore soft-deleted document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -906,7 +906,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Get share link status",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -926,7 +926,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Create share link",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           content: {
@@ -953,7 +953,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Documents"],
         summary: "Remove share link",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -975,7 +975,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Regenerate share link",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1005,7 +1005,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Suggest tags for a document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1027,7 +1027,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Get document tags",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1049,7 +1049,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Add tag to document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -1083,7 +1083,7 @@ export const spec: OpenAPI.Document = {
       put: {
         tags: ["Documents"],
         summary: "Replace all tags on document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -1119,7 +1119,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Documents"],
         summary: "Remove tag from document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string" } },
           { name: "tagId", in: "path", required: true, schema: { type: "string" } },
@@ -1146,7 +1146,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Request document export",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -1188,7 +1188,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Documents"],
         summary: "Check export status",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string" } },
           { name: "format", in: "query", required: true, schema: { type: "string" } },
@@ -1220,7 +1220,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Folders"],
         summary: "List folders",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Folders list",
@@ -1239,7 +1239,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Folders"],
         summary: "Create folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1272,7 +1272,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Folders"],
         summary: "Get folder by ID",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1298,7 +1298,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Folders"],
         summary: "Rename folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -1336,7 +1336,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Folders"],
         summary: "Delete folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1364,7 +1364,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Folders"],
         summary: "Empty folder (move contents to root)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1386,7 +1386,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Folders"],
         summary: "Move folder to another parent",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           required: true,
@@ -1420,7 +1420,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Folders"],
         summary: "Restore soft-deleted folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1444,7 +1444,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Folders"],
         summary: "Get tags used in folder",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1466,7 +1466,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Folders"],
         summary: "Get folder tree",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1489,7 +1489,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Tags"],
         summary: "List tags",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Tags list",
@@ -1508,7 +1508,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Tags"],
         summary: "Create tag",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1541,7 +1541,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Tags"],
         summary: "Get tag by ID",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1567,7 +1567,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Tags"],
         summary: "Update tag",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: {
           content: {
@@ -1603,7 +1603,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Tags"],
         summary: "Delete tag",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1631,7 +1631,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Tags"],
         summary: "Merge two tags",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1665,7 +1665,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Search"],
         summary: "Search documents",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [
           { name: "q", in: "query", required: true, schema: { type: "string" } },
           { name: "page", in: "query", schema: { type: "integer", minimum: 1, default: 1 } },
@@ -1695,7 +1695,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Search"],
         summary: "Get search suggestions",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "q", in: "query", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -1720,7 +1720,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Bookmarks"],
         summary: "List bookmarks",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Bookmarks",
@@ -1739,7 +1739,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Bookmarks"],
         summary: "Add bookmark",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1770,7 +1770,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Bookmarks"],
         summary: "Remove bookmark",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1804,7 +1804,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Profile"],
         summary: "Get current user profile",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Profile",
@@ -1823,7 +1823,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Profile"],
         summary: "Update profile",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: { content: { "application/json": { schema: { type: "object" } } } },
         responses: {
           "200": {
@@ -1843,7 +1843,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Profile"],
         summary: "Delete account",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: { content: { "application/json": { schema: { type: "object" } } } },
         responses: {
           "200": {
@@ -1868,7 +1868,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Users"],
         summary: "List users (admin)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Users list",
@@ -1893,7 +1893,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Users"],
         summary: "Delete user (admin)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -1933,7 +1933,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Analytics"],
         summary: "Get usage analytics",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "days", in: "query", schema: { type: "integer", default: 30 } }],
         responses: {
           "200": {
@@ -1956,7 +1956,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Conversion"],
         summary: "List conversion jobs",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Conversion jobs",
@@ -1979,7 +1979,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Conversion"],
         summary: "Start document conversion",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2014,7 +2014,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Conversion"],
         summary: "Get conversion job status",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -2045,7 +2045,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Export"],
         summary: "Export document (binary)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2079,7 +2079,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Export"],
         summary: "Download exported file",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [
           { name: "id", in: "path", required: true, schema: { type: "string" } },
           { name: "format", in: "path", required: true, schema: { type: "string" } },
@@ -2111,7 +2111,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Export"],
         summary: "Export multiple documents as ZIP",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2148,7 +2148,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Export"],
         summary: "Export folder as ZIP",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2182,7 +2182,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Export"],
         summary: "Export tagged documents as ZIP",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2268,7 +2268,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Webhooks"],
         summary: "List webhooks",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Webhooks list",
@@ -2287,7 +2287,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Webhooks"],
         summary: "Create webhook",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2325,7 +2325,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Webhooks"],
         summary: "Get webhook by ID",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -2353,7 +2353,7 @@ export const spec: OpenAPI.Document = {
       patch: {
         tags: ["Webhooks"],
         summary: "Update webhook",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         requestBody: { content: { "application/json": { schema: { type: "object" } } } },
         responses: {
@@ -2380,7 +2380,7 @@ export const spec: OpenAPI.Document = {
       delete: {
         tags: ["Webhooks"],
         summary: "Delete webhook",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -2410,7 +2410,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Webhooks"],
         summary: "Get webhook delivery stats",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Webhook stats",
@@ -2431,7 +2431,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Webhooks"],
         summary: "Test webhook delivery",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "200": {
@@ -2460,7 +2460,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Health"],
         summary: "Application metrics (admin)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Metrics",
@@ -2487,7 +2487,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Documents"],
         summary: "Re-process a document through the OCR pipeline",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
         responses: {
           "202": { description: "Re-processing enqueued" },
@@ -2500,13 +2500,13 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Metrics"],
         summary: "List dead-letter-queue failed jobs (admin)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: { "200": { description: "Failed jobs from the DLQ" } },
       },
       post: {
         tags: ["Metrics"],
         summary: "Requeue failed jobs from the DLQ (admin)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2556,7 +2556,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Health"],
         summary: "Run an allowlisted diagnostic probe (admin, disabled in production)",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2583,7 +2583,7 @@ export const spec: OpenAPI.Document = {
         summary:
           "Deployment readiness view (admin, disabled in production) — booleans and paths only, never secret values",
         operationId: "debugPgReadiness",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": {
             description: "Queue, storage, Arabic-export asset and OCR readiness",
@@ -2616,7 +2616,7 @@ export const spec: OpenAPI.Document = {
       post: {
         tags: ["Upload"],
         summary: "Upload a document",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         requestBody: {
           required: true,
           content: {
@@ -2667,7 +2667,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Stream"],
         summary: "SSE stream for job progress",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         parameters: [{ name: "jobId", in: "query", required: true, schema: { type: "string" } }],
         responses: {
           "200": { description: "SSE stream", content: { "text/event-stream": {} } },
@@ -2690,7 +2690,7 @@ export const spec: OpenAPI.Document = {
       get: {
         tags: ["Stream"],
         summary: "SSE stream for dashboard updates",
-        security: [{ bearerAuth: [] }],
+        security: [{ sessionAuth: [] }],
         responses: {
           "200": { description: "SSE stream", content: { "text/event-stream": {} } },
           "401": {
@@ -2705,10 +2705,17 @@ export const spec: OpenAPI.Document = {
   },
   components: {
     securitySchemes: {
-      bearerAuth: {
-        type: "http",
-        scheme: "bearer",
-        bearerFormat: "JWT",
+      sessionAuth: {
+        type: "apiKey",
+        in: "cookie",
+        name: "next-auth.session-token",
+        description: "NextAuth session cookie",
+      },
+      ApiKeyAuth: {
+        type: "apiKey",
+        in: "header",
+        name: "x-api-key",
+        description: "Testing harness API key",
       },
     },
     schemas: {

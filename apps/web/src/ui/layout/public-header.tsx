@@ -28,7 +28,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
         <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
           <BrandLogo alt={brand} className="h-10 w-auto" priority />
-          <span className="heading-display-sm hidden truncate text-sm font-bold tracking-tight text-primary-color sm:inline">
+          <span className="heading-display-sm hidden text-sm font-bold text-primary-color sm:inline max-w-[150px] xl:max-w-none max-xl:truncate">
             {brand}
           </span>
         </Link>
@@ -38,7 +38,7 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-[0.08em] no-underline"
+              className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold no-underline"
             >
               {t("home")}
             </Link>
@@ -46,13 +46,13 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             <>
               <Link
                 href="/login"
-                className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+                className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
               >
                 {signInLabel || t("signIn")}
               </Link>
               <Link
                 href="/register"
-                className="landing-btn-primary inline-flex items-center gap-1 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-[0.08em] no-underline whitespace-nowrap"
+                className="landing-btn-primary inline-flex items-center gap-1 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold no-underline whitespace-nowrap"
               >
                 {signUpLabel || t("signUp")}
               </Link>

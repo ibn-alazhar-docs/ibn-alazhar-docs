@@ -5,6 +5,7 @@ import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { ThemeWrapper } from "@/ui/theme/theme-wrapper";
+import { RouteProgress } from "@/ui/layout/route-progress";
 import { generatePageMetadata } from "@/ui/metadata";
 import { BRAND_NAME, BRAND_POSITIONING } from "@/ui/brand";
 import { Toaster } from "sonner";
@@ -84,6 +85,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
             },
           }}
         />
+        <RouteProgress />
       </NextIntlClientProvider>
     </div>
   );

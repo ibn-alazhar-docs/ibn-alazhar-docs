@@ -50,7 +50,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0"
           >
             <BrandLogo alt={t("name")} className="h-6 sm:h-7 lg:h-8 w-auto shrink-0" />
-            <span className="heading-display-sm text-[10px] sm:text-xs font-bold tracking-tight text-primary-color truncate max-w-[100px] sm:max-w-[120px] lg:max-w-none">
+            <span className="heading-display-sm text-xs sm:text-sm font-bold text-primary-color max-w-[150px] sm:max-w-[190px] xl:max-w-none max-lg:truncate">
               {t("name")}
             </span>
           </Link>
@@ -66,7 +66,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
         </div>
 
         <div className="flex items-center gap-0.5 sm:gap-1">
-          <span className="hidden lg:inline text-[10px] sm:text-xs text-very-muted truncate max-w-[100px]">
+          <span className="hidden md:inline text-xs text-very-muted max-w-[180px] lg:max-w-[260px]">
             {t("tagline")}
           </span>
           <LocaleToggle />
@@ -76,8 +76,8 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             className="flex items-center gap-1 sm:gap-1.5 rounded-lg px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-xs font-semibold text-muted-color transition-all hover:bg-danger/5 hover:text-danger shrink-0"
             aria-label={tCommon("logout")}
           >
-            <LogoutIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             <span className="hidden sm:inline truncate">{tCommon("logout")}</span>
+            <LogoutIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 rtl:-scale-x-100" />
           </button>
         </div>
       </div>

@@ -2,7 +2,12 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
-import { STAGE_ORDER, normalizeStage, type Stage } from "@/shared/conversion-status-utils";
+import {
+  STAGE_ORDER,
+  normalizeStage,
+  clampProgressMonotonically,
+  type Stage,
+} from "@/shared/conversion-status-utils";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 interface ConversionStatusProps {
@@ -10,17 +15,54 @@ interface ConversionStatusProps {
   onComplete?: (jobId: string) => void;
 }
 
+type StageChip = "queued" | "processing" | "ocr" | "clean" | "saving" | "done";
+
+const RAW_STAGE_TO_CHIP: Record<string, StageChip> = {
+  queued: "queued",
+  pending: "queued",
+  UPLOADED: "queued",
+  PENDING: "queued",
+  processing: "processing",
+  validating: "processing",
+  splitting: "processing",
+  VALIDATING: "processing",
+  SPLITTING: "processing",
+  ocr: "ocr",
+  OCR_PROCESSING: "ocr",
+  clean: "clean",
+  cleaning: "clean",
+  CLEANING: "clean",
+  saving: "saving",
+  generating: "saving",
+  GENERATING: "saving",
+  done: "done",
+  completed: "done",
+  COMPLETED: "done",
+};
+
+function chipForRawStage(raw: unknown): StageChip | null {
+  if (typeof raw !== "string") return null;
+  return RAW_STAGE_TO_CHIP[raw] ?? null;
+}
+
 export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
   const t = useTranslations("pipeline.status");
+  const tStages = useTranslations("conversions.stages");
   const [stage, setStage] = useState<Stage>("pending");
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [chip, setChip] = useState<StageChip | null>(null);
 
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
 
   useEffect(() => {
     if (!jobId) return;
+
+    setStage("pending");
+    setProgress(0);
+    setErrorMsg(null);
+    setChip(null);
 
     let fallbackInterval: ReturnType<typeof setInterval> | undefined;
     let eventSource: EventSource | undefined;
@@ -66,12 +108,20 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
           if (data.type === "progress" && data.stage) {
             setStage(normalizeStage(data.stage));
-            setProgress(typeof data.progress === "number" ? data.progress : 0);
+            setProgress((prev) =>
+              clampProgressMonotonically(
+                prev,
+                typeof data.progress === "number" ? data.progress : 0,
+              ),
+            );
+            const nextChip = chipForRawStage(data.stage);
+            if (nextChip) setChip(nextChip);
           }
           if (data.type === "complete") {
             const finalStage = normalizeStage(data.status ?? "completed");
             setStage(finalStage);
-            setProgress(100);
+            setProgress((prev) => clampProgressMonotonically(prev, 100));
+            setChip("done");
             cleanup();
             onCompleteRef.current?.(jobId);
           }
@@ -123,9 +173,20 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
 
           logger.debug(`[poll] ${res.status}`);
 
-          if (res.status === 401 || res.status === 403 || res.status === 429) {
+          if (
+            res.status === 401 ||
+            res.status === 403 ||
+            res.status === 429 ||
+            res.status === 404
+          ) {
             cleanup();
-            setErrorMsg(res.status === 401 ? "يجب تسجيل الدخول" : "تم تجاوز الحد المسموح مؤقتًا");
+            setErrorMsg(
+              res.status === 401
+                ? "يجب تسجيل الدخول"
+                : res.status === 404
+                  ? "حُذف هذا المستند"
+                  : "تم تجاوز الحد المسموح مؤقتًا",
+            );
             return;
           }
 
@@ -133,7 +194,14 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             const data = await res.json();
             logger.debug(`[poll] data: ${String(data.status)} ${data.progress}`);
             setStage(normalizeStage(data.status));
-            setProgress(typeof data.progress === "number" ? data.progress : 0);
+            setProgress((prev) =>
+              clampProgressMonotonically(
+                prev,
+                typeof data.progress === "number" ? data.progress : 0,
+              ),
+            );
+            const polledChip = chipForRawStage(data.status);
+            if (polledChip) setChip(polledChip);
             const s = normalizeStage(data.status);
             if (s === "completed" || s === "failed") {
               cleanup();
@@ -175,9 +243,7 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       </div>
 
       <div className="text-center">
-        <p
-          className={`text-lg font-bold tracking-tight ${isFailed ? "text-danger" : "premium-gradient-text"}`}
-        >
+        <p className={`text-lg font-bold ${isFailed ? "text-danger" : "text-success"}`}>
           {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {errorMsg && <p className="mt-2 text-xs text-danger">{errorMsg}</p>}
@@ -186,15 +252,25 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
             <span className="text-sm font-semibold text-primary-color bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
               {progress > 0 ? `${Math.round(progress)}%` : "0%"}
             </span>
+            {chip && (
+              <span className="mt-2 inline-block rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2.5 py-0.5 text-[11px] font-semibold text-primary-color">
+                {tStages(chip)}
+              </span>
+            )}
             {stage === "ocr" && (
-              <p className="text-[11px] text-muted-color animate-pulse mt-1">
+              <p className="text-[11px] text-muted-color mt-1">
                 (قد تستغرق هذه الخطوة بضع دقائق حسب حجم الملف)
               </p>
             )}
             {stage === "pending" && progress === 0 && (
-              <p className="text-[11px] text-muted-color animate-pulse mt-1">
-                (في انتظار بدء المعالجة...)
-              </p>
+              <div className="mt-3 w-full max-w-xs space-y-2">
+                <div className="h-[3px] w-40 mx-auto overflow-hidden rounded-full bg-badge">
+                  <div className="progress-indeterminate h-full w-1/2 rounded-full bg-primary-color" />
+                </div>
+                <p className="text-xs text-muted-color">{t("preparing")}</p>
+                <div className="h-3 w-3/4 rounded bg-badge animate-pulse" />
+                <div className="h-3 w-1/2 rounded bg-badge animate-pulse opacity-60" />
+              </div>
             )}
           </div>
         )}

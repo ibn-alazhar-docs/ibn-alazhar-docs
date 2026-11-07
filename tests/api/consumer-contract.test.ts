@@ -857,11 +857,10 @@ describe("Consumer Contract — OpenAPI Spec as Consumer Contract", () => {
     expect(paths).toContain("/api/export");
   });
 
-  it("OpenAPI spec security scheme is bearer JWT", () => {
-    const scheme = spec.components?.securitySchemes?.bearerAuth as any;
+  it("OpenAPI spec security scheme is session cookie (apiKey/cookie)", () => {
+    const scheme = spec.components?.securitySchemes?.sessionAuth;
     expect(scheme).toBeDefined();
-    expect(scheme.type).toBe("http");
-    expect(scheme.scheme).toBe("bearer");
+    expect(scheme).toMatchObject({ type: "apiKey", in: "cookie" });
   });
 
   it("All authenticated endpoints declare security", () => {

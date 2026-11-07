@@ -333,6 +333,19 @@
     animation: gradientBG 15s ease infinite;
   }
 
+  @keyframes progressIndeterminate {
+    0% {
+      transform: translateX(-110%);
+    }
+    100% {
+      transform: translateX(220%);
+    }
+  }
+
+  .progress-indeterminate {
+    animation: progressIndeterminate 1.4s ease-in-out infinite;
+  }
+
   @keyframes gradientBG {
     0% {
       background-position: 0% 50%;

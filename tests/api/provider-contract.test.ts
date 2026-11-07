@@ -296,13 +296,14 @@ describe("Provider Contract — OpenAPI Spec Compliance", () => {
     expect(spec.info.version).toBeDefined();
     expect(spec.paths).toBeDefined();
     expect(spec.components?.securitySchemes).toBeDefined();
-    expect(spec.components?.securitySchemes?.bearerAuth).toBeDefined();
+    expect(spec.components?.securitySchemes?.sessionAuth).toBeDefined();
+    expect(spec.components?.securitySchemes?.ApiKeyAuth).toBeDefined();
   });
 
-  it("spec defines security scheme as bearer JWT", () => {
-    const scheme = spec.components?.securitySchemes?.bearerAuth as any;
-    expect(scheme.type).toBe("http");
-    expect(scheme.scheme).toBe("bearer");
+  it("spec defines security scheme as session cookie (apiKey/cookie)", () => {
+    const scheme = spec.components?.securitySchemes?.sessionAuth;
+    expect(scheme).toBeDefined();
+    expect(scheme).toMatchObject({ type: "apiKey", in: "cookie" });
   });
 
   it("all paths have at least one operation", () => {
@@ -326,15 +327,18 @@ describe("Provider Contract — OpenAPI Spec Compliance", () => {
     }
   });
 
-  it("all operations with security reference bearerAuth that exists", () => {
+  it("all operations with security reference a scheme defined in securitySchemes", () => {
     const routes = getRoutes();
+    const definedSchemes = spec.components?.securitySchemes ?? {};
     for (const route of routes) {
       const pathItem = spec.paths[route] as any;
       for (const method of Object.keys(pathItem)) {
         const op = pathItem[method];
         if (op.security?.length) {
           for (const sec of op.security) {
-            expect(sec.bearerAuth).toBeDefined();
+            for (const name of Object.keys(sec)) {
+              expect(definedSchemes[name]).toBeDefined();
+            }
           }
         }
       }
