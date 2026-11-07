@@ -40,6 +40,10 @@ jobs:
               Port ${{ secrets.DEPLOY_PORT || '22' }}
               IdentityFile ~/.ssh/id_rsa
 
+      # Runner-secret values are piped inline as `KEY=value` lines before the
+      # remote script: a column-0 heredoc terminator inside an indented YAML
+      # block breaks Actions' YAML parse, and env does not survive
+      # `ssh deploy bash -s` without forwarding (fixed 2026-11-07).
       - name: Deploy over SSH
         env:
           APP_DIR: ${{ secrets.DEPLOY_APP_DIR || '/app' }}
@@ -49,39 +53,11 @@ jobs:
           DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
         run: |
           set -euo pipefail
-
-          ssh deploy bash -s <<'SSH_EOF'
-            set -euo pipefail
-
-            cd "${APP_DIR}"
-
-            # Authenticate to container registry
-            if [ -n "${REGISTRY_TOKEN}" ]; then
-              echo "${REGISTRY_TOKEN}" | docker login ghcr.io -u "${DEPLOY_USER}" --password-stdin
-            fi
-
-            # Pull the latest images
-            docker compose pull
-
-            # Apply database migrations
-            docker compose run --rm "${SERVICE}" npx prisma migrate deploy
-
-            # Restart stack with new images
-            docker compose up -d
-
-            # Wait for health endpoint
-            if [ -n "${HEALTH_URL}" ]; then
-              for i in $(seq 1 30); do
-                if curl -fsS "${HEALTH_URL}" > /dev/null 2>&1; then
-                  echo "Health check passed"
-                  exit 0
-                fi
-                sleep 3
-              done
-              echo "::error::Health check failed after deployment"
-              docker compose ps
-              exit 1
-            else
-              echo "DEPLOY_HEALTH_URL not set; skipping healthcheck"
-            fi
-SSH_EOF
+          {
+            echo "APP_DIR=${APP_DIR}"
+            echo "SERVICE=${SERVICE}"
+            echo "HEALTH_URL=${HEALTH_URL}"
+            echo "REGISTRY_TOKEN=${REGISTRY_TOKEN}"
+            echo "DEPLOY_USER=${DEPLOY_USER}"
+            cat "$GITHUB_WORKSPACE/.github/deploy/remote.sh"
+          } | ssh deploy 'bash -s'
