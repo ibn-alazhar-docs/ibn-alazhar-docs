@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { DEFAULT_MAX_UPLOAD_SIZE_MB } from "@ibn-al-azhar-docs/shared";
 
 export const documentUpdateSchema = z
   .object({
@@ -11,7 +12,10 @@ export const documentUpdateSchema = z
 const CUID_REGEX = /^c[a-z0-9]{23,29}$/i;
 const PAGE_RANGE_REGEX = /^\d+(-\d+)?$/;
 const ALLOWED_UPLOAD_TYPES = ["application/pdf", "image/jpeg", "image/png"];
-export const MAX_UPLOAD_SIZE_MB = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 50);
+export const MAX_UPLOAD_SIZE_MB = Math.max(
+  1,
+  Number(process.env.MAX_UPLOAD_SIZE_MB) || DEFAULT_MAX_UPLOAD_SIZE_MB,
+);
 
 export const uploadMetadataSchema = z
   .object({

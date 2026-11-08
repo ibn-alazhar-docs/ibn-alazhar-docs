@@ -1,3 +1,4 @@
+import { ROLE } from "@/domain/auth";
 import type { AuthSession } from "@/domain/types";
 
 export function ownedWhere(
@@ -9,7 +10,7 @@ export function ownedWhere(
 
   // Regular users only see their own data. Admins retain oversight visibility
   // and must not be scoped by a user ID.
-  if (session.user.role === "ADMIN") {
+  if (session.user.role === ROLE.ADMIN) {
     delete where[userIdField];
   } else {
     where[userIdField] = session.user.id;

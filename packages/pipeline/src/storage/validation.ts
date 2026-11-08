@@ -1,3 +1,5 @@
+import { PIPELINE_FALLBACK_MAX_UPLOAD_SIZE_MB } from "@ibn-al-azhar-docs/shared";
+
 export interface PdfValidationResult {
   valid: boolean;
   error?: string;
@@ -14,7 +16,10 @@ export interface PdfValidationResult {
 const PDF_HEADER_PATTERN = /^%PDF-\d+\.\d+/;
 const PDF_TRAILER_PATTERN = /%%EOF\s*$/;
 const PDF_ENCRYPT_PATTERN = /\/Encrypt\s+\d+\s+\d+\s+R/;
-const MAX_FILE_SIZE = Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || 100) * 1024 * 1024;
+const MAX_FILE_SIZE =
+  Math.max(1, Number(process.env.MAX_UPLOAD_SIZE_MB) || PIPELINE_FALLBACK_MAX_UPLOAD_SIZE_MB) *
+  1024 *
+  1024;
 
 const JPEG_MAGIC = Buffer.from([0xff, 0xd8, 0xff]);
 const PNG_MAGIC = Buffer.from([0x89, 0x50, 0x4e, 0x47]);

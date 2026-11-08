@@ -2,6 +2,8 @@ export type { DocStatus, ExportFormat, ErrorCode, FailureCategory } from "./type
 
 export { DOC_STATUS_MAP, STATUS_LABELS, ERROR_CODES, FAILURE_CATEGORIES } from "./types";
 
+export { DEFAULT_MAX_UPLOAD_SIZE_MB, PIPELINE_FALLBACK_MAX_UPLOAD_SIZE_MB } from "./upload-limits";
+
 export { logger } from "./logger";
 
 export {
