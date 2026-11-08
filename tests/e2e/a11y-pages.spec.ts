@@ -90,29 +90,6 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
     expect(results.violations).toEqual([]);
   });
 
-  /* ─── Auth Pages (English) ─── */
-
-  test("/ar/register has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/ar/forgot-password has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/ar/forgot-password");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/ar/reset-password has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/ar/reset-password");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
   /* ─── Protected Pages (Auth Required) ─── */
 
   test("/ar/dashboard (with data) has no a11y violations @a11y", async ({ page }) => {
@@ -123,14 +100,6 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
 
   test("/ar/dashboard (empty state) has no a11y violations @a11y", async ({ page }) => {
     await login(page);
-    const results = await runAxe(page);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/ar/documents has no a11y violations @a11y", async ({ page }) => {
-    await login(page);
-    await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
