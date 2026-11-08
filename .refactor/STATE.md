@@ -1,10 +1,10 @@
 # Refactor State
 
-Current phase: Phase 2 — mapping T005–T008 done, pending T009 inventory index + T010 constitution/decomposition
-Wave: 2 (mapping)
+Current phase: Phase 0 + Phase 2 complete (T001–T010); next is Phase 3 Wave 1 foundations (U01, U15, U16 — prerequisites: T011 safety net plan)
+Wave: 2 complete, Wave 3 next
 
-Units: none created yet (blocked on T009–T010)
-Last green commit: phase-2 maps commit (after cd57644)
-Open blockers: sub-agent free-tier quota mostly recovered via Crouton Alpha (T005–T008 done); medium service account still disabled — Saturday exceptions recorded in tasks.md
+Units: 18 provisional (U01–U18) in .refactor/01-plan.md; per-unit Spec Kit trees none yet
+Last green commit: phase-2 inventory/constitution commit (after 76b80e3)
+Open blockers: medium service account disabled; sub-agent waves must use Crouton Alpha (explore/general); integration/E2E need live services (env, not code)
 
-Single next action: T009 inventory index (00-inventory.md, prove 100% source coverage), then T010 (.specify/memory/constitution.md + .refactor/01-plan.md ordered decomposition).
+Single next action: T011 safety net (characterization + smoke + Playwright before-screenshots), then Wave 3 foundations (U01 tokens, U15 database seam, U16 shared, then U02 domain/shared types).
