@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { TagChip } from "./tag-chip";
 import { TAG_COLORS } from "@/shared/validators/tag";
 import type { Tag } from "./types";
+import { tagDotStyle } from "./tag-color";
 import { apiFetch } from "@/shared/api";
 
 interface TagPickerProps {
@@ -150,10 +151,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
                   }`}
                   onClick={() => toggleTag(tag.id)}
                 >
-                  <span
-                    className="w-3 h-3 rounded-full shrink-0"
-                    style={{ backgroundColor: tag.color }}
-                  />
+                  <span className="w-3 h-3 rounded-full shrink-0" style={tagDotStyle(tag.color)} />
                   <span className="flex-1 text-start">{tag.name}</span>
                   {selectedTagIds.includes(tag.id) && <span>✓</span>}
                 </button>
@@ -187,7 +185,7 @@ export function TagPicker({ selectedTagIds, onTagsChange, onClose }: TagPickerPr
                 className={`min-h-11 min-w-11 rounded-full transition-transform ${
                   newTagColor === color ? "scale-125 ring-2 ring-offset-1" : ""
                 }`}
-                style={{ backgroundColor: color }}
+                style={tagDotStyle(color)}
                 onClick={() => setNewTagColor(color)}
               />
             ))}

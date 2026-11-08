@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { resetPasswordSchema } from "@/shared/validators/auth";
 import { apiFetch } from "@/shared/api";
+import { FormField } from "./form-field";
 
 interface ActionState {
   error: string | null;

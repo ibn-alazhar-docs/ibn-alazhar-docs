@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { TagWithCount } from "./types";
+import { tagDotStyle } from "./tag-color";
 import { apiFetch } from "@/shared/api";
 
 interface TagFilterSidebarProps {
@@ -101,10 +102,7 @@ export function TagFilterSidebar({ selectedTagIds, onTagsChange }: TagFilterSide
               onClick={() => toggleTag(tag.id)}
               data-testid={`tag-filter-${tag.id}`}
             >
-              <span
-                className="w-3 h-3 rounded-full shrink-0"
-                style={{ backgroundColor: tag.color }}
-              />
+              <span className="w-3 h-3 rounded-full shrink-0" style={tagDotStyle(tag.color)} />
               <span className="flex-1 text-start truncate">{tag.name}</span>
               <span className="text-xs text-very-muted">{tag._count.documents}</span>
             </button>
