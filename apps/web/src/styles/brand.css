@@ -20,16 +20,18 @@
   --color-primary-800: #0a454a;
   --color-primary-900: #073033;
 
-  --color-teal-50: #ecf5f5;
-  --color-teal-100: #d4e8e9;
-  --color-teal-200: #acd2d5;
-  --color-teal-300: #7db8bd;
-  --color-teal-400: #469aa1;
-  --color-teal-500: #127e87;
-  --color-teal-600: #106f77;
-  --color-teal-700: #0d5b61;
-  --color-teal-800: #0a454a;
-  --color-teal-900: #073033;
+  /* Canonical ramp is `primary-*`. `teal-*` aliases it (`var()` resolution
+     keeps the computed colours byte-identical to the duplicated values). */
+  --color-teal-50: var(--color-primary-50);
+  --color-teal-100: var(--color-primary-100);
+  --color-teal-200: var(--color-primary-200);
+  --color-teal-300: var(--color-primary-300);
+  --color-teal-400: var(--color-primary-400);
+  --color-teal-500: var(--color-primary-500);
+  --color-teal-600: var(--color-primary-600);
+  --color-teal-700: var(--color-primary-700);
+  --color-teal-800: var(--color-primary-800);
+  --color-teal-900: var(--color-primary-900);
 
   --color-gold-50: #fcf7ee;
   --color-gold-100: #f8eed9;
@@ -100,7 +102,6 @@
   --font-family-body: var(--font-family-almarai);
   /* Backwards-compatible aliases (reading.css / landing.css still use these) */
   --font-family-cairo: var(--font-family-almarai);
-  --font-family-amiri: var(--font-family-display);
   --font-family-mono:
     var(--font-mono), "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   /* `--font-*` is the Tailwind namespace that produces utilities, so these two
@@ -125,8 +126,6 @@
   --radius-brand-xl: 28px;
 
   --color-ring: var(--color-primary-500);
-  --ring-offset-width: 2px;
-  --ring-offset-color: var(--surface);
 
   --color-page: var(--page-bg);
   --color-paper: var(--page-bg);
@@ -173,9 +172,6 @@
 :root {
   /* Brand lockup rules (docs/BRAND_IMPLEMENTATION.md) */
   --brand-teal: #127e87;
-  --brand-gold: #da9e2c;
-  --brand-prussian: #083b40;
-  --brand-paper: #fbf5e9;
   /* Print clear space from the brandbook (190px at the reference artwork size). */
   --logo-clear-space: 190px;
   --logo-min-size: 152px;
@@ -192,7 +188,6 @@
   --text-inverse: #fffdf7;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(8, 59, 64, 0.14);
   --hover-bg: rgba(8, 59, 64, 0.05);
   --active-bg: rgba(8, 59, 64, 0.08);
   --badge-bg: rgba(18, 126, 135, 0.1);
@@ -212,7 +207,6 @@
   --gold-bg: #fcf7ee;
   --gold-border: #f2ddb5;
   --icon-color: #083b40;
-  --icon-muted: #78716c;
   --ring-focus: #127e87;
   --shadow-color: rgba(8, 59, 64, 0.1);
   --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
@@ -220,17 +214,11 @@
   --glass-bg: hsla(40, 45%, 97%, 0.72);
   --glass-border: rgba(218, 158, 44, 0.16);
   --glass-shadow: 0 16px 32px -8px rgba(8, 59, 64, 0.1);
-  /* Brand wording (brandbook 01 / 02) */
-  --brand-tagline: "في بيت كل طالب أزهري";
-  --brand-positioning: "منصة ابن الأزهر للمستندات — معالجة وتنظيم محتوى الثانوية الأزهرية";
   /* Motion — Warm Academic Polish: short, eased, never bouncy. */
   --motion-fast: 120ms;
   --motion-base: 200ms;
   --motion-slow: 320ms;
   --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
-  /* Section spacing — unified landing/dashboard vertical rhythm. */
-  --spacing-section: 5rem;
-  --spacing-section-sm: 4rem;
 }
 
 .dark {
@@ -245,7 +233,6 @@
   --text-inverse: #083b40;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(245, 240, 232, 0.12);
   --hover-bg: rgba(245, 240, 232, 0.06);
   --active-bg: rgba(245, 240, 232, 0.09);
   --badge-bg: rgba(18, 126, 135, 0.2);
@@ -265,7 +252,6 @@
   --gold-bg: rgba(218, 158, 44, 0.12);
   --gold-border: rgba(226, 179, 90, 0.28);
   --icon-color: #f5f0e8;
-  --icon-muted: #a8a29e;
   --ring-focus: #469aa1;
   --shadow-color: rgba(0, 0, 0, 0.45);
   --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.5);

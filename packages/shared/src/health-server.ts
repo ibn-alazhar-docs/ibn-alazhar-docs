@@ -1,5 +1,6 @@
-/* eslint-disable no-console */
 import http from "http";
+
+import { logger } from "./logger";
 
 interface HealthStatus {
   status: "healthy" | "unhealthy";
@@ -26,7 +27,7 @@ export function startHealthServer(workerName: string, port: number): http.Server
   });
 
   server.listen(port, () => {
-    console.log(`[${workerName}] Health server listening on port ${port}`);
+    logger.info(`[${workerName}] Health server listening on port ${port}`);
   });
 
   return server;

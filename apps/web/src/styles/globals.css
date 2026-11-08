@@ -1,4 +1,6 @@
 @import "tailwindcss";
+/* Load order matters: brand.css (theme + :root vars) loads first; reading,
+   discovery and landing consume those vars through var() and must follow. */
 @import "./brand.css";
 @import "./reading.css";
 @import "./discovery.css";
