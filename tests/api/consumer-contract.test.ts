@@ -292,6 +292,10 @@ vi.mock("@/core/composition-root", () => ({
     },
     profile: { updateProfile: mockUpdateProfile, deleteAccount: mockDeleteAccount },
     uploadDocument: { execute: mockUploadExecute },
+    uploadPreflight: {
+      assertUserActive: vi.fn().mockResolvedValue({ ok: true }),
+      checkSizeAndServices: vi.fn().mockResolvedValue({ ok: true }),
+    },
   },
 }));
 

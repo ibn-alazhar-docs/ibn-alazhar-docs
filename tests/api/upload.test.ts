@@ -30,6 +30,10 @@ vi.mock("@/core/composition-root", () => ({
         fileSize: 1024,
       }),
     },
+    uploadPreflight: {
+      assertUserActive: vi.fn().mockResolvedValue({ ok: true }),
+      checkSizeAndServices: vi.fn().mockResolvedValue({ ok: true }),
+    },
   },
 }));
 

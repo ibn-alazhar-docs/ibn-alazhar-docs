@@ -27,6 +27,8 @@ import {
 import { NextResponse } from "next/server";
 
 vi.mock("@ibn-al-azhar-docs/shared", () => ({
+  DEFAULT_MAX_UPLOAD_SIZE_MB: 50,
+  PIPELINE_FALLBACK_MAX_UPLOAD_SIZE_MB: 100,
   logger: {
     child: vi.fn(() => ({ warn: vi.fn(), error: vi.fn(), info: vi.fn(), debug: vi.fn() })),
   },
