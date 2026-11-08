@@ -29,7 +29,9 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: "PLAYWRIGHT_TEST=true pnpm --filter @ibn-al-azhar-docs/web exec next dev -H 127.0.0.1",
+    command: process.env.CI
+      ? "PLAYWRIGHT_TEST=true pnpm --filter @ibn-al-azhar-docs/web exec next start -H 127.0.0.1 -p 3000"
+      : "PLAYWRIGHT_TEST=true pnpm --filter @ibn-al-azhar-docs/web exec next dev -H 127.0.0.1",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: !process.env.CI,
     timeout: 300 * 1000,
