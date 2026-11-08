@@ -2,14 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/api/api-client";
-
-/** Stable query key factories for React Query cache management. */
-const queryKeys = {
-  documents: ["documents"],
-  bookmark: (documentId: string) => ["bookmarks", documentId],
-  documentTags: (documentId: string) => ["documents", documentId, "tags"],
-  tags: ["tags"],
-};
+import { queryKeys } from "@/state/query-constants";
 
 /**
  * Optimistic toggle for document bookmarks.
