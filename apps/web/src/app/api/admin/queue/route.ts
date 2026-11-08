@@ -1,83 +1,19 @@
 import { NextResponse } from "next/server";
 import { withAdminAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
-import {
-  loadConfig,
-  getFailedJobsViaDriver,
-  enqueueViaDriver,
-  JOB_QUEUES,
-} from "@ibn-al-azhar-docs/pipeline";
-import { repos } from "@/core/composition-root";
+import { adminQueueUseCases } from "@/core/services/admin-queue.use-cases";
 import { ERROR_CODES } from "@/shared/constants";
-import type { ProcessingJob } from "@ibn-al-azhar-docs/pipeline";
 
 export const dynamic = "force-dynamic";
 
-/**
- * Admin DLQ inspection + manual recovery.
- *  - GET  : list dead-lettered jobs (failed after retry exhaustion).
- *  - POST : { action: "requeue", jobId } re-enqueues a failed document's
- *           pipeline from scratch without forcing a re-upload, or
- *           { action: "requeueAll" } retries every failed job.
- */
 export const GET = withAdminAuth(async () => {
   try {
-    const failed = await getFailedJobsViaDriver();
+    const failed = await adminQueueUseCases.listFailedJobs();
     return NextResponse.json({ count: failed.length, jobs: failed });
   } catch (error: unknown) {
     return handleRouteError(error, "admin/queue/GET", "تعذر جلب قائمة المهام الفاشلة");
   }
 });
-
-async function requeueJob(jobId: string): Promise<{ requeued: boolean; reason?: string }> {
-  const config = loadConfig();
-  const failed = await getFailedJobsViaDriver();
-  const target = failed.find((j) => j.jobId === jobId);
-  if (!target) return { requeued: false, reason: "not_found" };
-
-  const data = target.originalData as ProcessingJob;
-  if (!data?.documentId) return { requeued: false, reason: "no_document" };
-
-  const document = await repos.document.findFirst(
-    { id: data.documentId, deletedAt: null },
-    {
-      id: true,
-      status: true,
-      storageKey: true,
-      fileName: true,
-      mimeType: true,
-      fileSize: true,
-      userId: true,
-    },
-  );
-  if (!document) return { requeued: false, reason: "document_gone" };
-
-  // Reset to a clean pre-processing state and re-enqueue. Source object reused.
-  await repos.document.update(document.id, document.userId, {
-    status: "UPLOADED",
-    errorCode: null,
-    errorMessage: null,
-    outputKeys: null,
-    outputFormats: [],
-    pageCount: null,
-    needsReview: false,
-  });
-
-  await enqueueViaDriver(JOB_QUEUES.VALIDATION, config, {
-    id: document.id,
-    documentId: document.id,
-    userId: document.userId,
-    fileName: document.fileName,
-    fileSize: Number(document.fileSize),
-    mimeType: document.mimeType,
-    storageKey: document.storageKey!,
-    status: "pending",
-    progress: 0,
-    createdAt: new Date().toISOString(),
-  });
-
-  return { requeued: true };
-}
 
 export const POST = withAdminAuth(async (request) => {
   try {
@@ -87,7 +23,7 @@ export const POST = withAdminAuth(async (request) => {
     };
 
     if (body.action === "requeue" && body.jobId) {
-      const result = await requeueJob(body.jobId);
+      const result = await adminQueueUseCases.requeueJob(body.jobId);
       if (!result.requeued) {
         const map: Record<string, string> = {
           not_found: "المهمة غير موجودة في قائمة الفشل",
@@ -108,13 +44,8 @@ export const POST = withAdminAuth(async (request) => {
     }
 
     if (body.action === "requeueAll") {
-      const failed = await getFailedJobsViaDriver();
-      let requeued = 0;
-      for (const job of failed) {
-        const r = await requeueJob(job.jobId);
-        if (r.requeued) requeued += 1;
-      }
-      return NextResponse.json({ success: true, requeued, total: failed.length });
+      const { requeued, total } = await adminQueueUseCases.requeueAll();
+      return NextResponse.json({ success: true, requeued, total });
     }
 
     return NextResponse.json(

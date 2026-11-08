@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
-import { diacritizeText } from "@ibn-al-azhar-docs/pipeline";
-
-const MAX_TEXT_LENGTH = 20_000;
+import { tashkeelUseCases, TASHKEEL_MAX_TEXT_LENGTH } from "@/core/services/tashkeel.use-cases";
 
 const tashkeelSchema = z.object({
   text: z.string(),
@@ -22,16 +20,16 @@ export const POST = withAuth(async (request) => {
     }
 
     const { text } = parsed.data;
-    if (text.length > MAX_TEXT_LENGTH) {
+    if (text.length > TASHKEEL_MAX_TEXT_LENGTH) {
       return NextResponse.json(
         { error: { code: "TOO_LONG", message: "النص يتجاوز الحد المسموح" } },
         { status: 400 },
       );
     }
 
-    const outcome = await diacritizeText(text);
+    const result = await tashkeelUseCases.diacritize(text);
     return NextResponse.json(
-      { result: outcome.text },
+      { result },
       { headers: { "Cache-Control": "no-store, must-revalidate" } },
     );
   } catch (error: unknown) {

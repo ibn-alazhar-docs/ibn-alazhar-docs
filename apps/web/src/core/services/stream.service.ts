@@ -1,6 +1,7 @@
 import { normalizeStage, getProgressPercent } from "@/shared/conversion-status-utils";
 import { repos } from "@/core/composition-root";
 import { LIMITS, UI_TIMING } from "@/shared/constants";
+import { logger } from "@/shared/logger";
 
 export class StreamService {
   private static sseConnectionsByUser = new Map<string, number>();
@@ -18,6 +19,23 @@ export class StreamService {
     const count = this.sseConnectionsByUser.get(userId) ?? 0;
     if (count > 0) {
       this.sseConnectionsByUser.set(userId, count - 1);
+    }
+  }
+
+  static async findOwnedJob(jobId: string, userId: string): Promise<{ id: string } | null> {
+    return repos.document.findFirst({ id: jobId, userId, deletedAt: null }, { id: true });
+  }
+
+  static async fetchJobStatus(jobId: string): Promise<{ stage: string; progress: number } | null> {
+    try {
+      const { getJobStatusViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
+      return await getJobStatusViaDriver(jobId);
+    } catch (configErr) {
+      logger.warn(
+        { jobId, error: String(configErr) },
+        "[stream] pipeline config/load failed, using DB fallback",
+      );
+      return null;
     }
   }
 

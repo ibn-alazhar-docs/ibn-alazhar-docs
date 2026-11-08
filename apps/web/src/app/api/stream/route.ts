@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
-import { repos } from "@/core/composition-root";
 import { ERROR_CODES, LIMITS, UI_TIMING } from "@/shared/constants";
 import { StreamService } from "@/core/services/stream.service";
 import { logger } from "@/shared/logger";
@@ -33,10 +32,7 @@ export const GET = withAuth(async (request, { session }) => {
       );
     }
 
-    const document = await repos.document.findFirst(
-      { id: jobId, userId: session.user.id, deletedAt: null },
-      { id: true },
-    );
+    const document = await StreamService.findOwnedJob(jobId, session.user.id);
     if (!document) {
       StreamService.decrementConnections(session.user.id);
       return NextResponse.json(
@@ -88,16 +84,7 @@ export const GET = withAuth(async (request, { session }) => {
           }
 
           try {
-            let status = null;
-            try {
-              const { getJobStatusViaDriver } = await import("@ibn-al-azhar-docs/pipeline");
-              status = await getJobStatusViaDriver(jobId);
-            } catch (configErr) {
-              logger.warn(
-                { jobId, error: String(configErr) },
-                "[stream] pipeline config/load failed, using DB fallback",
-              );
-            }
+            const status = await StreamService.fetchJobStatus(jobId);
 
             if (status) {
               consecutiveCompleteChecks = 0;
