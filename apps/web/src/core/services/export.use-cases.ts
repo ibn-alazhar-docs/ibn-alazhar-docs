@@ -1,5 +1,5 @@
 import { ownedWhere } from "@/core/authorization";
-import type { AuthSession } from "@/domain/types";
+import type { AuthSession, DomainDocument } from "@/domain/types";
 import { NotFoundError, AppError } from "@/shared/errors";
 import { executeBulkExport } from "@/core/services/export/bulk-export-helpers";
 import {
@@ -200,9 +200,8 @@ export class ExportUseCases {
     const ocrData = JSON.parse(await this.storage.downloadAsString(ocrKey));
     const rawText: string = ocrData.text || "";
 
-    const { generateMarkdown, generateTxt, generateJson } = await import(
-      "@ibn-al-azhar-docs/pipeline"
-    );
+    const { generateMarkdown, generateTxt, generateJson } =
+      await import("@ibn-al-azhar-docs/pipeline");
     const cleaned = generateMarkdown(rawText, { pageCount: pipeline.pageCount });
 
     let outputBuffer: Buffer;
@@ -318,7 +317,7 @@ export class ExportUseCases {
         doc.deletedAt === null &&
         "userId" in doc &&
         doc.userId === session.user.id,
-    ) as import("@prisma/client").Document[];
+    ) as DomainDocument[];
 
     if (documents.length === 0) throw new NotFoundError("No documents with this tag");
 

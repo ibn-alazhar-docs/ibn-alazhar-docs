@@ -1,9 +1,9 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { ITagRepository } from "../../domain/repositories/tag.repository.interface";
 import type { AuthSession } from "../../domain/types";
-import { NotFoundError } from "@/shared/errors";
 import { stripArabicMarks } from "@/shared/arabic-ranges";
 import { normalizeArabicForSearch } from "@/shared/arabic-search-normalize";
+import { assertDocument } from "./assert-document";
 
 export interface TagSuggestion {
   name: string;
@@ -137,7 +137,7 @@ export class AutoTagUseCases {
     const document = (await this.documentRepository.findDocumentById(documentId, session.user.id, {
       tags: { include: { tag: { select: { id: true, name: true, color: true } } } },
     })) as AutoTagDocument | null;
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     // كل مستخدم يرى الوسوم الخاصة به فقط
     const existingTags = await this.tagRepository.findMany({

@@ -1,12 +1,17 @@
 import { PrismaClient } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { IShareRepository } from "@/domain/repositories/share.repository.interface";
+
+function ownedActiveShareLinkWhere(documentId: string, userId: string): Prisma.ShareLinkWhereInput {
+  return { documentId, userId, deletedAt: null };
+}
 
 export class ShareRepository implements IShareRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async findShareLinkByDocumentId(documentId: string, userId: string) {
     return this.prisma.shareLink.findFirst({
-      where: { documentId, userId, deletedAt: null },
+      where: ownedActiveShareLinkWhere(documentId, userId),
       include: { document: { select: { title: true } } },
     });
   }
@@ -51,7 +56,7 @@ export class ShareRepository implements IShareRepository {
 
   async deleteShareLinkByDocumentId(documentId: string, userId: string) {
     return this.prisma.shareLink.updateMany({
-      where: { documentId, userId, deletedAt: null },
+      where: ownedActiveShareLinkWhere(documentId, userId),
       data: { deletedAt: new Date() },
     });
   }

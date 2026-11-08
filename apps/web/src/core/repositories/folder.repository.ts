@@ -2,12 +2,16 @@ import { PrismaClient, Prisma } from "@prisma/client";
 import type { CreateFolderInput } from "@/domain/types";
 import type { IFolderRepository } from "@/domain/repositories/folder.repository.interface";
 
+function ownedNotDeletedFolderWhere(id: string, userId: string): Prisma.FolderWhereInput {
+  return { id, userId, deletedAt: null };
+}
+
 export class FolderRepository implements IFolderRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async findById(id: string, userId: string, include?: Prisma.FolderInclude) {
     return this.prisma.folder.findFirst({
-      where: { id, userId, deletedAt: null },
+      where: ownedNotDeletedFolderWhere(id, userId),
       include,
     });
   }
@@ -84,7 +88,7 @@ export class FolderRepository implements IFolderRepository {
 
   async findFolderById(id: string, userId: string) {
     return this.prisma.folder.findFirst({
-      where: { id, userId, deletedAt: null },
+      where: ownedNotDeletedFolderWhere(id, userId),
     });
   }
 

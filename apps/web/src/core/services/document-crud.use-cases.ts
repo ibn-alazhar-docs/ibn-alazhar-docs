@@ -4,6 +4,7 @@ import type { Prisma } from "@/domain/repositories/prisma-types";
 import { AppError, NotFoundError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
 import { logger } from "@/shared/logger";
+import { assertDocument } from "./assert-document";
 
 export class DocumentCrudUseCases {
   constructor(
@@ -73,7 +74,7 @@ export class DocumentCrudUseCases {
       role,
     );
 
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
     return { ...document, fileSize: Number(document.fileSize) };
   }
 
@@ -84,7 +85,7 @@ export class DocumentCrudUseCases {
     role?: string,
   ) {
     const document = await this.documentRepository.findDocumentById(id, userId, undefined, role);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     const updateData: Record<string, unknown> = {};
     if (data.title !== undefined) updateData.title = data.title;
@@ -142,7 +143,7 @@ export class DocumentCrudUseCases {
 
   async deleteDocument(id: string, userId: string, role?: string) {
     const document = await this.documentRepository.findDocumentById(id, userId, undefined, role);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     await this.documentRepository.update(id, userId, { deletedAt: new Date() }, role);
   }

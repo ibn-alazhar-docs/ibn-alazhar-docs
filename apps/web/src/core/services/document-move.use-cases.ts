@@ -1,6 +1,7 @@
 import type { IDocumentRepository } from "../../domain/repositories/document.repository.interface";
 import type { IFolderRepository } from "../../domain/repositories/folder.repository.interface";
-import { AppError, NotFoundError } from "@/shared/errors";
+import { AppError } from "@/shared/errors";
+import { assertDocument } from "./assert-document";
 
 export class DocumentMoveUseCases {
   constructor(
@@ -10,7 +11,7 @@ export class DocumentMoveUseCases {
 
   async moveDocument(id: string, userId: string, folderId: string | null) {
     const document = await this.documentRepository.findDocumentById(id, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     if (folderId) {
       const folder = await this.folderRepository.findById(folderId, userId);
