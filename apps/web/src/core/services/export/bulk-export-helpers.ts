@@ -13,7 +13,7 @@ interface DocumentRecord {
   fileName: string;
   originalName: string;
   mimeType: string;
-  fileSize: bigint;
+  fileSize: bigint | number;
   pageCount: number | null;
   outputFormats: string[];
   language: string | null;
