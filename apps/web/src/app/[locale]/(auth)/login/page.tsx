@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/ui/metadata";
 import { LoginForm } from "@/ui/auth/login-form";
-import { BrandLogo } from "@/ui/brand-logo";
+import { AuthPageShell } from "../auth-page-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -28,24 +28,22 @@ export default async function LoginPage(props: LoginPageProps) {
   const tApp = await getTranslations({ locale, namespace: "app" });
 
   return (
-    <div className="text-center">
-      <Link href="/" className="inline-block mb-6">
-        <BrandLogo alt={tApp("name")} className="mx-auto h-12 w-auto" priority />
-      </Link>
-      <div className="gold-divider mx-auto mb-6" />
-      <h2 className="heading-display text-xl font-bold tracking-[0.02em] text-primary-color sm:text-2xl">
-        {t("loginTitle")}
-      </h2>
-      <p className="mt-2 text-sm text-muted-color">
-        {t("noAccount")}{" "}
-        <Link
-          href="/register"
-          className="font-semibold text-gold underline underline-offset-4 decoration-1 decoration-gold/20 hover:decoration-gold/50 transition-colors"
-        >
-          {t("signUp")}
-        </Link>
-      </p>
+    <AuthPageShell
+      title={t("loginTitle")}
+      logoAlt={tApp("name")}
+      subtitle={
+        <>
+          {t("noAccount")}{" "}
+          <Link
+            href="/register"
+            className="font-semibold text-gold underline underline-offset-4 decoration-1 decoration-gold/20 hover:decoration-gold/50 transition-colors"
+          >
+            {t("signUp")}
+          </Link>
+        </>
+      }
+    >
       <LoginForm showGoogle={!!process.env.GOOGLE_CLIENT_ID} />
-    </div>
+    </AuthPageShell>
   );
 }

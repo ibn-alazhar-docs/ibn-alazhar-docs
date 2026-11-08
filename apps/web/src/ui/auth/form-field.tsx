@@ -16,10 +16,11 @@ import { cn } from "@/ui/cn";
 // `htmlFor`, `disabled` to get `disabled:opacity-50`, `labelExtra` for the
 // login password row, `error`/`errorId` for the error line.
 
-export interface FormFieldProps extends Omit<
-  InputHTMLAttributes<HTMLInputElement>,
-  "id" | "className" | "aria-invalid" | "aria-describedby"
-> {
+export interface FormFieldProps
+  extends Omit<
+    InputHTMLAttributes<HTMLInputElement>,
+    "id" | "className" | "aria-invalid" | "aria-describedby"
+  > {
   id?: string;
   name: string;
   label: ReactNode;
