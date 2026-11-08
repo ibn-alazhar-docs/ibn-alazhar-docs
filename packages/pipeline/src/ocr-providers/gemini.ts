@@ -1,12 +1,50 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
+import { averageConfidence } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 import { getCloudOcrRemainingBudget, recordCloudOcrUsage } from "../cloud-cost-guard";
 import { KeyPool, keyFingerprint, loadGeminiKeys } from "../keypool";
 import { TASHKEEL, arabicLetterRatio } from "../text/constants";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
+
+/** وجود مفتاح Gemini — فحص موحّد قبل كل استخراج؛ نصّ الخطأ كما كان حرفيًّا. */
+function assertGeminiApiKey(config: PipelineConfig): void {
+  if (!config.gemini?.apiKey) {
+    throw new Error("Gemini API Key is missing");
+  }
+}
+
+/**
+ * فقدان ميزانية OCR السحابية عبّر كل الطرق الثلاث: استنفاد لنص واحد
+ * (`CLOUD_OCR_BUDGET_EXHAUSTED`) وعدم كفاية لعدد صفحات
+ * (`CLOUD_OCR_BUDGET_INSUFFICIENT`) — تُحوَّل العتبات عبر `neededPages`.
+ */
+function assertGeminiBudget(config: PipelineConfig, neededPages?: number): void {
+  const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+  if (budget < 0) return;
+  const remaining = getCloudOcrRemainingBudget("gemini", budget);
+  if (neededPages !== undefined) {
+    if (remaining < neededPages) {
+      throw new Error(
+        `CLOUD_OCR_BUDGET_INSUFFICIENT: Gemini budget ${remaining} < pages ${neededPages}`,
+      );
+    }
+    return;
+  }
+  if (remaining <= 0) {
+    throw new Error(
+      `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
+    );
+  }
+}
+
+function recordGeminiUsage(config: PipelineConfig, units: number): void {
+  if ((config.ocr.cloudOcrDailyBudget ?? -1) >= 0) {
+    recordCloudOcrUsage("gemini", units);
+  }
+}
 
 /**
  * Sidecar linkage to SKILL `arabic-pdf-to-book` (specs/012-amazing-merge US3 /
@@ -266,19 +304,8 @@ export class GeminiOcrProvider implements OcrProvider {
       };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
-
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      if (remaining <= 0) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
-        );
-      }
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config);
 
     if (mimeType === "application/pdf") {
       const chunkSize = config.gemini.nativeChunkSize ?? GEMINI_DEFAULT_CHUNK_SIZE;
@@ -305,9 +332,7 @@ export class GeminiOcrProvider implements OcrProvider {
       const text = result.response.text();
       const metrics = estimateQualityMetrics([{ number: 1, text, confidence: 1.0 }], text);
 
-      if (budget >= 0) {
-        recordCloudOcrUsage("gemini", 1);
-      }
+      recordGeminiUsage(config, 1);
 
       return {
         text: text,
@@ -347,19 +372,8 @@ export class GeminiOcrProvider implements OcrProvider {
       };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
-
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      if (remaining <= 0) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
-        );
-      }
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config);
 
     return tryWithModelFallbacks(config, async (modelId, apiKey) => {
       const genAI = new GoogleGenerativeAI(apiKey);
@@ -428,9 +442,7 @@ export class GeminiOcrProvider implements OcrProvider {
         }
         processedPages += chunkPages.length;
 
-        if (budget >= 0) {
-          recordCloudOcrUsage("gemini", chunkPages.length);
-        }
+        recordGeminiUsage(config, chunkPages.length);
 
         onProgress?.(processedPages, totalPages);
 
@@ -440,8 +452,7 @@ export class GeminiOcrProvider implements OcrProvider {
       }
 
       const metrics = estimateQualityMetrics(pages, fullText);
-      const confidence =
-        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence = averageConfidence(pages);
 
       return {
         text: fullText.trim(),
@@ -473,20 +484,8 @@ export class GeminiOcrProvider implements OcrProvider {
       return { text, pages, confidence: 0.99, engine: "gemini" as OcrEngineType };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
-
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      const needed = pageGetters.length;
-      if (remaining < needed) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_INSUFFICIENT: Gemini budget ${remaining} < pages ${needed}`,
-        );
-      }
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config, pageGetters.length);
 
     const batchPrompt = `You are RAQIM ELITE, an elite scientific scribe specializing in Arabic manuscript digitization.
 
@@ -556,9 +555,7 @@ Separate each page's text with a horizontal rule (---) on its own line.
           fullText += p.text + "\n\n";
         }
 
-        if (budget >= 0) {
-          recordCloudOcrUsage("gemini", batchGetters.length);
-        }
+        recordGeminiUsage(config, batchGetters.length);
 
         if (i + BATCH_SIZE < pageGetters.length) {
           await new Promise((resolve) => setTimeout(resolve, 4000));
@@ -566,8 +563,7 @@ Separate each page's text with a horizontal rule (---) on its own line.
       }
 
       const metrics = estimateQualityMetrics(pages, fullText);
-      const confidence =
-        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence = averageConfidence(pages);
 
       return {
         text: fullText.trim(),

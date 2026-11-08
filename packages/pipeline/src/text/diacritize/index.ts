@@ -59,20 +59,18 @@ export async function isDiacritizerAvailable(engine?: "python"): Promise<boolean
   return true;
 }
 
-async function selectEngine(
-  preference: DiacritizeOptions["engine"],
-): Promise<{ diacritizer: Diacritizer; forced: boolean }> {
+async function selectEngine(preference: DiacritizeOptions["engine"]): Promise<Diacritizer> {
   if (preference === "deterministic") {
-    return { diacritizer: deterministicDiacritizer, forced: true };
+    return deterministicDiacritizer;
   }
   if (preference === "python") {
-    return { diacritizer: await createPythonDiacritizer(), forced: true };
+    return createPythonDiacritizer();
   }
   const probe = await probePythonDiacritizer();
   if (probe.available) {
-    return { diacritizer: await createPythonDiacritizer(probe), forced: false };
+    return createPythonDiacritizer(probe);
   }
-  return { diacritizer: deterministicDiacritizer, forced: false };
+  return deterministicDiacritizer;
 }
 
 /**
@@ -92,7 +90,7 @@ export async function diacritizeText(
     throw new DiacritizeError("INPUT_TOO_LARGE", `النص يتجاوز حد ${maxChars} حرفًا`);
   }
 
-  const { diacritizer } = await selectEngine(options?.engine);
+  const diacritizer = await selectEngine(options?.engine);
   return diacritizer.diacritize(text, options);
 }
 

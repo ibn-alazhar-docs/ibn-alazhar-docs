@@ -1,4 +1,7 @@
-export { cleanArabicText, enhanceArabicText, diacritizeArabic } from "./clean";
+// واجهة النص العلنية: تنظيف عربي (clean/index) + تحليل + ثوابت الكشف +
+// تشكيل (diacritize). يُستورد من clean/index مباشرة دون المرور بـ clean.ts
+// (حاجز توافق فقط) لتبقى الطبقة صغيرة وواضحة؛ أسماء التصدير كما هي.
+export { cleanArabicText, enhanceArabicText, diacritizeArabic } from "./clean/index";
 export {
   normalizeUnicode,
   normalizePresentationForms,
@@ -7,15 +10,15 @@ export {
   normalizeArabicLetters,
   removeTashkeel,
   removeTatweel,
-} from "./clean";
-export { AZHAR_CORRECTION_RULES, applyQuranicFixes } from "./clean";
+} from "./clean/index";
+export { AZHAR_CORRECTION_RULES, applyQuranicFixes } from "./clean/index";
 export {
   auditStructuralIntegrity,
   applyStructuralFixes,
   type StructuralAuditResult,
   type StructuralAuditIssue,
-} from "./clean";
-export type { CleanOptions, CleanArabicTextOptions } from "./clean";
+} from "./clean/index";
+export type { CleanOptions, CleanArabicTextOptions } from "./clean/index";
 export { analyzeText, detectDocumentType } from "./analyze";
 export type { TextAnalysis, DocumentType } from "./analyze";
 // Canonical Arabic detection — the only Arabic character class / threshold set
@@ -77,7 +80,7 @@ export {
   type SevenStageAuditOptions,
   type SevenStageAuditReport,
   type TextCleaner,
-} from "./clean";
+} from "./clean/index";
 
 // Tashkeel (diacritization) module — honest engines only: real deterministic
 // rule engine + probe-gated Python backend; unavailable => coded failure.

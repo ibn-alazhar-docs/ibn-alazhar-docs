@@ -1,3 +1,9 @@
+/**
+ * واجهة التنظيف العربية الصغيرة: `cleanArabicText` + `enhanceArabicText`
+ * ومراحل الدمج (unicode/numbers/whitespace/html/structure) مع تدقيقات
+ * البنية والسياق. كل الأسماء المصدَّرة علنية — لا يُضاف سطح جديد دون تحديث
+ * `text/index.ts` (يُستورد منه مباشرة؛ `clean.ts` حاجز توافق فقط).
+ */
 import { detectDocumentType } from "../analyze";
 
 import {

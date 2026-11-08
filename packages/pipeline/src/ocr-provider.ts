@@ -1,4 +1,5 @@
 import type { PipelineConfig, OcrEngineType, OcrEngineResult } from "./types";
+import type { OcrProvider } from "./ocr-providers/types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-provider" });
@@ -8,7 +9,15 @@ import { GeminiOcrProvider } from "./ocr-providers/gemini";
 import { TesseractOcrProvider } from "./ocr-providers/tesseract";
 
 export type { OcrProvider } from "./ocr-providers/types";
-export { estimateConfidence, getPythonCommand } from "./ocr-providers/types";
+export {
+  estimateConfidence,
+  getPythonCommand,
+  placedOcrLines,
+  toOcrPageResult,
+  averageConfidence,
+  joinPageTexts,
+  toOcrPagesFromBatch,
+} from "./ocr-providers/types";
 export { GoogleDriveOcrProvider } from "./ocr-providers/google";
 export { SuryaOcrProvider } from "./ocr-providers/surya";
 export { GeminiOcrProvider } from "./ocr-providers/gemini";
@@ -105,29 +114,25 @@ export function buildOcrChain(config: PipelineConfig): string[] {
 //   default). A cloud provider is therefore only reached AFTER every preceding local provider
 //   is unavailable or fails — never as the default path.
 export class OcrManager {
-  private providers: InstanceType<
-    | typeof GoogleDriveOcrProvider
-    | typeof SuryaOcrProvider
-    | typeof GeminiOcrProvider
-    | typeof TesseractOcrProvider
-  >[];
+  private providers: OcrProvider[];
   private health: ReturnType<typeof createProviderHealth>;
   private adaptive: boolean;
 
   constructor(config: PipelineConfig) {
     // ترتيب السلسلة الموحّد: محلي (tesseract→surya) قبل سحابي (gemini→google).
-    const engineTypes = resolveOcrChainOrder(config);
-
     this.adaptive = config.ocr.adaptiveProviderSelection !== false;
     this.health = createProviderHealth();
+    this.providers = this.buildProviders(config);
+  }
 
+  private buildProviders(config: PipelineConfig): OcrProvider[] {
+    const engineTypes = resolveOcrChainOrder(config);
     if (this.adaptive) {
-      this.providers = sortProvidersByHealth(this.health, engineTypes).map((type: OcrEngineType) =>
+      return sortProvidersByHealth(this.health, engineTypes).map((type: OcrEngineType) =>
         createOcrProvider(type),
       );
-    } else {
-      this.providers = engineTypes.map((type: OcrEngineType) => createOcrProvider(type));
     }
+    return engineTypes.map((type: OcrEngineType) => createOcrProvider(type));
   }
 
   getAvailableProviders() {
@@ -183,10 +188,7 @@ export class OcrManager {
 
         // If adaptive, re-sort after failure (بنفس ترتيب السلسلة ونفس الاستثناءات)
         if (this.adaptive) {
-          const engineTypes = resolveOcrChainOrder(config);
-          this.providers = sortProvidersByHealth(this.health, engineTypes).map(
-            (type: OcrEngineType) => createOcrProvider(type),
-          );
+          this.providers = this.buildProviders(config);
         }
       }
     }

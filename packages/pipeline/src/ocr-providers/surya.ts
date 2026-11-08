@@ -7,7 +7,16 @@ import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-surya" });
 import type { OcrProvider } from "./types";
-import { getPythonCommand, placedOcrLines } from "./types";
+import {
+  getPythonCommand,
+  probePythonModule,
+  materializePageFiles,
+  cleanupPageFiles,
+  averageConfidence,
+  joinPageTexts,
+  toOcrPagesFromBatch,
+  extractTextViaSplitPages,
+} from "./types";
 
 const SURYA_TIMEOUT = Math.max(60_000, Number(process.env.OCR_TIMEOUT ?? 1_500_000) || 1_500_000);
 
@@ -38,27 +47,10 @@ export class SuryaOcrProvider implements OcrProvider {
 
   async isAvailable(_config: PipelineConfig): Promise<boolean> {
     if (this.cachedAvailable !== null) return this.cachedAvailable;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const python = getPythonCommand();
-        const proc = execFile(
-          python,
-          [
-            "-c",
-            "from surya.detection import DetectionPredictor; from surya.recognition import FoundationPredictor, RecognitionPredictor; print('available')",
-          ],
-          { timeout: 120_000, env: { ...process.env, PYTHONIOENCODING: "utf-8" } },
-          (err) => {
-            if (err) reject(err);
-            else resolve();
-          },
-        );
-        proc.on("error", reject);
-      });
-      this.cachedAvailable = true;
-    } catch {
-      this.cachedAvailable = false;
-    }
+    this.cachedAvailable = await probePythonModule(
+      "from surya.detection import DetectionPredictor; from surya.recognition import FoundationPredictor, RecognitionPredictor; print('available')",
+      120_000,
+    );
     return this.cachedAvailable;
   }
 
@@ -72,22 +64,9 @@ export class SuryaOcrProvider implements OcrProvider {
     if (!available) {
       throw new Error("SURYA_NOT_AVAILABLE: Python surya package not found");
     }
-
-    const { splitPdfPages } = await import("../ocr");
-    let splitResult;
-    try {
-      splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi);
-    } catch (err) {
-      throw new Error(`SURYA_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`);
-    }
-
-    const { readFile, rm: rmFn } = await import("node:fs/promises");
-    try {
-      const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
-      return await this.extractPages(config, pageGetters, fileName);
-    } finally {
-      await rmFn(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
-    }
+    return extractTextViaSplitPages(config, fileBuffer, fileName, "SURYA_SPLIT_FAILED", (c, g, f) =>
+      this.extractPages(c, g, f),
+    );
   }
 
   async extractPages(
@@ -100,18 +79,9 @@ export class SuryaOcrProvider implements OcrProvider {
       throw new Error("SURYA_NOT_AVAILABLE: Python surya package not found");
     }
 
-    const tempDir = await mkdtemp(join(tmpdir(), "surya-ocr-"));
-    const imagePaths: string[] = [];
+    const { tempDir, imagePaths } = await materializePageFiles(pageGetters, "surya-ocr-");
 
     try {
-      for (let i = 0; i < pageGetters.length; i++) {
-        const pageNum = i + 1;
-        const imagePath = join(tempDir, `page_${pageNum}.png`);
-        const pageBuf = await pageGetters[i]!();
-        await writeFile(imagePath, pageBuf);
-        imagePaths.push(imagePath);
-      }
-
       // First pass: standard OCR
       logger.info(`First pass OCR for ${fileName} (${imagePaths.length} pages)`);
       const allResults = await this.runSuryaBatch(imagePaths, config.ocr.language);
@@ -124,14 +94,11 @@ export class SuryaOcrProvider implements OcrProvider {
         }
       }
 
-      // Second pass: retry failed pages with aggressive preprocessing
+      // Second pass: retry failed pages with a fresh batch run
       if (retryIndices.length > 0) {
         logger.warn(
           `Retrying ${retryIndices.length} low-confidence pages with aggressive preprocessing`,
         );
-
-        // Re-preprocess failed pages with aggressive settings
-        // (reprocessing is done via runSuryaBatch below)
 
         // Retry pages one by one (not batch) for maximum quality
         for (const idx of retryIndices) {
@@ -139,11 +106,8 @@ export class SuryaOcrProvider implements OcrProvider {
             const pageNum = idx + 1;
             const origPath = imagePaths[idx]!;
 
-            // Read, reprocess, and re-OCR
             const { readFile: fsRead } = await import("node:fs/promises");
             const pageBuffer = await fsRead(origPath);
-
-            // Apply aggressive preprocessing via Python
             const tempRetryDir = await mkdtemp(join(tmpdir(), "surya-retry-"));
             const retryPath = join(tempRetryDir, `retry_page_${pageNum}.png`);
             await writeFile(retryPath, pageBuffer);
@@ -166,23 +130,11 @@ export class SuryaOcrProvider implements OcrProvider {
         }
       }
 
-      const pages: OcrPageResult[] = allResults.map((r, i) => {
-        const layerLines = placedOcrLines(r.lines);
-        return {
-          number: i + 1,
-          text: r.text,
-          confidence: r.confidence,
-          ...(layerLines.length > 0 ? { layout: { lines: layerLines } } : {}),
-        };
-      });
+      const pages: OcrPageResult[] = toOcrPagesFromBatch(allResults);
 
-      const text = pages
-        .filter((p) => p.text.length > 0)
-        .map((p) => p.text)
-        .join("\n\n");
+      const text = joinPageTexts(pages);
 
-      const confidence =
-        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence = averageConfidence(pages);
 
       const pageErrors: { page: number; error: string }[] = [];
       for (let i = 0; i < allResults.length; i++) {
@@ -208,10 +160,7 @@ export class SuryaOcrProvider implements OcrProvider {
         pageErrors: pageErrors.length > 0 ? pageErrors : undefined,
       };
     } finally {
-      for (const p of imagePaths) {
-        await unlink(p).catch(() => {});
-      }
-      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await cleanupPageFiles(tempDir, imagePaths);
     }
   }
 

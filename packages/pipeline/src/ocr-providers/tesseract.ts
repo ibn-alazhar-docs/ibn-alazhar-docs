@@ -1,10 +1,16 @@
 import { execFile } from "node:child_process";
-import { mkdtemp, writeFile, unlink, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
-import { getPythonCommand, placedOcrLines } from "./types";
+import {
+  getPythonCommand,
+  probePythonModule,
+  materializePageFiles,
+  cleanupPageFiles,
+  averageConfidence,
+  joinPageTexts,
+  toOcrPagesFromBatch,
+  extractTextViaSplitPages,
+} from "./types";
 
 export class TesseractOcrProvider implements OcrProvider {
   readonly name = "Tesseract OCR";
@@ -13,24 +19,10 @@ export class TesseractOcrProvider implements OcrProvider {
 
   async isAvailable(_config: PipelineConfig): Promise<boolean> {
     if (this.cachedAvailable !== null) return this.cachedAvailable;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const python = getPythonCommand();
-        const proc = execFile(
-          python,
-          ["-c", "import pytesseract; print('available')"],
-          { timeout: 10_000, env: { ...process.env, PYTHONIOENCODING: "utf-8" } },
-          (err) => {
-            if (err) reject(err);
-            else resolve();
-          },
-        );
-        proc.on("error", reject);
-      });
-      this.cachedAvailable = true;
-    } catch {
-      this.cachedAvailable = false;
-    }
+    this.cachedAvailable = await probePythonModule(
+      "import pytesseract; print('available')",
+      10_000,
+    );
     return this.cachedAvailable;
   }
 
@@ -40,22 +32,13 @@ export class TesseractOcrProvider implements OcrProvider {
     fileName: string,
     _mimeType: string,
   ): Promise<OcrEngineResult> {
-    const { splitPdfPages } = await import("../ocr");
-    let splitResult;
-    try {
-      splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi);
-    } catch (err) {
-      throw new Error(
-        `TESSERACT_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`,
-      );
-    }
-    const { readFile, rm: rmFn } = await import("node:fs/promises");
-    try {
-      const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
-      return await this.extractPages(config, pageGetters, fileName);
-    } finally {
-      await rmFn(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
-    }
+    return extractTextViaSplitPages(
+      config,
+      fileBuffer,
+      fileName,
+      "TESSERACT_SPLIT_FAILED",
+      (c, g, f) => this.extractPages(c, g, f),
+    );
   }
 
   async extractPages(
@@ -77,17 +60,9 @@ export class TesseractOcrProvider implements OcrProvider {
       return { text, pages, confidence: 0.99, engine: "tesseract" as OcrEngineType };
     }
 
-    const tempDir = await mkdtemp(join(tmpdir(), "tesseract-ocr-"));
-    const imagePaths: string[] = [];
+    const { tempDir, imagePaths } = await materializePageFiles(pageGetters, "tesseract-ocr-");
 
     try {
-      for (let i = 0; i < pageGetters.length; i++) {
-        const imagePath = join(tempDir, `page_${i + 1}.png`);
-        const pageBuf = await pageGetters[i]!();
-        await writeFile(imagePath, pageBuf);
-        imagePaths.push(imagePath);
-      }
-
       const lang = config.ocr.language === "ar" ? "ara" : "eng";
       const allowedLangs = new Set(["ara", "eng", "fra", "deu", "spa"]);
       if (!allowedLangs.has(lang)) {
@@ -196,29 +171,14 @@ print(json.dumps(results))
         allResults.push(...batchResults);
       }
 
-      const pages: OcrPageResult[] = allResults.map((r, i) => {
-        const layerLines = placedOcrLines(r.lines);
-        return {
-          number: i + 1,
-          text: r.text,
-          confidence: r.confidence,
-          ...(layerLines.length > 0 ? { layout: { lines: layerLines } } : {}),
-        };
-      });
+      const pages: OcrPageResult[] = toOcrPagesFromBatch(allResults);
 
-      const text = pages
-        .filter((p) => p.text.length > 0)
-        .map((p) => p.text)
-        .join("\n\n");
-      const confidence =
-        pages.length > 0 ? pages.reduce((s, p) => s + p.confidence, 0) / pages.length : 0;
+      const text = joinPageTexts(pages);
+      const confidence = averageConfidence(pages);
 
       return { text, pages, confidence, engine: "tesseract" as OcrEngineType };
     } finally {
-      for (const p of imagePaths) {
-        await unlink(p).catch(() => {});
-      }
-      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await cleanupPageFiles(tempDir, imagePaths);
     }
   }
 }

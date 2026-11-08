@@ -1,3 +1,6 @@
+// Compat shim: the public text surface (./index) now imports from
+// ./clean/index directly. This file stays so `pipeline/text/clean` keeps working;
+// no new exports should be added here.
 export {
   diacritizeArabic,
   cleanArabicText,

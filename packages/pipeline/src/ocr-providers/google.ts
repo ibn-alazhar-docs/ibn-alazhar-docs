@@ -32,6 +32,14 @@ let driveClient: drive_v3.Drive | null = null;
 let lastGoogleEmail = "";
 let lastGooglePrivateKey = "";
 
+async function deleteDriveFile(drv: drive_v3.Drive, fileId: string): Promise<void> {
+  try {
+    await drv.files.delete({ fileId });
+  } catch {
+    // Non-critical
+  }
+}
+
 async function getDriveClient(config: PipelineConfig): Promise<drive_v3.Drive> {
   const changed =
     !driveClient ||
@@ -122,11 +130,7 @@ export class GoogleDriveOcrProvider implements OcrProvider {
 
       return parseGoogleExportResult(fullText);
     } finally {
-      try {
-        await drv.files.delete({ fileId });
-      } catch {
-        // Non-critical
-      }
+      await deleteDriveFile(drv, fileId);
     }
   }
 
@@ -179,11 +183,7 @@ export class GoogleDriveOcrProvider implements OcrProvider {
         allPages.push({ number: pageNum, text: "" });
       } finally {
         if (fileId) {
-          try {
-            await drv.files.delete({ fileId });
-          } catch {
-            // Non-critical
-          }
+          await deleteDriveFile(drv, fileId);
         }
       }
     }
