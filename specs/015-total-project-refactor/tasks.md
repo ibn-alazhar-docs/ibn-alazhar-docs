@@ -59,7 +59,7 @@
 **Independent Test**: Baseline suite (G2) + route smoke (G3) + contract diff (G5) on the final branch vs `pre-refactor`.
 
 ```text
-- [ ] T011 [US1] Commit safety net: characterization tests for critical logic + smoke test for every route/page (fail on runtime/console errors). Files: tests characterization + smoke, .refactor/visual-baseline/ (Playwright mobile+desktop before-screenshots). Acceptance: suite green on pre-refactor tree. FR-005, FR-010 (G2, G3, G4).
+- [x] T011 [US1] Commit safety net: characterization tests for critical logic + smoke test for every route/page (fail on runtime/console errors). Files: tests characterization + smoke, .refactor/visual-baseline/ (Playwright mobile+desktop before-screenshots). Acceptance: suite green on pre-refactor tree. FR-005, FR-010 (G2, G3, G4). **Done**: sub-agent `implementer` (no model override, Crouton Alpha per master prompt), orchestrator re-verified with real runs; new tests/backend/characterization-t011.test.ts (11 tests: queue driver default redis/pg-only-when-TOKEN, upload 50MB exact, ownedWhere TEACHER/ADMIN/immutability), tests/characterization/README.md (existing-vs-new coverage map), tests/e2e/smoke-routes.spec.ts (97 routes × 2 projects = 194 specs, fails on pageerror/console error/5xx, favicon excepted, dynamic segments stubbed), .refactor/visual-baseline/README.md (exact manual screenshot command; screenshots not generated — docker guard stopped / no live services); pre-deploy.ts untouched; suite re-run by orchestrator: 11 passed, prettier clean; smoke spec listed only (needs live server) and screenshots captured as environment-blocked, not failed.
 - [ ] T012 [US1] Per-unit Spec Kit sequence for the first unit (foundations: tokens/shared types/utils): specify (As-Is + To-Be) -> clarify -> plan -> tasks -> analyze. Files: specs/<unit>/{spec.md,plan.md,tasks.md}. Acceptance: consistency check passes; tasks carry allowlists + acceptance commands. FR-003.
 - [ ] T013 [US1] Execute first foundation unit in waves (max 3-4 workers, disjoint allowlists; orchestrator runs G0-G7 + reviewer PASS per task; commit after each). Files: unit allowlist only. Acceptance: G0-G7 exit 0 with output; reviewer verdict PASS recorded. FR-009, FR-010, FR-014.
 - [ ] T014 [US1] Execute leaf units (pipeline text/clean + queue + storage, database, workers) in waves with per-task gates. Files: unit allowlists. Acceptance: G0-G7 exit 0 per task; contracts diff empty (G5). FR-008, FR-009, FR-010.
@@ -165,3 +165,31 @@ Task (explore): "Map business rules + design system + smells -> .refactor/map/ru
 - Verify gates by running them; never infer from the worker's report (MASTER_PROMPT §1).
 - Commit after each task or logical group (`refactor(scope):` / `test(scope):` / `fix(scope):` / `change(scope):` / `docs:` / `chore:`).
 - Stop at any checkpoint to validate a story independently before continuing.
+
+<!-- verify-task:review -->
+## سجل المراجعة (verify-task)
+
+Generated: 2026-11-08 14:13:18
+
+| المتطلب | المهمة | الدليل | الحكم |
+|---|---|---|---|
+| FR-001 | T001 | tasks.md:30 T001<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **FAIL** |
+| FR-002 | T021, T022, T023 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-003 | T010, T012 | tasks.md:48 T010<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **FAIL** |
+| FR-004 | T002, T003 | tasks.md:31 T002<br>tasks.md:32 T003<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **FAIL** |
+| FR-005 | T011 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-006 | T005, T006, T007, T008, T009 | tasks.md:43 T005<br>tasks.md:44 T006<br>tasks.md:45 T007<br>tasks.md:46 T008<br>tasks.md:47 T009<br>ملف: AGENTS.md<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **PASS** |
+| FR-007 | T010 | tasks.md:48 T010<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **FAIL** |
+| FR-008 | T006, T008, T014, T015, T018, T019, T020, T021, T022 | tasks.md:44 T006<br>tasks.md:46 T008<br>ملف: AGENTS.md<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **PASS** |
+| FR-009 | T013, T014, T015, T016 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-010 | T011, T013, T014, T015, T018, T020, T024, T025 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-011 | T027 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-012 | T001, T004, T010, T016, T023, T027 | tasks.md:30 T001<br>tasks.md:33 T004<br>tasks.md:48 T010<br>فحص: /home/abed/.nvm/versions/node/v22.22.3/bin/npm run test → SKIP | **FAIL** |
+| FR-013 | T019, T024 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-014 | T013, T027 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+| FR-015 | T017, T025, T026 | المهام المرتبطة لم تُنجَز بعد (checkbox غير معلَّم) | **WARN** |
+
+فحوص المشروع:
+- `/home/abed/.nvm/versions/node/v22.22.3/bin/npm run test` → SKIP
+
+<!-- /verify-task:review -->
