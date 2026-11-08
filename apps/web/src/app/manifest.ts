@@ -4,7 +4,7 @@ import { BRAND_COLORS, BRAND_NAME, BRAND_POSITIONING } from "@/ui/brand";
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: BRAND_NAME.ar,
-    short_name: BRAND_NAME.en,
+    short_name: BRAND_NAME.ar,
     description: BRAND_POSITIONING,
     start_url: "/ar/dashboard",
     display: "standalone",

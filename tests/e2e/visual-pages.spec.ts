@@ -28,10 +28,7 @@ const VIEWPORTS = [
   { name: "wide", width: 1920, height: 1080 },
 ] as const;
 
-const LOCALES = [
-  { prefix: "ar", suffix: "ar" },
-  { prefix: "en", suffix: "en" },
-] as const;
+const LOCALES = [{ prefix: "ar", suffix: "ar" }] as const;
 
 type ViewportName = (typeof VIEWPORTS)[number]["name"];
 
@@ -138,7 +135,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Dashboard page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/dashboard`);
+      await page.goto(`${BASE}/ar/dashboard`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`dashboard-en-${viewportSuffix(vp.name)}.png`, {
@@ -160,7 +157,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Files page (document list) — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/files`);
+      await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`files-en-${viewportSuffix(vp.name)}.png`, {
@@ -182,7 +179,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Folders page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/folders`);
+      await page.goto(`${BASE}/ar/folders`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`folders-en-${viewportSuffix(vp.name)}.png`, {
@@ -204,7 +201,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Tags page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/tags`);
+      await page.goto(`${BASE}/ar/tags`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`tags-en-${viewportSuffix(vp.name)}.png`, {
@@ -226,7 +223,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Search page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/search`);
+      await page.goto(`${BASE}/ar/search`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`search-en-${viewportSuffix(vp.name)}.png`, {
@@ -248,7 +245,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Settings (profile) page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/settings`);
+      await page.goto(`${BASE}/ar/settings`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`settings-en-${viewportSuffix(vp.name)}.png`, {
@@ -270,7 +267,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Document preview page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/preview/sample-doc-id`);
+      await page.goto(`${BASE}/ar/preview/sample-doc-id`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`preview-en-${viewportSuffix(vp.name)}.png`, {
@@ -292,7 +289,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
 
     test(`Analytics page — en @${vp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
-      await page.goto(`${BASE}/en/analytics`);
+      await page.goto(`${BASE}/ar/analytics`);
       await page.waitForLoadState("networkidle");
       await page.waitForTimeout(500);
       await expect(page).toHaveScreenshot(`analytics-en-${viewportSuffix(vp.name)}.png`, {

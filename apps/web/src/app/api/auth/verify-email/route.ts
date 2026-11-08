@@ -3,7 +3,7 @@ import { prisma } from "@/transport/db";
 import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
 
-const SUPPORTED_LOCALES = ["ar", "en"] as const;
+const SUPPORTED_LOCALES = ["ar"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 function resolveLocale(request: Request, tokenLocale: string | null): Locale {

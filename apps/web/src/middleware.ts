@@ -42,8 +42,9 @@ const publicPagePrefixes = [
   "/forgot-password",
   "/reset-password",
   "/share",
+  // Root Scalar API reference (app/docs) — a real public developer page, not the
+  // removed marketing docs.
   "/docs",
-  "/journeys",
 ];
 
 // Routes that should NOT be accessible when logged in
@@ -72,10 +73,7 @@ function isStaticAsset(pathname: string): boolean {
   );
 }
 
-function getLocaleFromRequest(request: NextRequest): string {
-  // Check Accept-Language header
-  const acceptLanguage = request.headers.get("accept-language");
-  if (acceptLanguage?.startsWith("en")) return "en";
+function getLocaleFromRequest(_request: NextRequest): string {
   return "ar";
 }
 
@@ -218,11 +216,16 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Legacy /en URLs redirect to /ar so old links keep working.
+  if (pathname === "/en" || pathname.startsWith("/en/")) {
+    return NextResponse.redirect(new URL(`/ar${pathname.slice(3) || "/"}`, request.url), 308);
+  }
+
   const isLoggedIn = hasSessionCookie(request);
 
   // Extract locale from URL (e.g., /ar/files -> ar)
   const urlLocale = pathname.split("/")[1];
-  const locale = urlLocale === "ar" || urlLocale === "en" ? urlLocale : undefined;
+  const locale = urlLocale === "ar" ? "ar" : undefined;
   const pathnameWithoutLocale = locale ? pathname.slice(`/${locale}`.length) || "/" : pathname;
 
   // If logged in and trying to access auth-only routes, redirect to dashboard

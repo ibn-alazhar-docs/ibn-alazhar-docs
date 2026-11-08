@@ -1,5 +1,5 @@
 /** Brand wording — منصة ابن الأزهر (brandbook 01/02). */
-export const BRAND_NAME = { ar: "منصة ابن الأزهر", en: "Ibn Al-Azhar Platform" } as const;
+export const BRAND_NAME = { ar: "منصة ابن الأزهر" } as const;
 export const BRAND_TAGLINE = "في بيت كل طالب أزهري";
 export const BRAND_POSITIONING =
   "منصة ابن الأزهر للمستندات — معالجة وتنظيم محتوى الثانوية الأزهرية";
@@ -27,7 +27,7 @@ export const BRAND_FONTS = {
 /** Social-preview artwork. A pre-rendered PNG, not a dynamic `ImageResponse`:
  *  satori (next/og) has no Arabic shaper, so it would emit disconnected glyphs. */
 export const BRAND_OG_IMAGE = "/brand/og-base.png";
-export const BRAND_OG_ALT = { ar: BRAND_POSITIONING, en: "Ibn Al-Azhar Platform" } as const;
+export const BRAND_OG_ALT = { ar: BRAND_POSITIONING } as const;
 
 /** Values and tone of voice (brandbook 05) — copy guidance, not styling. */
 export const BRAND_VALUES = ["جودة التعليم", "التخصص", "التنظيم", "الوضوح"] as const;

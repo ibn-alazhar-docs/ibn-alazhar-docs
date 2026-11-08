@@ -7,14 +7,13 @@ import { GeometricStar } from "@/ui/geometric-star";
 import { BrandLogo } from "@/ui/brand-logo";
 
 interface PublicFooterProps {
-  locale: string;
   tagline?: string;
   copyright?: string;
 }
 
-export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) {
+export function PublicFooter({ tagline, copyright }: PublicFooterProps) {
   const t = useTranslations("footer");
-  const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
+  const brand = BRAND_NAME.ar;
 
   return (
     <footer

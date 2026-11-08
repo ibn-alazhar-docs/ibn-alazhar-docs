@@ -27,18 +27,6 @@ test.describe("Visual Theme — Light Mode", () => {
         maxDiffPixelRatio: 0.02,
       });
     });
-
-    test(`Light mode — /en/${pageInfo.name}`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
-
-      await expect(page).toHaveScreenshot(`light-en-${pageInfo.name}.png`, {
-        fullPage: true,
-        maxDiffPixelRatio: 0.02,
-      });
-    });
   }
 });
 
@@ -55,18 +43,6 @@ test.describe("Visual Theme — Dark Mode", () => {
       await page.waitForTimeout(500);
 
       await expect(page).toHaveScreenshot(`dark-ar-${pageInfo.name}.png`, {
-        fullPage: true,
-        maxDiffPixelRatio: 0.02,
-      });
-    });
-
-    test(`Dark mode — /en/${pageInfo.name}`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
-
-      await expect(page).toHaveScreenshot(`dark-en-${pageInfo.name}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
       });
@@ -94,21 +70,6 @@ test.describe("Visual Theme — RTL Layout (Light Mode)", () => {
         maxDiffPixelRatio: 0.02,
       });
     });
-
-    test(`LTR + Light — /en/${pageInfo.name} — dir check`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
-
-      const dir = await page.locator("html").getAttribute("dir");
-      expect(dir).toBe("ltr");
-
-      await expect(page).toHaveScreenshot(`ltr-light-en-${pageInfo.name}.png`, {
-        fullPage: true,
-        maxDiffPixelRatio: 0.02,
-      });
-    });
   }
 });
 
@@ -128,21 +89,6 @@ test.describe("Visual Theme — RTL Layout (Dark Mode)", () => {
       expect(dir).toBe("rtl");
 
       await expect(page).toHaveScreenshot(`rtl-dark-ar-${pageInfo.name}.png`, {
-        fullPage: true,
-        maxDiffPixelRatio: 0.02,
-      });
-    });
-
-    test(`LTR + Dark — /en/${pageInfo.name} — dir check`, async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
-
-      const dir = await page.locator("html").getAttribute("dir");
-      expect(dir).toBe("ltr");
-
-      await expect(page).toHaveScreenshot(`ltr-dark-en-${pageInfo.name}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
       });

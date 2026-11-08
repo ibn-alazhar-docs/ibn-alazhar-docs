@@ -39,23 +39,14 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     }
   });
 
-  test("English pages have dir=ltr on html element @a11y-rtl", async ({ page }) => {
+  test("Legacy /en URLs redirect to /ar pages @a11y-rtl", async ({ page }) => {
     const pages = ["/en", "/en/login", "/en/register", "/en/forgot-password"];
     for (const path of pages) {
       await page.goto(path);
       await page.waitForLoadState("networkidle");
-      const dir = await page.locator("html").getAttribute("dir");
-      expect.soft(dir, `${path}: expected dir="ltr"`).toBe("ltr");
-    }
-  });
-
-  test("English pages have lang=en on html element @a11y-rtl", async ({ page }) => {
-    const pages = ["/en", "/en/login", "/en/register", "/en/forgot-password"];
-    for (const path of pages) {
-      await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      expect(page.url()).toContain("/ar");
       const lang = await page.locator("html").getAttribute("lang");
-      expect.soft(lang, `${path}: expected lang="en"`).toBe("en");
+      expect.soft(lang, `${path}: expected lang="ar" after redirect`).toBe("ar");
     }
   });
 
@@ -76,12 +67,13 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   });
 
-  test("English dashboard has correct dir/lang @a11y-rtl", async ({ page }) => {
+  test("Legacy /en dashboard redirects to /ar dashboard @a11y-rtl", async ({ page }) => {
     await login(page);
     await page.goto("/en/dashboard");
     await page.waitForLoadState("networkidle");
-    await expect(page.locator("html")).toHaveAttribute("dir", "ltr");
-    await expect(page.locator("html")).toHaveAttribute("lang", "en");
+    expect(page.url()).toContain("/ar/dashboard");
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   });
 
   test("files page in RTL has correct direction @a11y-rtl", async ({ page }) => {
@@ -184,9 +176,10 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     expect(text?.trim().length).toBeGreaterThan(0);
   });
 
-  test("skip link works in English LTR @a11y-rtl", async ({ page }) => {
+  test("skip link works after /en redirect @a11y-rtl", async ({ page }) => {
     await page.goto("/en/login");
     await page.waitForLoadState("networkidle");
+    expect(page.url()).toContain("/ar/login");
     const skipLink = page.locator('a[href="#main-content"]');
     await expect(skipLink).toBeVisible();
     await expect(skipLink).toHaveAttribute("href", "#main-content");

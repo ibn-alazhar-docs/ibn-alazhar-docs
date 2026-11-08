@@ -90,11 +90,11 @@ test.describe("Admin Flows", () => {
       const nonAdminContext = await browser.newContext();
       const nonAdminPage = await nonAdminContext.newPage();
       const auth = new AuthPage(nonAdminPage);
-      await auth.gotoLogin("en");
+      await auth.gotoLogin("ar");
       await auth.login("user@ibnalazhar.app", "userpass");
       await page.waitForTimeout(3000);
       if (!nonAdminPage.url().includes("login")) {
-        await nonAdminPage.goto("/en/admin");
+        await nonAdminPage.goto("/ar/admin");
         await nonAdminPage.waitForLoadState("domcontentloaded");
         const body = await nonAdminPage.textContent("body");
         const denied =

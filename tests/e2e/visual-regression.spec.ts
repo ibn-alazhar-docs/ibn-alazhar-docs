@@ -123,26 +123,6 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     });
   });
 
-  test("Landing page — English LTR baseline", async ({ page }) => {
-    await page.goto(`${BASE}/en`);
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500);
-    await expect(page).toHaveScreenshot("landing-en-ltr.png", {
-      fullPage: true,
-      maxDiffPixelRatio: 0.01,
-    });
-  });
-
-  test("Login page — English LTR baseline", async ({ page }) => {
-    await page.goto(`${BASE}/en/login`);
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500);
-    await expect(page).toHaveScreenshot("login-en-ltr.png", {
-      fullPage: true,
-      maxDiffPixelRatio: 0.01,
-    });
-  });
-
   test("Mobile landing — Arabic baseline", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar`);

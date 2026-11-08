@@ -529,7 +529,6 @@
     "title": "الإعدادات",
     "comingSoon": "قريباً",
     "about": "حول المنصة",
-    "docsLink": "الوثائق",
     "toolsLink": "الأدوات",
     "profile": "ملفك الشخصي",
     "profileDescription": "بيانات حسابك",
@@ -538,10 +537,6 @@
     "role": "الدور",
     "admin": "مدير النظام",
     "user": "مستخدم",
-    "language": "اللغة",
-    "languageDescription": "لغة الواجهة",
-    "arabic": "العربية",
-    "english": "English",
     "theme": "المظهر",
     "themeDescription": "مظهر التطبيق",
     "light": "فاتح",
@@ -660,43 +655,12 @@
     "loadingPreview": "جارٍ تحميل المعاينة…",
     "previewDocument": "مستند المعاينة"
   },
-  "discovery": {
-    "library": "المكتبة",
-    "librarySubtitle": "مكتبة رقمية علمية — تصفح، اقرأ، وتعلّم",
-    "documents": "مستند",
-    "documentsPlural": "مستندات",
-    "minutes": "دقيقة",
-    "minShort": "د",
-    "relatedTitle": "ذات صلة",
-    "prerequisitePrefix": "يُوصى بقراءة",
-    "prerequisiteSuffix": "قبل هذا",
-    "journeyPartOf": "جزء من",
-    "journeyNext": "التالي",
-    "tocTitle": "المحتويات",
-    "tocAriaLabel": "فهرس المحتويات",
-    "docNavLabel": "التنقل",
-    "prev": "السابق",
-    "next": "التالي",
-    "readTime": "دقائق قراءة",
-    "home": "الرئيسية",
-    "breadcrumbLibrary": "المكتبة",
-    "readingJourneys": "رحلات القراءة",
-    "documentCount": "{count, plural, one {# مستند} other {# مستندات}}",
-    "step": "الخطوة {number}",
-    "minute": "{count, plural, one {دقيقة} other {دقائق}}"
-  },
   "a11y": {
     "skipToContent": "تخطَّ إلى المحتوى"
   },
   "theme": {
     "toggleLight": "التبديل إلى الوضع الفاتح",
     "toggleDark": "التبديل إلى الوضع الداكن"
-  },
-  "locale": {
-    "toggle": "تغيير اللغة",
-    "switchTitle": "تغيير اللغة",
-    "switchMessage": "لديك ملف قيد المعالجة ولم يُرفع بعد. تغيير اللغة سيؤدي إلى إلغاء الملف. هل أنت متأكد؟",
-    "switchConfirm": "تغيير"
   },
   "analytics": {
     "title": "التحليلات",

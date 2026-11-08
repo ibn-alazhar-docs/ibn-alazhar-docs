@@ -3,12 +3,12 @@ import { LoginPage } from "./pages/LoginPage";
 
 test("Files and Folders QA", async ({ page }) => {
   const loginPage = new LoginPage(page);
-  await loginPage.goto("en");
+  await loginPage.goto("ar");
   await loginPage.login("admin@ibnalazhar.app", "password123");
-  await page.waitForURL(/\/en\/dashboard/);
+  await page.waitForURL(/\/ar\/dashboard/);
 
   console.log("=== Task 3: Submitting new folder with long text and invalid characters ===");
-  await page.goto("/en/folders");
+  await page.goto("/ar/folders");
   await page.getByRole("button", { name: "+ New folder" }).click();
   await page.waitForSelector('text="Create folder"');
 
@@ -27,7 +27,7 @@ test("Files and Folders QA", async ({ page }) => {
   await page.screenshot({ path: "test-results/qa-long-folder.png", fullPage: true });
 
   console.log("=== Task 1: Double-clicking delete buttons ===");
-  await page.goto("/en/folders");
+  await page.goto("/ar/folders");
   await page.waitForTimeout(1000);
   // Find the options menu on the first folder item
   const menuBtn = page.getByText("⋮").first();
@@ -45,7 +45,7 @@ test("Files and Folders QA", async ({ page }) => {
   }
 
   console.log("=== Task 2: Rapidly selecting and deselecting multiple files ===");
-  await page.goto("/en/files");
+  await page.goto("/ar/files");
   await page.waitForTimeout(1000);
   const checkboxes = page.locator('input[type="checkbox"]');
   const count = await checkboxes.count();

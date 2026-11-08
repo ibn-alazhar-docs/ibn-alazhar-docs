@@ -139,7 +139,7 @@ test.describe("Tab Order Verification", () => {
   /* ─── Auth pages (English) tab order ─── */
 
   test("English login tab order is logical @a11y-taborder", async ({ page }) => {
-    await page.goto("/en/login");
+    await page.goto("/ar/login");
     await page.waitForLoadState("networkidle");
 
     const order = await captureTabOrder(page, 8);
@@ -151,7 +151,7 @@ test.describe("Tab Order Verification", () => {
   });
 
   test("English register tab order @a11y-taborder", async ({ page }) => {
-    await page.goto("/en/register");
+    await page.goto("/ar/register");
     await page.waitForLoadState("networkidle");
 
     const order = await captureTabOrder(page, 10);

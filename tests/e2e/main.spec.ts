@@ -123,9 +123,10 @@ test.describe("RTL direction", () => {
     await loginPage.expectRtlDirection();
   });
 
-  test("english pages have dir=ltr", async ({ page }) => {
+  test("legacy /en login URL redirects to Arabic RTL login", async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto("en");
-    await loginPage.expectDirection("ltr", "en");
+    await loginPage.expectRtlDirection();
+    expect(page.url()).toContain("/ar/login");
   });
 });

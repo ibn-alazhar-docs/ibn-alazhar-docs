@@ -298,7 +298,7 @@ export const DocumentRow = memo(function DocumentRow({
         {formatFileSize(doc.fileSize)}
       </td>
       <td className="hidden sm:table-cell whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm text-muted-color">
-        {new Date(doc.createdAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+        {new Date(doc.createdAt).toLocaleDateString("ar-EG")}
       </td>
       <DocumentRowActions
         doc={doc}

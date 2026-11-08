@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { BRAND_NAME, BRAND_OG_ALT, BRAND_OG_IMAGE } from "./brand";
 import { SITE_URL } from "@/shared/constants";
 
-export const siteName = BRAND_NAME.en;
+export const siteName = BRAND_NAME.ar;
 export const siteNameAr = BRAND_NAME.ar;
 
 export function getLocaleUrl(locale: string, path: string = ""): string {
@@ -30,9 +30,8 @@ export function generatePageMetadata({
   image = BRAND_OG_IMAGE,
 }: PageMetadataOptions): Metadata {
   const url = getLocaleUrl(locale, path);
-  const isAr = locale === "ar";
-  const ogLocale = isAr ? "ar_AR" : "en_US";
-  const fullTitle = title.includes("—") ? title : `${title} — ${isAr ? siteNameAr : siteName}`;
+  const ogLocale = "ar_AR";
+  const fullTitle = title.includes("—") ? title : `${title} — ${siteNameAr}`;
 
   return {
     title,
@@ -42,14 +41,13 @@ export function generatePageMetadata({
       canonical: url,
       languages: {
         ar: getLocaleUrl("ar", path),
-        en: getLocaleUrl("en", path),
       },
     },
     openGraph: {
       title: fullTitle,
       description,
       url,
-      siteName: isAr ? siteNameAr : siteName,
+      siteName: siteNameAr,
       locale: ogLocale,
       type: ogType,
       ...(publishedTime && ogType === "article" && { publishedTime }),
@@ -58,7 +56,7 @@ export function generatePageMetadata({
           url: image,
           width: 1200,
           height: 630,
-          alt: isAr ? BRAND_OG_ALT.ar : BRAND_OG_ALT.en,
+          alt: BRAND_OG_ALT.ar,
         },
       ],
     },

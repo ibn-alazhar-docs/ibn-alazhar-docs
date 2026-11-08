@@ -8,12 +8,11 @@ interface GlobalErrorProps {
   reset: () => void;
 }
 
-const LOCALE_MAP: Record<string, { lang: string; dir: "rtl" | "ltr" }> = {
+const LOCALE_MAP: Record<string, { lang: string; dir: "rtl" }> = {
   ar: { lang: "ar", dir: "rtl" },
-  en: { lang: "en", dir: "ltr" },
 };
 
-const DEFAULT_LOCALE: { lang: string; dir: "rtl" | "ltr" } = { lang: "ar", dir: "rtl" };
+const DEFAULT_LOCALE: { lang: string; dir: "rtl" } = { lang: "ar", dir: "rtl" };
 
 export default function GlobalError({ error, reset }: GlobalErrorProps) {
   const pathname = usePathname();

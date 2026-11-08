@@ -31,7 +31,7 @@ export async function generateStaticParams() {
 
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const resolved = await params;
-  const locale = resolved.locale as "ar" | "en";
+  const locale = resolved.locale as "ar";
 
   if (!routing.locales.includes(locale)) {
     notFound();
@@ -50,13 +50,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: BRAND_NAME[locale],
-    description: locale === "ar" ? BRAND_POSITIONING : "Arabic-first document platform",
+    name: BRAND_NAME.ar,
+    description: BRAND_POSITIONING,
     url: `${appUrl}/${locale}`,
-    inLanguage: locale === "ar" ? "ar" : "en",
+    inLanguage: "ar",
     publisher: {
       "@type": "Organization",
-      name: BRAND_NAME[locale],
+      name: BRAND_NAME.ar,
     },
   };
 
@@ -76,7 +76,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <ThemeWrapper>{children}</ThemeWrapper>
         <Toaster
           position="top-center"
-          dir={locale === "ar" ? "rtl" : "ltr"}
+          dir="rtl"
           toastOptions={{
             style: {
               // Toasts portal to <body>, so they need the brand token spelled out.

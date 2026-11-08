@@ -2,48 +2,41 @@ import { test, expect } from "@playwright/test";
 import { AuthPage } from "./pages/AuthPage";
 import { loginAsAdmin, expectPageDirection } from "./helpers";
 
-test.describe("i18n and RTL/LTR", () => {
+// ar-only: English locale, the locale toggle, and LTR switching were removed.
+// These tests assert RTL stability on /ar surfaces instead of switching locales.
+test.describe("i18n and RTL", () => {
   test.describe.configure({ timeout: 120_000 });
 
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
   });
 
-  test("Toggle language between Arabic and English", async ({ page }) => {
+  test("No locale toggle is rendered", async ({ page }) => {
     await expectPageDirection(page, "rtl", "ar");
     const langToggle = page
       .getByRole("button", { name: /English/i })
+      .or(page.locator('a[href*="/en/"]'))
       .or(
-        page
-          .locator('a[href*="/en/"]')
-          .or(
-            page.locator(
-              '[data-testid="locale-switcher"] button, [data-testid="locale-switcher"] a',
-            ),
-          ),
-      )
-      .first();
-    if (await langToggle.isVisible().catch(() => false)) {
-      await langToggle.click();
-      await page.waitForLoadState("domcontentloaded");
-      const html = page.locator("html");
-      const dir = await html.getAttribute("dir");
-      const lang = await html.getAttribute("lang");
-      expect(dir === "ltr" || lang === "en").toBeTruthy();
-    }
+        page.locator('[data-testid="locale-switcher"] button, [data-testid="locale-switcher"] a'),
+      );
+    await expect(langToggle).toHaveCount(0);
   });
 
-  test("Verify layout flips RTL to LTR correctly", async ({ page }) => {
+  test("Dashboard stays RTL on /ar", async ({ page }) => {
     await expectPageDirection(page, "rtl", "ar");
-    await page.goto("/en/dashboard");
+    await page.goto("/ar/dashboard");
     await page.waitForLoadState("domcontentloaded");
     const html = page.locator("html");
-    const dir = await html.getAttribute("dir");
-    const lang = await html.getAttribute("lang");
-    expect(lang).toBe("en");
-    if (dir !== "rtl") {
-      expect(dir).toBe("ltr");
-    }
+    await expect(html).toHaveAttribute("lang", "ar");
+    await expect(html).toHaveAttribute("dir", "rtl");
+  });
+
+  test("Legacy /en URLs redirect to /ar with RTL", async ({ page }) => {
+    await page.goto("/en/dashboard");
+    await page.waitForURL(/\/ar\/dashboard/, { timeout: 15_000 });
+    const html = page.locator("html");
+    await expect(html).toHaveAttribute("lang", "ar");
+    await expect(html).toHaveAttribute("dir", "rtl");
   });
 
   test("Arabic login page has RTL direction", async ({ page }) => {
@@ -52,86 +45,49 @@ test.describe("i18n and RTL/LTR", () => {
     await auth.expectRtlDirection();
   });
 
-  test("English login page has LTR direction", async ({ page }) => {
-    const auth = new AuthPage(page);
-    await auth.gotoLogin("en");
-    await expectPageDirection(page, "ltr", "en");
-  });
-
   test("Dashboard page locale prefix correct", async ({ page }) => {
     await page.goto("/ar/dashboard");
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/ar/dashboard");
-    await page.goto("/en/dashboard");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url()).toContain("/en/dashboard");
   });
 
-  test("Files page in both languages", async ({ page }) => {
+  test("Files page renders in Arabic", async ({ page }) => {
     await page.goto("/ar/files");
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/ar/files");
-    let html = await page.locator("html").getAttribute("lang");
+    const html = await page.locator("html").getAttribute("lang");
     expect(html).toBe("ar");
-    await page.goto("/en/files");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url()).toContain("/en/files");
-    html = await page.locator("html").getAttribute("lang");
-    expect(html).toBe("en");
   });
 
-  test("Folders page in both languages", async ({ page }) => {
+  test("Folders page renders in Arabic", async ({ page }) => {
     await page.goto("/ar/folders");
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/ar/folders");
-    let html = await page.locator("html").getAttribute("lang");
+    const html = await page.locator("html").getAttribute("lang");
     expect(html).toBe("ar");
-    await page.goto("/en/folders");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url()).toContain("/en/folders");
-    html = await page.locator("html").getAttribute("lang");
-    expect(html).toBe("en");
   });
 
-  test("Tags page in both languages", async ({ page }) => {
+  test("Tags page renders in Arabic", async ({ page }) => {
     await page.goto("/ar/tags");
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/ar/tags");
-    let html = await page.locator("html").getAttribute("lang");
+    const html = await page.locator("html").getAttribute("lang");
     expect(html).toBe("ar");
-    await page.goto("/en/tags");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url()).toContain("/en/tags");
-    html = await page.locator("html").getAttribute("lang");
-    expect(html).toBe("en");
   });
 
-  test("Search page in both languages", async ({ page }) => {
+  test("Search page renders in Arabic", async ({ page }) => {
     await page.goto("/ar/search");
     await page.waitForLoadState("domcontentloaded");
     expect(page.url()).toContain("/ar/search");
-    let html = await page.locator("html").getAttribute("lang");
+    const html = await page.locator("html").getAttribute("lang");
     expect(html).toBe("ar");
-    await page.goto("/en/search");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url()).toContain("/en/search");
-    html = await page.locator("html").getAttribute("lang");
-    expect(html).toBe("en");
   });
 
-  test("Header renders differently in each language", async ({ page }) => {
-    const toggleSelector =
-      '[data-testid="locale-toggle"], button:has-text("English"), button:has-text("العربية")';
+  test("Header renders on the dashboard", async ({ page }) => {
     await page.goto("/ar/dashboard");
     await page.waitForLoadState("domcontentloaded");
-    const firstBody = await page.textContent("body");
-    expect(firstBody).toBeTruthy();
-    await page.goto("/en/dashboard");
-    await page.waitForLoadState("domcontentloaded");
-    const secondBody = await page.textContent("body");
-    expect(secondBody).toBeTruthy();
-    const textContentChanged = firstBody !== secondBody;
-    expect(textContentChanged || true).toBeTruthy();
+    const body = await page.textContent("body");
+    expect(body).toBeTruthy();
   });
 
   test("Share page renders in Arabic correctly", async ({ page }) => {
@@ -142,21 +98,10 @@ test.describe("i18n and RTL/LTR", () => {
     await expect(html).toHaveAttribute("lang", "ar");
   });
 
-  test("Share page renders in English correctly", async ({ page }) => {
-    await page.goto("/en/share/sample-token-123");
-    await page.waitForLoadState("domcontentloaded");
-    const html = page.locator("html");
-    await expect(html).toHaveAttribute("lang", "en");
-  });
-
   test("URL locale prefix changes correctly for profile", async ({ page }) => {
     await page.goto("/ar/profile");
     await page.waitForLoadState("domcontentloaded");
-    const arUrl = "ar" + (page.url().includes("/ar/profile") ? "/profile" : "");
     expect(page.url().includes("/ar/profile") || page.url().includes("/ar/settings")).toBeTruthy();
-    await page.goto("/en/profile");
-    await page.waitForLoadState("domcontentloaded");
-    expect(page.url().includes("/en/profile") || page.url().includes("/en/settings")).toBeTruthy();
   });
 
   test("RTL audit: no physical CSS properties on login page", async ({ page }) => {
@@ -199,20 +144,5 @@ test.describe("i18n and RTL/LTR", () => {
       body?.includes("حقل") ||
       body?.includes("يرجى");
     expect(arabicFound === true || true).toBeTruthy();
-  });
-
-  test("Form validation messages in English", async ({ page }) => {
-    const auth = new AuthPage(page);
-    await auth.gotoLogin("en");
-    await auth.submitButton.click();
-    await page.waitForTimeout(2000);
-    const body = await page.textContent("body");
-    const englishFound =
-      body?.includes("required") ||
-      body?.includes("email") ||
-      body?.includes("password") ||
-      body?.includes("field") ||
-      body?.includes("please");
-    expect(englishFound === true || true).toBeTruthy();
   });
 });

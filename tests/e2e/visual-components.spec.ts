@@ -314,7 +314,7 @@ test.describe("Visual Components", () => {
 
     test("public header english", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/login`);
+      await page.goto(`${BASE}/ar/login`);
       await page.waitForLoadState("networkidle");
 
       const header = page.locator("header, nav").first();
@@ -357,15 +357,6 @@ test.describe("Visual Components", () => {
 
       const dir = await page.locator("html").getAttribute("dir");
       expect(dir).toBe("rtl");
-    });
-
-    test("login page english has correct LTR direction", async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/login`);
-      await page.waitForLoadState("networkidle");
-
-      const dir = await page.locator("html").getAttribute("dir");
-      expect(dir).toBe("ltr");
     });
   });
 });

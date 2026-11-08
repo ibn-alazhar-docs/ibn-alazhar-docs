@@ -44,19 +44,18 @@ export const viewport: Viewport = {
   colorScheme: "light dark",
 };
 
-function getDirFromLocale(locale: string): string {
-  return locale === "en" ? "ltr" : "rtl";
+function getDirFromLocale(): string {
+  return "rtl";
 }
 
-function getLangFromLocale(locale: string): string {
-  return locale === "en" ? "en" : "ar";
+function getLangFromLocale(): string {
+  return "ar";
 }
 
 export default async function RootLayout({ children }: Readonly<RootLayoutProps>) {
-  const h = await headers();
-  const locale = h.get("x-locale") ?? "ar";
-  const dir = getDirFromLocale(locale);
-  const lang = getLangFromLocale(locale);
+  await headers();
+  const dir = getDirFromLocale();
+  const lang = getLangFromLocale();
 
   return (
     <html
@@ -72,7 +71,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
               (function() {
                 try {
                   var path = window.location.pathname;
-                  var match = path.match(/^\\/(ar|en)(\\/|$)/);
+                  var match = path.match(/^\\/(ar)(\\/|$)/);
                   var locale = match ? match[1] : 'ar';
                   document.documentElement.lang = locale;
                   document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';

@@ -3,21 +3,19 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
-import { LocaleToggle } from "@/ui/locale/locale-toggle";
 import { BRAND_NAME } from "@/ui/brand";
 import { BrandLogo } from "@/ui/brand-logo";
 
 interface PublicHeaderProps {
-  locale: string;
   signInLabel?: string;
   signUpLabel?: string;
   mainNavLabel?: string;
   isLoggedIn?: boolean;
 }
 
-export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
+export function PublicHeader({ signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
   const t = useTranslations("nav");
-  const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
+  const brand = BRAND_NAME.ar;
 
   return (
     <header
@@ -33,7 +31,6 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
           </span>
         </Link>
         <nav aria-label={t("mainNav")} className="flex items-center gap-2">
-          <LocaleToggle />
           <ThemeToggle />
           {isLoggedIn ? (
             <Link

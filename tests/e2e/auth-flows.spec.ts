@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { AuthPage } from "./pages/AuthPage";
-import { LOGIN_EMAIL, LOGIN_PASSWORD, loginAsAdmin, expectPageDirection } from "./helpers";
+import { LOGIN_EMAIL, LOGIN_PASSWORD, loginAsAdmin } from "./helpers";
 
 test.describe("Auth Flows", () => {
   test.describe.configure({ timeout: 120_000 });
@@ -46,7 +46,7 @@ test.describe("Auth Flows", () => {
     if (currentUrl.includes("dashboard")) {
       expect(page.url()).toContain("/dashboard");
     } else if (currentUrl.includes("verify")) {
-      await page.goto(`/${currentUrl.includes("/en/") ? "en" : "ar"}/login`);
+      await page.goto(`/ar/login`);
       await page.waitForLoadState("domcontentloaded");
     }
   });
@@ -66,7 +66,7 @@ test.describe("Auth Flows", () => {
     await auth.login(LOGIN_EMAIL, LOGIN_PASSWORD);
     await auth.expectRedirectToDashboard();
     await context.clearCookies();
-    await page.goto(`/${page.url().includes("/en/") ? "en" : "ar"}/dashboard`);
+    await page.goto(`/ar/dashboard`);
     await page.waitForLoadState("domcontentloaded");
     const url = page.url();
     expect(url.includes("login") || url.includes("signin")).toBeTruthy();
@@ -80,7 +80,7 @@ test.describe("Auth Flows", () => {
     await page.waitForLoadState("domcontentloaded");
     const freshContext = await context.browser()!.newContext();
     const freshPage = await freshContext.newPage();
-    const locale = page.url().includes("/en/") ? "en" : "ar";
+    const locale = "ar";
     await freshPage.goto(`/${locale}/dashboard`);
     await freshPage.waitForLoadState("domcontentloaded");
     const url = freshPage.url();
@@ -94,10 +94,11 @@ test.describe("Auth Flows", () => {
     await auth.expectRtlDirection();
   });
 
-  test("Login page renders in LTR for English", async ({ page }) => {
+  test("Legacy /en login URL redirects to Arabic RTL login", async ({ page }) => {
     const auth = new AuthPage(page);
     await auth.gotoLogin("en");
-    await expectPageDirection(page, "ltr", "en");
+    await auth.expectRtlDirection();
+    expect(page.url()).toContain("/ar/login");
   });
 
   test("Rate limiting: multiple failed logins show lockout", async ({ page }) => {

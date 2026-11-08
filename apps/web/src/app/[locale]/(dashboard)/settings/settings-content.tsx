@@ -1,8 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
-import { Link, useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTheme } from "@/ui/theme/theme-provider";
 import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/card";
@@ -12,7 +11,7 @@ import { Label } from "@/ui/label";
 import { Badge } from "@/ui/badge";
 import { BrandLogo } from "@/ui/brand-logo";
 import { UI_TIMING } from "@/shared/constants";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
 import { SunIcon, MoonIcon } from "@/ui/icons";
 import { apiFetch } from "@/shared/api";
@@ -31,11 +30,8 @@ export function SettingsContent({ user }: SettingsContentProps) {
   const t = useTranslations("settings");
   const tFooter = useTranslations("footer");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
   const { theme, toggle: toggleTheme } = useTheme();
-  const [isPending, startTransition] = useTransition();
 
   const { update } = useSession();
 
@@ -45,12 +41,6 @@ export function SettingsContent({ user }: SettingsContentProps) {
   const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  function handleLanguageSwitch(nextLocale: string) {
-    startTransition(() => {
-      router.replace(pathname, { locale: nextLocale });
-    });
-  }
 
   async function handleSave() {
     setSaving(true);
@@ -169,65 +159,37 @@ export function SettingsContent({ user }: SettingsContentProps) {
           </CardContent>
         </Card>
 
-        {/* Language + Theme */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("language")}</CardTitle>
-              <CardDescription>{t("languageDescription")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => handleLanguageSwitch("ar")}
-                  disabled={isPending || locale === "ar"}
-                  variant={locale === "ar" ? "default" : "outline"}
-                >
-                  {t("arabic")}
-                </Button>
-                <Button
-                  onClick={() => handleLanguageSwitch("en")}
-                  disabled={isPending || locale === "en"}
-                  variant={locale === "en" ? "default" : "outline"}
-                >
-                  {t("english")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Theme Section */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t("theme")}</CardTitle>
-              <CardDescription>{t("themeDescription")}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex gap-3">
-                <Button
-                  onClick={() => {
-                    if (theme !== "light") toggleTheme();
-                  }}
-                  variant={theme === "light" ? "default" : "outline"}
-                  className="flex items-center gap-2"
-                >
-                  <SunIcon className="h-4 w-4" />
-                  {t("light")}
-                </Button>
-                <Button
-                  onClick={() => {
-                    if (theme !== "dark") toggleTheme();
-                  }}
-                  variant={theme === "dark" ? "default" : "outline"}
-                  className="flex items-center gap-2"
-                >
-                  <MoonIcon className="h-4 w-4" />
-                  {t("dark")}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Theme */}
+        <Card>
+          <CardHeader>
+            <CardTitle>{t("theme")}</CardTitle>
+            <CardDescription>{t("themeDescription")}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => {
+                  if (theme !== "light") toggleTheme();
+                }}
+                variant={theme === "light" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <SunIcon className="h-4 w-4" />
+                {t("light")}
+              </Button>
+              <Button
+                onClick={() => {
+                  if (theme !== "dark") toggleTheme();
+                }}
+                variant={theme === "dark" ? "default" : "outline"}
+                className="flex items-center gap-2"
+              >
+                <MoonIcon className="h-4 w-4" />
+                {t("dark")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* About Section */}
         <Card>
@@ -242,9 +204,6 @@ export function SettingsContent({ user }: SettingsContentProps) {
               </p>
             </div>
             <div className="mt-4 flex gap-3">
-              <Button variant="outline" asChild>
-                <Link href="/docs">{t("docsLink")}</Link>
-              </Button>
               <Button variant="outline" asChild>
                 <Link href="/tools">{t("toolsLink")}</Link>
               </Button>

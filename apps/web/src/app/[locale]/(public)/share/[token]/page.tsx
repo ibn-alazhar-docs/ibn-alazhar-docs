@@ -341,7 +341,7 @@ export default async function SharePage({ params }: SharePageProps) {
       </main>
 
       <footer className="border-t border-line py-4 text-center text-muted-color text-sm">
-        {locale === "ar" ? BRAND_NAME.ar : BRAND_NAME.en}
+        {BRAND_NAME.ar}
       </footer>
     </div>
   );

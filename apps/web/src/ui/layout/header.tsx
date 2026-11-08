@@ -4,7 +4,6 @@ import { useTranslations, useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { signOut } from "next-auth/react";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
-import { LocaleToggle } from "@/ui/locale/locale-toggle";
 import { SearchBar } from "@/ui/search/search-bar";
 import { useRouter } from "@/i18n/navigation";
 import { MenuIcon, CloseIcon, LogoutIcon } from "@/ui/icons";
@@ -69,7 +68,6 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
           <span className="hidden md:inline text-xs text-very-muted max-w-[180px] lg:max-w-[260px]">
             {t("tagline")}
           </span>
-          <LocaleToggle />
           <ThemeToggle />
           <button
             onClick={() => signOut({ callbackUrl: `/${locale}` })}

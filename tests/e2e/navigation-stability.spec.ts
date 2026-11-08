@@ -62,7 +62,7 @@ test.describe("Navigation stability (CLS) — dashboard matrix", () => {
     await settle(page);
   });
 
-  for (const locale of ["ar", "en"] as const) {
+  for (const locale of ["ar"] as const) {
     test(`CLS < ${CLS_PER_NAV_BUDGET} navigating every dashboard route (${locale})`, async ({
       page,
     }) => {
@@ -136,7 +136,7 @@ test.describe("Navigation stability — reduced motion", () => {
 });
 
 test.describe("Public chrome persistence", () => {
-  test("landing → docs is a soft SPA navigation (header does not remount)", async ({ page }) => {
+  test("landing → login is a soft SPA navigation (header does not remount)", async ({ page }) => {
     // Mark the window so we can detect a full reload vs SPA navigation.
     await page.addInitScript(() => {
       (window as unknown as { __softNavs: number }).__softNavs =
@@ -147,14 +147,14 @@ test.describe("Public chrome persistence", () => {
     const firstLoads = await page.evaluate(
       () => (window as unknown as { __softNavs: number }).__softNavs,
     );
-    await page.click('a[href="/ar/docs"]');
+    await page.click('a[href="/ar/login"]');
     await settle(page);
     const afterNavLoads = await page.evaluate(
       () => (window as unknown as { __softNavs: number }).__softNavs,
     );
     // Same document (SPA nav) → counter not incremented → header persists.
     expect(afterNavLoads).toBe(firstLoads);
-    await expect(page).toHaveURL(/\/ar\/docs/);
+    await expect(page).toHaveURL(/\/ar\/login/);
     await expect(page.locator("header[role='banner']")).toBeVisible();
   });
 });

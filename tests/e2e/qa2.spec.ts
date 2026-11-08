@@ -5,12 +5,12 @@ test.setTimeout(120000); // 120 seconds
 
 test("Files and Folders QA 2", async ({ page }) => {
   const loginPage = new LoginPage(page);
-  await loginPage.goto("en");
+  await loginPage.goto("ar");
   await loginPage.login("admin@ibnalazhar.app", "password123");
   await page.waitForURL(/.*\/dashboard/);
 
   console.log("=== Task 1: Double-clicking delete buttons ===");
-  await page.goto("/en/folders");
+  await page.goto("/ar/folders");
   await page.waitForTimeout(1000);
 
   // Create a folder first so we have something to delete
@@ -39,7 +39,7 @@ test("Files and Folders QA 2", async ({ page }) => {
   }
 
   console.log("=== Task 2: Rapidly selecting and deselecting multiple files ===");
-  await page.goto("/en/files");
+  await page.goto("/ar/files");
   await page.waitForTimeout(1000);
   const checkboxes = page.locator('input[type="checkbox"]');
   const count = await checkboxes.count();

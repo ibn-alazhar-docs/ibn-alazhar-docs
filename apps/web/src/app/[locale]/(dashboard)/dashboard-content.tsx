@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
@@ -29,7 +29,6 @@ interface DashboardContentProps {
 
 export function DashboardContent({ counts, recentDocuments }: DashboardContentProps) {
   const tNav = useTranslations("nav");
-  const locale = useLocale();
 
   const tDocs = useTranslations("documents");
   const tFolders = useTranslations("folders");
@@ -154,7 +153,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
                           {tDocs(`status.${doc.status}` as unknown as "title")}
                         </Badge>
                         <span className="text-xs text-muted-color">
-                          {new Date(doc.createdAt).toLocaleDateString(locale)}
+                          {new Date(doc.createdAt).toLocaleDateString("ar-EG")}
                         </span>
                       </div>
                     </div>

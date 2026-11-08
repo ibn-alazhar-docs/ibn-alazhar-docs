@@ -1,6 +1,6 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { useState, useEffect } from "react";
 import { Container } from "@/ui/container";
 import { PageTransition } from "@/ui/page-transition";
@@ -25,7 +25,6 @@ interface User {
 export default function UsersPage() {
   const t = useTranslations("users");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -184,9 +183,7 @@ export default function UsersPage() {
                           </Badge>
                         </td>
                         <td className="px-4 py-3 text-very-muted">
-                          {new Date(user.createdAt).toLocaleDateString(
-                            locale === "ar" ? "ar-EG" : "en-US",
-                          )}
+                          {new Date(user.createdAt).toLocaleDateString("ar-EG")}
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">

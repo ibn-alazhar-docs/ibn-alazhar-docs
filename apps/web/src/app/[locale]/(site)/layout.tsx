@@ -21,14 +21,13 @@ export default async function SiteLayout({ children }: SiteLayoutProps) {
   return (
     <div className="flex min-h-screen flex-col bg-page">
       <PublicHeader
-        locale={locale}
         signInLabel={tNav("signIn")}
         signUpLabel={tNav("signUp")}
         mainNavLabel={tNav("mainNav")}
         isLoggedIn={isLoggedIn}
       />
       <div className="flex-1">{children}</div>
-      <PublicFooter locale={locale} tagline={tFooter("tagline")} copyright={tFooter("copyright")} />
+      <PublicFooter tagline={tFooter("tagline")} copyright={tFooter("copyright")} />
     </div>
   );
 }
