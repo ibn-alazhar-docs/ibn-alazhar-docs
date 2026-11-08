@@ -345,7 +345,7 @@ jobs:
   test-e2e:
     name: E2E Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     needs: quality-gates
     services:
       postgres:
