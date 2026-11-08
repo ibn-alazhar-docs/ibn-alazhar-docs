@@ -4,7 +4,6 @@ import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { useCases } from "@/core/composition-root";
-import { enqueueViaDriver, JOB_QUEUES, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
@@ -59,80 +58,21 @@ export const POST = withAuth(async (request, { session, params }) => {
   const { format, options } = validation.data;
 
   try {
-    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
+    const result = await useCases.documentExportJob.enqueueExport(
+      id,
+      session.user.id,
+      format,
+      options,
+    );
 
-    if (document.status !== "COMPLETED") {
+    if (!result.ok) {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "معالجة المستند لم تكتمل بعد" } },
-        { status: 400 },
+        { error: { code: result.code, message: result.message } },
+        { status: result.status },
       );
     }
 
-    if (options?.destination === "drive") {
-      const { prisma } = await import("@/transport/db");
-      const account = await prisma.account.findFirst({
-        where: { userId: session.user.id, provider: "google" },
-      });
-      if (!account || !account.access_token || !account.refresh_token) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_LINKED",
-              message: "يجب ربط حساب Google من الإعدادات أولاً لتتمكن من التصدير إلى Drive.",
-            },
-          },
-          { status: 400 },
-        );
-      }
-    }
-
-    const config = loadConfig();
-
-    const jobId = document.id;
-
-    const textKey = `${config.paths.ocrResults}/${document.id}/cleaned.json`;
-    const outputKey = `${config.paths.exports}/${document.id}/export.${format}`;
-
-    if (format === "searchable-pdf") {
-      // لا طابور لهذا الصيغة: يولّده طور التوليد. الإبلاغ عن جاهزية ملف غير موجود
-      // كان يجعل الواجهة تُحمّل رابطًا يفشل عند التنزيل.
-      const existingKey = (document.outputKeys as Record<string, string> | null)?.[format];
-      if (!existingKey) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_READY",
-              message: "لم يُنشأ ملف PDF المطابق للأصل لهذا المستند.",
-            },
-          },
-          { status: 409 },
-        );
-      }
-      return NextResponse.json({ success: true, jobId: document.id, message: "Export ready" });
-    }
-
-    await enqueueViaDriver(JOB_QUEUES.EXPORT, config, {
-      jobId,
-      documentId: document.id,
-      userId: session.user.id,
-      format: format as "md" | "txt" | "docx" | "epub" | "json" | "pdf",
-      textKey,
-      outputKey,
-      pageCount: document.pageCount || undefined,
-      options,
-    });
-
-    // المفتاح القديم يشير إلى ملف طور التوليد؛ لو تُرك كان فحص الحالة يعلن
-    // "جاهز" فورًا فيُنزَّل نسخة قديمة لا تحمل هذه الخيارات.
-    const freshKeys = { ...((document.outputKeys as Record<string, string>) || {}) };
-    delete freshKeys[format];
-    const { prisma } = await import("@/transport/db");
-    await prisma.document.update({
-      where: { id: document.id },
-      data: { outputKeys: freshKeys },
-    });
-
-    return NextResponse.json({ success: true, jobId, message: "Export job enqueued" });
+    return NextResponse.json({ success: true, jobId: result.jobId, message: result.message });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/export/POST", "تعذر إنشاء التصدير. حاول مرة أخرى.");
   }

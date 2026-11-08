@@ -22,11 +22,21 @@ export class VerificationTokenRepository implements IVerificationTokenRepository
     return { identifier: row.identifier, token: row.token, expires: row.expires };
   }
 
+  async findByToken(token: string): Promise<VerificationTokenRecord | null> {
+    const row = await this.prisma.verificationToken.findUnique({ where: { token } });
+    if (!row) return null;
+    return { identifier: row.identifier, token: row.token, expires: row.expires };
+  }
+
   async deleteByIdentifier(identifier: string): Promise<void> {
     await this.prisma.verificationToken.deleteMany({ where: { identifier } });
   }
 
   async deleteByIdentifierAndToken(identifier: string, token: string): Promise<void> {
     await this.prisma.verificationToken.deleteMany({ where: { identifier, token } });
+  }
+
+  async deleteByToken(token: string): Promise<void> {
+    await this.prisma.verificationToken.delete({ where: { token } });
   }
 }

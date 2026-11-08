@@ -35,6 +35,10 @@ import { BookmarkUseCases } from "./services/bookmark.use-cases";
 import { AnalyticsUseCases } from "./services/analytics.use-cases";
 import { PasswordResetUseCases } from "./services/password-reset.use-cases";
 import { AutoTagUseCases } from "./services/auto-tag.use-cases";
+import { EmailVerificationUseCases } from "./services/email-verification.use-cases";
+import { DocumentReprocessUseCases } from "./services/document-reprocess.use-cases";
+import { DocumentExportJobUseCases } from "./services/document-export-job.use-cases";
+import { UploadPreflightUseCases } from "./services/upload-preflight.use-cases";
 
 // Composition root (DI hub): repositories and use-cases are module-level
 // singletons built once at import time. The grouping below only organizes
@@ -147,7 +151,12 @@ function createShareExportUseCases(deps: {
   const documentDownload = new DocumentDownloadUseCase(deps.accountRepository);
   return {
     documentDownload,
-    shareAccess: new ShareAccessUseCase(deps.shareRepository),
+    shareAccess: new ShareAccessUseCase(
+      deps.shareRepository,
+      deps.storageRepository,
+      deps.tagDocumentRepository,
+      deps.folderRepository,
+    ),
     documentShare: new DocumentShareUseCases(deps.documentRepository, deps.shareRepository),
     export: new ExportUseCases(
       deps.documentRepository,
@@ -172,10 +181,25 @@ function createAdminUseCases(deps: {
   userRepository: UserRepository;
   verificationTokenRepository: VerificationTokenRepository;
   webhookRepository: WebhookRepository;
+  documentRepository: DocumentRepository;
+  accountRepository: AccountRepository;
+  storageRepository: MinioStorageRepository;
   prisma: typeof prisma;
 }) {
   return {
     registration: new RegistrationUseCases(deps.userRepository, deps.verificationTokenRepository),
+    emailVerification: new EmailVerificationUseCases(
+      deps.userRepository,
+      deps.verificationTokenRepository,
+    ),
+    documentReprocess: new DocumentReprocessUseCases(deps.documentRepository),
+    documentExportJob: new DocumentExportJobUseCases(
+      deps.documentRepository,
+      deps.accountRepository,
+    ),
+    uploadPreflight: new UploadPreflightUseCases(deps.userRepository, async () => {
+      await deps.prisma.$queryRaw`SELECT 1`;
+    }),
     profile: new ProfileUseCases(deps.userRepository),
     user: new UserUseCases(deps.userRepository),
     passwordReset: new PasswordResetUseCases(deps.userRepository, deps.verificationTokenRepository),
@@ -218,11 +242,18 @@ const adminUseCases = createAdminUseCases({
   userRepository,
   verificationTokenRepository,
   webhookRepository,
+  documentRepository,
+  accountRepository,
+  storageRepository,
   prisma,
 });
 
 export const useCases = {
   registration: adminUseCases.registration,
+  emailVerification: adminUseCases.emailVerification,
+  documentReprocess: adminUseCases.documentReprocess,
+  documentExportJob: adminUseCases.documentExportJob,
+  uploadPreflight: adminUseCases.uploadPreflight,
   profile: adminUseCases.profile,
   user: adminUseCases.user,
   passwordReset: adminUseCases.passwordReset,

@@ -2,18 +2,10 @@ import { NextResponse } from "next/server";
 import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
-import { getRedisClient } from "@/clients/redis/rate-limit/redis";
-import { prisma } from "@/transport/db";
 import { useCases } from "@/core/composition-root";
-import {
-  uploadMetadataSchema,
-  validateUploadFile,
-  MAX_UPLOAD_SIZE_MB,
-} from "@/shared/validators/document";
+import { uploadMetadataSchema, validateUploadFile } from "@/shared/validators/document";
 import { DashboardService } from "@/core/services/dashboard.service";
 import { ERROR_CODES } from "@/shared/constants";
-import { logger } from "@/shared/logger";
-import { ServiceHealthValidator, ServiceErrorType } from "@ibn-al-azhar-docs/shared";
 
 function validateRequest(
   file: File | null,
@@ -51,26 +43,9 @@ function validateRequest(
 export const POST = withAuth(async (request, { session }) => {
   const startedAt = Date.now();
   try {
-    // CRITICAL: Verify user exists before processing upload. The JWT token may
-    // contain a stale user ID (e.g. deleted user, or race with Google OAuth
-    // account creation). Without this check, createDocument() fails with a
-    // foreign key constraint violation.
-    const userExists = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { id: true, deletedAt: true },
-    });
-
-    if (!userExists || userExists.deletedAt) {
-      logger.warn({ userId: session.user.id }, "Upload rejected: user not found or deleted");
-      return NextResponse.json(
-        {
-          error: {
-            code: ERROR_CODES.UNAUTHORIZED,
-            message: "الجلسة غير صالحة. يرجى تسجيل الدخول مرة أخرى.",
-          },
-        },
-        { status: 401 },
-      );
+    const userCheck = await useCases.uploadPreflight.assertUserActive(session.user.id);
+    if (!userCheck.ok) {
+      return NextResponse.json(userCheck.body, { status: userCheck.status });
     }
 
     const rateLimitResult = await checkUserRateLimit("documents:create", session.user.id);
@@ -78,77 +53,13 @@ export const POST = withAuth(async (request, { session }) => {
       return rateLimitResponse(rateLimitResult.retryAfterMs);
     }
 
-    // Pre-parse guard: reject oversized payloads before buffering the whole
-    // body in memory (prevents OOM / DoS from a malicious Content-Length).
     const declaredLength = Number(request.headers.get("content-length") || 0);
-    const hardCap = MAX_UPLOAD_SIZE_MB * 1024 * 1024 + 8 * 1024 * 1024; // file + multipart overhead
-    if (declaredLength > hardCap) {
-      return NextResponse.json(
-        {
-          error: {
-            code: ERROR_CODES.UPLOAD_FILE_TOO_LARGE,
-            message: `الملف أكبر من الحد المسموح (${MAX_UPLOAD_SIZE_MB}MB). يرجى تقليل الحجم أو تقسيم الملف.`,
-          },
-        },
-        { status: 400 },
-      );
-    }
-
-    // Requirement 3.1-3.5: validate that critical services (DB + storage) are
-    // available before accepting the file upload. Redis is treated as optional
-    // — when unavailable the rate limiter gracefully degrades to memory.
-    // Runs in parallel with a 2s budget (Requirement 7.2, 7.4).
-    const serviceValidation = await ServiceHealthValidator.validateAll(
-      {
-        database: async () => {
-          await prisma.$queryRaw`SELECT 1`;
-        },
-        redis: async () => {
-          // Redis is optional — when unavailable the rate limiter and queue
-          // degrade gracefully. Never block uploads on Redis health.
-          if (!process.env.REDIS_URL && !process.env.REDIS_HOST) {
-            return;
-          }
-          try {
-            const client = await getRedisClient();
-            if (!client) return;
-            await client.ping();
-          } catch {
-            // Non-blocking: Redis may be starting up or temporarily unreachable.
-            // The upload use-case handles enqueue failure gracefully.
-          }
-        },
-        storage: async () => {
-          const { access, constants } = await import("node:fs/promises");
-          await access(process.env.STORAGE_LOCAL_DIR || "/data", constants.W_OK);
-        },
-      },
-      { timeoutMs: 2000 },
+    const preflight = await useCases.uploadPreflight.checkSizeAndServices(
+      session.user.id,
+      declaredLength,
     );
-
-    if (!serviceValidation.success && serviceValidation.error) {
-      const { type, message, httpStatus } = serviceValidation.error;
-      const code =
-        type === ServiceErrorType.DATABASE_UNAVAILABLE
-          ? ERROR_CODES.DB_CONNECTION_FAILED
-          : type === ServiceErrorType.REDIS_UNAVAILABLE
-            ? ERROR_CODES.REDIS_UNAVAILABLE
-            : type === ServiceErrorType.STORAGE_UNAVAILABLE
-              ? ERROR_CODES.UPLOAD_STORAGE_UNAVAILABLE
-              : ERROR_CODES.INTERNAL_ERROR;
-
-      logger.warn(
-        { service: type, userId: session.user.id },
-        "Pre-upload service validation failed",
-      );
-
-      return NextResponse.json(
-        {
-          error: { code, message: message.ar },
-          errorEn: message.en,
-        },
-        { status: httpStatus },
-      );
+    if (!preflight.ok) {
+      return NextResponse.json(preflight.body, { status: preflight.status });
     }
 
     const formData = await request.formData();

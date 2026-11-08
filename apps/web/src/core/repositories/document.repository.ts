@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import type { Document, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { Document } from "@prisma/client";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import { NotFoundError } from "@/shared/errors";
@@ -78,6 +79,26 @@ export class DocumentRepository implements IDocumentRepository {
     return this.prisma.document.updateMany({
       where,
       data,
+    });
+  }
+
+  async resetForReprocess(id: string, userId: string) {
+    return this.prisma.document.updateMany({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+        status: { in: ["FAILED", "UPLOADED"] },
+      },
+      data: {
+        status: "UPLOADED",
+        errorCode: null,
+        errorMessage: null,
+        outputKeys: Prisma.JsonNull,
+        outputFormats: [],
+        pageCount: null,
+        needsReview: false,
+      },
     });
   }
 }

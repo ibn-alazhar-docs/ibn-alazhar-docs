@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
-import { repos, useCases } from "@/core/composition-root";
+import { useCases } from "@/core/composition-root";
 import { handleRouteError } from "@/shared/route-helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
@@ -13,7 +13,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
 
     const { token } = await params;
 
-    const result = await useCases.shareAccess.execute(token, {
+    const result = await useCases.shareAccess.getPublicContent(token, {
       id: true,
       title: true,
       description: true,
@@ -32,7 +32,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       );
     }
 
-    const { share } = result;
+    const { share, tags, markdown, rawText, folderName } = result;
     const doc = share.document as {
       id: string;
       title: string;
@@ -43,41 +43,6 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
       outputFormats: string[];
       createdAt: Date;
     };
-
-    const tags = await repos.tagDocument.findMany({
-      where: { documentId: share.documentId },
-      include: { tag: { select: { name: true, color: true } } },
-    });
-
-    let markdown = "";
-    let rawText = "";
-
-    // Try to fetch raw OCR text first
-    const ocrKey = repos.storage.ocrTextKey(share.documentId);
-    const ocrExists = await repos.storage.fileExists(ocrKey);
-    if (ocrExists) {
-      const ocrBuffer = await repos.storage.downloadFile(ocrKey);
-      try {
-        const ocrData = JSON.parse(ocrBuffer.toString("utf-8"));
-        rawText = ocrData.text || "";
-      } catch {
-        rawText = "";
-      }
-    }
-
-    const mdKey = repos.storage.exportOutputKey(share.documentId, "md");
-    const mdExists = await repos.storage.fileExists(mdKey);
-    if (mdExists) {
-      const buffer = await repos.storage.downloadFile(mdKey);
-      markdown = buffer.toString("utf-8");
-      if (!rawText) rawText = markdown;
-    }
-
-    const folder = share.document
-      ? await repos.folder.findFirst({
-          documents: { some: { id: share.documentId } },
-        })
-      : null;
 
     return NextResponse.json(
       {
@@ -99,7 +64,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ toke
             const tag = td.tag as { name: string; color: string };
             return { name: tag.name, color: tag.color };
           }),
-          folder: folder?.name ?? null,
+          folder: folderName,
           exportFormats: doc.outputFormats,
         },
       },
