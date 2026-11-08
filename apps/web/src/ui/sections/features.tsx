@@ -42,13 +42,13 @@ export function Features() {
     <section className="relative" aria-labelledby="features-title">
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-[radial-gradient(ellipse_at_center,_var(--gold)_0%,_transparent_70%)] opacity-[0.03] blur-[80px] pointer-events-none -z-10" />
 
-      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-28">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="mb-16"
+          className="mb-10"
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold text-muted-color">
             {t("title")}
@@ -60,13 +60,13 @@ export function Features() {
           whileInView="visible"
           viewport={{ once: true, amount: 0.05 }}
           transition={{ staggerChildren: 0.15 }}
-          className="grid grid-cols-1 gap-6 md:grid-cols-2"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {items.map((item, index) => (
             <motion.article
               variants={cardVariants}
               key={item.title}
-              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-10 overflow-hidden"
+              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-8 overflow-hidden"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
@@ -85,7 +85,7 @@ export function Features() {
           ))}
         </motion.div>
 
-        <div className="geometric-divider mt-24">
+        <div className="geometric-divider mt-10">
           <GeometricStar className="geometric-star h-3.5 w-3.5" />
         </div>
       </div>

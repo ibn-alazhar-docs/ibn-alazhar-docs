@@ -23,10 +23,10 @@ export function PublicHeader({ signInLabel, signUpLabel, isLoggedIn }: PublicHea
       className="glass-header fixed inset-x-0 top-0 z-50"
       style={{ viewTransitionName: "public-header" }}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
           <BrandLogo alt={brand} className="h-10 w-auto" priority />
-          <span className="heading-display-sm hidden text-sm font-bold text-primary-color sm:inline max-w-[150px] xl:max-w-none max-xl:truncate">
+          <span className="heading-display-sm hidden text-sm font-bold text-primary-color sm:inline whitespace-nowrap">
             {brand}
           </span>
         </Link>

@@ -37,41 +37,36 @@ const itemVariants = {
 
 function DocumentPreviewMock() {
   return (
-    <div dir="rtl" lang="ar" aria-hidden="true" className="relative">
+    <div dir="rtl" lang="ar" aria-hidden="true" className="relative h-full">
       <div className="absolute inset-0 translate-x-2 translate-y-2 rounded-brand border border-line bg-paper opacity-70" />
-      <div className="relative rounded-brand border border-line bg-paper p-5 shadow-[0_18px_45px_-18px_var(--shadow-color)] sm:p-6">
+      <div className="relative flex h-full flex-col justify-between gap-6 rounded-brand border border-line bg-paper p-5 shadow-[0_18px_45px_-18px_var(--shadow-color)] sm:p-6">
         <div className="flex items-center justify-between gap-3 border-b border-line pb-3">
-          <span className="heading-display text-sm font-bold text-primary-color">
-            مذكرة النحو — الثانوية الأزهرية
-          </span>
-          <span className="shrink-0 rounded-md border border-line px-1.5 py-0.5 text-[10px] text-very-muted">
-            PDF
-          </span>
+          <span className="h-4 w-36 rounded-full bg-badge" />
+          <span className="h-5 w-10 shrink-0 rounded-md border border-line" />
         </div>
 
-        <p className="heading-display mt-4 text-lg leading-[2] text-secondary-color sm:text-xl">
-          الحَمْدُ لِلَّهِ رَبِّ العَالَمِينَ، الرَّحْمٰنِ الرَّحِيمِ
-        </p>
+        <div className="space-y-3">
+          <div className="h-4 w-3/4 rounded-full bg-badge" />
+          <div className="h-4 w-1/2 rounded-full bg-badge" />
+        </div>
 
-        <div className="mt-4 space-y-2">
+        <div className="space-y-2">
           <div className="h-2.5 w-full rounded-full bg-badge" />
           <div className="h-2.5 w-4/5 rounded-full bg-badge" />
           <div className="h-2.5 w-3/5 rounded-full bg-badge" />
         </div>
 
-        <div className="mt-4 flex items-center gap-1.5" title="">
-          <span className="h-1.5 w-10 rounded-full bg-[var(--gold)] opacity-80" />
-          <span className="h-1.5 w-6 rounded-full bg-[var(--btn-primary-bg)] opacity-80" />
-          <span className="h-1.5 w-14 rounded-full bg-[var(--gold)] opacity-60" />
-          <span className="h-1.5 w-8 rounded-full bg-[var(--btn-primary-bg)] opacity-60" />
-          <span className="h-1.5 w-12 rounded-full bg-[var(--gold)] opacity-40" />
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-10 rounded-full bg-badge" />
+          <span className="h-1.5 w-6 rounded-full bg-badge" />
+          <span className="h-1.5 w-14 rounded-full bg-badge" />
+          <span className="h-1.5 w-8 rounded-full bg-badge" />
+          <span className="h-1.5 w-12 rounded-full bg-badge" />
         </div>
 
-        <div className="mt-5 flex items-center justify-between rounded-lg border border-success-border bg-success-bg px-3 py-2">
-          <span className="text-xs font-semibold text-success">
-            اكتملت القراءة الضوئية · ٢٤ صفحة
-          </span>
-          <span className="text-[10px] font-bold text-success">97%</span>
+        <div className="flex items-center justify-between rounded-lg border border-success-border bg-success-bg px-3 py-2">
+          <span className="h-3 w-28 rounded-full bg-success/20" />
+          <span className="h-3 w-8 rounded-full bg-success/20" />
         </div>
       </div>
     </div>
@@ -99,15 +94,8 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
           transition={{ duration: 10, repeat: 1, ease: "easeInOut", delay: 1 }}
         />
 
-        <div className="absolute -right-16 top-10 opacity-[0.025] sm:-right-32 sm:top-0 sm:opacity-[0.05]">
+        <div className="absolute -right-16 top-10 opacity-[0.08] sm:-right-32 sm:top-0">
           <GeometricStar className="h-[280px] w-[280px] sm:h-[600px] sm:w-[600px] text-[var(--gold)]" />
-        </div>
-
-        <div className="absolute bottom-40 left-10 opacity-[0.03] hidden sm:block">
-          <GeometricStar className="h-32 w-32 text-[var(--gold)]" />
-        </div>
-        <div className="absolute right-1/3 top-1/3 opacity-[0.02] hidden lg:block">
-          <GeometricStar className="h-20 w-20 text-[var(--btn-primary-bg)]" />
         </div>
 
         <svg className="absolute inset-0 h-full w-full opacity-[0.012]" preserveAspectRatio="none">
@@ -120,9 +108,9 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
         </svg>
       </div>
 
-      <div className="mx-auto grid min-h-[auto] max-w-6xl items-center gap-10 px-6 pb-8 sm:min-h-[60dvh] sm:gap-14 lg:grid-cols-[1.05fr_0.95fr]">
+      <div className="mx-auto grid min-h-[auto] max-w-6xl items-center gap-10 px-6 pb-8 sm:gap-14 lg:grid-cols-[1.05fr_0.95fr]">
         <motion.div
-          className="max-w-3xl"
+          className="max-w-2xl"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
@@ -141,7 +129,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
             {title || t("title")}
           </motion.h1>
 
-          <motion.div variants={itemVariants} className="geometric-divider my-8 max-w-md">
+          <motion.div variants={itemVariants} className="geometric-divider my-5 max-w-2xl">
             <GeometricStar className="geometric-star h-5 w-5" />
           </motion.div>
 
@@ -153,7 +141,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
             {subtitle || t("subtitle")}
           </motion.p>
 
-          <motion.div variants={itemVariants} className="mt-10 flex flex-wrap items-center gap-4">
+          <motion.div variants={itemVariants} className="mt-7 flex flex-wrap items-center gap-4">
             {isLoggedIn ? (
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
@@ -186,7 +174,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.35, ease: "easeOut" }}
-          className="mx-auto w-full max-w-sm lg:max-w-none"
+          className="mx-auto h-full w-full max-w-sm lg:max-w-none"
         >
           <DocumentPreviewMock />
         </motion.div>

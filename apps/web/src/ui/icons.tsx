@@ -36,6 +36,7 @@ import {
   ChevronLeft,
   Info,
   Loader2,
+  Wrench,
 } from "lucide-react";
 
 export interface IconProps {
@@ -153,4 +154,7 @@ export function InfoIcon({ className = "h-5 w-5", size }: IconProps) {
 }
 export function SpinnerIcon({ className = "h-5 w-5", size }: IconProps) {
   return <Loader2 className={`animate-spin ${className}`} size={size} />;
+}
+export function ToolsIcon({ className = "h-5 w-5", size }: IconProps) {
+  return <Wrench className={className} size={size} />;
 }

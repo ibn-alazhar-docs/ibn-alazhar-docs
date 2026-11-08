@@ -19,6 +19,8 @@ import { DocumentTable } from "@/ui/files/document-table";
 import { FolderIcon } from "@/ui/icons";
 import { useFilesManager } from "@/state/use-files-manager";
 import { Card } from "@/ui/card";
+import { Button } from "@/ui/button";
+import { Link } from "@/i18n/navigation";
 
 export default function FilesPage() {
   const t = useTranslations("nav");
@@ -193,7 +195,7 @@ export default function FilesPage() {
 
                 {/* Empty State */}
                 {fm.activeJobs.length === 0 && !fm.loadingDocs && fm.documents.length === 0 && (
-                  <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-20 px-6 text-center">
+                  <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-12 sm:py-16 min-h-[280px] px-6 text-center">
                     <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/5 text-gold shadow-sm">
                       <FolderIcon className="h-10 w-10" />
                     </div>
@@ -203,6 +205,9 @@ export default function FilesPage() {
                     <Text color="muted" className="max-w-md">
                       {tDocs("uploadPrompt")}
                     </Text>
+                    <Button asChild className="mt-4">
+                      <Link href="/files">{tDocs("uploadButton")}</Link>
+                    </Button>
                   </Card>
                 )}
               </Stack>

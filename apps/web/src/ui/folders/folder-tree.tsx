@@ -125,7 +125,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
           ))}
         </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="flex flex-col items-center justify-center py-12 sm:py-16 min-h-[280px] text-center">
           <div className="mb-2 text-muted-color">
             <FolderIcon className="mx-auto h-10 w-10" />
           </div>

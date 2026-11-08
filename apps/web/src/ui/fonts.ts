@@ -24,7 +24,12 @@ export const almarai = localFont({
     { path: "../app/fonts/almarai/Almarai-ExtraBold.woff2", weight: "800" },
   ],
   variable: "--font-almarai",
-  display: "swap",
+  // First-refresh FOUT fix (015): self-hosted local files (~50KB each, same
+  // origin) swap visibly under `display: "swap"`. `block` holds text briefly
+  // until the face is ready so first paint is already final. No sizeAdjust:
+  // without measured Almarai metrics an invented value would worsen shift.
+  display: "block",
+  preload: true,
 });
 
 export const amiri = localFont({
@@ -35,12 +40,17 @@ export const amiri = localFont({
     { path: "../app/fonts/amiri/Amiri-BoldItalic.woff2", weight: "700", style: "italic" },
   ],
   variable: "--font-amiri",
-  display: "swap",
+  // Display headings: same block strategy so headings never restyle after load.
+  display: "block",
+  preload: true,
 });
 
 // Variable font: one file covers 400..600 declared weights.
 export const firaCode = localFont({
   src: [{ path: "../app/fonts/fira-code/FiraCode-VF.woff2", weight: "400 600" }],
   variable: "--font-mono",
-  display: "swap",
+  // Mono is code-only and secondary: `optional` avoids blocking prose while
+  // never swapping mid-read (fallback until cache, then correct face).
+  display: "optional",
+  preload: false,
 });

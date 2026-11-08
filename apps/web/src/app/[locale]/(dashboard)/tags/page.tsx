@@ -220,12 +220,15 @@ export default function TagsPage() {
             {loading ? (
               <div className="text-center py-8 text-very-muted">{tCommon("loading")}</div>
             ) : tags.length === 0 ? (
-              <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-20 text-center">
+              <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-12 sm:py-16 min-h-[280px] px-6 text-center">
                 <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
                   <TagIcon className="h-8 w-8" />
                 </div>
                 <Heading level={3}>{t("empty")}</Heading>
                 <Text className="mt-2 text-muted-color">{t("createButton")}</Text>
+                <Button className="mt-4" onClick={() => setIsCreating(true)}>
+                  {t("createButton")}
+                </Button>
               </Card>
             ) : (
               <Card className="overflow-x-auto">

@@ -49,7 +49,7 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
             className="hidden sm:flex sm:items-center sm:gap-2 lg:gap-2.5 min-w-0"
           >
             <BrandLogo alt={t("name")} className="h-6 sm:h-7 lg:h-8 w-auto shrink-0" />
-            <span className="heading-display-sm text-xs sm:text-sm font-bold text-primary-color max-w-[150px] sm:max-w-[190px] xl:max-w-none max-lg:truncate">
+            <span className="heading-display-sm text-xs sm:text-sm font-bold text-primary-color whitespace-nowrap">
               {t("name")}
             </span>
           </Link>

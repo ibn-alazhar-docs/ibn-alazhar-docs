@@ -28,27 +28,29 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
         </div>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6 py-32 sm:py-40">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 15 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="max-w-2xl relative z-10"
+          className="relative z-10 grid items-center gap-8 md:grid-cols-2"
         >
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold text-gold">
-            {t("eyebrow")}
+          <div className="max-w-2xl">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold text-gold">
+              {t("eyebrow")}
+            </div>
+
+            <h2 className="heading-display text-balance text-4xl font-bold text-primary-color sm:text-5xl lg:text-6xl">
+              {t("title")}
+            </h2>
+
+            <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-muted-color sm:text-lg">
+              {t("subtitle")}
+            </p>
           </div>
 
-          <h2 className="heading-display text-balance text-4xl font-bold text-primary-color sm:text-5xl lg:text-6xl">
-            {t("title")}
-          </h2>
-
-          <p className="mt-6 max-w-lg text-balance text-base leading-relaxed text-muted-color sm:text-lg">
-            {t("subtitle")}
-          </p>
-
-          <div className="mt-12">
+          <div className="mt-8 md:mt-0 md:justify-self-start">
             {isLoggedIn ? (
               <motion.div
                 whileHover={{ scale: 1.02 }}

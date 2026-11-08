@@ -7,6 +7,7 @@ import { PageTransition } from "@/ui/page-transition";
 import { Section } from "@/ui/section";
 import { Heading } from "@/ui/heading";
 import { Text } from "@/ui/text";
+import { Button } from "@/ui/button";
 import { apiFetch } from "@/shared/api";
 
 export function ToolsContent() {
@@ -26,7 +27,7 @@ export function ToolsContent() {
         body: JSON.stringify({ text }),
       });
       if (!res.ok) {
-        setError("error");
+        setError(t("tashkeel.error"));
         setResult(null);
         return;
       }
@@ -36,10 +37,10 @@ export function ToolsContent() {
         setResult(typeof value === "string" ? value : null);
       } else {
         setResult(null);
-        setError("error");
+        setError(t("tashkeel.error"));
       }
     } catch {
-      setError("error");
+      setError(t("tashkeel.error"));
       setResult(null);
     } finally {
       setLoading(false);
@@ -51,16 +52,16 @@ export function ToolsContent() {
     try {
       await navigator.clipboard.writeText(result);
     } catch {
-      setError("error");
+      setError(t("tashkeel.error"));
     }
   }
 
   return (
     <PageTransition>
       <Container>
-        <Section>
+        <Section className="py-6 space-y-4" padding="none">
           <Heading>{t("title")}</Heading>
-          <Text>{t("tashkeel.description")}</Text>
+          <Text color="muted">{t("tashkeel.description")}</Text>
           <label htmlFor="tashkeel-input">{t("tashkeel.name")}</label>
           <textarea
             id="tashkeel-input"
@@ -68,18 +69,24 @@ export function ToolsContent() {
             onChange={(event) => setText(event.target.value)}
             placeholder={t("tashkeel.placeholder")}
             rows={6}
+            className="w-full min-h-40 rounded-lg border border-line bg-page p-3"
           />
-          <button type="button" onClick={handleRun} disabled={loading}>
-            {t("tashkeel.run")}
-          </button>
-          {error !== null ? <Text>{error}</Text> : null}
+          <Button type="button" onClick={handleRun} disabled={loading}>
+            {loading ? t("tashkeel.loading") : t("tashkeel.run")}
+          </Button>
+          {loading ? <Text color="muted">{t("tashkeel.loading")}</Text> : null}
+          {error !== null ? (
+            <p role="alert">
+              <Text color="error">{error}</Text>
+            </p>
+          ) : null}
           {result !== null ? (
-            <div>
+            <div className="space-y-3">
               <p>{t("tashkeel.result")}</p>
-              <p>{result}</p>
-              <button type="button" onClick={handleCopy}>
+              <p className="rounded-lg border p-3 whitespace-pre-wrap">{result}</p>
+              <Button type="button" variant="outline" onClick={handleCopy}>
                 {t("tashkeel.copy")}
-              </button>
+              </Button>
             </div>
           ) : null}
         </Section>

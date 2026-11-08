@@ -228,12 +228,15 @@
   --motion-base: 200ms;
   --motion-slow: 320ms;
   --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  /* Section spacing — unified landing/dashboard vertical rhythm. */
+  --spacing-section: 5rem;
+  --spacing-section-sm: 4rem;
 }
 
 .dark {
   --page-bg: #042023;
   --surface: #083b40;
-  --card-bg: #0a454a;
+  --card-bg: #0d5b61;
   --border-line: #0d5b61;
   --border-subtle: #073033;
   --text-primary: #f7f3ea;
@@ -420,7 +423,9 @@
 
 /* Logo clear space (190px all sides) and minimum size (152px) — print and
    brand-sheet rules. On-screen headers use --logo-safe-inline; 190px of padding
-   inside a nav bar is never correct. */
+   inside a nav bar is never correct. Verified 2026-11-08: no JSX uses
+   .brand-clear-space/.brand-logo in headers or landing (only the BrandLogo
+   component), so these print rules add no header whitespace. */
 .brand-clear-space {
   padding: var(--logo-clear-space);
 }
@@ -438,5 +443,13 @@
   body {
     color: #000;
     background: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-glow,
+  .progress-indeterminate,
+  .animated-bg {
+    animation: none;
   }
 }

@@ -47,13 +47,13 @@ export function KnowledgeAreas() {
     <section className="relative" aria-labelledby="how-it-works-title">
       <div className="absolute top-0 right-1/4 w-[600px] h-[600px] bg-[radial-gradient(ellipse_at_center,_var(--btn-primary-bg)_0%,_transparent_60%)] opacity-[0.03] blur-[100px] pointer-events-none -z-10" />
 
-      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-32">
+      <div className="mx-auto max-w-6xl px-6 py-16 sm:py-20">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, amount: 0.05 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="mb-16"
+          className="mb-10"
         >
           <span
             id="how-it-works-title"
@@ -68,13 +68,13 @@ export function KnowledgeAreas() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, amount: 0.05 }}
-          className="grid grid-cols-1 gap-6 sm:grid-cols-3"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3"
         >
           {items.map((item, index) => (
             <motion.article
               variants={itemVariants}
               key={item.title}
-              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-8 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-10"
+              className="card-manuscript group relative flex flex-col gap-4 rounded-2xl p-6 transition-all duration-500 hover:-translate-y-2 hover:shadow-lg sm:p-8"
             >
               <div className="absolute inset-0 bg-gradient-to-tr from-gold to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-[0.03] rounded-2xl" />
 
@@ -91,7 +91,7 @@ export function KnowledgeAreas() {
           ))}
         </motion.div>
 
-        <div className="geometric-divider mt-24">
+        <div className="geometric-divider mt-10">
           <GeometricStar className="geometric-star h-3.5 w-3.5" />
         </div>
       </div>

@@ -234,8 +234,8 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
         : Math.max(5, (currentIdx / (STAGE_ORDER.length - 1)) * 100);
 
   return (
-    <div className="space-y-4">
-      <div className="h-3 bg-badge rounded-full overflow-hidden">
+    <div className="space-y-3">
+      <div className="h-2.5 bg-badge rounded-full overflow-hidden sm:h-3">
         <div
           className={`h-full transition-all duration-500 ${isFailed ? "bg-danger" : "bg-success"}`}
           style={{ width: `${barWidth}%` }}
@@ -243,22 +243,22 @@ export function ConversionStatus({ jobId, onComplete }: ConversionStatusProps) {
       </div>
 
       <div className="text-center">
-        <p className={`text-lg font-bold ${isFailed ? "text-danger" : "text-success"}`}>
+        <p className={`text-base font-bold ${isFailed ? "text-danger" : "text-success"}`}>
           {isFailed ? t("failed") : isCompleted ? t("completed") : t(stage)}
         </p>
         {errorMsg && <p className="mt-2 text-xs text-danger">{errorMsg}</p>}
         {!isCompleted && !isFailed && !errorMsg && (
           <div className="mt-2 flex flex-col items-center gap-1">
-            <span className="text-sm font-semibold text-primary-color bg-[var(--surface)] px-2 py-0.5 rounded-full border border-[var(--border-subtle)]">
+            <span className="text-sm font-semibold text-primary-color bg-[var(--surface)] px-2 py-1.5 rounded-full border border-[var(--border-subtle)]">
               {progress > 0 ? `${Math.round(progress)}%` : "0%"}
             </span>
             {chip && (
-              <span className="mt-2 inline-block rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2.5 py-0.5 text-[11px] font-semibold text-primary-color">
+              <span className="mt-2 inline-block rounded-full border border-[var(--border-subtle)] bg-[var(--surface)] px-2.5 py-1.5 text-xs font-semibold text-primary-color">
                 {tStages(chip)}
               </span>
             )}
             {stage === "ocr" && (
-              <p className="text-[11px] text-muted-color mt-1">
+              <p className="text-xs text-muted-color mt-1">
                 (قد تستغرق هذه الخطوة بضع دقائق حسب حجم الملف)
               </p>
             )}

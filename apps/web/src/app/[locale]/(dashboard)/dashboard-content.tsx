@@ -63,6 +63,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             href="/files"
             icon={<FileTextIcon className="h-5 w-5" />}
             accent="primary"
+            hint="ابدأ برفع أول مستند"
           />
           <StatCard
             title={tFolders("title")}
@@ -70,6 +71,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             href="/folders"
             icon={<FolderIcon className="h-5 w-5" />}
             accent="gold"
+            hint="نظّم مستنداتك في مجلدات"
           />
           <StatCard
             title={tTags("title")}
@@ -77,6 +79,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             href="/tags"
             icon={<TagIcon className="h-5 w-5" />}
             accent="primary"
+            hint="وسم المحتوى ليسرع البحث"
           />
           <StatCard
             title={tConv("title")}
@@ -84,6 +87,7 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             href="/conversions"
             icon={<RefreshIcon className="h-5 w-5" />}
             accent="gold"
+            hint="تابع تقدم المعالجة"
           />
         </div>
 
@@ -93,16 +97,17 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
             <CardTitle className="text-base">{tNav("files")}</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex flex-wrap gap-3">
-              <Button asChild>
+            <p className="mb-3 text-sm text-muted-color">{tDocs("uploadPrompt")}</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Button asChild className="w-full sm:w-auto">
                 <Link href="/files">
                   {tDocs("uploadPrompt").split(" ")[0]} {tNav("files")}
                 </Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild size="sm">
                 <Link href="/search">{tNav("search")}</Link>
               </Button>
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild size="sm">
                 <Link href="/folders">{tFolders("create")}</Link>
               </Button>
             </div>
@@ -126,7 +131,18 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
           </CardHeader>
           <CardContent>
             {recentDocuments.length === 0 ? (
-              <p className="text-sm text-muted-color py-6 text-center">{tDocs("empty")}</p>
+              <div className="flex flex-col items-center justify-center py-12 sm:py-16 min-h-[280px] text-center">
+                <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gold/5 text-gold">
+                  <FileTextIcon className="h-8 w-8" />
+                </div>
+                <p className="font-semibold text-primary-color">{tDocs("empty")}</p>
+                <p className="mt-2 max-w-md text-sm text-muted-color">{tDocs("uploadPrompt")}</p>
+                <Button asChild className="mt-4">
+                  <Link href="/files">
+                    {tDocs("uploadPrompt").split(" ")[0]} {tNav("files")}
+                  </Link>
+                </Button>
+              </div>
             ) : (
               <div className="space-y-2">
                 {recentDocuments.map((doc) => (
@@ -176,12 +192,14 @@ function StatCard({
   href,
   icon,
   accent,
+  hint,
 }: {
   title: string;
   value: string;
   href: string;
   icon: ReactNode;
   accent: "primary" | "gold";
+  hint: string;
 }) {
   const accentColor = accent === "gold" ? "var(--gold)" : "var(--success)";
   const accentBg = accent === "gold" ? "var(--gold-bg)" : "var(--badge-bg)";
@@ -189,7 +207,7 @@ function StatCard({
   return (
     <Link
       href={href}
-      className="stat-card-premium glass-panel group relative overflow-hidden rounded-xl bg-card p-5 transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[color-mix(in_srgb,var(--border-line)_50%,currentColor)] hover:-translate-y-0.5"
+      className="stat-card-premium glass-panel group relative flex min-h-[140px] flex-col justify-between overflow-hidden rounded-xl bg-card p-5 transition-all duration-200 hover:shadow-[var(--shadow-md)] hover:border-[color-mix(in_srgb,var(--border-line)_50%,currentColor)] hover:-translate-y-0.5"
     >
       {/* Accent glow */}
       <div
@@ -207,6 +225,7 @@ function StatCard({
           >
             {value}
           </p>
+          <p className="mt-1 text-xs text-muted-color">{value === "0" ? hint : title}</p>
         </div>
         <span
           className="flex h-10 w-10 items-center justify-center rounded-lg transition-colors"

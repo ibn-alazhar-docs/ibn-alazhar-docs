@@ -13,6 +13,7 @@ import {
   RefreshIcon,
   UserIcon,
   GearIcon,
+  ToolsIcon,
 } from "@/ui/icons";
 
 interface SidebarProps {
@@ -34,6 +35,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
       { href: "/tags", label: "nav.tags", icon: TagsIcon },
       { href: "/search", label: "nav.search", icon: SearchIcon },
       { href: "/conversions", label: "nav.conversions", icon: RefreshIcon },
+      { href: "/tools", label: "nav.tools", icon: ToolsIcon },
       ...(isAdmin ? [{ href: "/users", label: "nav.users", icon: UserIcon }] : []),
       { href: "/settings", label: "nav.settings", icon: GearIcon },
     ],

@@ -171,7 +171,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
 
       {uploading && (
         <div className="space-y-2">
-          <div className="h-2 bg-badge rounded-full overflow-hidden">
+          <div className="h-2.5 bg-badge rounded-full overflow-hidden sm:h-3">
             <div
               className="h-full bg-success transition-all duration-300"
               style={{ width: `${progress}%` }}
