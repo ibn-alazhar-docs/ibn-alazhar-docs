@@ -4,11 +4,11 @@ export default defineConfig({
   testDir: "./tests/e2e",
   // pg-pipeline.e2e.spec.ts is a vitest file (import from "vitest"), not a Playwright test; it is managed by the vitest e2e project when E2E_FULL=1.
   testIgnore: /.*\.e2e\.spec\.ts/,
-  timeout: 300000,
+  timeout: 120000,
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
-  retries: process.env.CI ? 2 : 0,
-  workers: 1,
+  retries: process.env.CI ? 1 : 0,
+  workers: process.env.CI ? 4 : 1,
   reporter: "html",
   use: {
     baseURL: process.env.BASE_URL || "http://127.0.0.1:3000",
