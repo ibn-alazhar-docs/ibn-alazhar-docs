@@ -40,7 +40,7 @@ export async function registerUser(
   await page.fill('input[name="password"]', password);
   await page.fill('input[name="confirmPassword"]', password);
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 export async function expectPageDirection(page: Page, dir: string, lang: string) {

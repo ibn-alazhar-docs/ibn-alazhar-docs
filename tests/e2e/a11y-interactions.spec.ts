@@ -7,12 +7,12 @@ const PASSWORD = "password123";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 async function runAxe(page: Page) {
@@ -28,7 +28,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("login form: focus states on inputs @a11y-interaction", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const email = page.locator('input[name="email"]');
     const password = page.locator('input[name="password"]');
@@ -56,7 +56,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("login form: axe passes after focus interaction @a11y-interaction", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.locator('input[name="email"]').focus();
     await page.locator('input[name="email"]').fill("test@example.com");
@@ -70,7 +70,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("login form: error messages are announced @a11y-interaction", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.locator('input[name="email"]').fill("invalid");
     await page.locator('input[name="password"]').fill("short");
@@ -89,7 +89,7 @@ test.describe("Interactive state accessibility", () => {
     page,
   }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const email = page.locator('input[name="email"]');
     await email.fill("bad-email");
@@ -109,7 +109,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("register form: password requirements announced @a11y-interaction", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const password = page.locator('input[name="password"]');
     await password.focus();
@@ -128,7 +128,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("register form: validation errors accessible @a11y-interaction", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(1000);
 
@@ -140,7 +140,7 @@ test.describe("Interactive state accessibility", () => {
 
   test("dashboard: stat cards accessible @a11y-interaction", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
@@ -151,7 +151,7 @@ test.describe("Interactive state accessibility", () => {
   test("tags page: create tag form accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1000);
 
     const createBtn = page.getByRole("button", { name: /create|إنشاء/i }).first();
@@ -174,7 +174,7 @@ test.describe("Interactive state accessibility", () => {
   test("search: empty state accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
@@ -183,7 +183,7 @@ test.describe("Interactive state accessibility", () => {
   test("search: results announced @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search?q=test");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
     const results = await runAxe(page);
@@ -196,7 +196,7 @@ test.describe("Interactive state accessibility", () => {
   test("files page: document list accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
     let results = await runAxe(page);
@@ -209,7 +209,7 @@ test.describe("Interactive state accessibility", () => {
   test("settings page: profile form accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const results = await runAxe(page);
     const relevantViolations = results.violations.filter((v) => !v.id.startsWith("bypass"));
@@ -221,7 +221,7 @@ test.describe("Interactive state accessibility", () => {
   test("conversions page: search form accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
@@ -232,7 +232,7 @@ test.describe("Interactive state accessibility", () => {
   test("users page: table accessible @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/users");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const results = await runAxe(page);
     const relevantViolations = results.violations.filter((v) => !v.id.startsWith("bypass"));
@@ -244,7 +244,7 @@ test.describe("Interactive state accessibility", () => {
   test("sonner toaster notifications use live regions @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const toaster = page.locator("[data-sonner-toaster]");
     if (await toaster.isVisible()) {
@@ -260,7 +260,7 @@ test.describe("Interactive state accessibility", () => {
   test("pagination: current page announced @a11y-interaction", async ({ page }) => {
     await login(page);
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
     const paginationBtns = page.locator("nav[aria-label]").first();

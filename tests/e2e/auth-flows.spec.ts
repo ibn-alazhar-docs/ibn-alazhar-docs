@@ -41,7 +41,7 @@ test.describe("Auth Flows", () => {
     const password = "StrongPass123!";
     await auth.gotoRegister();
     await auth.register(`Test User ${timestamp}`, email, password);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const currentUrl = page.url();
     if (currentUrl.includes("dashboard")) {
       expect(page.url()).toContain("/dashboard");

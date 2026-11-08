@@ -106,7 +106,7 @@ test.describe("i18n and RTL", () => {
 
   test("RTL audit: no physical CSS properties on login page", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const violations = await page.evaluate(() => {
       const found: string[] = [];
       const elements = document.querySelectorAll("*");

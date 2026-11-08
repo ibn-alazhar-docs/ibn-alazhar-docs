@@ -23,7 +23,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await page.goto(`${BASE}/ar/login`);
     await page.fill('input[name="email"]', "invalid-email");
     await page.locator('button[type="submit"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const csrfRes = await request.get("/api/auth/csrf");
     const { csrfToken } = await csrfRes.json();
@@ -69,7 +69,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
     );
 
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.setInputFiles('[data-testid="file-input"]', testFilePath);
 
     await page.getByTestId("upload-button").click({ timeout: 15000 });

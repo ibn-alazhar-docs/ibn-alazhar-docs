@@ -6,7 +6,7 @@ const PASSWORD = "password123";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
@@ -18,7 +18,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
 
   test("Landing page loads and is RTL", async ({ page }) => {
     await page.goto(`${BASE}/ar`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.screenshot({ path: "/tmp/ibn-test-landing.png", fullPage: true });
 
@@ -33,7 +33,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
 
   test("Login page renders correctly", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.screenshot({ path: "/tmp/ibn-test-login.png", fullPage: true });
 
@@ -59,7 +59,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("Files page accessible after login", async ({ page }) => {
     await login(page);
     const response = await page.goto(`${BASE}/ar/files`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const status = response?.status();
     expect(status).toBeLessThan(400);
     await page.screenshot({ path: "/tmp/ibn-test-files.png", fullPage: true });
@@ -69,7 +69,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("Folders page accessible after login", async ({ page }) => {
     await login(page);
     const response = await page.goto(`${BASE}/ar/folders`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const status = response?.status();
     expect(status).toBeLessThan(400);
     await page.screenshot({ path: "/tmp/ibn-test-folders.png", fullPage: true });
@@ -79,7 +79,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("Tags page accessible after login", async ({ page }) => {
     await login(page);
     const response = await page.goto(`${BASE}/ar/tags`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const status = response?.status();
     expect(status).toBeLessThan(400);
     await page.screenshot({ path: "/tmp/ibn-test-tags.png", fullPage: true });
@@ -89,7 +89,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("Search page accessible after login", async ({ page }) => {
     await login(page);
     const response = await page.goto(`${BASE}/ar/search`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const status = response?.status();
     expect(status).toBeLessThan(400);
     await page.screenshot({ path: "/tmp/ibn-test-search.png", fullPage: true });
@@ -99,7 +99,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("Settings page accessible after login", async ({ page }) => {
     await login(page);
     const response = await page.goto(`${BASE}/ar/settings`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const status = response?.status();
     expect(status).toBeLessThan(400);
     await page.screenshot({ path: "/tmp/ibn-test-settings.png", fullPage: true });
@@ -108,7 +108,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
 
   test("5. RTL audit — no physical CSS properties", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const violations = await page.evaluate(() => {
       const physical = [
@@ -145,7 +145,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
 
   test("6. Login with wrong credentials shows error", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.fill('input[name="email"]', "wrong@email.com");
     await page.fill('input[name="password"]', "wrongpassword");
@@ -166,7 +166,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
     const freshPage = await freshContext.newPage();
 
     await freshPage.goto(`${BASE}/ar/dashboard`);
-    await freshPage.waitForLoadState("networkidle");
+    await freshPage.waitForLoadState("load");
 
     const url = freshPage.url();
     const redirected = url.includes("login");
@@ -179,7 +179,7 @@ test.describe("Ibn Al-Azhar Docs — Webapp Test Suite", () => {
   test("8. Landing page — responsive check (mobile)", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.screenshot({ path: "/tmp/ibn-test-11-mobile-landing.png", fullPage: true });
 

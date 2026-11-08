@@ -58,7 +58,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
     test(`Landing page /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -73,7 +73,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
     test(`Login page /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -88,7 +88,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
     test(`Register page /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/register`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -103,7 +103,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
     test(`Forgot password /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/forgot-password`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -118,7 +118,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
     test(`Not found /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/nonexistent-route-xyz`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -143,7 +143,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Dashboard /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/dashboard`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -158,7 +158,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Files /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/files`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -173,7 +173,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Folders /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/folders`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -188,7 +188,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Tags /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/tags`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -203,7 +203,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Search /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/search`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");
@@ -218,7 +218,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
     test(`Settings /ar @${bp.name}`, async ({ page }) => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/settings`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await verifyDirection(page, "rtl");

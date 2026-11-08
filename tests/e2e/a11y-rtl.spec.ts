@@ -6,12 +6,12 @@ const PASSWORD = "password123";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 test.describe("Arabic/RTL-specific accessibility", () => {
@@ -23,7 +23,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     const pages = ["/ar", "/ar/login", "/ar/register", "/ar/forgot-password", "/ar/404"];
     for (const path of pages) {
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       const dir = await page.locator("html").getAttribute("dir");
       expect.soft(dir, `${path}: expected dir="rtl"`).toBe("rtl");
     }
@@ -33,7 +33,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     const pages = ["/ar", "/ar/login", "/ar/register", "/ar/forgot-password", "/ar/404"];
     for (const path of pages) {
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       const lang = await page.locator("html").getAttribute("lang");
       expect.soft(lang, `${path}: expected lang="ar"`).toBe("ar");
     }
@@ -43,7 +43,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     const pages = ["/en", "/en/login", "/en/register", "/en/forgot-password"];
     for (const path of pages) {
       await page.goto(path);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       expect(page.url()).toContain("/ar");
       const lang = await page.locator("html").getAttribute("lang");
       expect.soft(lang, `${path}: expected lang="ar" after redirect`).toBe("ar");
@@ -52,7 +52,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("auth pages in RTL: direction set correctly @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   });
@@ -62,7 +62,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
   test("dashboard page in RTL has correct dir/lang @a11y-rtl", async ({ page }) => {
     await login(page);
     await page.goto("/ar/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
   });
@@ -70,7 +70,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
   test("Legacy /en dashboard redirects to /ar dashboard @a11y-rtl", async ({ page }) => {
     await login(page);
     await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     expect(page.url()).toContain("/ar/dashboard");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
@@ -79,7 +79,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
   test("files page in RTL has correct direction @a11y-rtl", async ({ page }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
   });
 
@@ -89,7 +89,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     page,
   }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const physicalViolations = await page.evaluate(() => {
       const physicalProps = ["margin-left", "margin-right", "padding-left", "padding-right"];
@@ -128,7 +128,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("Arabic pages don't use text-align: left on text @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const alignViolations = await page.evaluate(() => {
       const found: string[] = [];
@@ -156,7 +156,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("sonner toaster respects RTL direction @a11y-rtl", async ({ page }) => {
     await page.goto("/ar");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const toaster = page.locator("[data-sonner-toaster]");
     if (await toaster.isVisible()) {
@@ -169,7 +169,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("skip to content link exists in RTL @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const skipLink = page.locator('a[href="#main-content"]');
     await expect(skipLink).toBeVisible();
     const text = await skipLink.textContent();
@@ -178,7 +178,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("skip link works after /en redirect @a11y-rtl", async ({ page }) => {
     await page.goto("/en/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     expect(page.url()).toContain("/ar/login");
     const skipLink = page.locator('a[href="#main-content"]');
     await expect(skipLink).toBeVisible();
@@ -191,7 +191,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
     page,
   }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const emailInput = page.locator('input[name="email"]');
     const inputDir = await emailInput.getAttribute("dir");
@@ -207,7 +207,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("RTL keyboard navigation works correctly @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const emailInput = page.locator('input[name="email"]');
     const passwordInput = page.locator('input[name="password"]');
@@ -227,7 +227,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("dashboard RTL layout is correct @a11y-rtl", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
     await expect(page.locator("html")).toHaveAttribute("lang", "ar");
@@ -249,7 +249,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("focus ring is visible in RTL mode @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const email = page.locator('input[name="email"]');
     await email.focus();
@@ -264,7 +264,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
   test("number/dir=ltr inputs in RTL mode preserve LTR @a11y-rtl", async ({ page }) => {
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const inputsWithDir = page.locator('input[dir="ltr"]');
     const count = await inputsWithDir.count();

@@ -43,7 +43,7 @@ async function getMaxShift(page: Page): Promise<number> {
 }
 
 async function settle(page: Page) {
-  await page.waitForLoadState("networkidle").catch(() => {});
+  await page.waitForLoadState("load").catch(() => {});
   await page.waitForTimeout(500);
 }
 

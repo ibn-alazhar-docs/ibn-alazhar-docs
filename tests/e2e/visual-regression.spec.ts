@@ -26,7 +26,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
 
   test("Landing page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("landing-ar-rtl.png", {
       fullPage: true,
@@ -36,7 +36,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
 
   test("Login page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("login-ar-rtl.png", {
       fullPage: true,
@@ -46,7 +46,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
 
   test("Register page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar/register`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("register-ar-rtl.png", {
       fullPage: true,
@@ -58,7 +58,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     // Flaky: dashboard shows document stats that change as parallel workers upload docs.
     // Requires isolated run with clean DB for deterministic baselines.
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("dashboard-ar.png", {
       fullPage: true,
@@ -71,7 +71,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     // Requires isolated run with clean DB for deterministic baselines.
     await login(page);
     await page.goto(`${BASE}/ar/files`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("files-ar.png", {
       fullPage: true,
@@ -82,7 +82,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Folders page — Arabic baseline", async ({ page }) => {
     await login(page);
     await page.goto(`${BASE}/ar/folders`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("folders-ar.png", {
       fullPage: true,
@@ -93,7 +93,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Tags page — Arabic baseline", async ({ page }) => {
     await login(page);
     await page.goto(`${BASE}/ar/tags`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("tags-ar.png", {
       fullPage: true,
@@ -104,7 +104,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Search page — Arabic baseline", async ({ page }) => {
     await login(page);
     await page.goto(`${BASE}/ar/search`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("search-ar.png", {
       fullPage: true,
@@ -115,7 +115,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Settings page — Arabic baseline", async ({ page }) => {
     await login(page);
     await page.goto(`${BASE}/ar/settings`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("settings-ar.png", {
       fullPage: true,
@@ -126,7 +126,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Mobile landing — Arabic baseline", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("landing-ar-mobile.png", {
       fullPage: true,
@@ -137,7 +137,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Mobile login — Arabic baseline", async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar/login`);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     await expect(page).toHaveScreenshot("login-ar-mobile.png", {
       fullPage: true,

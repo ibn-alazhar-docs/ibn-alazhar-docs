@@ -6,12 +6,12 @@ const PASSWORD = "password123";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 async function tabThrough(page: Page, count: number): Promise<string[]> {
@@ -38,7 +38,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("skip to content link is first focusable element @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.keyboard.press("Tab");
     await page.waitForTimeout(200);
@@ -63,7 +63,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("skip link navigates to main content @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const skipLink = page.locator('a[href="#main-content"]');
     await expect(skipLink).toBeVisible();
@@ -76,7 +76,7 @@ test.describe("Keyboard Navigation", () => {
     page,
   }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const elements = [
       page.locator('input[name="email"]'),
@@ -105,7 +105,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("all interactive elements on login page are focusable @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const interactive = page.locator(
       'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -124,7 +124,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("login form: enter submits @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.locator('input[name="email"]').fill("test@example.com");
     await page.locator('input[name="password"]').fill("testpass");
@@ -136,7 +136,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("register form tab order is logical @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const firstInput = page.locator('input[name="email"]').first();
     await firstInput.focus();
@@ -152,7 +152,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("register form: escape cancels (if applicable) @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.keyboard.press("Escape");
     await page.waitForTimeout(200);
   });
@@ -161,7 +161,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("tab through dashboard has logical order @a11y-keyboard", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const sidebar = page.locator("aside");
     const main = page.locator("main, #main-content");
@@ -188,7 +188,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("no keyboard trap exists on login page @a11y-keyboard", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const interactive = page.locator(
       'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
@@ -209,7 +209,7 @@ test.describe("Keyboard Navigation", () => {
 
   test("no keyboard trap on dashboard @a11y-keyboard", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     for (let i = 0; i < 15; i++) {
       await page.keyboard.press("Tab");
@@ -231,7 +231,7 @@ test.describe("Keyboard Navigation", () => {
   test("search page: input is focusable and functional @a11y-keyboard", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const searchInput = page
       .locator('input[type="search"], input[placeholder*="بحث"], input[placeholder*="Search"]')
@@ -250,7 +250,7 @@ test.describe("Keyboard Navigation", () => {
   test("tags page: keyboard accessible create/edit/delete @a11y-keyboard", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1000);
 
     const buttons = page.getByRole("button");
@@ -271,7 +271,7 @@ test.describe("Keyboard Navigation", () => {
   }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
     const interactive = page.locator(
@@ -296,7 +296,7 @@ test.describe("Keyboard Navigation", () => {
   test("settings page: keyboard navigation @a11y-keyboard", async ({ page }) => {
     await login(page);
     await page.goto("/ar/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const interactive = page.locator(
       'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',

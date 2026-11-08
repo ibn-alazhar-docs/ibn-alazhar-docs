@@ -6,12 +6,12 @@ const PASSWORD = "password123";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 interface FocusedElement {
@@ -70,7 +70,7 @@ test.describe("Tab Order Verification", () => {
 
   test("login page tab order is logical @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 8);
     expect(order.length).toBeGreaterThan(1);
@@ -92,7 +92,7 @@ test.describe("Tab Order Verification", () => {
 
   test("register page tab order is logical @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 10);
     expect(order.length).toBeGreaterThan(1);
@@ -114,7 +114,7 @@ test.describe("Tab Order Verification", () => {
 
   test("forgot-password page tab order @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/forgot-password");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 6);
     expect(order.length).toBeGreaterThan(0);
@@ -126,7 +126,7 @@ test.describe("Tab Order Verification", () => {
 
   test("404 page tab order @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/404");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 5);
     expect(order.length).toBeGreaterThan(0);
@@ -140,7 +140,7 @@ test.describe("Tab Order Verification", () => {
 
   test("English login tab order is logical @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 8);
     expect(order.length).toBeGreaterThan(1);
@@ -152,7 +152,7 @@ test.describe("Tab Order Verification", () => {
 
   test("English register tab order @a11y-taborder", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 10);
     expect(order.length).toBeGreaterThan(1);
@@ -166,7 +166,7 @@ test.describe("Tab Order Verification", () => {
 
   test("dashboard tab order with sidebar @a11y-taborder", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 12);
     expect(order.length).toBeGreaterThan(3);
@@ -185,7 +185,7 @@ test.describe("Tab Order Verification", () => {
     page,
   }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const forward = await captureTabOrder(page, 8);
     expect(forward.length).toBeGreaterThan(0);
@@ -224,7 +224,7 @@ test.describe("Tab Order Verification", () => {
   test("files page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
     const order = await captureTabOrder(page, 10);
@@ -240,7 +240,7 @@ test.describe("Tab Order Verification", () => {
   test("tags page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1000);
 
     const order = await captureTabOrder(page, 10);
@@ -256,7 +256,7 @@ test.describe("Tab Order Verification", () => {
   test("search page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 8);
     expect(order.length).toBeGreaterThan(0);
@@ -271,7 +271,7 @@ test.describe("Tab Order Verification", () => {
   test("settings page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 10);
     expect(order.length).toBeGreaterThan(0);
@@ -286,7 +286,7 @@ test.describe("Tab Order Verification", () => {
   test("conversions page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 10);
     expect(order.length).toBeGreaterThan(0);
@@ -301,7 +301,7 @@ test.describe("Tab Order Verification", () => {
   test("users page tab order @a11y-taborder", async ({ page }) => {
     await login(page);
     await page.goto("/ar/users");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 12);
     expect(order.length).toBeGreaterThan(0);
@@ -315,7 +315,7 @@ test.describe("Tab Order Verification", () => {
 
   test("landing page tab order @a11y-taborder", async ({ page }) => {
     await page.goto("/ar");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const order = await captureTabOrder(page, 10);
     expect(order.length).toBeGreaterThan(0);

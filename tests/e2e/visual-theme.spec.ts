@@ -19,7 +19,7 @@ test.describe("Visual Theme — Light Mode", () => {
     test(`Light mode — /ar/${pageInfo.name}`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await expect(page).toHaveScreenshot(`light-ar-${pageInfo.name}.png`, {
@@ -39,7 +39,7 @@ test.describe("Visual Theme — Dark Mode", () => {
     test(`Dark mode — /ar/${pageInfo.name}`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       await expect(page).toHaveScreenshot(`dark-ar-${pageInfo.name}.png`, {
@@ -59,7 +59,7 @@ test.describe("Visual Theme — RTL Layout (Light Mode)", () => {
     test(`RTL + Light — /ar/${pageInfo.name} — dir check`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       const dir = await page.locator("html").getAttribute("dir");
@@ -82,7 +82,7 @@ test.describe("Visual Theme — RTL Layout (Dark Mode)", () => {
     test(`RTL + Dark — /ar/${pageInfo.name} — dir check`, async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await page.waitForTimeout(500);
 
       const dir = await page.locator("html").getAttribute("dir");
