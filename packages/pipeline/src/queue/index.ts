@@ -42,6 +42,9 @@ export {
 } from "./workers";
 export {
   getQueueDriver,
+  getQueueDriverName,
+  isPgDriver,
+  getPgDirectUrl,
   type QueueDriver,
   type QueueDriverName,
   type JobEnvelope,

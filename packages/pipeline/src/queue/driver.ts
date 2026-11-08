@@ -41,13 +41,36 @@ export interface QueueDriver {
 }
 
 /**
- * Returns the queue driver selected by the QUEUE_DRIVER flag. The default is
- * "redis" so current BullMQ behavior is preserved; the new Postgres driver is
- * additive and only engaged when explicitly set.
+ * Resolves the active queue driver name from QUEUE_DRIVER.
+ * Defaults to "redis" so current BullMQ behavior is preserved. Any value
+ * other than the explicit "pg" falls back to "redis" (parity with the
+ * historical `?? "redis"` + `=== "pg"` checks scattered across the queue
+ * layer). Infra must never set QUEUE_DRIVER at runtime; unset is the only
+ * supported production state and means redis.
+ */
+export function getQueueDriverName(): QueueDriverName {
+  return process.env.QUEUE_DRIVER === "pg" ? "pg" : "redis";
+}
+
+/** True when the Postgres-backed driver is selected. */
+export function isPgDriver(): boolean {
+  return getQueueDriverName() === "pg";
+}
+
+/**
+ * Direct (non-pooled) Postgres URL for LISTEN/NOTIFY subscriptions.
+ * Falls back to DATABASE_URL so single-URL setups still work; the pooled
+ * URL must never be used for LISTEN when a direct URL is available.
+ */
+export function getPgDirectUrl(): string | undefined {
+  return process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
+}
+
+/**
+ * Returns the queue driver selected by the QUEUE_DRIVER flag.
  */
 export function getQueueDriver(): QueueDriver {
-  const name = (process.env.QUEUE_DRIVER ?? "redis") as QueueDriverName;
-  if (name === "pg") {
+  if (getQueueDriverName() === "pg") {
     return new PgQueueDriver();
   }
   return new RedisQueueDriver();

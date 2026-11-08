@@ -1,6 +1,7 @@
 import type { PipelineConfig, JobStage } from "../types";
 import { JOB_QUEUES, QUEUE_STAGE_MAP, JOB_TIMEOUTS } from "../types";
 import { getQueue } from "./connection";
+import { isPgDriver } from "./driver";
 
 export { QUEUE_STAGE_MAP };
 
@@ -8,7 +9,8 @@ export async function getJobStatus(
   config: PipelineConfig,
   jobId: string,
 ): Promise<{ stage: JobStage; progress: number } | null> {
-  if (process.env.QUEUE_DRIVER === "pg") return null;
+  // PG: job status is resolved via getJobStatusViaDriver() (document/job_queue).
+  if (isPgDriver()) return null;
 
   const pipelineQueues = [
     JOB_QUEUES.VALIDATION,
@@ -40,7 +42,8 @@ export async function getQueueMetrics(config: PipelineConfig): Promise<{
   failed: number;
   delayed: number;
 }> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  // PG: metrics come from getMetricsViaDriver() (job_queue counts).
+  if (isPgDriver()) {
     return { waiting: 0, active: 0, completed: 0, failed: 0, delayed: 0 };
   }
   const queue = getQueue(JOB_QUEUES.OCR, config);
@@ -62,7 +65,7 @@ export async function getAllQueueMetrics(
     { waiting: number; active: number; completed: number; failed: number; delayed: number }
   >
 > {
-  if (process.env.QUEUE_DRIVER === "pg") return {};
+  if (isPgDriver()) return {};
   const queueNames = Object.values(JOB_QUEUES);
   const result: Record<
     string,
@@ -86,7 +89,8 @@ export async function getAllQueueMetrics(
 export async function getStuckJobs(
   config: PipelineConfig,
 ): Promise<{ queue: string; jobId: string; ageMs: number }[]> {
-  if (process.env.QUEUE_DRIVER === "pg") return [];
+  // PG: stuck detection is done via PgQueueDriver.getMetrics() (stuckCount).
+  if (isPgDriver()) return [];
   const stuck: { queue: string; jobId: string; ageMs: number }[] = [];
   const queueNames = Object.values(JOB_QUEUES).filter((n) => n !== JOB_QUEUES.FAILED);
   const now = Date.now();

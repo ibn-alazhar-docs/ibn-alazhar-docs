@@ -1,9 +1,12 @@
 import { stat, rm } from "node:fs/promises";
 import { join } from "node:path";
-import type { PipelineConfig, StorageObject, StorageDriver } from "./types";
-import { getStorageDriver } from "./config";
+import type { PipelineConfig, StorageObject } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
-import { getStorageClient, minioCleanupOrphanedFiles } from "./storage/minio-driver";
+import {
+  getStorageClient,
+  minioCleanupOrphanedFiles,
+  resolveStorageDriver,
+} from "./storage/minio-driver";
 import {
   localPath,
   localEnsureRoot,
@@ -19,12 +22,8 @@ const logger = baseLogger.child({ module: "storage" });
 export { getStorageClient } from "./storage/minio-driver";
 export { validatePdf } from "./storage/validation";
 
-function getDriver(config: PipelineConfig): StorageDriver {
-  return config.storage?.driver ?? getStorageDriver();
-}
-
 export async function ensureBucket(config: PipelineConfig, retryDelay?: number): Promise<void> {
-  const driver = getDriver(config);
+  const driver = resolveStorageDriver(config);
   logger.debug(
     {
       driver,
@@ -68,7 +67,7 @@ export async function uploadFile(
   filePath: string,
   contentType: string,
 ): Promise<StorageObject> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     return localUploadFile(config, key, filePath, contentType);
   }
   const mc = getStorageClient(config);
@@ -96,7 +95,7 @@ export async function uploadBuffer(
   buffer: Buffer,
   contentType: string,
 ): Promise<StorageObject> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     return localUploadBuffer(config, key, buffer, contentType);
   }
   const mc = getStorageClient(config);
@@ -112,7 +111,7 @@ export async function uploadBuffer(
 }
 
 export async function downloadFile(config: PipelineConfig, key: string): Promise<Buffer> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     return localDownloadFile(config, key);
   }
   const mc = getStorageClient(config);
@@ -143,7 +142,7 @@ export async function getPresignedUrl(
   key: string,
   expirySeconds: number = 3600,
 ): Promise<string> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     return `local://${key}`;
   }
   const mc = getStorageClient(config);
@@ -151,7 +150,7 @@ export async function getPresignedUrl(
 }
 
 export async function deleteFile(config: PipelineConfig, key: string): Promise<void> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     await localDeleteFile(config, key);
     return;
   }
@@ -160,7 +159,7 @@ export async function deleteFile(config: PipelineConfig, key: string): Promise<v
 }
 
 export async function listObjects(config: PipelineConfig, prefix: string): Promise<string[]> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     const base = localPath(config, prefix);
     const result: string[] = [];
     const walk = async (dir: string, rel: string): Promise<void> => {
@@ -198,7 +197,7 @@ export async function listObjects(config: PipelineConfig, prefix: string): Promi
 }
 
 export async function fileExists(config: PipelineConfig, key: string): Promise<boolean> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     return localFileExists(config, key);
   }
   const mc = getStorageClient(config);
@@ -215,7 +214,7 @@ export async function cleanupOrphanedFiles(
   prefix: string,
   maxAgeMs: number,
 ): Promise<number> {
-  if (getDriver(config) === "local") {
+  if (resolveStorageDriver(config) === "local") {
     try {
       const base = localPath(config, prefix);
       const now = Date.now();

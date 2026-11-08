@@ -1,6 +1,7 @@
 import { EventEmitter } from "node:events";
 import { Client, type Client as PgClient } from "pg";
 import { PgQueueDriver, recoverStale } from "./drivers/pg-driver";
+import { getPgDirectUrl } from "./driver";
 import { logger } from "@ibn-al-azhar-docs/shared";
 import type { ClaimedJob } from "./driver";
 
@@ -56,10 +57,6 @@ export interface PgWorkerOptions {
   staleGraceMs?: number;
   pollMs?: number;
   shutdownTimeoutMs?: number;
-}
-
-function getDirectUrl(): string | undefined {
-  return process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
 }
 
 /**
@@ -262,7 +259,7 @@ export class PgWorker {
     this.staleGraceMs = opts.staleGraceMs ?? DEFAULT_STALE_GRACE_MS;
     this.shutdownTimeoutMs = opts.shutdownTimeoutMs ?? DEFAULT_SHUTDOWN_TIMEOUT_MS;
 
-    const directUrl = opts.directUrl ?? getDirectUrl();
+    const directUrl = opts.directUrl ?? getPgDirectUrl();
     if (directUrl) {
       this.listener = new PgListener(directUrl);
       this.listener.onNotify(() => this.scheduleTick());
@@ -486,6 +483,6 @@ export function createPgWorkerRunner(
   return new PgWorker({
     handlers,
     ...opts,
-    directUrl: opts?.directUrl ?? getDirectUrl(),
+    directUrl: opts?.directUrl ?? getPgDirectUrl(),
   });
 }

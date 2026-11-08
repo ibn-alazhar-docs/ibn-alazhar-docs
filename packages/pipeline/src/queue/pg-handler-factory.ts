@@ -6,6 +6,7 @@ import {
   type ClaimedJob,
   type JobLike,
 } from "../index";
+import { isPgDriver } from "./driver";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
@@ -72,7 +73,9 @@ export function createPgHandlerWrapper({ config, queueName, logger }: PgHandlerO
             })
             .catch(() => {});
         }
-        if (process.env.QUEUE_DRIVER !== "pg") {
+        // PG mode: the authoritative DLQ is job_queue dead rows written by
+        // PgQueueDriver.fail(); recordJobFailure() (Redis DLQ) must not run.
+        if (!isPgDriver()) {
           await recordJobFailure(config, queueName, jobLike, error);
         }
       }

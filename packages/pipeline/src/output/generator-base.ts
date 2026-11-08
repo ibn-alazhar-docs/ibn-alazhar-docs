@@ -21,3 +21,13 @@ export interface FormatGenerator {
   getMimeType(): string;
   getExtension(): string;
 }
+
+/**
+ * تطبيع الأسطر الزائدة: ثلاثة أسطر جديدة متتالية أو أكثر تنهار إلى اثنين،
+ * ثم تُقصّ الأطراف. نفس سلسلة `replace(/\\n{3,}/g, "\\n\\n").trim()` التي كانت
+ * مكرَّرة حرفيًا في مولّدَي Markdown وTXT من الـ IR — وحدة واحدة حتى لا تختلف
+ * إخراجاتهما بايتًا واحدًا عند تعديلها.
+ */
+export function normalizeBlankLines(text: string): string {
+  return text.replace(/\n{3,}/g, "\n\n").trim();
+}

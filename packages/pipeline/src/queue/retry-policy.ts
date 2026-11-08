@@ -1,12 +1,14 @@
 import { JOB_QUEUES } from "../types";
 
 /**
- * Shared retry policy for the queue layer.
+ * Shared retry policy for the queue layer — single source of truth (PARITY).
  *
  * Both the Postgres driver (via `nextRunAt` / `baseDelayFor`) and the Redis
  * driver (via BullMQ job options) consult these constants so the two paths
- * keep identical retry semantics. Defaults mirror the historical BullMQ config
- * in `queue/workers.ts`: 3 attempts, exponential backoff, 2000ms base delay
+ * keep identical retry semantics. Do NOT add per-driver delays here; change
+ * the shared constants (or the OCC/OCR overrides below) if behavior must move
+ * for both backends. Defaults mirror the historical BullMQ config in
+ * `queue/workers.ts`: 3 attempts, exponential backoff, 2000ms base delay
  * (5000ms for the OCR queue).
  */
 

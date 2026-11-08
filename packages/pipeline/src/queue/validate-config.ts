@@ -8,9 +8,10 @@
  *
  * Throws on misconfiguration. Intended to be called early in bootstrap.
  */
+import { getQueueDriverName } from "./driver";
+
 export function validateQueueConfig(): void {
-  const driver = process.env.QUEUE_DRIVER ?? "redis";
-  if (driver === "pg") {
+  if (getQueueDriverName() === "pg") {
     const hasDbUrl = Boolean(process.env.DATABASE_URL);
     const hasDirectUrl = Boolean(process.env.DATABASE_URL_DIRECT);
     if (!hasDbUrl || !hasDirectUrl) {

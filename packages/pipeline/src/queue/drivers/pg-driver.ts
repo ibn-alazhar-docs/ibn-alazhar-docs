@@ -1,7 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@ibn-al-azhar-docs/database";
 import type { QueueDriver, JobEnvelope, ClaimedJob } from "../driver";
-import { baseDelayFor as sharedBaseDelayFor } from "../retry-policy";
+import { getPgDirectUrl } from "../driver";
+import { baseDelayFor } from "../retry-policy";
 import { JOB_QUEUES } from "../../types";
 
 export const ALLOWED_QUEUES: ReadonlyArray<string> = Object.values(JOB_QUEUES);
@@ -21,20 +22,8 @@ export function canMutate(affectedRows: number): boolean {
   return affectedRows === 1;
 }
 
-/**
- * Per-queue base backoff delay (ms). Mirrors the BullMQ retry config in
- * `queue/workers.ts`: OCR uses a longer delay (5000ms), every other queue
- * uses the default 2000ms.
- */
-// Retry base delays are sourced from the shared retry-policy module so the
-// Postgres and Redis paths stay in sync.
-
 /** Default stale-recovery grace window (ms) — heartbeat-driven, not the 2h OCR lease. */
 const DEFAULT_STALE_GRACE_MS = 30_000;
-
-function baseDelayFor(queue: string): number {
-  return sharedBaseDelayFor(queue);
-}
 
 /**
  * Postgres-backed queue driver. All mutations go through the pooled Prisma
@@ -254,7 +243,7 @@ export class PgQueueDriver implements QueueDriver {
 
   async listen(_queue: string, onJob: () => void): Promise<() => void> {
     const { PgListener } = await import("../pg-worker");
-    const directUrl = process.env.DATABASE_URL_DIRECT ?? process.env.DATABASE_URL;
+    const directUrl = getPgDirectUrl();
     if (!directUrl) {
       // No dedicated direct connection available; NOTIFY cannot be subscribed.
       // The polling fallback in PgWorker covers this case. Return a no-op.

@@ -79,6 +79,11 @@ export function generateEpubFromIR(ir: DocumentIR, options?: GeneratorOptions): 
  * Ported from the converter project's `segmentByScript` helper. Kept here for
  * callers that need run-level segmentation before Pandoc; the IR-driven path
  * above is unaffected and continues to render Markdown first.
+ *
+ * @deprecated No in-repo callers as of U13 audit (2026-11-08): the IR-driven
+ * path renders Markdown first and never segments. Retained via
+ * `output/index.ts` for external API compatibility; remove only after a
+ * downstream consumer check.
  */
 export interface ScriptSegment {
   text: string;
@@ -87,6 +92,10 @@ export interface ScriptSegment {
 
 const isArabicSegment = (text: string): boolean => containsArabic(text);
 
+/**
+ * @deprecated No in-repo callers as of U13 audit (2026-11-08); see the
+ * deprecation note on `ScriptSegment`. Retained for external API compatibility.
+ */
 export function segmentByScript(text: string): ScriptSegment[] {
   if (!text) return [];
   const segments: ScriptSegment[] = [];

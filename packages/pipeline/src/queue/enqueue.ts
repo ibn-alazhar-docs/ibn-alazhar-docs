@@ -4,7 +4,7 @@ import { getQueue, getLastConnectionError } from "./connection";
 import { getRetryConfigForQueue, getDefaultJobOptions } from "./workers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 import { PgQueueDriver } from "./drivers/pg-driver";
-import { getQueueDriver, type JobEnvelope } from "./driver";
+import { isPgDriver, type JobEnvelope } from "./driver";
 
 /**
  * Fail-fast readiness probe before enqueueing. A dead or mis-authenticated
@@ -145,7 +145,9 @@ export async function enqueueViaDriver(
   job: ProcessingJob | ExportRequest,
   overrides?: Record<string, unknown>,
 ): Promise<void> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
+    // PG path: idempotencyKey mirrors the BullMQ job id (jobId for exports,
+    // id for pipeline jobs) so PG dedup matches Redis behavior (PARITY).
     const idempotencyKey = "jobId" in job ? job.jobId : job.id;
     const retryConfig = getRetryConfigForQueue(queue);
     let runAt: Date | undefined;
@@ -188,5 +190,4 @@ export async function enqueueViaDriver(
     default:
       throw new Error(`enqueueViaDriver: unknown queue "${queue}"`);
   }
-  void getQueueDriver;
 }
