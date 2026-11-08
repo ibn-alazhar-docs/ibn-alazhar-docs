@@ -3,7 +3,8 @@ import type { IDocumentRepository } from "@/domain/repositories/document.reposit
 import { ERROR_CODES } from "@/shared/constants";
 
 export type DocumentReprocessResult =
-  { ok: true; documentId: string } | { ok: false; code: string; message: string; status: number };
+  | { ok: true; documentId: string }
+  | { ok: false; code: string; message: string; status: number };
 
 export class DocumentReprocessUseCases {
   constructor(private readonly documentRepository: IDocumentRepository) {}

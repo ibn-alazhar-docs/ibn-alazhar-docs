@@ -7,7 +7,8 @@ import { logger } from "@/shared/logger";
 import { getRedisClient } from "@/clients/redis/rate-limit/redis";
 
 export type UploadPreflightResult =
-  { ok: true } | { ok: false; status: number; body: Record<string, unknown> };
+  | { ok: true }
+  | { ok: false; status: number; body: Record<string, unknown> };
 
 export class UploadPreflightUseCases {
   constructor(
