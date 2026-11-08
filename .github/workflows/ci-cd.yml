@@ -343,10 +343,14 @@ jobs:
   # E2E Tests (Playwright)
   # ------------------------------------------------------------
   test-e2e:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.project }})
     runs-on: ubuntu-latest
     timeout-minutes: 180
     needs: quality-gates
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, chromium-dark]
     services:
       postgres:
         image: postgres:16-alpine
@@ -410,7 +414,9 @@ jobs:
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run E2E tests
-        run: pnpm test:e2e
+        run: pnpm exec playwright test --project=${{ matrix.project }}
+        env:
+          E2E_PROJECT: ${{ matrix.project }}
 
   # ------------------------------------------------------------
   # Security Scanning
