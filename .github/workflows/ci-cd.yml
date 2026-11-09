@@ -13,6 +13,10 @@ on:
         default: "false"
         type: boolean
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   NODE_VERSION: "22"
   PNPM_VERSION: "10.33.4"
@@ -397,6 +401,14 @@ jobs:
         uses: actions/checkout@v4
         with:
           lfs: true
+
+      - name: Verify LFS snapshots materialized
+        run: |
+          git lfs pull
+          git lfs ls-files | grep tests/e2e | head -3
+          pointer_count=$(grep -r 'version https://git-lfs' tests/e2e/*snapshots* -l 2>/dev/null | wc -l)
+          echo "LFS pointer files remaining: $pointer_count"
+          test "$pointer_count" = "0"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4

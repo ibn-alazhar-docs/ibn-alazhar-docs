@@ -159,7 +159,10 @@ export async function checkIpRateLimit(
   windowMs: number,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.DISABLE_RATE_LIMIT === "true" &&
+    (process.env.NODE_ENV !== "production" || process.env.PLAYWRIGHT_TEST === "true")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();
