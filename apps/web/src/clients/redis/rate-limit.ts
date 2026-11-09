@@ -124,7 +124,10 @@ export async function checkRateLimit(
   request: Request,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();
@@ -141,7 +144,10 @@ export async function checkUserRateLimit(
   userId: string,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();
@@ -160,8 +166,8 @@ export async function checkIpRateLimit(
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
   if (
-    process.env.DISABLE_RATE_LIMIT === "true" &&
-    (process.env.NODE_ENV !== "production" || process.env.PLAYWRIGHT_TEST === "true")
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
   ) {
     return { allowed: true };
   }
