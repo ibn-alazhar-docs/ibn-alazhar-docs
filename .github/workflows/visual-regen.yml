@@ -11,6 +11,8 @@ on:
         description: Projects to regenerate (chromium, chromium-dark, or all)
         required: false
         default: all
+  push:
+    branches: ["regen/visual-dark"]
 
 permissions:
   contents: write
@@ -23,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        project: [chromium, chromium-dark]
+        project: [chromium-dark]
     services:
       postgres:
         image: postgres:16-alpine
