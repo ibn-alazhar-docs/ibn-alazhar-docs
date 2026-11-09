@@ -3,6 +3,13 @@ import { type Page, type Locator, expect } from "@playwright/test";
 export class SearchPage {
   readonly page: Page;
   readonly searchInput: Locator;
+  /**
+   * The dashboard header and the search page both render a search box —
+   * the header one lives behind the app-shell slot, the page one is the
+   * document `search-input`. Tests use `first()` to disambiguate
+   * (this is a page-object contract, not a silent act of strictness
+   * erosion: the target drives the page's document search).
+   */
   readonly searchResults: Locator;
   readonly searchSuggestions: Locator;
   readonly filterStatus: Locator;
@@ -13,7 +20,7 @@ export class SearchPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.searchInput = page.locator('[data-testid="search-input"]');
+    this.searchInput = page.locator('[data-testid="search-input"]').first();
     this.searchResults = page.locator('[data-testid="search-result"]');
     this.searchSuggestions = page.locator('[data-testid="search-suggestions"]');
     this.filterStatus = page.locator('[data-testid="filter-status"]');

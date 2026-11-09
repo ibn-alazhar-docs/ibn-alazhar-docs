@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 

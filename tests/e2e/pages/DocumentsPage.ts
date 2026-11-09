@@ -20,7 +20,9 @@ export class DocumentsPage {
       .or(page.getByRole("button", { name: /رفع|Upload|تحميل/i }).first());
     this.documentRows = page.locator('[data-testid="document-row"]');
     this.documentSelect = page.locator('[data-testid="document-select"]');
-    this.searchInput = page.locator('[data-testid="search-input"]');
+    this.searchInput = page
+      .locator('[data-testid="search-input"], [data-testid="header-search-input"]')
+      .first();
     this.heading = page.getByRole("heading", { name: /الملفات|Files|المستندات|Documents/i });
     this.uploadZone = page.locator('[data-testid="upload-zone"]');
     this.bulkActionBar = page.locator('[data-testid="bulk-actions"]');

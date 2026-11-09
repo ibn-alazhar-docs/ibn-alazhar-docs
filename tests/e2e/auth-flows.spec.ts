@@ -19,7 +19,10 @@ test.describe("Auth Flows", () => {
 
   test("Login with wrong password shows error message", async ({ page }) => {
     const auth = new AuthPage(page);
-    await auth.login(LOGIN_EMAIL, "wrongpassword");
+    // Disposable user: a wrong-password attempt against the shared admin here
+    // would increment its lockout counter and lock the account for later tests.
+    const disposable = `wrongpass_${Date.now()}@test.local`;
+    await auth.login(disposable, "wrongpassword");
     await auth.expectErrorVisible();
     await expect(page.url()).toContain("/login");
   });

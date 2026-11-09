@@ -61,7 +61,10 @@ export function Header({ onMenuToggle, isMenuOpen, role }: HeaderProps) {
         </div>
 
         <div className="hidden md:flex flex-1 max-w-lg lg:max-w-xl mx-4 lg:mx-6">
-          <SearchBar onSearch={(query) => router.push(`/search?q=${encodeURIComponent(query)}`)} />
+          <SearchBar
+            testId="header-search-input"
+            onSearch={(query) => router.push(`/search?q=${encodeURIComponent(query)}`)}
+          />
         </div>
 
         <div className="flex items-center gap-0.5 sm:gap-1">

@@ -405,6 +405,9 @@ jobs:
       - name: Verify LFS snapshots materialized
         run: |
           git lfs pull
+          lfs_count=$(git lfs ls-files | grep -c "tests/e2e" || true)
+          echo "LFS tracked e2e snapshots: $lfs_count"
+          test "$lfs_count" -gt 0
           git lfs ls-files | grep tests/e2e | head -3
           pointer_count=$(grep -r 'version https://git-lfs' tests/e2e/*snapshots* -l 2>/dev/null | wc -l)
           echo "LFS pointer files remaining: $pointer_count"

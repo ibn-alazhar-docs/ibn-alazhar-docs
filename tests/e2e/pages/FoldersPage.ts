@@ -18,7 +18,12 @@ export class FoldersPage {
     this.submitButton = page.locator('button[type="submit"]');
     this.breadcrumb = page.locator('[data-testid="breadcrumb"]');
     this.sidebar = page.locator("aside");
-    this.folderButton = page.getByRole("button", { name: /مجلد جديد|New folder|جديد/i });
+    // The folder tree intentionally renders two "new folder" buttons when the
+    // list is empty: the header CTA (+ مجلد جديد) and the empty-state CTA
+    // (مجلد جديد). Both open the same dialog, so scoping to the canonical
+    // header button (first match) is the correct test-level disambiguation —
+    // collapsing them would remove the empty-state affordance users rely on.
+    this.folderButton = page.getByRole("button", { name: /مجلد جديد|New folder|جديد/i }).first();
   }
 
   readonly folderButton: Locator;
