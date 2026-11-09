@@ -49,7 +49,8 @@ export class DocumentsPage {
   }
 
   async uploadFile(fileName: string) {
-    const testFilePath = path.resolve(__dirname, "../../test-data/source", fileName);
+    // Page objects live in tests/e2e/pages; the fixture dir is at repo root.
+    const testFilePath = path.resolve(__dirname, "../../../test-data/source", fileName);
     await this.fileInput.setInputFiles(testFilePath);
     if (await this.uploadButton.isVisible().catch(() => false)) {
       await this.uploadButton.click();
@@ -58,7 +59,7 @@ export class DocumentsPage {
 
   async uploadMultipleFiles(fileNames: string[]) {
     const testFilePaths = fileNames.map((f) =>
-      path.resolve(__dirname, "../../test-data/source", f),
+      path.resolve(__dirname, "../../../test-data/source", f),
     );
     await this.fileInput.setInputFiles(testFilePaths);
     if (await this.uploadButton.isVisible().catch(() => false)) {
