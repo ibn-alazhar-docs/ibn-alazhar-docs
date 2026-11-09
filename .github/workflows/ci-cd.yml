@@ -31,6 +31,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          lfs: true
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -73,6 +74,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -148,6 +151,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -218,6 +223,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -283,6 +290,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -318,6 +327,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -383,6 +394,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -432,6 +445,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -474,6 +489,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

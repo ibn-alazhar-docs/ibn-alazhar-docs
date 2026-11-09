@@ -65,7 +65,18 @@ function calculateContrastRatio(color1: string, color2: string): number {
 
 async function getComputedColor(page: Page, selector: string, property: string): Promise<string> {
   const el = page.locator(selector).first();
-  return await el.evaluate((node, prop) => getComputedStyle(node).getPropertyValue(prop), property);
+  return await el.evaluate((node, prop) => {
+    if (prop !== "background-color") return getComputedStyle(node).getPropertyValue(prop);
+    /* WCAG effective background: walk ancestors until first opaque background
+       (element's own background is transparent for inline text, e.g. h2). */
+    let cur: Element | null = node;
+    while (cur && cur !== document.documentElement) {
+      const bg = getComputedStyle(cur).backgroundColor;
+      if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") return bg;
+      cur = cur.parentElement;
+    }
+    return getComputedStyle(document.body).backgroundColor;
+  }, property);
 }
 
 async function expectSufficientContrast(
