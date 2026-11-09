@@ -122,4 +122,9 @@ jobs:
             exit 0
           fi
           git commit -m "test(e2e): refresh visual baselines (${{ matrix.project }}, CI pinned env)"
-          git push origin HEAD:${{ inputs.target_branch }}
+          target="${{ inputs.target_branch || 'integration/reconcile-main' }}"
+          echo "Pushing to target branch: $target"
+          # This job runs on a single matrix value (chromium-dark) from a
+          # dedicated branch, so the push target is fixed: no concurrent
+          # rerace with a second job is possible.
+          git push origin "HEAD:${target}"
