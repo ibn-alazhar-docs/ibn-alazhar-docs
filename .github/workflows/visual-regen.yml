@@ -11,6 +11,8 @@ on:
         description: Projects to regenerate (chromium, chromium-dark, or all)
         required: false
         default: all
+  push:
+    branches: ["regen/visual"]
 
 permissions:
   contents: write
@@ -57,7 +59,7 @@ jobs:
       - name: Checkout target branch
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.target_branch }}
+          ref: ${{ inputs.target_branch || 'integration/reconcile-main' }}
           lfs: true
           fetch-depth: 0
 
@@ -120,4 +122,9 @@ jobs:
             exit 0
           fi
           git commit -m "test(e2e): refresh visual baselines (${{ matrix.project }}, CI pinned env)"
-          git push origin HEAD:${{ inputs.target_branch }}
+          target="${{ inputs.target_branch || 'integration/reconcile-main' }}"
+          # If the commit already landed (two matrix jobs racing), abort quietly rather than force-push.
+          if ! git push origin HEAD:"$target"; then
+            git fetch origin "$target"
+            git push --force-with-lease=refs/heads/"$target":$(git rev-parse "origin/$target") HEAD:"$target" || true
+          fi
