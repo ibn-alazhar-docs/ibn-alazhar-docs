@@ -4,7 +4,7 @@ import { LoginPage } from "./pages/LoginPage";
 test("Files and Folders QA", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto("ar");
-  await loginPage.login("admin@ibnalazhar.app", "password123");
+  await loginPage.login("admin@ibnalazhar.app", "AdminPassword123!");
   await page.waitForURL(/\/ar\/dashboard/);
 
   console.log("=== Task 3: Submitting new folder with long text and invalid characters ===");

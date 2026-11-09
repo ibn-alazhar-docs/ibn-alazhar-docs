@@ -4,7 +4,7 @@ import path from "node:path";
 
 const BASE = "http://127.0.0.1:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "password123";
+const PASSWORD = "AdminPassword123!";
 
 const SOURCE_DIR = path.resolve(__dirname, "../../test-data/source");
 const PDF_PATH = (() => {

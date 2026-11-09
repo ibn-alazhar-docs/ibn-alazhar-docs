@@ -1,7 +1,7 @@
 import { type Page, expect } from "@playwright/test";
 
 export const LOGIN_EMAIL = "admin@ibnalazhar.app";
-export const LOGIN_PASSWORD = "password123";
+export const LOGIN_PASSWORD = "AdminPassword123!";
 export const TEST_PDF_PATH = "لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf";
 
 export async function loginAsAdmin(page: Page, locale: string = "ar") {

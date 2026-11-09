@@ -4,7 +4,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { FilesPage } from "./pages/FilesPage";
 
 const LOGIN_EMAIL = "admin@ibnalazhar.app";
-const LOGIN_PASSWORD = "password123";
+const LOGIN_PASSWORD = "AdminPassword123!";
 
 test.describe("Unauthenticated access", () => {
   test("redirects to login when accessing protected route", async ({ page }) => {

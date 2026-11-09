@@ -229,7 +229,7 @@
   --border-subtle: #073033;
   --text-primary: #f7f3ea;
   --text-secondary: #b9c9ca;
-  --text-tertiary: #92a5a6;
+  --text-tertiary: #c6d9d9; /* AA >=4.5 on the dark teal card bg (#0d5b61) */
   --text-inverse: #083b40;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;

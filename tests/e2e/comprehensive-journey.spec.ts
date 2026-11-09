@@ -9,7 +9,7 @@ test.describe("Comprehensive User Journey", () => {
     // 1. Login/Auth flow
     const loginPage = new LoginPage(page);
     await loginPage.goto("ar");
-    await loginPage.login("admin@ibnalazhar.app", "password123");
+    await loginPage.login("admin@ibnalazhar.app", "AdminPassword123!");
     await page.waitForURL(/\/ar\/dashboard/);
 
     // 2. Navigating the dashboard

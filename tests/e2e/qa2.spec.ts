@@ -6,7 +6,7 @@ test.setTimeout(120000); // 120 seconds
 test("Files and Folders QA 2", async ({ page }) => {
   const loginPage = new LoginPage(page);
   await loginPage.goto("ar");
-  await loginPage.login("admin@ibnalazhar.app", "password123");
+  await loginPage.login("admin@ibnalazhar.app", "AdminPassword123!");
   await page.waitForURL(/.*\/dashboard/);
 
   console.log("=== Task 1: Double-clicking delete buttons ===");

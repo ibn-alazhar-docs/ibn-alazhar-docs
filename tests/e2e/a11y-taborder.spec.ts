@@ -2,7 +2,7 @@ import { test, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "password123";
+const PASSWORD = "AdminPassword123!";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
