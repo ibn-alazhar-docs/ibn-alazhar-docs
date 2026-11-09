@@ -114,12 +114,12 @@ fi
 
 # ---- 2. Build clean tree from the current commit ----------------------------
 echo "• Exporting clean tree from $COMMIT_REF (git archive — excludes ignored/untracked)…"
-# Exclude `tests/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
+# Exclude `tests/` and `test-data/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
 # on the Space). ship the full `apps/web/public`: favicon PNGs, apple-touch-icon,
 # manifest.json, sw.js, pdfjs-wasm and the logo — the browser tab icon regressed
 # on the live Space because public/ was stripped (2026-11-07). Binaries pass the
 # HF pre-receive hook through this script's LFS pointer conversion below.
-git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' | tar -x -C "$WORK_DIR"
+git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)test-data' | tar -x -C "$WORK_DIR"
 cp -a apps/web/public "$WORK_DIR/apps/web/public"
 
 # Place HF Dockerfile + entrypoint at repo root (required by HF Spaces).
