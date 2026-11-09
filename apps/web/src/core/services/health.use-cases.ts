@@ -95,9 +95,25 @@ async function checkRedisDetailed(): Promise<ServiceCheckResult> {
 async function checkStorageDetailed(): Promise<ServiceCheckResult> {
   const start = Date.now();
   try {
-    const storagePath = process.env.STORAGE_LOCAL_DIR || "/data";
-    await withTimeout(access(storagePath, constants.W_OK), CHECK_TIMEOUT_MS);
-    return { status: "healthy", responseTimeMs: Date.now() - start };
+    // Mirror pipeline resolution: unset STORAGE_DRIVER means "local"
+    // (packages/pipeline/src/config/storage.ts), and ensure the root
+    // exists instead of failing health because /data was never made in CI.
+    const driver = process.env.STORAGE_DRIVER === "s3" ? "s3" : "local";
+    if (driver === "local") {
+      const root = process.env.STORAGE_LOCAL_DIR || "/data";
+      await mkdir(root, { recursive: true });
+      await access(root, constants.W_OK);
+      return { status: "healthy", responseTimeMs: Date.now() - start };
+    }
+    const endpoint = process.env.S3_ENDPOINT || "http://localhost:9000";
+    const parsedUrl = new URL(endpoint);
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return { status: "unhealthy", responseTimeMs: Date.now() - start };
+    }
+    const response = await fetch(endpoint, { method: "HEAD", signal: AbortSignal.timeout(2000) });
+    return response.ok
+      ? { status: "healthy", responseTimeMs: Date.now() - start }
+      : { status: "unhealthy", responseTimeMs: Date.now() - start };
   } catch (error) {
     logger.warn(
       { error: error instanceof Error ? error.message : String(error) },

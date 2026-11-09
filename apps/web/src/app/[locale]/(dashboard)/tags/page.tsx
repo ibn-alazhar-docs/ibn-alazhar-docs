@@ -181,7 +181,14 @@ export default function TagsPage() {
             {isCreating && (
               <Card className="p-6">
                 <h3 className="text-sm font-semibold text-primary-color mb-4">{t("createNew")}</h3>
+                <label
+                  htmlFor="new-tag-name"
+                  className="mb-2 block text-sm font-medium text-primary-color"
+                >
+                  {t("nameLabel")}
+                </label>
                 <Input
+                  id="new-tag-name"
                   type="text"
                   value={newTagName}
                   onChange={(e) => setNewTagName(e.target.value)}
@@ -203,7 +210,7 @@ export default function TagsPage() {
                       }`}
                       style={{ backgroundColor: color }}
                       onClick={() => setNewTagColor(color)}
-                      aria-label={color}
+                      aria-label={`${t("colorLabel")}: ${color}`}
                     />
                   ))}
                 </div>

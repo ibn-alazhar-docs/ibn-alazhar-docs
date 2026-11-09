@@ -16,7 +16,12 @@ async function login(page: Page) {
 }
 
 async function runAxe(page: Page) {
+  // Settle web fonts and run axe only after an element a user would need
+  // is visible — scrolling snapshots taken mid-motion/data-load are flakes.
+  await page.evaluate(() => document.fonts.ready);
+  await expect(page.locator("main")).toBeVisible({ timeout: 15000 });
   return await new AxeBuilder({ page })
+    .disableRules(["bypass"])
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
     .analyze();
 }

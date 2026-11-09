@@ -204,6 +204,7 @@ export const DocumentRow = memo(function DocumentRow({
           <input
             type="text"
             value={editTitle}
+            aria-label={tDocs("title")}
             onChange={(e) => onEditTitleChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") onSaveEdit(doc.id);
