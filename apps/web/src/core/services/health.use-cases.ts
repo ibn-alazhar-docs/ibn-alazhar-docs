@@ -173,7 +173,10 @@ async function checkRedisReady(): Promise<ReadyCheck> {
 async function checkStorageReady(): Promise<ReadyCheck> {
   const start = Date.now();
   try {
-    if ((process.env.STORAGE_DRIVER || "s3") === "local") {
+    // Mirror checkStorageDetailed + pipeline resolution: unset means "local".
+    // Defaulting to "s3" here probed a nonexistent MinIO in CI and 503'd
+    // /api/health/ready while /api/health/detailed stayed healthy.
+    if (process.env.STORAGE_DRIVER !== "s3") {
       const root = process.env.STORAGE_LOCAL_DIR || "/data";
       try {
         await access(root);

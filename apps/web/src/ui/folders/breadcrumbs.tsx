@@ -16,7 +16,10 @@ export function Breadcrumbs({ breadcrumbs, onNavigate }: BreadcrumbsProps) {
   const t = useTranslations("folders");
 
   return (
-    <nav className="flex flex-wrap items-center gap-1 text-sm text-muted-color mb-4">
+    <nav
+      data-testid="breadcrumb"
+      className="flex flex-wrap items-center gap-1 text-sm text-muted-color mb-4"
+    >
       <button
         type="button"
         className="hover:text-success transition-colors"

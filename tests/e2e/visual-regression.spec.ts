@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import "./visual-setup";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
@@ -28,7 +28,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Landing page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("landing-ar-rtl.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -38,7 +38,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Login page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar/login`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("login-ar-rtl.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -48,7 +48,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
   test("Register page — Arabic RTL baseline", async ({ page }) => {
     await page.goto(`${BASE}/ar/register`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("register-ar-rtl.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -60,7 +60,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     // Requires isolated run with clean DB for deterministic baselines.
     await login(page);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("dashboard-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.25,
@@ -73,7 +73,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await login(page);
     await page.goto(`${BASE}/ar/files`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("files-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.25,
@@ -84,7 +84,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await login(page);
     await page.goto(`${BASE}/ar/folders`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("folders-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -95,7 +95,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await login(page);
     await page.goto(`${BASE}/ar/tags`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("tags-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -106,7 +106,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await login(page);
     await page.goto(`${BASE}/ar/search`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("search-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -117,7 +117,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await login(page);
     await page.goto(`${BASE}/ar/settings`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("settings-ar.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -128,7 +128,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("landing-ar-mobile.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,
@@ -139,7 +139,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(`${BASE}/ar/login`);
     await page.waitForLoadState("load");
-    await page.waitForTimeout(500);
+    await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("login-ar-mobile.png", {
       fullPage: true,
       maxDiffPixelRatio: 0.01,

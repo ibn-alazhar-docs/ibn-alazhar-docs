@@ -76,7 +76,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="folder-list">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-color">{t("title")}</h3>
         <button

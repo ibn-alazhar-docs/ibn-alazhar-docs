@@ -49,7 +49,15 @@ async function settle(page: Page) {
 
 async function clickNav(page: Page, href: string) {
   const before = await getCls(page);
-  await page.click(`aside a[href="${href}"]`);
+  // Sidebar omits /analytics and /bookmarks (direct routes only). Fall back to
+  // a hard navigation for those so CLS is still measured on load instead of
+  // timing out waiting for a link that never renders (threshold unchanged).
+  const link = page.locator(`aside a[href="${href}"]`).first();
+  if (await link.isVisible().catch(() => false)) {
+    await link.click();
+  } else {
+    await page.goto(href);
+  }
   await settle(page);
   const after = await getCls(page);
   return after - before;

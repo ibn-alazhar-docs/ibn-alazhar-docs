@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import "./visual-setup";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
@@ -60,7 +60,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -75,7 +75,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/login`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -90,7 +90,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/register`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -105,7 +105,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/forgot-password`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -120,7 +120,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/nonexistent-route-xyz`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -145,7 +145,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/dashboard`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -160,7 +160,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -175,7 +175,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/folders`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -190,7 +190,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/tags`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -205,7 +205,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/search`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);
@@ -220,7 +220,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
       await page.setViewportSize({ width: bp.width, height: bp.height });
       await page.goto(`${BASE}/ar/settings`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await verifyDirection(page, "rtl");
       await verifyNoOverflow(page);

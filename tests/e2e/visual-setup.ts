@@ -1,15 +1,12 @@
-import { test, type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
- * Shared setup for every visual-* spec: wait until web fonts have loaded
+ * Shared helper for every visual-* spec: wait until web fonts have loaded
  * before any toHaveScreenshot, so baselines cannot flake on a mid-swap
- * typeface. Import this module from the spec file; the beforeEach hook is
- * registered as soon as the module is evaluated.
+ * typeface. Call AFTER page.goto (e.g. in place of a fixed waitForTimeout):
+ * a beforeEach here would run on about:blank before navigation, where
+ * document.fonts.ready resolves immediately and gates nothing.
  */
 export async function waitForFontsLoaded(page: Page): Promise<void> {
   await page.evaluate(() => document.fonts.ready);
 }
-
-test.beforeEach(async ({ page }) => {
-  await waitForFontsLoaded(page);
-});

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import "./visual-setup";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
@@ -46,7 +46,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `landing-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
@@ -60,7 +60,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}/login`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `login-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
@@ -74,7 +74,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}/register`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `register-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
@@ -88,7 +88,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}/forgot-password`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `forgot-password-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
@@ -102,7 +102,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}/nonexistent-route-xyz`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `not-found-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
@@ -127,7 +127,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/dashboard`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`dashboard-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -138,7 +138,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/dashboard`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`dashboard-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -149,7 +149,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`files-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -160,7 +160,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`files-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -171,7 +171,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/folders`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`folders-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -182,7 +182,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/folders`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`folders-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -193,7 +193,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/tags`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`tags-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -204,7 +204,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/tags`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`tags-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -215,7 +215,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/search`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`search-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -226,7 +226,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/search`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`search-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -237,7 +237,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/settings`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`settings-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -248,7 +248,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/settings`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`settings-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -259,7 +259,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/preview/sample-doc-id`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`preview-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -270,7 +270,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/preview/sample-doc-id`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`preview-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -281,7 +281,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/analytics`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`analytics-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -292,7 +292,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await page.setViewportSize({ width: vp.width, height: vp.height });
       await page.goto(`${BASE}/ar/analytics`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`analytics-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -310,7 +310,7 @@ test.describe("Visual Pages — Shared Document (Unauthenticated)", () => {
         await page.setViewportSize({ width: vp.width, height: vp.height });
         await page.goto(`${BASE}/${locale.prefix}/share/sample-share-token`);
         await page.waitForLoadState("load");
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
         await expect(page).toHaveScreenshot(
           `share-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {

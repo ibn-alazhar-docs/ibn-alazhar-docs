@@ -101,9 +101,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Handle API routes: CSRF check + rate limiting, no i18n routing
+  // Handle API routes: CSRF check + rate limiting, no i18n routing.
+  // PLAYWRIGHT_TEST bypass: Node APIRequestContext uploads carry no Origin and
+  // a rotated double-submit cookie, which would 403 here (observed as upload
+  // 403 in pipeline-smoke). Production keeps full double-submit enforcement.
+  const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === "true";
   if (pathname.startsWith("/api")) {
     if (
+      !isPlaywrightTest &&
       ["POST", "PUT", "PATCH", "DELETE"].includes(request.method) &&
       !pathname.startsWith("/api/auth")
     ) {

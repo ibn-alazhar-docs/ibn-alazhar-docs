@@ -59,6 +59,7 @@ export function FolderItem({
   return (
     <div>
       <div
+        data-testid="folder-item"
         className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
           isSelected ? "bg-success-bg text-success" : "text-primary-color"
         }`}

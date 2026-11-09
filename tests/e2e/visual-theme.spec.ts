@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import "./visual-setup";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 
@@ -21,7 +21,7 @@ test.describe("Visual Theme — Light Mode", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await expect(page).toHaveScreenshot(`light-ar-${pageInfo.name}.png`, {
         fullPage: true,
@@ -41,7 +41,7 @@ test.describe("Visual Theme — Dark Mode", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       await expect(page).toHaveScreenshot(`dark-ar-${pageInfo.name}.png`, {
         fullPage: true,
@@ -61,7 +61,7 @@ test.describe("Visual Theme — RTL Layout (Light Mode)", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       const dir = await page.locator("html").getAttribute("dir");
       expect(dir).toBe("rtl");
@@ -84,7 +84,7 @@ test.describe("Visual Theme — RTL Layout (Dark Mode)", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/${pageInfo.path}`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       const dir = await page.locator("html").getAttribute("dir");
       expect(dir).toBe("rtl");

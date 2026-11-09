@@ -4,7 +4,10 @@ import { AuthPage } from "./pages/AuthPage";
 import { loginAsAdmin, LOGIN_EMAIL, LOGIN_PASSWORD, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Document CRUD Operations", () => {
-  test.describe.configure({ timeout: 180_000 });
+  // Serial: every test after the first expects the document the upload
+  // test creates (seed creates users only). fullyParallel + 4 CI workers
+  // raced those expectations against an empty table.
+  test.describe.configure({ mode: "serial", timeout: 180_000 });
 
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);

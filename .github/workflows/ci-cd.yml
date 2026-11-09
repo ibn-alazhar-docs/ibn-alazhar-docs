@@ -12,6 +12,11 @@ on:
         required: false
         default: "false"
         type: boolean
+      regen_visual:
+        description: "Regenerate visual snapshots (upload as artifact; review before re-baseline commit)"
+        required: false
+        default: "false"
+        type: boolean
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -394,6 +399,8 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
       S3_ACCESS_KEY_ID: dummy
       S3_SECRET_ACCESS_KEY: dummy
     steps:
@@ -436,6 +443,9 @@ jobs:
       - name: Seed database
         run: pnpm db:seed
 
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
+
       - name: Build web app
         run: pnpm --filter @ibn-al-azhar-docs/web build
 
@@ -446,6 +456,96 @@ jobs:
         run: pnpm exec playwright test --project=${{ matrix.project }}
         env:
           E2E_PROJECT: ${{ matrix.project }}
+
+  # ------------------------------------------------------------
+  # Visual snapshot regeneration (manual, pinned env)
+  # Post-refactor baselines are stale (viewport-sized PNGs vs fullPage
+  # reality). This job refreshes them in the same ubuntu-latest pinned
+  # environment CI uses and uploads them as an artifact — re-baseline is
+  # an explicit human-reviewed commit, never an auto-commit.
+  # ------------------------------------------------------------
+  regen-visual:
+    name: Regen Visual Snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'workflow_dispatch' && inputs.regen_visual == true
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ibn_docs
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U ibn_docs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: test-secret-do-not-use-in-prod
+      NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
+      S3_ACCESS_KEY_ID: dummy
+      S3_SECRET_ACCESS_KEY: dummy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run migrations
+        run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+
+      - name: Seed database
+        run: pnpm db:seed
+
+      - name: Build web app
+        run: pnpm --filter @ibn-al-azhar-docs/web build
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Regenerate visual snapshots
+        run: pnpm exec playwright test visual-pages.spec.ts visual-responsive.spec.ts visual-regression.spec.ts visual-theme.spec.ts visual-components.spec.ts --update-snapshots
+
+      - name: Upload regenerated snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-snapshots-regen
+          path: tests/e2e/*snapshots/
+          if-no-files-found: error
 
   # ------------------------------------------------------------
   # Security Scanning

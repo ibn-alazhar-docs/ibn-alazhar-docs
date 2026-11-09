@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import "./visual-setup";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 
@@ -133,7 +133,7 @@ test.describe("Visual Components", () => {
       const submitBtn = page.locator('button[type="submit"]').first();
       if (await submitBtn.isVisible()) {
         await submitBtn.click();
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
       }
       await expect(page).toHaveScreenshot("input-error.png", {
         maxDiffPixelRatio: 0.02,
@@ -189,7 +189,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/tags`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("badge-variants.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -214,7 +214,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("card-landing.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -230,7 +230,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       const sidebar = page.locator(".w-64").first();
       if (await sidebar.isVisible()) {
         await expect(sidebar).toHaveScreenshot("folder-tree.png", {
@@ -248,7 +248,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("document-table.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -264,7 +264,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       const deleteBtn = page.locator('[data-testid="confirm-dialog"]').first();
       if (await deleteBtn.isVisible()) {
@@ -335,7 +335,7 @@ test.describe("Visual Components", () => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar`);
       await page.waitForLoadState("load");
-      await page.waitForTimeout(500);
+      await waitForFontsLoaded(page);
 
       const footer = page.locator("footer").first();
       if (await footer.isVisible()) {
