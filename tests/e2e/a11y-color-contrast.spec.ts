@@ -65,7 +65,8 @@ function calculateContrastRatio(color1: string, color2: string): number {
 
 async function getComputedColor(page: Page, selector: string, property: string): Promise<string> {
   const el = page.locator(selector).first();
-  return await el.evaluate((node, prop) => {
+  return await el.evaluate((node, propRaw) => {
+    const prop = propRaw.replace(/([A-Z])/g, (c) => '-' + c.toLowerCase());
     if (prop !== "background-color") return getComputedStyle(node).getPropertyValue(prop);
     /* WCAG effective background: walk ancestors until first opaque background
        (element's own background is transparent for inline text, e.g. h2). */

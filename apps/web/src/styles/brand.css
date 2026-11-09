@@ -184,7 +184,7 @@
   --border-subtle: #f2ece1;
   --text-primary: #12282b;
   --text-secondary: #4b5c5e;
-  --text-tertiary: #6f7e80;
+  --text-tertiary: #5c6d6f; /* AA >=4.5 on the light paper bg */
   --text-inverse: #fffdf7;
   --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
