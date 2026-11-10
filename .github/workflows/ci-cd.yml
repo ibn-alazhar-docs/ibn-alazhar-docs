@@ -449,6 +449,20 @@ jobs:
       - name: Build web app
         run: pnpm --filter @ibn-al-azhar-docs/web build
 
+      - name: Start pipeline workers (E2E)
+        env:
+          PLAYWRIGHT_TEST: "true"
+          MOCK_OCR: "true"
+          STORAGE_DRIVER: "local"
+          STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
+        run: |
+          mkdir -p /tmp/ibn-e2e-logs
+          pnpm --filter @ibn-al-azhar-docs/ocr-worker start > /tmp/ibn-e2e-logs/ocr-worker.log 2>&1 &
+          echo $! > /tmp/ibn-e2e-logs/ocr-worker.pid
+          pnpm --filter @ibn-al-azhar-docs/export-worker start > /tmp/ibn-e2e-logs/export-worker.log 2>&1 &
+          echo $! > /tmp/ibn-e2e-logs/export-worker.pid
+          sleep 5
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
@@ -456,6 +470,28 @@ jobs:
         run: pnpm exec playwright test --project=${{ matrix.project }}
         env:
           E2E_PROJECT: ${{ matrix.project }}
+          PLAYWRIGHT_TEST: "true"
+          MOCK_OCR: "true"
+
+      - name: Stop pipeline workers
+        if: always()
+        run: |
+          for f in /tmp/ibn-e2e-logs/*.pid; do
+            [ -f "$f" ] && kill "$(cat "$f")" 2>/dev/null || true
+          done
+          sleep 1
+          for f in /tmp/ibn-e2e-logs/*.pid; do
+            [ -f "$f" ] && kill -9 "$(cat "$f")" 2>/dev/null || true
+          done
+
+      - name: Upload worker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-worker-logs-${{ matrix.project }}
+          path: /tmp/ibn-e2e-logs
+          if-no-files-found: ignore
+          retention-days: 7
 
   # ------------------------------------------------------------
   # Visual snapshot regeneration (manual, pinned env)
