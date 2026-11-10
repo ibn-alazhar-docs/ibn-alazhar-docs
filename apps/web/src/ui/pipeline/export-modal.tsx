@@ -137,6 +137,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   <option value="epub">{t("formatEpub")}</option>
                   <option value="md">{t("formatMd")}</option>
                   <option value="txt">{t("formatTxt")}</option>
+                  <option value="json">JSON</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
                   <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />

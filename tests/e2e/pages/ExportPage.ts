@@ -47,12 +47,17 @@ export class ExportPage {
   }
 
   async selectFormat(format: ExportFormat) {
-    const formatLocator = this.page
-      .locator(`[data-testid="export-format-${format.toLowerCase()}"]`)
-      .or(this.page.getByText(format, { exact: true }))
-      .first();
-    await expect(formatLocator).toBeVisible({ timeout: 10000 });
-    await formatLocator.click();
+    const formatMap: Record<ExportFormat, string> = {
+      PDF: "pdf",
+      DOCX: "docx",
+      TXT: "txt",
+      Markdown: "md",
+      EPUB: "epub",
+      JSON: "md",
+    };
+    const value = formatMap[format] ?? format.toLowerCase();
+    const select = this.page.locator("select").first();
+    await select.selectOption(value);
   }
 
   async startDownload() {

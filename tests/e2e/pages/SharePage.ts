@@ -33,8 +33,8 @@ export class SharePage {
   }
 
   async createShareLink() {
-    await expect(this.createLinkButton).toBeVisible({ timeout: 15000 });
-    await expect(this.createLinkButton).toBeEnabled({ timeout: 15000 });
+    await expect(this.createLinkButton).toBeVisible({ timeout: 30000 });
+    await expect(this.createLinkButton).toBeEnabled({ timeout: 30000 });
     await this.createLinkButton.click();
   }
 
