@@ -130,5 +130,5 @@ jobs:
           target="${{ inputs.target_branch || 'integration/reconcile-main' }}"
           echo "Pushing to target branch: $target"
           git fetch origin "$target"
-          git rebase "origin/$target" || (git rebase --abort && exit 1)
+          git rebase --autostash "origin/$target" || (git rebase --abort && exit 1)
           git push origin "HEAD:${target}"
