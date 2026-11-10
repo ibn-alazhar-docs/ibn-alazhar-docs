@@ -133,7 +133,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     // 1. Select the document checkbox
     const fileRow = page.locator('[data-testid="document-row"]').first();
     const checkbox = fileRow.locator('[data-testid="document-select"]').first();
-    await checkbox.click();
+    await checkbox.click({ force: true });
 
     // 2. Click "أضف وسوماً" (Add tags) button in BulkActions
     const tagsBtn = page.locator('button:has-text("أضف وسوماً")').first();

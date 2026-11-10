@@ -23,7 +23,7 @@ test.describe("Export and Share", () => {
         await docs.gotoFiles();
         await docs.expectDocumentRowVisible(60000);
         await docs.clickFirstDocumentTitle();
-        await page.waitForURL(/\/documents\//, { timeout: 30000 });
+        await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
         await exportP.openExportDialog();
         await exportP.expectDialogVisible();
         await exportP.selectFormat(format);
@@ -45,7 +45,7 @@ test.describe("Export and Share", () => {
       await docs.gotoFiles();
       await docs.expectDocumentRowVisible(60000);
       await docs.clickFirstDocumentTitle();
-      await page.waitForURL(/\/documents\//, { timeout: 30000 });
+      await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
       await exportP.openAdvancedExport();
       await exportP.expectDialogVisible();
       for (const fmt of formats) {
