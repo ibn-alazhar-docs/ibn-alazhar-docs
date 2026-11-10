@@ -16,8 +16,8 @@ async function login(page: Page) {
 
 /* ─── Color Utility ─── */
 
-function parseRgb(rgb: string): { r: number; g: number; b: number } {
-  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+function parseRgba(rgb: string): { r: number; g: number; b: number; a: number } {
+  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (!match) {
     const hex = rgb.trim();
     if (hex.startsWith("#")) {
@@ -28,21 +28,51 @@ function parseRgb(rgb: string): { r: number; g: number; b: number } {
           r: Number.parseInt(full.slice(0, 2), 16),
           g: Number.parseInt(full.slice(2, 4), 16),
           b: Number.parseInt(full.slice(4, 6), 16),
+          a: 1,
+        };
+      }
+      if (h.length === 8) {
+        return {
+          r: Number.parseInt(h.slice(0, 2), 16),
+          g: Number.parseInt(h.slice(2, 4), 16),
+          b: Number.parseInt(h.slice(4, 6), 16),
+          a: Number.parseInt(h.slice(6, 8), 16) / 255,
         };
       }
       return {
         r: Number.parseInt(h.slice(0, 2), 16),
         g: Number.parseInt(h.slice(2, 4), 16),
         b: Number.parseInt(h.slice(4, 6), 16),
+        a: 1,
       };
     }
-    return { r: 0, g: 0, b: 0 };
+    return { r: 0, g: 0, b: 0, a: 1 };
   }
   return {
     r: Number.parseInt(match[1]),
     g: Number.parseInt(match[2]),
     b: Number.parseInt(match[3]),
+    a: match[4] === undefined ? 1 : Number.parseFloat(match[4]),
   };
+}
+
+function compositeRgba(
+  fg: { r: number; g: number; b: number; a: number },
+  bg: { r: number; g: number; b: number; a: number },
+): { r: number; g: number; b: number; a: number } {
+  const a = fg.a + bg.a * (1 - fg.a);
+  if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+  return {
+    r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a,
+    g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a,
+    b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a,
+    a,
+  };
+}
+
+function parseRgb(rgb: string): { r: number; g: number; b: number } {
+  const c = parseRgba(rgb);
+  return { r: Math.round(c.r), g: Math.round(c.g), b: Math.round(c.b) };
 }
 
 function getLuminance(r: number, g: number, b: number): number {
@@ -68,15 +98,37 @@ async function getComputedColor(page: Page, selector: string, property: string):
   return await el.evaluate((node, propRaw) => {
     const prop = propRaw.replace(/([A-Z])/g, (c) => "-" + c.toLowerCase());
     if (prop !== "background-color") return getComputedStyle(node).getPropertyValue(prop);
-    /* WCAG effective background: walk ancestors until first opaque background
-       (element's own background is transparent for inline text, e.g. h2). */
+    /* WCAG effective background: alpha-composite from body up to element. */
+    const parse = (s: string) => {
+      const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+      return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+    };
+    const composite = (fg: any, bg: any) => {
+      const a = fg.a + bg.a * (1 - fg.a);
+      if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+      return {
+        r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a,
+        g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a,
+        b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a,
+        a,
+      };
+    };
+    const chain: Element[] = [];
     let cur: Element | null = node;
-    while (cur && cur !== document.documentElement) {
-      const bg = getComputedStyle(cur).backgroundColor;
-      if (bg && bg !== "transparent" && bg !== "rgba(0, 0, 0, 0)") return bg;
+    while (cur) {
+      chain.unshift(cur);
       cur = cur.parentElement;
     }
-    return getComputedStyle(document.body).backgroundColor;
+    let acc = parse(getComputedStyle(document.body).backgroundColor);
+    for (const elNode of chain) {
+      const bg = getComputedStyle(elNode).backgroundColor;
+      if (!bg || bg === "transparent" || bg === "rgba(0, 0, 0, 0)") continue;
+      const c = parse(bg);
+      if (c.a <= 0) continue;
+      acc = c.a >= 1 ? { ...c } : composite(c, acc);
+    }
+    return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
   }, property);
 }
 
@@ -357,17 +409,36 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
       const color = await el.evaluate((node) => getComputedStyle(node).color);
       const bg = await el.evaluate((node) => {
-        const s = getComputedStyle(node);
-        if (s.backgroundColor !== "transparent" && s.backgroundColor !== "rgba(0, 0, 0, 0)") {
-          return s.backgroundColor;
+        const parse = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+          return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+        };
+        const composite = (fg: any, bgc: any) => {
+          const a = fg.a + bgc.a * (1 - fg.a);
+          if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+          return {
+            r: (fg.r * fg.a + bgc.r * bgc.a * (1 - fg.a)) / a,
+            g: (fg.g * fg.a + bgc.g * bgc.a * (1 - fg.a)) / a,
+            b: (fg.b * fg.a + bgc.b * bgc.a * (1 - fg.a)) / a,
+            a,
+          };
+        };
+        const chain: Element[] = [];
+        let cur: Element | null = node as Element;
+        while (cur) {
+          chain.unshift(cur);
+          cur = cur.parentElement;
         }
-        let parent = node.parentElement;
-        while (parent) {
-          const pBg = getComputedStyle(parent).backgroundColor;
-          if (pBg !== "transparent" && pBg !== "rgba(0, 0, 0, 0)") return pBg;
-          parent = parent.parentElement;
+        let acc = parse(getComputedStyle(document.body).backgroundColor);
+        for (const elNode of chain) {
+          const cstr = getComputedStyle(elNode).backgroundColor;
+          if (!cstr || cstr === "transparent" || cstr === "rgba(0, 0, 0, 0)") continue;
+          const c = parse(cstr);
+          if (c.a <= 0) continue;
+          acc = c.a >= 1 ? { ...c } : composite(c, acc);
         }
-        return s.backgroundColor;
+        return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
       });
 
       if (bg === "transparent" || bg === "rgba(0, 0, 0, 0)") continue;

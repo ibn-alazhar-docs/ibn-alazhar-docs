@@ -455,13 +455,28 @@ jobs:
           MOCK_OCR: "true"
           STORAGE_DRIVER: "local"
           STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
+          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
+          DATABASE_URL_DIRECT: postgresql://test_user:test_password@localhost:5432/test_db
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
         run: |
+          set -euo pipefail
           mkdir -p /tmp/ibn-e2e-logs
-          pnpm --filter @ibn-al-azhar-docs/ocr-worker start > /tmp/ibn-e2e-logs/ocr-worker.log 2>&1 &
+          pnpm --filter @ibn-al-azhar-docs/ocr-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/ocr-worker.log 2>&1 &
           echo $! > /tmp/ibn-e2e-logs/ocr-worker.pid
-          pnpm --filter @ibn-al-azhar-docs/export-worker start > /tmp/ibn-e2e-logs/export-worker.log 2>&1 &
+          pnpm --filter @ibn-al-azhar-docs/export-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/export-worker.log 2>&1 &
           echo $! > /tmp/ibn-e2e-logs/export-worker.pid
-          sleep 5
+          sleep 8
+          for name in ocr-worker export-worker; do
+            pid="$(cat /tmp/ibn-e2e-logs/${name}.pid)"
+            if ! kill -0 "$pid" 2>/dev/null; then
+              echo "::error::${name} exited early (pid ${pid})"
+              echo "--- ${name}.log (tail) ---"
+              tail -n 200 "/tmp/ibn-e2e-logs/${name}.log" || true
+              exit 1
+            fi
+          done
+          echo "Pipeline workers are running."
 
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
