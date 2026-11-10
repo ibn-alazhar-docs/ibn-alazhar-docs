@@ -123,7 +123,11 @@ export function FolderItem({
               className="flex-1 px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
               autoFocus
             />
-            <button type="submit" className="text-xs text-success hover:underline" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="submit"
+              className="text-xs text-success hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
               {tCommon("save")}
             </button>
           </form>

@@ -97,7 +97,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
       const found: Array<{ selector: string; cls: string }> = [];
       const seen = new Set<string>();
       document.querySelectorAll("*").forEach((el) => {
-        const cls = (el.className && typeof el.className === "string") ? el.className : "";
+        const cls = el.className && typeof el.className === "string" ? el.className : "";
         // Only flag physical horizontal spacing utilities, not logical (ms/me/ps/pe/mx-auto is physical too)
         const matches = cls.match(/\b(ml|mr|pl|pr|px|mx)(-\S+)?\b/g);
         if (matches) {
