@@ -49,6 +49,8 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
       S3_ACCESS_KEY_ID: dummy
       S3_SECRET_ACCESS_KEY: dummy
     steps:
@@ -91,6 +93,9 @@ jobs:
 
       - name: Seed database
         run: pnpm db:seed
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
 
       - name: Build web app
         run: pnpm --filter @ibn-al-azhar-docs/web build
