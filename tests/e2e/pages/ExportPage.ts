@@ -22,7 +22,7 @@ export class ExportPage {
       .getByRole("button", { name: /تصدير متقدم|Advanced Export/i })
       .first();
     this.formatOptions = page.locator('[data-testid="export-format"]');
-    this.downloadButton = page.getByRole("button", { name: /تنزيل|Download/i }).first();
+    this.downloadButton = page.getByRole("button", { name: /تنزيل|Download|صدّر/i }).last();
     this.batchExportButton = page
       .getByRole("button", { name: /تصدير مجمّع|Batch export/i })
       .first();
