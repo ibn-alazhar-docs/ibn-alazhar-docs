@@ -47,6 +47,11 @@ interface AnalyticsData {
   storage: StorageAnalytics;
 }
 
+interface AnalyticsContentProps {
+  initialData?: AnalyticsData;
+  initialDays?: number;
+}
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return "0 B";
   const k = 1024;
@@ -163,34 +168,38 @@ const statusVariants: Record<string, "success" | "warning" | "info" | "destructi
   FAILED: "destructive",
 };
 
-export function AnalyticsContent() {
+export function AnalyticsContent({ initialData, initialDays = 30 }: AnalyticsContentProps) {
   const t = useTranslations("analytics");
   const tDocs = useTranslations("documents");
-  const [data, setData] = useState<AnalyticsData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [days, setDays] = useState(30);
+  const [data, setData] = useState<AnalyticsData | null>(initialData ?? null);
+  const [isLoading, setIsLoading] = useState(!initialData);
+  const [days, setDays] = useState(initialDays);
 
   const getStatusLabel = (status: string): string => {
     const label = tDocs(`status.${status}`);
     return label.startsWith("status.") ? status : label;
   };
 
-  const fetchAnalytics = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(`/api/analytics?days=${days}`);
-      if (res.ok) {
-        const analytics = await res.json();
-        setData(analytics);
+  const fetchAnalytics = useCallback(
+    async (targetDays = days) => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/analytics?days=${targetDays}`);
+        if (res.ok) {
+          const analytics = await res.json();
+          setData(analytics);
+        }
+      } finally {
+        setIsLoading(false);
       }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [days]);
+    },
+    [days],
+  );
 
   useEffect(() => {
-    fetchAnalytics();
-  }, [fetchAnalytics]);
+    if (initialData && days === initialDays) return;
+    void fetchAnalytics(days);
+  }, [days, fetchAnalytics, initialData, initialDays]);
 
   const initialLoading = isLoading && !data;
 
@@ -215,7 +224,7 @@ export function AnalyticsContent() {
           <Button
             variant="outline"
             size="sm"
-            onClick={fetchAnalytics}
+            onClick={() => void fetchAnalytics(days)}
             disabled={isLoading}
             aria-label={t("refresh")}
           >

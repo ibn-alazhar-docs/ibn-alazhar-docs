@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { requireAuth } from "@/middleware/auth-guards";
 import { AnalyticsContent } from "../analytics-content";
 import { PageTransition } from "@/ui/page-transition";
+import { useCases } from "@/core/composition-root";
 
 export const revalidate = 0;
 
@@ -19,11 +20,12 @@ export async function generateMetadata({ params }: AnalyticsPageProps): Promise<
 }
 
 export default async function AnalyticsPage() {
-  await requireAuth();
+  const session = await requireAuth();
+  const initialData = await useCases.analytics.getAnalytics(session, 30);
 
   return (
     <PageTransition>
-      <AnalyticsContent />
+      <AnalyticsContent initialData={initialData} initialDays={30} />
     </PageTransition>
   );
 }

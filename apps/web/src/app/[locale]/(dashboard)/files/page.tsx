@@ -97,7 +97,7 @@ export default function FilesPage() {
 
                 {/* Document Table Skeleton */}
                 {fm.loadingDocs && (
-                  <div>
+                  <div className="min-h-[280px]">
                     <div className="mb-4 flex items-center justify-between">
                       <div className="h-6 w-32 rounded bg-muted animate-pulse" />
                     </div>
@@ -195,20 +195,22 @@ export default function FilesPage() {
 
                 {/* Empty State */}
                 {fm.activeJobs.length === 0 && !fm.loadingDocs && fm.documents.length === 0 && (
-                  <Card className="flex flex-col items-center justify-center border-dashed border-gold/35 py-12 sm:py-16 min-h-[280px] px-6 text-center">
-                    <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/5 text-gold shadow-sm">
-                      <FolderIcon className="h-10 w-10" />
-                    </div>
-                    <Heading level={3} className="mb-3 text-primary-color">
-                      {tDocs("empty")}
-                    </Heading>
-                    <Text color="muted" className="max-w-md">
-                      {tDocs("uploadPrompt")}
-                    </Text>
-                    <Button asChild className="mt-4">
-                      <Link href="/files">{tDocs("uploadButton")}</Link>
-                    </Button>
-                  </Card>
+                  <div className="min-h-[280px]">
+                    <Card className="flex min-h-[280px] flex-col items-center justify-center border-dashed border-gold/35 py-12 sm:py-16 px-6 text-center">
+                      <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gold/5 text-gold shadow-sm">
+                        <FolderIcon className="h-10 w-10" />
+                      </div>
+                      <Heading level={3} className="mb-3 text-primary-color">
+                        {tDocs("empty")}
+                      </Heading>
+                      <Text color="muted" className="max-w-md">
+                        {tDocs("uploadPrompt")}
+                      </Text>
+                      <Button asChild className="mt-4">
+                        <Link href="/files">{tDocs("uploadButton")}</Link>
+                      </Button>
+                    </Card>
+                  </div>
                 )}
               </Stack>
             </div>
