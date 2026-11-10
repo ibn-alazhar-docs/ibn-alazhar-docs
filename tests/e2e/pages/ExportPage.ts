@@ -28,35 +28,41 @@ export class ExportPage {
   }
 
   async openExportDialog() {
+    await expect(this.exportButton).toBeVisible({ timeout: 15000 });
+    await expect(this.exportButton).toBeEnabled({ timeout: 15000 });
     await this.exportButton.click();
-    await this.page.waitForTimeout(500);
+    await this.expectDialogVisible();
   }
 
   async openAdvancedExport() {
+    await expect(this.advancedExportButton).toBeVisible({ timeout: 15000 });
+    await expect(this.advancedExportButton).toBeEnabled({ timeout: 15000 });
     await this.advancedExportButton.click();
-    await this.page.waitForTimeout(500);
+    await this.expectDialogVisible();
   }
 
   async selectFormat(format: ExportFormat) {
     const formatLocator = this.page
-      .locator(`[data-testid="export-format-${format.toLowerCase()}"], text="${format}"`)
+      .locator(`[data-testid="export-format-${format.toLowerCase()}"]`)
+      .or(this.page.getByText(format, { exact: true }))
       .first();
+    await expect(formatLocator).toBeVisible({ timeout: 10000 });
     await formatLocator.click();
-    await this.page.waitForTimeout(300);
   }
 
   async startDownload() {
+    await expect(this.downloadButton).toBeVisible({ timeout: 10000 });
+    await expect(this.downloadButton).toBeEnabled({ timeout: 10000 });
     await this.downloadButton.click();
-    await this.page.waitForTimeout(2000);
   }
 
   async cancelExport() {
+    await expect(this.cancelButton).toBeVisible({ timeout: 10000 });
     await this.cancelButton.click();
-    await this.page.waitForTimeout(500);
   }
 
   async expectDialogVisible() {
-    await expect(this.dialog).toBeVisible();
+    await expect(this.dialog).toBeVisible({ timeout: 15000 });
   }
 
   async expectDialogHidden() {

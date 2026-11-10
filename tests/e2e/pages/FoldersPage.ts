@@ -39,47 +39,75 @@ export class FoldersPage {
   }
 
   async createFolder(name: string) {
+    await expect(this.folderButton).toBeVisible({ timeout: 15000 });
     await this.folderButton.click();
-    await this.page.waitForTimeout(500);
+    await expect(this.folderNameInput).toBeVisible({ timeout: 10000 });
     await this.folderNameInput.fill(name);
-    await this.submitButton.click();
-    await this.page.waitForTimeout(1000);
+    await expect(this.submitButton).toBeEnabled({ timeout: 10000 });
+    await Promise.all([
+      this.page
+        .waitForResponse((r) => r.url().includes("/api/") && r.request().method() === "POST", {
+          timeout: 15000,
+        })
+        .catch(() => null),
+      this.submitButton.click(),
+    ]);
   }
 
   async createNestedFolder(parentName: string, childName: string) {
-    const parent = this.folderItems.filter({ hasText: parentName });
+    const parent = this.folderItems.filter({ hasText: parentName }).first();
+    await expect(parent).toBeVisible({ timeout: 15000 });
     await parent.hover();
     const contextMenu = parent
       .locator('[data-testid="context-menu"], button:has-text("⋮")')
       .first();
-    if (await contextMenu.isVisible().catch(() => false)) {
-      await contextMenu.click();
-      await this.page
-        .getByRole("button", { name: /إضافة مجلد فرعي|Add subfolder|子文件夹/i })
-        .first()
-        .click();
-    } else {
-      await this.folderButton.click();
-    }
-    await this.page.waitForTimeout(300);
+    await expect(contextMenu).toBeVisible({ timeout: 10000 });
+    await contextMenu.click();
+    const addSub = this.page
+      .getByRole("menuitem", { name: /إضافة مجلد فرعي|Add subfolder|مجلد فرعي/i })
+      .or(this.page.getByRole("button", { name: /إضافة مجلد فرعي|Add subfolder|مجلد فرعي/i }))
+      .first();
+    await expect(addSub).toBeVisible({ timeout: 10000 });
+    await addSub.click();
+    await expect(this.folderNameInput).toBeVisible({ timeout: 10000 });
     await this.folderNameInput.fill(childName);
-    await this.submitButton.click();
-    await this.page.waitForTimeout(1000);
+    await expect(this.submitButton).toBeEnabled({ timeout: 10000 });
+    await Promise.all([
+      this.page
+        .waitForResponse((r) => r.url().includes("/api/") && r.request().method() === "POST", {
+          timeout: 15000,
+        })
+        .catch(() => null),
+      this.submitButton.click(),
+    ]);
   }
 
   async renameFolder(oldName: string, newName: string) {
-    const folder = this.folderItems.filter({ hasText: oldName });
+    const folder = this.folderItems.filter({ hasText: oldName }).first();
+    await expect(folder).toBeVisible({ timeout: 15000 });
     await folder.hover();
     const menuBtn = folder.locator('[data-testid="context-menu"], button:has-text("⋮")').first();
+    await expect(menuBtn).toBeVisible({ timeout: 10000 });
     await menuBtn.click();
-    await this.page
-      .getByRole("button", { name: /إعادة تسمية|Rename/i })
-      .first()
-      .click();
-    await this.folderNameInput.clear();
+    const renameBtn = this.page
+      .getByRole("menuitem", { name: /إعادة تسمية|Rename/i })
+      .or(this.page.getByRole("button", { name: /إعادة تسمية|Rename/i }))
+      .first();
+    await expect(renameBtn).toBeVisible({ timeout: 10000 });
+    await renameBtn.click();
+    await expect(this.folderNameInput).toBeVisible({ timeout: 10000 });
     await this.folderNameInput.fill(newName);
-    await this.submitButton.click();
-    await this.page.waitForTimeout(1000);
+    await expect(this.submitButton).toBeEnabled({ timeout: 10000 });
+    await Promise.all([
+      this.page
+        .waitForResponse(
+          (r) =>
+            r.url().includes("/api/") && ["PATCH", "PUT", "POST"].includes(r.request().method()),
+          { timeout: 15000 },
+        )
+        .catch(() => null),
+      this.submitButton.click(),
+    ]);
   }
 
   async deleteFolder(name: string) {

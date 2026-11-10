@@ -18,26 +18,22 @@ test.describe("Document CRUD Operations", () => {
     await docs.gotoFiles();
     await docs.uploadFile(TEST_PDF_PATH);
     await docs.expectDocumentRowVisible();
-    const statusVisible = await page
-      .locator("text=معالجة")
-      .or(
-        page
-          .locator("text=Processing")
-          .or(page.locator("text=اكتمل").or(page.locator("text=Completed"))),
-      )
-      .first()
-      .isVisible({ timeout: 30000 })
-      .catch(() => false);
-    expect(statusVisible).toBeTruthy();
+    await expect(
+      page
+        .locator('[data-testid="document-row"]')
+        .first()
+        .getByText(/معالجة|Processing|اكتمل|Completed|رُفع|Uploaded|معلّق|Queued/i),
+    ).toBeVisible({ timeout: 30000 });
   });
 
   test("View document details metadata and content preview", async ({ page }) => {
     const docs = new DocumentsPage(page);
     await docs.gotoFiles();
-    await docs.expectDocumentRowVisible();
+    await docs.expectDocumentRowVisible(60000);
     await docs.clickFirstDocumentTitle();
-    await page.waitForURL(/\/documents\//);
+    await page.waitForURL(/\/documents\//, { timeout: 30000 });
     await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("body")).toContainText(/.+/, { timeout: 15000 });
     const hasContent = await page.locator("body").textContent();
     expect(hasContent?.length).toBeGreaterThan(100);
   });

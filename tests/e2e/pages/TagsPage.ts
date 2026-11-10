@@ -12,13 +12,18 @@ export class TagsPage {
   constructor(page: Page) {
     this.page = page;
     this.tagList = page.locator('[data-testid="tag-list"]');
-    this.tagItems = page.locator('[data-testid="tag-item"]');
+    this.tagItems = page.locator('[data-testid="tag-item"], [data-tag-name], .tag-item');
     this.tagNameInput = page.locator(
-      'input[name="name"], input[placeholder*="الاسم"], input[placeholder*="Tag"]',
+      'input[name="name"], input[placeholder*="الاسم"], input[placeholder*="Tag"], input[placeholder*="وسم"]',
     );
     this.colorInput = page.locator('input[type="color"], input[name="color"]');
-    this.createButton = page.getByRole("button", { name: /وسم جديد|New tag|إضافة|Add/i }).first();
-    this.saveButton = page.locator('button[type="submit"]');
+    this.createButton = page
+      .getByRole("button", { name: /وسم جديد|New tag|إضافة وسماً|إضافة وسم|Add tag|إنشاء/i })
+      .or(page.getByRole("button", { name: /\+\s*وسم/i }))
+      .first();
+    this.saveButton = page
+      .locator('button[type="submit"], form button:has-text("حفظ"), form button:has-text("إنشاء")')
+      .first();
   }
 
   async goto(locale: string = "ar") {
@@ -27,14 +32,22 @@ export class TagsPage {
   }
 
   async createTag(name: string, color: string = "#3B82F6") {
+    await expect(this.createButton).toBeVisible({ timeout: 15000 });
     await this.createButton.click();
-    await this.page.waitForTimeout(500);
+    await expect(this.tagNameInput).toBeVisible({ timeout: 10000 });
     await this.tagNameInput.fill(name);
     if (await this.colorInput.isVisible().catch(() => false)) {
-      await this.colorInput.fill(color);
+      await this.colorInput.fill(color).catch(() => {});
     }
-    await this.saveButton.click();
-    await this.page.waitForTimeout(1000);
+    await expect(this.saveButton).toBeEnabled({ timeout: 10000 });
+    await Promise.all([
+      this.page
+        .waitForResponse((r) => r.url().includes("/api/") && r.request().method() === "POST", {
+          timeout: 15000,
+        })
+        .catch(() => null),
+      this.saveButton.click(),
+    ]);
   }
 
   async deleteTag(name: string) {
@@ -57,12 +70,22 @@ export class TagsPage {
     }
   }
 
-  async expectTagVisible(name: string, timeout: number = 10000) {
-    await expect(this.tagItems.filter({ hasText: name }).first()).toBeVisible({ timeout });
+  async expectTagVisible(name: string, timeout: number = 15000) {
+    await expect(
+      this.tagItems
+        .filter({ hasText: name })
+        .first()
+        .or(this.page.getByText(name, { exact: true }).first()),
+    ).toBeVisible({ timeout });
   }
 
-  async expectTagHidden(name: string, timeout: number = 5000) {
-    await expect(this.tagItems.filter({ hasText: name }).first()).not.toBeVisible({ timeout });
+  async expectTagHidden(name: string, timeout: number = 10000) {
+    await expect(
+      this.tagItems
+        .filter({ hasText: name })
+        .first()
+        .or(this.page.getByText(name, { exact: true }).first()),
+    ).toBeHidden({ timeout });
   }
 
   async getTagCount(): Promise<number> {

@@ -33,24 +33,25 @@ export class SharePage {
   }
 
   async createShareLink() {
+    await expect(this.createLinkButton).toBeVisible({ timeout: 15000 });
+    await expect(this.createLinkButton).toBeEnabled({ timeout: 15000 });
     await this.createLinkButton.click();
-    await this.page.waitForTimeout(1000);
   }
 
   async getShareLink(): Promise<string> {
+    await expect(this.shareLinkInput).toBeVisible({ timeout: 15000 });
     return this.shareLinkInput.inputValue();
   }
 
   async setExpiry(days: number) {
-    if (await this.expirySelector.isVisible().catch(() => false)) {
-      await this.expirySelector.selectOption(String(days));
-      await this.page.waitForTimeout(500);
-    }
+    await expect(this.expirySelector).toBeVisible({ timeout: 15000 });
+    await this.expirySelector.selectOption(String(days));
   }
 
   async regenerateLink() {
+    await expect(this.regenerateButton).toBeVisible({ timeout: 15000 });
+    await expect(this.regenerateButton).toBeEnabled({ timeout: 15000 });
     await this.regenerateButton.click();
-    await this.page.waitForTimeout(1000);
   }
 
   async expectDocumentViewerVisible(timeout: number = 15000) {

@@ -36,22 +36,32 @@ export class SearchPage {
   }
 
   async search(query: string) {
-    await this.searchInput.clear();
+    await expect(this.searchInput).toBeVisible({ timeout: 15000 });
     await this.searchInput.fill(query);
-    await this.page.keyboard.press("Enter");
-    await this.page.waitForTimeout(2000);
+    await Promise.all([
+      this.page
+        .waitForResponse((r) => r.url().includes("/api/") || r.url().includes("search"), {
+          timeout: 15000,
+        })
+        .catch(() => null),
+      this.page.keyboard.press("Enter"),
+    ]);
+    await this.page.waitForLoadState("domcontentloaded");
   }
 
   async searchWithSuggestions(query: string) {
-    await this.searchInput.clear();
+    await expect(this.searchInput).toBeVisible({ timeout: 15000 });
     await this.searchInput.fill(query);
-    await this.page.waitForTimeout(1000);
+    await this.page.waitForTimeout(500);
   }
 
   async clearSearch() {
     if (await this.clearButton.isVisible().catch(() => false)) {
       await this.clearButton.click();
+      return;
     }
+    await this.searchInput.fill("");
+    await this.page.keyboard.press("Enter");
   }
 
   async expectResultsVisible(timeout: number = 15000) {

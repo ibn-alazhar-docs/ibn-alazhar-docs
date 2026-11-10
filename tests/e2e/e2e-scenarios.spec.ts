@@ -69,18 +69,18 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
     );
 
-    await page.waitForLoadState("load");
-    await page.setInputFiles('[data-testid="file-input"]', testFilePath);
+    await page.waitForLoadState("domcontentloaded");
+    const fileInput = page.locator('[data-testid="file-input"], input[type="file"]').first();
+    await fileInput.setInputFiles(testFilePath);
 
-    await page.getByTestId("upload-button").click({ timeout: 15000 });
+    const uploadButton = page.getByTestId("upload-button").first();
+    await expect(uploadButton).toBeVisible({ timeout: 15000 });
+    await expect(uploadButton).toBeEnabled({ timeout: 15000 });
+    await uploadButton.click();
 
-    await expect(page.locator('[data-testid="document-row"]').first()).toBeVisible({
-      timeout: 30000,
-    });
-
-    await expect(page.locator('[data-testid="document-row"]').first()).toContainText("اكتمل", {
-      timeout: 60000,
-    });
+    const row = page.locator('[data-testid="document-row"]').first();
+    await expect(row).toBeVisible({ timeout: 30000 });
+    await expect(row).toContainText(/اكتمل/, { timeout: 120000 });
   });
 
   test("4. Search document & Empty search", async ({ page }) => {

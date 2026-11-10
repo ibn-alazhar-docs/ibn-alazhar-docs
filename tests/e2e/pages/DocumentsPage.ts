@@ -53,6 +53,9 @@ export class DocumentsPage {
     const testFilePath = path.resolve(__dirname, "../../../test-data/source", fileName);
     await this.fileInput.setInputFiles(testFilePath);
     if (await this.uploadButton.isVisible().catch(() => false)) {
+      await expect(this.uploadButton)
+        .toBeEnabled({ timeout: 15000 })
+        .catch(() => {});
       await this.uploadButton.click();
     }
   }
@@ -93,7 +96,9 @@ export class DocumentsPage {
   }
 
   async clickFirstDocumentTitle() {
+    await this.expectDocumentRowVisible();
     const titleLink = this.documentRows.first().locator("a").first();
+    await expect(titleLink).toBeVisible();
     await titleLink.click();
   }
 
