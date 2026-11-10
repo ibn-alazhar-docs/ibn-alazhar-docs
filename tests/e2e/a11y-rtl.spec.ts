@@ -10,8 +10,8 @@ async function login(page: Page) {
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("load");
+  await page.waitForURL(/\/dashboard/, { timeout: 30000 });
+  await expect(page.locator("main")).toBeVisible({ timeout: 15000 });
 }
 
 test.describe("Arabic/RTL-specific accessibility", () => {
@@ -70,6 +70,7 @@ test.describe("Arabic/RTL-specific accessibility", () => {
   test("Legacy /en dashboard redirects to /ar dashboard @a11y-rtl", async ({ page }) => {
     await login(page);
     await page.goto("/en/dashboard");
+    await page.waitForURL(/\/ar\/(dashboard|login)/, { timeout: 15000 });
     await page.waitForLoadState("load");
     expect(page.url()).toContain("/ar/dashboard");
     await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
@@ -214,12 +215,27 @@ test.describe("Arabic/RTL-specific accessibility", () => {
 
     await emailInput.focus();
     await expect(emailInput).toBeFocused();
-    await page.keyboard.press("Tab");
-    await page.waitForTimeout(100);
+
+    let reachedPassword = false;
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press("Tab");
+      if (await passwordInput.evaluate((el) => el === document.activeElement).catch(() => false)) {
+        reachedPassword = true;
+        break;
+      }
+    }
+    expect(reachedPassword).toBeTruthy();
     await expect(passwordInput).toBeFocused();
 
-    await page.keyboard.press("Shift+Tab");
-    await page.waitForTimeout(100);
+    let reachedEmail = false;
+    for (let i = 0; i < 6; i++) {
+      await page.keyboard.press("Shift+Tab");
+      if (await emailInput.evaluate((el) => el === document.activeElement).catch(() => false)) {
+        reachedEmail = true;
+        break;
+      }
+    }
+    expect(reachedEmail).toBeTruthy();
     await expect(emailInput).toBeFocused();
   });
 

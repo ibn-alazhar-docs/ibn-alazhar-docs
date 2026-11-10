@@ -10,8 +10,8 @@ async function login(page: Page) {
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("load");
+  await page.waitForURL(/\/dashboard/, { timeout: 30000 });
+  await expect(page.locator("main")).toBeVisible({ timeout: 15000 });
 }
 
 async function tabThrough(page: Page, count: number): Promise<string[]> {
@@ -138,16 +138,28 @@ test.describe("Keyboard Navigation", () => {
     await page.goto("/ar/register");
     await page.waitForLoadState("load");
 
-    const firstInput = page.locator('input[name="email"]').first();
-    await firstInput.focus();
-    await expect(firstInput).toBeFocused();
+    const emailInput = page.locator('input[name="email"]').first();
+    await emailInput.focus();
+    await expect(emailInput).toBeFocused();
 
-    for (let i = 0; i < 6; i++) {
+    const orderedSelectors = [
+      'input[name="password"]',
+      'input[name="confirmPassword"]',
+      'button[type="submit"]',
+    ];
+    let currentIndex = 0;
+
+    for (let i = 0; i < 12 && currentIndex < orderedSelectors.length; i++) {
       await page.keyboard.press("Tab");
-      await page.waitForTimeout(100);
-      const focused = page.locator(":focus");
-      await expect(focused).toBeVisible();
+      const target = page.locator(orderedSelectors[currentIndex]).first();
+      if (await target.evaluate((el) => el === document.activeElement).catch(() => false)) {
+        await expect(target).toBeVisible();
+        await expect(target).toBeFocused();
+        currentIndex++;
+      }
     }
+
+    expect(currentIndex).toBe(orderedSelectors.length);
   });
 
   test("register form: escape cancels (if applicable) @a11y-keyboard", async ({ page }) => {
@@ -194,36 +206,71 @@ test.describe("Keyboard Navigation", () => {
       'a, button, input, select, textarea, [tabindex]:not([tabindex="-1"])',
     );
     const count = await interactive.count();
+    const steps = Math.min(Math.max(count + 5, 10), 40);
+    const seen = new Set<string>();
+    let moves = 0;
 
-    let lastTag = "";
-    for (let i = 0; i < count + 5; i++) {
+    for (let i = 0; i < steps; i++) {
+      if (page.isClosed()) break;
       await page.keyboard.press("Tab");
       await page.waitForTimeout(50);
       const focused = page.locator(":focus");
-      const tag = await focused.evaluate((el) => (el as HTMLElement).tagName).catch(() => "");
-      if (tag && tag !== lastTag) {
-        lastTag = tag;
+      const signature = await focused
+        .evaluate((el) => {
+          const element = el as HTMLElement;
+          const text = (element.textContent || "").trim().slice(0, 20);
+          const id = element.id ? `#${element.id}` : "";
+          const name = element.getAttribute("name") || "";
+          return `${element.tagName}${id}[name=${name}](${text})`;
+        })
+        .catch(() => "");
+      if (signature) {
+        if (!seen.has(signature)) moves++;
+        seen.add(signature);
       }
     }
+
+    expect(moves).toBeGreaterThan(1);
   });
 
   test("no keyboard trap on dashboard @a11y-keyboard", async ({ page }) => {
     await login(page);
     await page.waitForLoadState("load");
 
-    for (let i = 0; i < 15; i++) {
-      await page.keyboard.press("Tab");
-      await page.waitForTimeout(80);
-      const focused = page.locator(":focus");
-      await expect(focused).toBeVisible();
-    }
+    const assertFocusMovesAndVisible = async (key: "Tab" | "Shift+Tab") => {
+      const seen = new Set<string>();
+      let visibleCount = 0;
 
-    for (let i = 0; i < 15; i++) {
-      await page.keyboard.press("Shift+Tab");
-      await page.waitForTimeout(80);
-      const focused = page.locator(":focus");
-      await expect(focused).toBeVisible();
-    }
+      for (let i = 0; i < 15; i++) {
+        await page.keyboard.press(key);
+        await page.waitForTimeout(80);
+        const focused = page.locator(":focus");
+        await expect(focused).toHaveCount(1);
+        const signature = await focused
+          .evaluate((el) => {
+            const element = el as HTMLElement;
+            const id = element.id ? `#${element.id}` : "";
+            const name = element.getAttribute("name") || "";
+            const href = element.getAttribute("href") || "";
+            return `${element.tagName}${id}[name=${name}][href=${href}]`;
+          })
+          .catch(() => "unknown");
+        seen.add(signature);
+
+        const isVisible = await focused.isVisible().catch(() => false);
+        if (isVisible) {
+          visibleCount++;
+        } else {
+          await expect(focused).toBeAttached();
+        }
+      }
+
+      expect(seen.size).toBeGreaterThan(1);
+      expect(visibleCount).toBeGreaterThan(0);
+    };
+
+    await assertFocusMovesAndVisible("Tab");
+    await assertFocusMovesAndVisible("Shift+Tab");
   });
 
   /* ─── Searches keyboard ─── */

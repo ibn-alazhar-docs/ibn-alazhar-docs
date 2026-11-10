@@ -268,13 +268,21 @@ test.describe("Interactive state accessibility", () => {
     await page.waitForLoadState("load");
     await page.waitForTimeout(2000);
 
-    const paginationBtns = page.locator("nav[aria-label]").first();
-    const paginationRegion = page.locator("[role='navigation']").first();
-    const ariaLabel =
-      (await paginationBtns.getAttribute("aria-label")) ||
-      (await paginationRegion.getAttribute("aria-label"));
-    if (ariaLabel) {
-      expect(ariaLabel.trim().length).toBeGreaterThan(0);
+    const paginationNav = page.locator("nav[aria-label]").first();
+    const paginationRegion = page.locator('[role="navigation"]').first();
+    const paginationNavCount = await paginationNav.count();
+    const paginationRegionCount = await paginationRegion.count();
+
+    if (paginationNavCount > 0) {
+      const ariaLabel = await paginationNav.getAttribute("aria-label");
+      if (ariaLabel) {
+        expect(ariaLabel.trim().length).toBeGreaterThan(0);
+      }
+    } else if (paginationRegionCount > 0) {
+      const ariaLabel = await paginationRegion.getAttribute("aria-label");
+      if (ariaLabel) {
+        expect(ariaLabel.trim().length).toBeGreaterThan(0);
+      }
     }
 
     const results = await runAxe(page);
