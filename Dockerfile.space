@@ -48,7 +48,7 @@ ENV SENTRY_RELEASE=$SENTRY_RELEASE
 # Build-time env: .env.example provides dummy values for build-time validation.
 # Runtime env (DATABASE_URL, REDIS_URL, AUTH_SECRET, etc.) comes from the entrypoint.
 COPY .env.example /app/apps/web/.env.production
-RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build
+RUN NODE_OPTIONS="--max-old-space-size=4096" NODE_ENV=production npx next build --webpack
 
 # -----------------------------------------------------------------------------
 # HF Space: Self-contained image with PostgreSQL, Redis, web, workers
