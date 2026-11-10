@@ -37,7 +37,7 @@ export function CTASection({ isLoggedIn }: { isLoggedIn?: boolean }) {
           className="relative z-10 grid items-center gap-8 md:grid-cols-2"
         >
           <div className="max-w-2xl">
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold text-gold">
+            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-gold/20 bg-gold/5 px-4 py-1.5 text-[0.625rem] font-semibold text-primary-color">
               {t("eyebrow")}
             </div>
 

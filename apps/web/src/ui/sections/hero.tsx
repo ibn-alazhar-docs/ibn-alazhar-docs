@@ -116,7 +116,7 @@ export function Hero({ locale: localeProp, eyebrow, title, subtitle, cta, isLogg
           animate="visible"
         >
           <motion.div variants={itemVariants} className="mb-8 flex items-center gap-3">
-            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--gold-border)] bg-[var(--gold-bg)] px-4 py-1.5 text-[0.625rem] font-semibold text-[var(--gold)]">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[var(--gold-border)] bg-[var(--gold-bg)] px-4 py-1.5 text-[0.625rem] font-semibold text-[var(--text-primary)]">
               {eyebrow || t("eyebrow")}
             </span>
           </motion.div>

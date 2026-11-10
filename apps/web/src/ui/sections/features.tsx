@@ -50,7 +50,7 @@ export function Features() {
           transition={{ duration: 0.4, ease: "easeOut" }}
           className="mb-10"
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold text-muted-color">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-badge px-4 py-1.5 text-[0.625rem] font-semibold text-primary-color">
             {t("title")}
           </span>
         </motion.div>
