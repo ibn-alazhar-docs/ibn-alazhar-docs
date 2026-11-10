@@ -7,6 +7,9 @@ export default function DocsPage() {
   const containerId = `api-reference-${id.replace(/[:.]/g, "-")}`;
 
   useEffect(() => {
+    if (process.env.NEXT_PUBLIC_CI === "true" || process.env.NODE_ENV === "test") {
+      return;
+    }
     if (document.getElementById(containerId)) {
       const script = document.createElement("script");
       script.id = "api-reference";
@@ -14,6 +17,10 @@ export default function DocsPage() {
       script.src =
         "https://cdn.jsdelivr.net/npm/@scalar/api-reference@latest/dist/browser/standalone.js";
       script.async = true;
+      script.onerror = () => {
+        // keep docs page usable without external CDN
+        script.remove();
+      };
       document.getElementById(containerId)?.appendChild(script);
       return () => {
         script.remove();

@@ -473,10 +473,50 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
     await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
-    const errorEl = page.getByRole("alert").first();
-    if (await errorEl.isVisible().catch(() => false)) {
-      const color = await errorEl.evaluate((el) => getComputedStyle(el).color);
-      const bg = await errorEl.evaluate((el) => getComputedStyle(el).backgroundColor);
+    const alert = page.getByRole("alert").first();
+    if (await alert.isVisible().catch(() => false)) {
+      const textEl = alert.locator("p, span, div").first();
+      const target = (await textEl.count()) > 0 ? textEl : alert;
+      const color = await target.evaluate((el) => getComputedStyle(el).color);
+      const bg = await target.evaluate((node) => {
+        const parse = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\d+(?:,\s*([\d.]+))?\)/);
+          // fallback handled below
+          return m
+            ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) }
+            : { r: 255, g: 255, b: 255, a: 1 };
+        };
+        const parseSafe = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+          return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+        };
+        const composite = (fg: any, bgc: any) => {
+          const a = fg.a + bgc.a * (1 - fg.a);
+          if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+          return {
+            r: (fg.r * fg.a + bgc.r * bgc.a * (1 - fg.a)) / a,
+            g: (fg.g * fg.a + bgc.g * bgc.a * (1 - fg.a)) / a,
+            b: (fg.b * fg.a + bgc.b * bgc.a * (1 - fg.a)) / a,
+            a,
+          };
+        };
+        const chain: Element[] = [];
+        let cur: Element | null = node as Element;
+        while (cur) {
+          chain.unshift(cur);
+          cur = cur.parentElement;
+        }
+        let acc = parseSafe(getComputedStyle(document.body).backgroundColor);
+        for (const elNode of chain) {
+          const cstr = getComputedStyle(elNode).backgroundColor;
+          if (!cstr || cstr === "transparent" || cstr === "rgba(0, 0, 0, 0)") continue;
+          const c = parseSafe(cstr);
+          if (c.a <= 0) continue;
+          acc = c.a >= 1 ? { ...c } : composite(c, acc);
+        }
+        return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
+      });
       const ratio = calculateContrastRatio(color, bg);
       test.info().annotations.push({
         type: "contrast",

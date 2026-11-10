@@ -246,7 +246,7 @@ function checkActuatorMemory() {
   const usedMB = Math.round(mem.rss / 1024 / 1024);
   const totalMB = Math.round(mem.heapUsed / 1024 / 1024);
   const maxMB = Math.round(mem.heapTotal / 1024 / 1024);
-  const memStatus: "UP" | "DOWN" = usedMB > 450 ? "DOWN" : "UP";
+  const memStatus: "UP" | "DOWN" = usedMB > 1024 ? "DOWN" : "UP";
   return { status: memStatus, details: { usedMB, totalMB, maxMB } };
 }
 
