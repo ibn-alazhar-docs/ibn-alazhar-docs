@@ -46,12 +46,7 @@ export class SuryaOcrProvider implements OcrProvider {
   private cachedAvailable: boolean | null = null;
 
   async isAvailable(_config: PipelineConfig): Promise<boolean> {
-    if (
-      process.env.MOCK_OCR === "true" ||
-      process.env.PLAYWRIGHT_TEST === "true" ||
-      process.env.NODE_ENV === "test"
-    )
-      return true;
+    if (process.env.MOCK_OCR === "true") return true;
     if (this.cachedAvailable !== null) return this.cachedAvailable;
     this.cachedAvailable = await probePythonModule(
       "from surya.detection import DetectionPredictor; from surya.recognition import FoundationPredictor, RecognitionPredictor; print('available')",
