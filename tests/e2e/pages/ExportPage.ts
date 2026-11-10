@@ -14,7 +14,7 @@ export class ExportPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.exportButton = page.getByRole("button", { name: /تصدير|Export|صدّر/i }).first();
+    this.exportButton = page.getByTestId("export-button").or(page.getByRole("button", { name: /تصدير|Export|صدّر/i })).first();
     this.advancedExportButton = page
       .getByRole("button", { name: /تصدير متقدم|Advanced Export/i })
       .first();
