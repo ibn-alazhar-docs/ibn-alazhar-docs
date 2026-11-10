@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { ExportPage, type ExportFormat } from "./pages/ExportPage";
 import { SharePage } from "./pages/SharePage";
 import { DocumentsPage } from "./pages/DocumentsPage";
-import { loginAsAdmin } from "./helpers";
+import { loginAsAdmin, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Export and Share", () => {
   test.describe.configure({ timeout: 180_000 });
@@ -21,6 +21,7 @@ test.describe("Export and Share", () => {
         const docs = new DocumentsPage(page);
         const exportP = new ExportPage(page);
         await docs.gotoFiles();
+        await docs.uploadFile(TEST_PDF_PATH);
         await docs.expectDocumentRowVisible(60000);
         await docs.clickFirstDocumentTitle();
         await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
@@ -43,6 +44,7 @@ test.describe("Export and Share", () => {
       const docs = new DocumentsPage(page);
       const exportP = new ExportPage(page);
       await docs.gotoFiles();
+      await docs.uploadFile(TEST_PDF_PATH);
       await docs.expectDocumentRowVisible(60000);
       await docs.clickFirstDocumentTitle();
       await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
@@ -129,6 +131,7 @@ test.describe("Export and Share", () => {
       const docs = new DocumentsPage(page);
       const share = new SharePage(page);
       await docs.gotoFiles();
+      await docs.uploadFile(TEST_PDF_PATH);
       await docs.expectDocumentRowVisible(60000);
       const row = docs.documentRows.first();
       await row.hover();

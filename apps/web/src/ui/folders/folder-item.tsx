@@ -118,6 +118,7 @@ export function FolderItem({
               aria-label={t("rename")}
               onChange={(e) => setEditName(e.target.value)}
               onKeyDown={(e) => {
+                if (e.key === "Enter") handleRename();
                 if (e.key === "Escape") setIsEditing(false);
               }}
               className="flex-1 px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
