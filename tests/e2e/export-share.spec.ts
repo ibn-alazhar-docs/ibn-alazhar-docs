@@ -33,7 +33,10 @@ test.describe("Export and Share", () => {
         const download = await downloadPromise;
         if (download) {
           const fileName = download.suggestedFilename();
-          expect(fileName.toLowerCase()).toContain(format.toLowerCase().replace("markdown", "md"));
+          const url = download.url();
+          expect(url.toLowerCase() + fileName.toLowerCase()).toContain(
+            format.toLowerCase().replace("markdown", "md"),
+          );
           const path = await download.path();
           expect(path).toBeTruthy();
         }

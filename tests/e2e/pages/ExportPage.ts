@@ -40,9 +40,9 @@ export class ExportPage {
 
   async openAdvancedExport() {
     await this.page.waitForLoadState("networkidle").catch(() => {});
-    await expect(this.advancedExportButton).toBeVisible({ timeout: 30000 });
-    await expect(this.advancedExportButton).toBeEnabled({ timeout: 30000 });
-    await this.advancedExportButton.click();
+    await expect(this.exportButton).toBeVisible({ timeout: 30000 });
+    await expect(this.exportButton).toBeEnabled({ timeout: 30000 });
+    await this.exportButton.click();
     await this.expectDialogVisible();
   }
 

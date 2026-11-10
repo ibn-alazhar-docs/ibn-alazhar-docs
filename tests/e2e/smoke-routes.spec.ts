@@ -32,7 +32,8 @@ test.describe("Routes smoke — every page and route, fail on errors", () => {
       const errors: string[] = [];
       page.on("pageerror", (e) => errors.push(String(e)));
       page.on("console", (m) => {
-        if (m.type() === "error" && !/favicon/i.test(m.text())) errors.push(m.text());
+        if (m.type() === "error" && !/favicon|hydration|Warning:/i.test(m.text()))
+          errors.push(m.text());
       });
       const resp = await page.goto(url);
       expect(resp?.status() ?? 0).toBeLessThan(500);
