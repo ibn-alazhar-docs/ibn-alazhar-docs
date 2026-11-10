@@ -152,7 +152,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await titleLink.click();
     await page.waitForURL(/\/ar\/preview\//);
 
-    const previewExportBtn = page.locator('button:has-text("تصدير متقدم")').first();
+    const previewExportBtn = page.locator('button:has-text("صدّر")').first();
     await previewExportBtn.click();
     await expect(page.locator("text=تصدير متقدم").first()).toBeVisible({ timeout: 10000 });
     await page.locator("text=إلغاء").first().click();
