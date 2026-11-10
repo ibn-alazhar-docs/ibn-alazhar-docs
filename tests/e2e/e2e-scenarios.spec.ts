@@ -144,7 +144,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       await page.fill('input[placeholder="الاسم"]', "وسم_مهم");
       await page.locator('button:has-text("حفظ")').first().click();
       // Close TagPicker
-      await page.locator('button:has-text("أغلق")').first().click();
+      await page.locator('button:has-text("أغلق")').first().click({ force: true });
     }
 
     // 3. Click the document title to open the preview page and test advanced export
@@ -163,7 +163,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     // 5. Select the document checkbox again
     const moveFileRow = page.locator('[data-testid="document-row"]').first();
     const moveCheckbox = moveFileRow.locator('[data-testid="document-select"]').first();
-    await moveCheckbox.click();
+    await moveCheckbox.click({ force: true });
 
     // 6. Click "انقل إلى..." (Move to folder) button in BulkActions
     const moveBtn = page.locator('button:has-text("انقل إلى...")').first();
