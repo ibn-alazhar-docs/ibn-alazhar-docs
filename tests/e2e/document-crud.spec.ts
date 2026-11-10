@@ -22,7 +22,8 @@ test.describe("Document CRUD Operations", () => {
       page
         .locator('[data-testid="document-row"]')
         .first()
-        .getByText(/معالجة|Processing|اكتمل|Completed|رُفع|Uploaded|معلّق|Queued/i),
+        .getByText(/معالجة|Processing|اكتمل|Completed|رُفع|Uploaded|معلّق|Queued/i)
+        .first(),
     ).toBeVisible({ timeout: 30000 });
   });
 
