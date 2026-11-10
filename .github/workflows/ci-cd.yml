@@ -453,15 +453,20 @@ jobs:
         env:
           PLAYWRIGHT_TEST: "true"
           MOCK_OCR: "true"
-          STORAGE_DRIVER: "local"
-          STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
-          DATABASE_URL: postgresql://test_user:test_password@localhost:5432/test_db
-          DATABASE_URL_DIRECT: postgresql://test_user:test_password@localhost:5432/test_db
-          REDIS_URL: redis://localhost:6379
-          NODE_ENV: test
         run: |
           set -euo pipefail
           mkdir -p /tmp/ibn-e2e-logs
+          cat > .env <<EOF
+          DATABASE_URL=${DATABASE_URL}
+          DATABASE_URL_DIRECT=${DATABASE_URL_DIRECT}
+          REDIS_URL=${REDIS_URL}
+          STORAGE_DRIVER=${STORAGE_DRIVER}
+          STORAGE_LOCAL_DIR=${STORAGE_LOCAL_DIR}
+          AUTH_SECRET=${AUTH_SECRET}
+          PLAYWRIGHT_TEST=true
+          MOCK_OCR=true
+          NODE_ENV=test
+          EOF
           pnpm --filter @ibn-al-azhar-docs/ocr-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/ocr-worker.log 2>&1 &
           echo $! > /tmp/ibn-e2e-logs/ocr-worker.pid
           pnpm --filter @ibn-al-azhar-docs/export-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/export-worker.log 2>&1 &
