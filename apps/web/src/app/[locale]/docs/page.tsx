@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useId } from "react";
+import { useEffect } from "react";
 
 export default function DocsPage() {
-  const id = useId();
-  const containerId = `api-reference-${id.replace(/[:.]/g, "-")}`;
+  const containerId = "api-reference-container";
 
   useEffect(() => {
     if (process.env.NEXT_PUBLIC_CI === "true" || process.env.NODE_ENV === "test") {

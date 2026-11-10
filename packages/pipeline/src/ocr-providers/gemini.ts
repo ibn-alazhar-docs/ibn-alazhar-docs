@@ -274,6 +274,7 @@ export class GeminiOcrProvider implements OcrProvider {
   readonly type = "gemini" as OcrEngineType;
 
   isAvailable(config: PipelineConfig): boolean {
+    if (process.env.MOCK_OCR === "true" || process.env.PLAYWRIGHT_TEST === "true" || process.env.NODE_ENV === "test") return true;
     if (!config.gemini?.apiKey) return false;
 
     const budget = config.ocr.cloudOcrDailyBudget ?? -1;

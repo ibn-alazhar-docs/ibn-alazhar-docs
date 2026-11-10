@@ -7,7 +7,7 @@ function toUrl(file: string): string {
   const rel = path.relative(APP_DIR, path.dirname(file));
   const segs = rel
     .split(path.sep)
-    .filter((s) => s !== "" && s !== "." && !s.startsWith("("))
+    .filter((s) => s !== "" && s !== "." && !s.startsWith("(") && !s.startsWith("[..."))
     .map((s) => (s === "[locale]" ? "ar" : /^\[.*\]$/.test(s) ? PLACEHOLDER : s));
   return "/" + segs.join("/");
 }

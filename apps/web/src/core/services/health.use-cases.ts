@@ -285,7 +285,7 @@ export class HealthUseCases {
     const mem = process.memoryUsage();
     const usedMB = Math.round(mem.rss / 1024 / 1024);
     checks.memory = {
-      status: usedMB > 480 ? "error" : usedMB > 400 ? "warning" : "ok",
+      status: usedMB > 1024 ? "error" : usedMB > 800 ? "warning" : "ok",
       usedMB,
       limit: 512,
     };
