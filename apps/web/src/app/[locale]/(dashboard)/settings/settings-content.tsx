@@ -1,8 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { useTheme } from "@/ui/theme/theme-provider";
 import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/ui/card";
@@ -10,10 +9,11 @@ import { Button } from "@/ui/button";
 import { Input } from "@/ui/input";
 import { Label } from "@/ui/label";
 import { Badge } from "@/ui/badge";
+import { BrandLogo } from "@/ui/brand-logo";
 import { UI_TIMING } from "@/shared/constants";
-import { useState, useTransition } from "react";
+import { useState } from "react";
 import { signOut, useSession } from "next-auth/react";
-import { SunIcon, MoonIcon } from "@/ui/icons";
+import { SunIcon, MoonIcon, UserIcon, InfoIcon, TrashIcon } from "@/ui/icons";
 import { apiFetch } from "@/shared/api";
 
 interface SettingsContentProps {
@@ -28,12 +28,10 @@ interface SettingsContentProps {
 export function SettingsContent({ user }: SettingsContentProps) {
   const tNav = useTranslations("nav");
   const t = useTranslations("settings");
+  const tFooter = useTranslations("footer");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
   const router = useRouter();
-  const pathname = usePathname();
   const { theme, toggle: toggleTheme } = useTheme();
-  const [isPending, startTransition] = useTransition();
 
   const { update } = useSession();
 
@@ -43,12 +41,6 @@ export function SettingsContent({ user }: SettingsContentProps) {
   const [saved, setSaved] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-
-  function handleLanguageSwitch(nextLocale: string) {
-    startTransition(() => {
-      router.replace(pathname, { locale: nextLocale });
-    });
-  }
 
   async function handleSave() {
     setSaving(true);
@@ -95,13 +87,11 @@ export function SettingsContent({ user }: SettingsContentProps) {
 
   return (
     <Container>
-      <div className="py-8 space-y-6 max-w-2xl">
+      <div className="py-8 space-y-6 max-w-5xl">
         {/* Page Header */}
         <div className="flex items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight text-primary-color">
-              {tNav("settings")}
-            </h1>
+            <h1 className="text-3xl font-bold text-primary-color">{tNav("settings")}</h1>
             <p className="mt-1 text-sm text-secondary-color">{t("profileDescription")}</p>
           </div>
           {isAdmin && (
@@ -128,135 +118,152 @@ export function SettingsContent({ user }: SettingsContentProps) {
         )}
 
         {/* Profile Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("profile")}</CardTitle>
-            <CardDescription>{t("profileDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t("name")}</Label>
-              <Input id="name" type="text" value={name} onChange={(e) => setName(e.target.value)} />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="email">{t("email")}</Label>
-              <Input
-                id="email"
-                type="email"
-                value={user.email}
-                disabled
-                className="opacity-60 cursor-not-allowed"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="role">{t("role")}</Label>
-              <Input
-                id="role"
-                type="text"
-                value={roleLabel}
-                disabled
-                className="opacity-60 cursor-not-allowed"
-              />
-            </div>
-
-            <div className="flex justify-end pt-2">
-              <Button onClick={handleSave} disabled={saving || name.trim() === (user.name || "")}>
-                {saving ? t("saving") : tCommon("save")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Language Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("language")}</CardTitle>
-            <CardDescription>{t("languageDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => handleLanguageSwitch("ar")}
-                disabled={isPending || locale === "ar"}
-                variant={locale === "ar" ? "default" : "outline"}
-              >
-                {t("arabic")}
-              </Button>
-              <Button
-                onClick={() => handleLanguageSwitch("en")}
-                disabled={isPending || locale === "en"}
-                variant={locale === "en" ? "default" : "outline"}
-              >
-                {t("english")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Theme Section */}
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("theme")}</CardTitle>
-            <CardDescription>{t("themeDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  if (theme !== "light") toggleTheme();
-                }}
-                variant={theme === "light" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <SunIcon className="h-4 w-4" />
-                {t("light")}
-              </Button>
-              <Button
-                onClick={() => {
-                  if (theme !== "dark") toggleTheme();
-                }}
-                variant={theme === "dark" ? "default" : "outline"}
-                className="flex items-center gap-2"
-              >
-                <MoonIcon className="h-4 w-4" />
-                {t("dark")}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="border-danger/30 bg-danger-bg">
-          <CardHeader>
-            <CardTitle className="text-danger">{t("dangerZone")}</CardTitle>
-            <CardDescription>{t("dangerZoneDescription")}</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {!showDeleteConfirm ? (
-              <Button variant="destructive-outline" onClick={() => setShowDeleteConfirm(true)}>
-                {t("deleteAccount")}
-              </Button>
-            ) : (
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                <p className="text-sm text-secondary-color flex-1">{t("deleteAccountConfirm")}</p>
-                <div className="flex gap-2">
-                  <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
-                    {deleting ? t("deleting") : tCommon("confirm")}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => setShowDeleteConfirm(false)}
-                    disabled={deleting}
-                  >
-                    {tCommon("cancel")}
-                  </Button>
-                </div>
+        <div className="grid gap-6 lg:grid-cols-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <UserIcon className="h-5 w-5" />
+                {t("profile")}
+              </CardTitle>
+              <CardDescription>{t("profileDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="max-w-md space-y-2">
+                <Label htmlFor="name">{t("name")}</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                />
               </div>
-            )}
-          </CardContent>
-        </Card>
+
+              <div className="max-w-md space-y-2">
+                <Label htmlFor="email">{t("email")}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={user.email}
+                  disabled
+                  className="opacity-60 cursor-not-allowed"
+                />
+              </div>
+
+              <div className="max-w-md space-y-2">
+                <Label htmlFor="role">{t("role")}</Label>
+                <Input
+                  id="role"
+                  type="text"
+                  value={roleLabel}
+                  disabled
+                  className="opacity-60 cursor-not-allowed"
+                />
+              </div>
+
+              <div className="flex justify-end pt-2">
+                <Button onClick={handleSave} disabled={saving || name.trim() === (user.name || "")}>
+                  {saving ? t("saving") : tCommon("save")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Theme */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                {theme === "dark" ? (
+                  <MoonIcon className="h-5 w-5" />
+                ) : (
+                  <SunIcon className="h-5 w-5" />
+                )}
+                {t("theme")}
+              </CardTitle>
+              <CardDescription>{t("themeDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    if (theme !== "light") toggleTheme();
+                  }}
+                  variant={theme === "light" ? "default" : "outline"}
+                  className="flex items-center gap-2"
+                >
+                  <SunIcon className="h-4 w-4" />
+                  {t("light")}
+                </Button>
+                <Button
+                  onClick={() => {
+                    if (theme !== "dark") toggleTheme();
+                  }}
+                  variant={theme === "dark" ? "default" : "outline"}
+                  className="flex items-center gap-2"
+                >
+                  <MoonIcon className="h-4 w-4" />
+                  {t("dark")}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* About Section */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <InfoIcon className="h-5 w-5" />
+                {t("about")}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap items-center gap-4">
+                <BrandLogo alt={tNav("name")} className="h-8 w-auto shrink-0" />
+                <p className="heading-display-sm min-w-[200px] flex-1 text-sm font-bold text-primary-color">
+                  {tFooter("tagline")}
+                </p>
+              </div>
+              <div className="mt-4 flex gap-3">
+                <Button variant="outline" asChild>
+                  <Link href="/tools">{t("toolsLink")}</Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Danger Zone */}
+          <Card className="border-danger/30 bg-danger-bg">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-danger">
+                <TrashIcon className="h-5 w-5" />
+                {t("dangerZone")}
+              </CardTitle>
+              <CardDescription>{t("dangerZoneDescription")}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {!showDeleteConfirm ? (
+                <Button variant="destructive-outline" onClick={() => setShowDeleteConfirm(true)}>
+                  {t("deleteAccount")}
+                </Button>
+              ) : (
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <p className="text-sm text-secondary-color flex-1">{t("deleteAccountConfirm")}</p>
+                  <div className="flex gap-2">
+                    <Button variant="destructive" onClick={handleDeleteAccount} disabled={deleting}>
+                      {deleting ? t("deleting") : tCommon("confirm")}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={deleting}
+                    >
+                      {tCommon("cancel")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </Container>
   );

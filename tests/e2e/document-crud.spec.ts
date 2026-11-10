@@ -4,7 +4,10 @@ import { AuthPage } from "./pages/AuthPage";
 import { loginAsAdmin, LOGIN_EMAIL, LOGIN_PASSWORD, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Document CRUD Operations", () => {
-  test.describe.configure({ timeout: 180_000 });
+  // Serial: every test after the first expects the document the upload
+  // test creates (seed creates users only). fullyParallel + 4 CI workers
+  // raced those expectations against an empty table.
+  test.describe.configure({ mode: "serial", timeout: 180_000 });
 
   test.beforeEach(async ({ page }) => {
     await loginAsAdmin(page);
@@ -15,26 +18,23 @@ test.describe("Document CRUD Operations", () => {
     await docs.gotoFiles();
     await docs.uploadFile(TEST_PDF_PATH);
     await docs.expectDocumentRowVisible();
-    const statusVisible = await page
-      .locator("text=معالجة")
-      .or(
-        page
-          .locator("text=Processing")
-          .or(page.locator("text=اكتمل").or(page.locator("text=Completed"))),
-      )
-      .first()
-      .isVisible({ timeout: 30000 })
-      .catch(() => false);
-    expect(statusVisible).toBeTruthy();
+    await expect(
+      page
+        .locator('[data-testid="document-row"]')
+        .first()
+        .locator('[data-testid="document-status"]')
+        .first(),
+    ).toBeVisible({ timeout: 30000 });
   });
 
   test("View document details metadata and content preview", async ({ page }) => {
     const docs = new DocumentsPage(page);
     await docs.gotoFiles();
-    await docs.expectDocumentRowVisible();
+    await docs.expectDocumentRowVisible(60000);
     await docs.clickFirstDocumentTitle();
-    await page.waitForURL(/\/documents\//);
+    await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
     await page.waitForLoadState("domcontentloaded");
+    await expect(page.locator("body")).toContainText(/.+/, { timeout: 15000 });
     const hasContent = await page.locator("body").textContent();
     expect(hasContent?.length).toBeGreaterThan(100);
   });
@@ -44,7 +44,7 @@ test.describe("Document CRUD Operations", () => {
     await docs.gotoFiles();
     await docs.expectDocumentRowVisible();
     await docs.clickFirstDocumentTitle();
-    await page.waitForURL(/\/documents\//);
+    await page.waitForURL(/\/(documents|preview)\//);
     const editButton = page.getByRole("button", { name: /تعديل|Edit/i }).first();
     if (await editButton.isVisible().catch(() => false)) {
       await editButton.click();
@@ -155,7 +155,7 @@ test.describe("Document CRUD Operations", () => {
 
   test("Upload multiple documents at once", async ({ page }) => {
     const docs = new DocumentsPage(page);
-    await docs.gotoUpload();
+    await docs.gotoFiles();
     await docs.uploadFile(TEST_PDF_PATH);
     await page.waitForTimeout(2000);
     const uploadFeedback = page
@@ -168,9 +168,9 @@ test.describe("Document CRUD Operations", () => {
 
   test("Upload page renders with file chooser", async ({ page }) => {
     const docs = new DocumentsPage(page);
-    await docs.gotoUpload();
+    await docs.gotoFiles();
     const fileInput = page.locator('input[type="file"]');
-    await expect(fileInput).toBeVisible();
+    await expect(fileInput).toBeAttached();
     const uploadHeading = page.getByRole("heading").first();
     await expect(uploadHeading).toBeVisible();
   });

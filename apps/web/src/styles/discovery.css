@@ -86,7 +86,7 @@
 }
 .category-card:hover {
   border-color: var(--success);
-  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.08);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 .category-card-header {
@@ -165,7 +165,7 @@
 }
 .journey-card:hover {
   border-color: var(--gold-border);
-  box-shadow: 0 4px 16px rgba(184, 134, 11, 0.08);
+  box-shadow: var(--shadow-md);
   transform: translateY(-1px);
 }
 .journey-card-icon {
@@ -527,7 +527,7 @@
 }
 .recent-doc-card:hover {
   border-color: var(--success);
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.06);
+  box-shadow: var(--shadow-sm);
 }
 .recent-doc-category {
   font-size: 0.6875rem;

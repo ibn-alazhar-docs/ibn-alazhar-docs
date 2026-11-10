@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import { getTranslations } from "next-intl/server";
-import { Link } from "@/i18n/navigation";
 import { generatePageMetadata } from "@/ui/metadata";
 import { ResetPasswordForm } from "@/ui/auth/reset-password-form";
+import { AuthPageShell } from "../auth-page-shell";
 
 interface ResetPasswordPageProps {
   params: Promise<{ locale: string }>;
@@ -26,23 +25,12 @@ export default async function ResetPasswordPage(props: ResetPasswordPageProps) {
   const tApp = await getTranslations({ locale, namespace: "app" });
 
   return (
-    <div className="text-center">
-      <Link href="/" className="inline-block mb-6">
-        <Image
-          src="/logo.svg"
-          alt={tApp("name")}
-          width={48}
-          height={48}
-          className="mx-auto h-12 w-auto"
-          priority
-        />
-      </Link>
-      <div className="gold-divider mx-auto mb-6" />
-      <h2 className="heading-display text-xl font-bold tracking-[0.02em] text-primary-color sm:text-2xl">
-        {t("resetPasswordTitle")}
-      </h2>
-      <p className="mt-2 text-sm text-muted-color">{t("resetPasswordDescription")}</p>
+    <AuthPageShell
+      title={t("resetPasswordTitle")}
+      logoAlt={tApp("name")}
+      subtitle={t("resetPasswordDescription")}
+    >
       <ResetPasswordForm />
-    </div>
+    </AuthPageShell>
   );
 }

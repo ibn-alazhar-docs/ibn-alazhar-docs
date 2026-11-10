@@ -114,16 +114,13 @@ fi
 
 # ---- 2. Build clean tree from the current commit ----------------------------
 echo "• Exporting clean tree from $COMMIT_REF (git archive — excludes ignored/untracked)…"
-# Exclude `tests/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
-# on the Space) and binary assets under `apps/web/public` (HuggingFace's git
-# pre-receive hook rejects binary files). SVG files are text and safe to ship.
-# NOTE: logo.svg now embeds the exact institutional logo as base64-encoded PNG,
-# so it's the canonical logo asset. logo.png is kept locally but NOT shipped to
-# HF (binary file rejection).
-git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)apps/web/public' | tar -x -C "$WORK_DIR"
-# Re-include SVG assets from public/ (text files — not rejected by HF pre-receive)
-mkdir -p "$WORK_DIR/apps/web/public"
-find apps/web/public -name '*.svg' -exec cp --parents {} "$WORK_DIR/" \; 2>/dev/null || true
+# Exclude `tests/` and `test-data/` (CI/e2e fixtures + snapshot PNGs are not needed at runtime
+# on the Space). ship the full `apps/web/public`: favicon PNGs, apple-touch-icon,
+# manifest.json, sw.js, pdfjs-wasm and the logo — the browser tab icon regressed
+# on the live Space because public/ was stripped (2026-11-07). Binaries pass the
+# HF pre-receive hook through this script's LFS pointer conversion below.
+git archive --format=tar "$COMMIT_REF" -- ':(exclude)tests' ':(exclude)test-data' | tar -x -C "$WORK_DIR"
+cp -a apps/web/public "$WORK_DIR/apps/web/public"
 
 # Place HF Dockerfile + entrypoint at repo root (required by HF Spaces).
 cp "$HF_DOCKERFILE" "$WORK_DIR/Dockerfile"
@@ -177,6 +174,28 @@ cd "$WORK_DIR"
 git init -q
 git config user.email "deploy@ibn-alazhar-docs.local"
 git config user.name "HF Space Sync"
+# HF Spaces (Xet storage) reject raw binary blobs — binaries MUST be LFS
+# pointers. Declare them BEFORE `git add -A` so the clean filter converts
+# fonts/docx/images to LFS at staging time (2026-11-07).
+cat > .gitattributes <<'LFS_ATTRS'
+*.ttf filter=lfs diff=lfs merge=lfs -text
+*.otf filter=lfs diff=lfs merge=lfs -text
+*.woff filter=lfs diff=lfs merge=lfs -text
+*.woff2 filter=lfs diff=lfs merge=lfs -text
+*.docx filter=lfs diff=lfs merge=lfs -text
+*.pptx filter=lfs diff=lfs merge=lfs -text
+*.png filter=lfs diff=lfs merge=lfs -text
+*.jpg filter=lfs diff=lfs merge=lfs -text
+*.webp filter=lfs diff=lfs merge=lfs -text
+*.ico filter=lfs diff=lfs merge=lfs -text
+*.wasm filter=lfs diff=lfs merge=lfs -text
+LFS_ATTRS
+if command -v git-lfs >/dev/null 2>&1; then
+  git lfs install --local >/dev/null 2>&1 || true
+else
+  echo "❌ git-lfs is required to deploy binaries to HuggingFace. Install it and retry." >&2
+  exit 1
+fi
 git add -A
 git commit -q -m "Deploy $(git rev-parse --short "$COMMIT_REF" 2>/dev/null || echo "$COMMIT_REF") — $(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "✓ Prepared deployment commit in temp tree at: $WORK_DIR"

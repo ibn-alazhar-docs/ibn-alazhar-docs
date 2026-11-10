@@ -28,7 +28,7 @@ fi
 
 echo "🔄 Restoring PostgreSQL from: ${BACKUP_FILE}"
 
-gunzip -c "$BACKUP_FILE" | psql "${DATABASE_URL:-postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5432/ibn_docs}" \
+gunzip -c "$BACKUP_FILE" | psql "${DATABASE_URL:-postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs}" \
   --no-owner \
   --no-acl
 

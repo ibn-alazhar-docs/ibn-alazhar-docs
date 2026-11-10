@@ -65,7 +65,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
         whileHover={{
           scale: 1.01,
           borderColor: file ? "var(--gold)" : "var(--success)",
-          boxShadow: "0 4px 20px var(--shadow-color, rgba(0,0,0,0.05))",
+          boxShadow: "0 4px 20px var(--shadow-color)",
         }}
         whileTap={{ scale: 0.98 }}
         initial={{ opacity: 0, y: 10 }}
@@ -171,7 +171,7 @@ export function FileUpload({ onUploadStart, folderId }: FileUploadProps) {
 
       {uploading && (
         <div className="space-y-2">
-          <div className="h-2 bg-badge rounded-full overflow-hidden">
+          <div className="h-2.5 bg-badge rounded-full overflow-hidden sm:h-3">
             <div
               className="h-full bg-success transition-all duration-300"
               style={{ width: `${progress}%` }}

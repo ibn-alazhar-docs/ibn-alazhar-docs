@@ -188,7 +188,7 @@ export default function SearchPage() {
                     </div>
 
                     {results.results.length === 0 ? (
-                      <div className="text-center py-12">
+                      <div className="flex flex-col items-center justify-center py-12 sm:py-16 min-h-[280px] text-center">
                         <div className="mb-4 text-muted-color">
                           <svg
                             className="w-12 h-12 mx-auto"
@@ -250,7 +250,7 @@ export default function SearchPage() {
 
                 {/* Empty State */}
                 {!results && !loading && !error && (
-                  <div className="text-center py-12">
+                  <div className="flex flex-col items-center justify-center py-12 sm:py-16 min-h-[280px] text-center">
                     <div className="mb-4 text-muted-color">
                       <svg
                         className="w-12 h-12 mx-auto"

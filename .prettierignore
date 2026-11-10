@@ -93,6 +93,11 @@ governance/
 !apps/web/public/**/*.jpg
 !apps/web/public/**/*.jpeg
 
+# Vendored third-party binaries and upstream files — reformatted never, so their
+# provenance and checksums stay identical to the source they were copied from.
+apps/web/public/pdfjs-wasm/
+packages/pipeline/assets/
+
 # Infrastructure
 infrastructure/
 docker-compose*.yml

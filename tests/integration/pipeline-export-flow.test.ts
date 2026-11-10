@@ -36,7 +36,7 @@ describe("Cleanup → Markdown → Export: Export pipeline flow", () => {
 
     it("TXT with metadata header includes correct fields", () => {
       const txt = generateTxt(cleanedText, true);
-      expect(txt).toContain("Ibn Al-Azhar Docs");
+      expect(txt).toContain("Ibn Al-Azhar Platform");
       expect(txt).toContain("Pages:");
       expect(txt).toContain("Words:");
       expect(txt).toContain("Confidence:");
@@ -44,7 +44,7 @@ describe("Cleanup → Markdown → Export: Export pipeline flow", () => {
 
     it("TXT without metadata has no header", () => {
       const txt = generateTxt(cleanedText, false);
-      expect(txt).not.toContain("Ibn Al-Azhar Docs");
+      expect(txt).not.toContain("Ibn Al-Azhar Platform");
       expect(txt).not.toContain("Pages:");
     });
 

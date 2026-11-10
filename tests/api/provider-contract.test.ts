@@ -219,6 +219,10 @@ vi.mock("@/core/composition-root", () => ({
     },
     profile: { updateProfile: mockUpdateProfile, deleteAccount: mockDeleteAccount },
     uploadDocument: { execute: mockUploadExecute },
+    uploadPreflight: {
+      assertUserActive: vi.fn().mockResolvedValue({ ok: true }),
+      checkSizeAndServices: vi.fn().mockResolvedValue({ ok: true }),
+    },
     analytics: {
       getAnalytics: vi.fn().mockResolvedValue({
         documents: {
@@ -264,6 +268,9 @@ vi.mock("@/clients/redis", () => ({
 vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
   enqueueExport: vi.fn().mockResolvedValue("job-123"),
   loadConfig: vi.fn().mockReturnValue({}),
+  // /api/health imports isRedisHealthy from the pipeline package; without
+  // it the probe throws and the endpoint reports 503.
+  isRedisHealthy: vi.fn().mockResolvedValue(true),
 }));
 
 function defaultError(): Response {
@@ -293,13 +300,14 @@ describe("Provider Contract — OpenAPI Spec Compliance", () => {
     expect(spec.info.version).toBeDefined();
     expect(spec.paths).toBeDefined();
     expect(spec.components?.securitySchemes).toBeDefined();
-    expect(spec.components?.securitySchemes?.bearerAuth).toBeDefined();
+    expect(spec.components?.securitySchemes?.sessionAuth).toBeDefined();
+    expect(spec.components?.securitySchemes?.ApiKeyAuth).toBeDefined();
   });
 
-  it("spec defines security scheme as bearer JWT", () => {
-    const scheme = spec.components?.securitySchemes?.bearerAuth as any;
-    expect(scheme.type).toBe("http");
-    expect(scheme.scheme).toBe("bearer");
+  it("spec defines security scheme as session cookie (apiKey/cookie)", () => {
+    const scheme = spec.components?.securitySchemes?.sessionAuth;
+    expect(scheme).toBeDefined();
+    expect(scheme).toMatchObject({ type: "apiKey", in: "cookie" });
   });
 
   it("all paths have at least one operation", () => {
@@ -323,15 +331,18 @@ describe("Provider Contract — OpenAPI Spec Compliance", () => {
     }
   });
 
-  it("all operations with security reference bearerAuth that exists", () => {
+  it("all operations with security reference a scheme defined in securitySchemes", () => {
     const routes = getRoutes();
+    const definedSchemes = spec.components?.securitySchemes ?? {};
     for (const route of routes) {
       const pathItem = spec.paths[route] as any;
       for (const method of Object.keys(pathItem)) {
         const op = pathItem[method];
         if (op.security?.length) {
           for (const sec of op.security) {
-            expect(sec.bearerAuth).toBeDefined();
+            for (const name of Object.keys(sec)) {
+              expect(definedSchemes[name]).toBeDefined();
+            }
           }
         }
       }
@@ -408,7 +419,9 @@ describe("Provider Contract — Public Endpoint Response Shapes", () => {
   it("GET /api/actuator/info → 200", async () => {
     const { GET } = await import("@/app/api/actuator/info/route");
     const req = new Request("http://localhost/api/actuator/info", {
-      headers: { authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN}` },
+      headers: {
+        authorization: `Bearer ${process.env.ACTUATOR_BEARER_TOKEN || process.env.PROMETHEUS_BEARER_TOKEN}`,
+      },
     });
     const res = await GET(req as any);
     expect(res.status).toBe(200);

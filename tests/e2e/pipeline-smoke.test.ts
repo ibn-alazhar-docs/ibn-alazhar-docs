@@ -4,7 +4,7 @@ import path from "node:path";
 
 const BASE = "http://127.0.0.1:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "password123";
+const PASSWORD = "AdminPassword123!";
 
 const SOURCE_DIR = path.resolve(__dirname, "../../test-data/source");
 const PDF_PATH = (() => {
@@ -16,7 +16,7 @@ const PDF_NAME = path.basename(PDF_PATH);
 
 async function login(page: Page): Promise<void> {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();

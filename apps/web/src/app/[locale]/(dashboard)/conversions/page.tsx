@@ -33,9 +33,9 @@ interface ConversionJob {
   };
 }
 
-function formatDate(dateStr: string, locale: string): string {
+function formatDate(dateStr: string, _locale: string): string {
   const d = new Date(dateStr);
-  return d.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
+  return d.toLocaleDateString("ar-EG", {
     year: "numeric",
     month: "short",
     day: "numeric",

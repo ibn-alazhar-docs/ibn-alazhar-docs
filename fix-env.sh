@@ -116,7 +116,7 @@ fi
 
 # Fix ADMIN_PASSWORD if it's weak
 current_admin_password=$(grep "^ADMIN_PASSWORD=" .env | cut -d'=' -f2- | tr -d '"')
-if [[ -z "$current_admin_password" || "$current_admin_password" == "Admin@123456" || "$current_admin_password" == CHANGE_ME* ]]; then
+if [ -z "$current_admin_password" ] || [ "$current_admin_password" = "Admin@123456" ] || [ "$current_admin_password" = "CHANGE_ME" ]; then
     new_admin_password=$(openssl rand -base64 24 | tr -d "=+/" | cut -c1-20)
     echo -e "${YELLOW}⚠️  ADMIN_PASSWORD is weak or empty${NC}"
     echo "   Generating strong password..."
@@ -141,9 +141,9 @@ if [[ ! "$current_db_url" =~ ^postgresql:// ]]; then
     echo "   Fixing..."
     
     if [[ "$OSTYPE" == "darwin"* ]]; then
-        sed -i '' 's|^DATABASE_URL=.*|DATABASE_URL="postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs?schema=public"|' .env
+        sed -i '' 's|^DATABASE_URL=.*|DATABASE_URL="postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs?schema=public"|' .env
     else
-        sed -i 's|^DATABASE_URL=.*|DATABASE_URL="postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs?schema=public"|' .env
+        sed -i 's|^DATABASE_URL=.*|DATABASE_URL="postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs?schema=public"|' .env
     fi
     
     echo -e "${GREEN}   ✅ Fixed${NC}"

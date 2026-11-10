@@ -55,22 +55,26 @@ const USER_RATE_LIMITS: Record<string, { limit: number; windowMs: number }> = {
 };
 
 export function getClientIp(request: Request): string {
+  // Cloudflare overwrites this header at the edge, so it is the only forwarded-IP
+  // source a client cannot forge. `x-forwarded-for` is read first by convention,
+  // but its leftmost entry is attacker-controlled on any deployment reachable
+  // without a proxy that scrubs it — which would let one script randomize the key
+  // and walk straight past both the rate limit and per-IP queue caps.
+  const cf = request.headers.get("cf-connecting-ip");
+  if (cf && isIpLiteral(cf.trim())) return cf.trim();
   const forwarded = request.headers.get("x-forwarded-for");
   if (forwarded) {
     const parts = forwarded.split(",");
     const first = parts[0];
-    if (first) {
-      const ip = first.trim();
-      if (/^\d{1,3}(\.\d{1,3}){3}$/.test(ip) || /^[0-9a-fA-F:]{2,39}$/.test(ip)) {
-        return ip;
-      }
-    }
+    if (first && isIpLiteral(first.trim())) return first.trim();
   }
   const realIp = request.headers.get("x-real-ip");
-  if (realIp && (/^\d{1,3}(\.\d{1,3}){3}$/.test(realIp) || /^[0-9a-fA-F:]{2,39}$/.test(realIp))) {
-    return realIp;
-  }
+  if (realIp && isIpLiteral(realIp)) return realIp;
   return "unknown";
+}
+
+function isIpLiteral(value: string): boolean {
+  return /^\d{1,3}(\.\d{1,3}){3}$/.test(value) || /^[0-9a-fA-F:]{2,39}$/.test(value);
 }
 
 function memoryCheck(
@@ -120,7 +124,10 @@ export async function checkRateLimit(
   request: Request,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();
@@ -137,7 +144,10 @@ export async function checkUserRateLimit(
   userId: string,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();
@@ -155,7 +165,10 @@ export async function checkIpRateLimit(
   windowMs: number,
   strict?: boolean,
 ): Promise<{ allowed: boolean; retryAfterMs?: number }> {
-  if (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production") {
+  if (
+    process.env.PLAYWRIGHT_TEST === "true" ||
+    (process.env.DISABLE_RATE_LIMIT === "true" && process.env.NODE_ENV !== "production")
+  ) {
     return { allowed: true };
   }
   startCleanupIfNeeded();

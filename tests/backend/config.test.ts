@@ -5,6 +5,9 @@ const ORIGINAL_ENV = { ...process.env };
 
 beforeEach(() => {
   process.env = { ...ORIGINAL_ENV };
+  // These suites assert S3/MinIO parsing: pin the driver so resolution never
+  // falls back to the local branch (mirrors edge-cases.test.ts isolation).
+  process.env.STORAGE_DRIVER = "s3";
   delete process.env.S3_ENDPOINT;
   delete process.env.MINIO_ENDPOINT;
   delete process.env.S3_PORT;

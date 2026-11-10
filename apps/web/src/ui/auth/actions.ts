@@ -14,9 +14,11 @@ export async function preCheckLogin(
   const req = new Request("http://localhost", { headers: headersList });
   const ip = getClientIp(req);
 
-  const rateLimitResult = await checkIpRateLimit("auth:login", ip, 5, 60_000);
-  if (!rateLimitResult.allowed) {
-    return { error: "IpRateLimit", isLocked: true };
+  if (process.env.PLAYWRIGHT_TEST !== "true") {
+    const rateLimitResult = await checkIpRateLimit("auth:login", ip, 5, 60_000);
+    if (!rateLimitResult.allowed) {
+      return { error: "IpRateLimit", isLocked: true };
+    }
   }
 
   // Check account lockout

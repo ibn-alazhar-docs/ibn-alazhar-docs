@@ -12,9 +12,11 @@ export interface OcrPageResult {
   text: string;
   confidence: number;
   layout?: {
+    // وحدة bbox: بكسلات صورة الصفحة نفسها المسلَّمة إلى المزوّد (نفس المخزَّن في
+    // paths/pages الذي يقرأه generateSearchablePdf) — لا نقاط ولا dpi آخر.
     lines: { text: string; bbox: number[] }[];
-    bboxes: number[][]; // [x1, y1, x2, y2]
-    labels: string[]; // "Text", "Table", "Title", "Header", "Footer"
+    bboxes?: number[][]; // [x1, y1, x2, y2]
+    labels?: string[]; // "Text", "Table", "Title", "Header", "Footer"
     readingOrder?: number[];
   };
 }
@@ -137,7 +139,6 @@ export interface ExportRequest {
     fontSize?: number;
     watermark?: string;
     destination?: string;
-    pageRange?: string;
     title?: string;
   };
 }

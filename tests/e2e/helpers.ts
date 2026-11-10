@@ -1,7 +1,7 @@
 import { type Page, expect } from "@playwright/test";
 
 export const LOGIN_EMAIL = "admin@ibnalazhar.app";
-export const LOGIN_PASSWORD = "password123";
+export const LOGIN_PASSWORD = "AdminPassword123!";
 export const TEST_PDF_PATH = "لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf";
 
 export async function loginAsAdmin(page: Page, locale: string = "ar") {
@@ -40,7 +40,7 @@ export async function registerUser(
   await page.fill('input[name="password"]', password);
   await page.fill('input[name="confirmPassword"]', password);
   await page.locator('button[type="submit"]').first().click();
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 export async function expectPageDirection(page: Page, dir: string, lang: string) {

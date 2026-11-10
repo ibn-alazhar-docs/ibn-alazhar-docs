@@ -1362,10 +1362,40 @@ paths:
         "400":
           description: Invalid action or missing jobId
 
+  /api/tools/tashkeel:
+    post:
+      tags: [Tools]
+      summary: Diacritize Arabic text (signed-in users only)
+      operationId: diacritizeText
+      security:
+        - sessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [text]
+              properties:
+                text:
+                  type: string
+                  maxLength: 20000
+      responses:
+        "200":
+          description: Diacritized text
+        "400":
+          description: Invalid input or text too long
+        "401":
+          description: Signed-in users only
+
   /api/debug/exec:
     post:
       tags: [Health]
-      summary: Run a shell command for diagnostics (admin, disabled in production)
+      summary: Run an allowlisted diagnostic probe (admin, disabled in production)
+      description: >-
+        Only names from the fixed diagnostic registry are accepted; the argv of
+        each probe is a hardcoded constant run without a shell, so nothing from
+        the request can become a command.
       operationId: debugExec
       security:
         - sessionAuth: []
@@ -1376,43 +1406,37 @@ paths:
           application/json:
             schema:
               type: object
-              required: [command]
+              required: [probe]
               properties:
-                command:
+                probe:
                   type: string
       responses:
         "200":
-          description: Command output
+          description: Diagnostic output
+        "400":
+          description: Missing or unknown probe name
         "403":
           description: Debug API disabled or not admin
         "500":
-          description: Command failed
+          description: Probe failed
 
   /api/debug/pg:
-    post:
+    get:
       tags: [Health]
-      summary: Run a read-only SQL query for diagnostics (admin, disabled in production)
+      summary: Deployment readiness view (admin, disabled in production)
+      description: >-
+        Reports driver configuration and whether the Arabic export assets
+        (reference_rtl.docx, Amiri fonts) actually resolved on this host.
+        Booleans and paths only — never a secret value.
       operationId: debugPg
       security:
         - sessionAuth: []
         - ApiKeyAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required: [query]
-              properties:
-                query:
-                  type: string
       responses:
         "200":
-          description: Query result
+          description: Driver, storage and Arabic-export asset readiness
         "403":
           description: Debug API disabled or not admin
-        "500":
-          description: Query failed
 
   /api/test/fixtures:
     get:

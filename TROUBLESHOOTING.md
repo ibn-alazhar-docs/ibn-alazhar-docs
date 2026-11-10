@@ -144,14 +144,14 @@ netstat -tuln | grep 5433
 
 #### ج. اختبر الاتصال:
 ```bash
-psql "postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs" -c "SELECT 1"
+psql "postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs" -c "SELECT 1"
 # يجب أن يعرض: 1 row
 ```
 
 #### د. تحقق من `.env`:
 ```bash
 grep DATABASE_URL .env
-# يجب أن يطابق: postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs
+# يجب أن يطابق: postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs
 ```
 
 ---
@@ -715,7 +715,7 @@ pnpm --filter @ibn-al-azhar-docs/web dev
 docker ps
 
 # 2. تحقق من Database:
-psql "postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs" -c "SELECT 1"
+psql "postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs" -c "SELECT 1"
 
 # 3. تحقق من Redis:
 redis-cli -p 6379 ping

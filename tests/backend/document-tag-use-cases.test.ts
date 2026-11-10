@@ -19,7 +19,7 @@ function makeTag(overrides: Record<string, unknown> = {}) {
   return {
     id: "tag-1",
     name: "Important",
-    color: "#16A34A",
+    color: "#127E87",
     ...overrides,
   };
 }

@@ -1,4 +1,5 @@
 import { test, expect } from "@playwright/test";
+import { waitForFontsLoaded } from "./visual-setup";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 
@@ -12,7 +13,7 @@ test.describe("Visual Components", () => {
     test("all button variants on desktop", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const button = page.locator('button[type="submit"]').first();
       await button.scrollIntoViewIfNeeded();
@@ -25,7 +26,7 @@ test.describe("Visual Components", () => {
     test("button hover state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const button = page.locator('button[type="submit"]').first();
       await button.hover();
@@ -39,7 +40,7 @@ test.describe("Visual Components", () => {
     test("button disabled state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const button = page.locator('button[type="submit"]').first();
       await button.evaluate((el: HTMLButtonElement) => el.setAttribute("disabled", ""));
@@ -51,7 +52,7 @@ test.describe("Visual Components", () => {
     test("button focus-visible state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const button = page.locator('button[type="submit"]').first();
       await button.focus();
@@ -64,7 +65,7 @@ test.describe("Visual Components", () => {
     test("outline and ghost buttons", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/register`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const links = page.locator("a").filter({ hasText: /دخول|تسجيل|sign/i });
       if ((await links.count()) > 0) {
@@ -83,7 +84,7 @@ test.describe("Visual Components", () => {
     test("input default state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const inputs = page.locator("input");
       await expect(inputs.first()).toBeVisible();
@@ -95,7 +96,7 @@ test.describe("Visual Components", () => {
     test("input focused state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const input = page.locator('input[type="email"]').first();
       await input.focus();
@@ -108,7 +109,7 @@ test.describe("Visual Components", () => {
     test("input with value", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const emailInput = page.locator('input[type="email"]').first();
       const passwordInput = page.locator('input[type="password"]').first();
@@ -127,12 +128,12 @@ test.describe("Visual Components", () => {
     test("input error state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const submitBtn = page.locator('button[type="submit"]').first();
       if (await submitBtn.isVisible()) {
         await submitBtn.click();
-        await page.waitForTimeout(500);
+        await waitForFontsLoaded(page);
       }
       await expect(page).toHaveScreenshot("input-error.png", {
         maxDiffPixelRatio: 0.02,
@@ -142,7 +143,7 @@ test.describe("Visual Components", () => {
     test("input disabled state", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const inputs = page.locator("input");
       const count = await inputs.count();
@@ -157,7 +158,7 @@ test.describe("Visual Components", () => {
     test("input with Arabic placeholder text", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/register`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await expect(page).toHaveScreenshot("input-arabic-placeholder.png", {
         maxDiffPixelRatio: 0.02,
       });
@@ -187,8 +188,8 @@ test.describe("Visual Components", () => {
     test("badge variants on tags page", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/tags`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("badge-variants.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -203,7 +204,7 @@ test.describe("Visual Components", () => {
     test("card on login page", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
       await expect(page).toHaveScreenshot("card-login.png", {
         maxDiffPixelRatio: 0.02,
       });
@@ -212,8 +213,8 @@ test.describe("Visual Components", () => {
     test("card on dashboard", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("card-landing.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -228,8 +229,8 @@ test.describe("Visual Components", () => {
     test("folder tree sidebar on files page", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
       const sidebar = page.locator(".w-64").first();
       if (await sidebar.isVisible()) {
         await expect(sidebar).toHaveScreenshot("folder-tree.png", {
@@ -246,8 +247,8 @@ test.describe("Visual Components", () => {
     test("document table layout", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("document-table.png", {
         fullPage: true,
         maxDiffPixelRatio: 0.02,
@@ -262,8 +263,8 @@ test.describe("Visual Components", () => {
     test("confirm dialog renders", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/files`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
 
       const deleteBtn = page.locator('[data-testid="confirm-dialog"]').first();
       if (await deleteBtn.isVisible()) {
@@ -281,7 +282,7 @@ test.describe("Visual Components", () => {
     test("locale toggle button", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const toggle = page
         .locator("button")
@@ -302,7 +303,7 @@ test.describe("Visual Components", () => {
     test("public header on login page", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const header = page.locator("header, nav").first();
       if (await header.isVisible()) {
@@ -314,8 +315,8 @@ test.describe("Visual Components", () => {
 
     test("public header english", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/login`);
-      await page.waitForLoadState("networkidle");
+      await page.goto(`${BASE}/ar/login`);
+      await page.waitForLoadState("load");
 
       const header = page.locator("header, nav").first();
       if (await header.isVisible()) {
@@ -333,8 +334,8 @@ test.describe("Visual Components", () => {
     test("footer on landing page", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar`);
-      await page.waitForLoadState("networkidle");
-      await page.waitForTimeout(500);
+      await page.waitForLoadState("load");
+      await waitForFontsLoaded(page);
 
       const footer = page.locator("footer").first();
       if (await footer.isVisible()) {
@@ -353,19 +354,10 @@ test.describe("Visual Components", () => {
     test("login page has correct RTL direction", async ({ page }) => {
       await page.setViewportSize({ width: 1440, height: 900 });
       await page.goto(`${BASE}/ar/login`);
-      await page.waitForLoadState("networkidle");
+      await page.waitForLoadState("load");
 
       const dir = await page.locator("html").getAttribute("dir");
       expect(dir).toBe("rtl");
-    });
-
-    test("login page english has correct LTR direction", async ({ page }) => {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      await page.goto(`${BASE}/en/login`);
-      await page.waitForLoadState("networkidle");
-
-      const dir = await page.locator("html").getAttribute("dir");
-      expect(dir).toBe("ltr");
     });
   });
 });

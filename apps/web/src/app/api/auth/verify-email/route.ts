@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/transport/db";
 import { checkRateLimit, rateLimitResponse } from "@/clients/redis";
 import { auditLog, AUDIT_ACTIONS } from "@/middleware/audit";
+import { useCases } from "@/core/composition-root";
 
-const SUPPORTED_LOCALES = ["ar", "en"] as const;
+const SUPPORTED_LOCALES = ["ar"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 
 function resolveLocale(request: Request, tokenLocale: string | null): Locale {
@@ -48,27 +48,16 @@ export async function GET(request: Request) {
   }
 
   try {
-    const verificationToken = await prisma.verificationToken.findUnique({
-      where: { token },
-    });
+    const result = await useCases.emailVerification.verify(token);
 
-    if (!verificationToken || verificationToken.expires < new Date()) {
+    if (!result.verified) {
       return loginRedirect(request, locale, 0);
     }
-
-    await prisma.user.update({
-      where: { email: verificationToken.identifier },
-      data: { emailVerified: new Date() },
-    });
-
-    await prisma.verificationToken.delete({
-      where: { token },
-    });
 
     await auditLog({
       action: AUDIT_ACTIONS.EMAIL_VERIFIED,
       entity: "user",
-      entityId: verificationToken.identifier,
+      entityId: result.identifier,
       ipAddress:
         request.headers.get("x-forwarded-for") ?? request.headers.get("x-real-ip") ?? undefined,
       userAgent: request.headers.get("user-agent") ?? undefined,

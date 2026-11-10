@@ -13,6 +13,7 @@ interface FolderItemProps {
   onRename: (folderId: string, newName: string) => void;
   onDelete: (folderId: string) => void;
   onMove: (folderId: string, parentId: string | null) => void;
+  onAddSubfolder: (folderId: string) => void;
 }
 
 export function FolderItem({
@@ -23,6 +24,7 @@ export function FolderItem({
   onRename,
   onDelete,
   onMove,
+  onAddSubfolder,
 }: FolderItemProps) {
   const t = useTranslations("folders");
   const tCommon = useTranslations("common");
@@ -31,8 +33,13 @@ export function FolderItem({
   const [isExpanded, setIsExpanded] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editName, setEditName] = useState(folder.name);
+  const [displayName, setDisplayName] = useState(folder.name);
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setDisplayName(folder.name);
+  }, [folder.name]);
 
   useEffect(() => {
     if (!showMenu) return;
@@ -49,9 +56,10 @@ export function FolderItem({
   const hasChildren = folder.children.length > 0;
   const indent = level * 24;
 
-  function handleRename() {
+  async function handleRename() {
     if (editName.trim() && editName !== folder.name) {
-      onRename(folder.id, editName.trim());
+      await onRename(folder.id, editName.trim());
+      setDisplayName(editName.trim());
     }
     setIsEditing(false);
   }
@@ -59,6 +67,7 @@ export function FolderItem({
   return (
     <div>
       <div
+        data-testid="folder-item"
         className={`flex items-center gap-2 px-3 py-2 rounded-lg cursor-pointer hover:bg-hover transition-colors ${
           isSelected ? "bg-success-bg text-success" : "text-primary-color"
         }`}
@@ -94,21 +103,37 @@ export function FolderItem({
 
         {/* Folder Name */}
         {isEditing ? (
-          <input
-            type="text"
-            value={editName}
-            aria-label={t("rename")}
-            onChange={(e) => setEditName(e.target.value)}
-            onBlur={handleRename}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") handleRename();
-              if (e.key === "Escape") setIsEditing(false);
+          <form
+            className="flex-1 flex items-center gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleRename();
             }}
-            className="flex-1 px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
-            autoFocus
-          />
+          >
+            <input
+              type="text"
+              name="name"
+              id="folder-name"
+              value={editName}
+              aria-label={t("rename")}
+              onChange={(e) => setEditName(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleRename();
+                if (e.key === "Escape") setIsEditing(false);
+              }}
+              className="flex-1 px-2 py-1 text-sm border border-line rounded focus:outline-none focus:ring-2 focus:ring-success"
+              autoFocus
+            />
+            <button
+              type="submit"
+              className="text-xs text-success hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {tCommon("save")}
+            </button>
+          </form>
         ) : (
-          <span className="flex-1 text-sm font-medium truncate">{folder.name}</span>
+          <span className="flex-1 text-sm font-medium truncate">{displayName}</span>
         )}
 
         {/* Document Count */}
@@ -136,6 +161,17 @@ export function FolderItem({
 
           {showMenu && (
             <div className="absolute end-0 top-full mt-1 w-40 bg-card rounded-lg shadow-lg border border-line py-1 z-50">
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-start text-sm hover:bg-badge"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddSubfolder(folder.id);
+                  setShowMenu(false);
+                }}
+              >
+                {t("addSubfolder")}
+              </button>
               <button
                 type="button"
                 className="w-full px-3 py-2 text-start text-sm hover:bg-badge"
@@ -188,6 +224,7 @@ export function FolderItem({
               onRename={onRename}
               onDelete={onDelete}
               onMove={onMove}
+              onAddSubfolder={onAddSubfolder}
             />
           ))}
         </div>

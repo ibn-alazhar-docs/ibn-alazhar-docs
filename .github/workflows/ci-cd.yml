@@ -12,6 +12,15 @@ on:
         required: false
         default: "false"
         type: boolean
+      regen_visual:
+        description: "Regenerate visual snapshots (upload as artifact; review before re-baseline commit)"
+        required: false
+        default: "false"
+        type: boolean
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 env:
   NODE_VERSION: "22"
@@ -31,6 +40,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
+          lfs: true
           fetch-depth: 0
 
       - name: Setup pnpm
@@ -73,6 +83,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -141,9 +154,15 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-test
+      PG_QUEUE_TEST_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      PG_QUEUE_TEST_TRUNCATE: "1"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -167,6 +186,9 @@ jobs:
 
       - name: Seed database
         run: pnpm db:seed
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
 
       - name: Run integration tests
         run: pnpm vitest run --project=integration
@@ -206,9 +228,13 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-test
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -229,6 +255,9 @@ jobs:
 
       - name: Run migrations
         run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
 
       - name: Run API tests
         run: pnpm vitest run --project=api
@@ -271,6 +300,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -306,6 +337,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -321,6 +354,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
       - name: Run frontend tests
         run: pnpm vitest run --project=frontend
 
@@ -328,10 +364,14 @@ jobs:
   # E2E Tests (Playwright)
   # ------------------------------------------------------------
   test-e2e:
-    name: E2E Tests
+    name: E2E Tests (${{ matrix.project }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
     needs: quality-gates
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, chromium-dark]
     services:
       postgres:
         image: postgres:16-alpine
@@ -359,11 +399,181 @@ jobs:
       REDIS_URL: redis://localhost:6379
       AUTH_SECRET: test-secret-do-not-use-in-prod
       NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
       S3_ACCESS_KEY_ID: dummy
       S3_SECRET_ACCESS_KEY: dummy
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Verify LFS snapshots materialized
+        run: |
+          git lfs pull
+          lfs_count=$(git lfs ls-files | grep -c "tests/e2e" || true)
+          echo "LFS tracked e2e snapshots: $lfs_count"
+          test "$lfs_count" -gt 0
+          git lfs ls-files | grep tests/e2e | head -3
+          pointer_count=$(grep -r 'version https://git-lfs' tests/e2e/*snapshots* -l 2>/dev/null | wc -l)
+          echo "LFS pointer files remaining: $pointer_count"
+          test "$pointer_count" = "0"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run migrations
+        run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+
+      - name: Seed database
+        run: pnpm db:seed
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
+
+      - name: Build web app
+        run: pnpm --filter @ibn-al-azhar-docs/web build
+
+      - name: Install pipeline system + Python dependencies
+        # Conversion chain runs Python scripts (PyMuPDF for classification/native
+        # extraction, pypdfium2+Pillow for page splitting) plus WeasyPrint for PDF
+        # export and Pandoc for DOCX/EPUB. Without them every conversion dies with
+        # ModuleNotFoundError: No module named 'pymupdf'.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          python3 -m pip install --break-system-packages --no-cache-dir \
+            pymupdf pypdfium2 Pillow weasyprint
+
+      - name: Start pipeline workers (E2E)
+        env:
+          PLAYWRIGHT_TEST: "true"
+          MOCK_OCR: "true"
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/ibn-e2e-logs
+          cat > .env <<EOF
+          DATABASE_URL=${DATABASE_URL}
+          DATABASE_URL_DIRECT=${DATABASE_URL_DIRECT}
+          REDIS_URL=${REDIS_URL}
+          STORAGE_DRIVER=${STORAGE_DRIVER}
+          STORAGE_LOCAL_DIR=${STORAGE_LOCAL_DIR}
+          AUTH_SECRET=${AUTH_SECRET}
+          PLAYWRIGHT_TEST=true
+          MOCK_OCR=true
+          NODE_ENV=test
+          EOF
+          pnpm --filter @ibn-al-azhar-docs/ocr-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/ocr-worker.log 2>&1 &
+          echo $! > /tmp/ibn-e2e-logs/ocr-worker.pid
+          pnpm --filter @ibn-al-azhar-docs/export-worker exec tsx src/index.ts > /tmp/ibn-e2e-logs/export-worker.log 2>&1 &
+          echo $! > /tmp/ibn-e2e-logs/export-worker.pid
+          sleep 8
+          for name in ocr-worker export-worker; do
+            pid="$(cat /tmp/ibn-e2e-logs/${name}.pid)"
+            if ! kill -0 "$pid" 2>/dev/null; then
+              echo "::error::${name} exited early (pid ${pid})"
+              echo "--- ${name}.log (tail) ---"
+              tail -n 200 "/tmp/ibn-e2e-logs/${name}.log" || true
+              exit 1
+            fi
+          done
+          echo "Pipeline workers are running."
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run E2E tests
+        run: pnpm exec playwright test --project=${{ matrix.project }}
+        env:
+          E2E_PROJECT: ${{ matrix.project }}
+          PLAYWRIGHT_TEST: "true"
+          MOCK_OCR: "true"
+
+      - name: Stop pipeline workers
+        if: always()
+        run: |
+          for f in /tmp/ibn-e2e-logs/*.pid; do
+            [ -f "$f" ] && kill "$(cat "$f")" 2>/dev/null || true
+          done
+          sleep 1
+          for f in /tmp/ibn-e2e-logs/*.pid; do
+            [ -f "$f" ] && kill -9 "$(cat "$f")" 2>/dev/null || true
+          done
+
+      - name: Upload worker logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-worker-logs-${{ matrix.project }}
+          path: /tmp/ibn-e2e-logs
+          if-no-files-found: ignore
+          retention-days: 7
+
+  # ------------------------------------------------------------
+  # Visual snapshot regeneration (manual, pinned env)
+  # Post-refactor baselines are stale (viewport-sized PNGs vs fullPage
+  # reality). This job refreshes them in the same ubuntu-latest pinned
+  # environment CI uses and uploads them as an artifact — re-baseline is
+  # an explicit human-reviewed commit, never an auto-commit.
+  # ------------------------------------------------------------
+  regen-visual:
+    name: Regen Visual Snapshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    if: github.event_name == 'workflow_dispatch' && inputs.regen_visual == true
+    permissions:
+      contents: read
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ibn_docs
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U ibn_docs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: test-secret-do-not-use-in-prod
+      NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
+      S3_ACCESS_KEY_ID: dummy
+      S3_SECRET_ACCESS_KEY: dummy
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -394,8 +604,15 @@ jobs:
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run E2E tests
-        run: pnpm test:e2e
+      - name: Regenerate visual snapshots
+        run: pnpm exec playwright test visual-pages.spec.ts visual-responsive.spec.ts visual-regression.spec.ts visual-theme.spec.ts visual-components.spec.ts --update-snapshots
+
+      - name: Upload regenerated snapshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-snapshots-regen
+          path: tests/e2e/*snapshots/
+          if-no-files-found: error
 
   # ------------------------------------------------------------
   # Security Scanning
@@ -411,6 +628,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
@@ -426,9 +645,8 @@ jobs:
         with:
           sarif_file: "trivy-results.sarif"
 
-      - name: Dependency review
-        uses: actions/dependency-review-action@v4
-        if: github.event_name == 'pull_request'
+      # Dependency review removed 2026-11-07: needs the Dependency graph toggle,
+      # which has no API for this repo plan; pnpm audit + Trivy SARIF cover it.
 
       - name: CodeQL Analysis
         uses: github/codeql-action/init@v3
@@ -454,6 +672,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          lfs: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3

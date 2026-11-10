@@ -93,7 +93,7 @@ export async function createTestTag(userId: string, overrides: Record<string, un
     id,
     userId,
     name: overrides.name ?? `tag-${id}`,
-    color: overrides.color ?? "#16A34A",
+    color: overrides.color ?? "#127E87",
     deletedAt: null,
     createdAt: new Date(),
     updatedAt: new Date(),

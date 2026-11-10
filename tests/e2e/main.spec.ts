@@ -4,7 +4,7 @@ import { DashboardPage } from "./pages/DashboardPage";
 import { FilesPage } from "./pages/FilesPage";
 
 const LOGIN_EMAIL = "admin@ibnalazhar.app";
-const LOGIN_PASSWORD = "password123";
+const LOGIN_PASSWORD = "AdminPassword123!";
 
 test.describe("Unauthenticated access", () => {
   test("redirects to login when accessing protected route", async ({ page }) => {
@@ -123,9 +123,10 @@ test.describe("RTL direction", () => {
     await loginPage.expectRtlDirection();
   });
 
-  test("english pages have dir=ltr", async ({ page }) => {
+  test("legacy /en login URL redirects to Arabic RTL login", async ({ page }) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto("en");
-    await loginPage.expectDirection("ltr", "en");
+    await loginPage.expectRtlDirection();
+    expect(page.url()).toContain("/ar/login");
   });
 });

@@ -13,9 +13,15 @@ interface Suggestion {
 interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
+  /**
+   * data-testid for the input. The dashboard header and the search page both
+   * render a SearchBar on the same page, so a single shared testid would
+   * resolve to two elements — each host must pass a distinct id.
+   */
+  testId?: string;
 }
 
-export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
+export function SearchBar({ onSearch, placeholder, testId = "search-input" }: SearchBarProps) {
   const t = useTranslations("search");
   const [query, setQuery] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
@@ -130,7 +136,7 @@ export function SearchBar({ onSearch, placeholder }: SearchBarProps) {
           aria-expanded={showSuggestions && suggestions.length > 0}
           aria-autocomplete="list"
           aria-activedescendant={selectedIndex >= 0 ? `suggestion-${selectedIndex}` : undefined}
-          data-testid="search-input"
+          data-testid={testId}
         />
         <span className="absolute start-3 top-1/2 -translate-y-1/2 text-very-muted">
           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

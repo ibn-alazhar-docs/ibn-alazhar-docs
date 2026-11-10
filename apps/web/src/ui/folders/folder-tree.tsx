@@ -76,7 +76,7 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="folder-list">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-sm font-semibold text-muted-color">{t("title")}</h3>
         <button
@@ -121,11 +121,15 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
                 setMovingFolderId(folderId);
                 setShowMoveDialog(true);
               }}
+              onAddSubfolder={(folderId) => {
+                setCreateParentId(folderId);
+                setShowCreateDialog(true);
+              }}
             />
           ))}
         </div>
       ) : (
-        <div className="py-8 text-center">
+        <div className="flex flex-col items-center justify-center py-12 sm:py-16 min-h-[280px] text-center">
           <div className="mb-2 text-muted-color">
             <FolderIcon className="mx-auto h-10 w-10" />
           </div>

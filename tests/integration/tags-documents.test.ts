@@ -37,7 +37,7 @@ describe("Tags → Documents Integration", () => {
 
       await expect(
         prisma.tag.create({
-          data: { userId: userA.id, name: "duplicate-tag", color: "#16A34A" },
+          data: { userId: userA.id, name: "duplicate-tag", color: "#127E87" },
         }),
       ).rejects.toThrow();
     });

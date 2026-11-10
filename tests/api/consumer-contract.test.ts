@@ -292,6 +292,10 @@ vi.mock("@/core/composition-root", () => ({
     },
     profile: { updateProfile: mockUpdateProfile, deleteAccount: mockDeleteAccount },
     uploadDocument: { execute: mockUploadExecute },
+    uploadPreflight: {
+      assertUserActive: vi.fn().mockResolvedValue({ ok: true }),
+      checkSizeAndServices: vi.fn().mockResolvedValue({ ok: true }),
+    },
   },
 }));
 
@@ -313,6 +317,14 @@ vi.mock("@/clients/redis", () => ({
   checkRateLimit: mockCheckRateLimit,
   checkUserRateLimit: mockCheckUserRateLimit,
   rateLimitResponse: vi.fn(),
+}));
+
+vi.mock("@ibn-al-azhar-docs/pipeline", () => ({
+  // /api/health imports loadConfig/isRedisHealthy from the pipeline barrel;
+  // the real barrel is very slow to transform under vitest and blew the
+  // 30s test timeout. Health only needs the probe result here.
+  loadConfig: vi.fn().mockReturnValue({}),
+  isRedisHealthy: vi.fn().mockResolvedValue(true),
 }));
 
 function defaultError() {
@@ -849,11 +861,10 @@ describe("Consumer Contract — OpenAPI Spec as Consumer Contract", () => {
     expect(paths).toContain("/api/export");
   });
 
-  it("OpenAPI spec security scheme is bearer JWT", () => {
-    const scheme = spec.components?.securitySchemes?.bearerAuth as any;
+  it("OpenAPI spec security scheme is session cookie (apiKey/cookie)", () => {
+    const scheme = spec.components?.securitySchemes?.sessionAuth;
     expect(scheme).toBeDefined();
-    expect(scheme.type).toBe("http");
-    expect(scheme.scheme).toBe("bearer");
+    expect(scheme).toMatchObject({ type: "apiKey", in: "cookie" });
   });
 
   it("All authenticated endpoints declare security", () => {

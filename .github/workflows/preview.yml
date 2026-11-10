@@ -30,6 +30,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      # gha cache driver requires buildx — was missing here (fixed 2026-11-07).
+      - name: Setup buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Build and push web (preview)
         uses: docker/build-push-action@v6
         with:
@@ -66,34 +70,44 @@ jobs:
     name: Deploy Preview to HF Spaces
     runs-on: ubuntu-24.04
     needs: [build-preview]
-    if: env.HF_TOKEN != ''
+    permissions:
+      contents: read
+      pull-requests: write
     environment:
       name: pr-${{ github.event.pull_request.number }}
       url: https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to HF Spaces
+      - name: Check HF token
+        id: token-check
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: echo "present=$([ -n "$HF_TOKEN" ] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      # HF Spaces previews: create a Space per PR that pulls the pr-N image.
+      # Kept as printf (no heredoc) — heredoc terminators inside YAML blocks
+      # broke the workflow parse (fixed 2026-11-07).
+      # Guarded via an outputs-check step: `if: ${{ secrets.* }}` at job level
+      # is an invalid context and failed the whole workflow parse (fixed 2026-11-07).
+      - name: Deploy to HF Spaces
+        if: steps.token-check.outputs.present == 'true'
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          IMAGE_PREFIX: ${{ env.IMAGE_PREFIX }}
+          REGISTRY: ${{ env.REGISTRY }}
           HF_SPACE_NAME: ${{ github.event.pull_request.number }}-ibn-al-azhar-docs
         run: |
-          # Install huggingface_hub CLI
           pip install --quiet huggingface_hub
 
-          # Create or update the Space
-          huggingface-cli repo create "$HF_SPACE_NAME" --type model --exist-ok || true
+          huggingface-cli repo create "$HF_SPACE_NAME" --repo-type space --exist-ok || true
 
-          # Update Space with Dockerfile from main branch
-          # The Space will pull and run the PR-specific image
-          cat > /tmp/Dockerfile <<'SPACE_DOCKERFILE'
-          FROM ghcr.io/${{ env.IMAGE_PREFIX }}/web:pr-${{ github.event.pull_request.number }}
-          SPACE_DOCKERFILE
+          printf 'FROM ghcr.io/%s/web:pr-%s\n' "$IMAGE_PREFIX" "${{ github.event.pull_request.number }}" > /tmp/Dockerfile
 
-          huggingface-cli upload "$HF_SPACE_NAME" /tmp/Dockerfile --repo-type model
+          huggingface-cli upload --repo-type space "$HF_SPACE_NAME" /tmp/Dockerfile Dockerfile
 
           echo "### Preview deployed" >> "$GITHUB_STEP_SUMMARY"
-          echo "URL: https://${{ github.event.pull_request.number }}-ibn-al-azhar-docs.hf.space" >> "$GITHUB_STEP_SUMMARY"
+          echo "URL: https://${HF_SPACE_NAME,,}.hf.space" >> "$GITHUB_STEP_SUMMARY"
 
       - name: Comment PR with preview info
         uses: actions/github-script@v7

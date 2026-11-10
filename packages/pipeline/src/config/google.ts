@@ -15,15 +15,13 @@ export function buildGoogleConfig(): Pick<PipelineConfig, "google" | "gemini"> {
       apiKey: process.env.GEMINI_API_KEY ?? "",
       model: process.env.GEMINI_MODEL ?? "gemini-3.5-flash",
       modelFallbacks: (() => {
-        const raw =
-          process.env.GEMINI_MODEL_FALLBACKS ??
-          "gemini-2.5-flash,gemini-2.0-flash";
+        const raw = process.env.GEMINI_MODEL_FALLBACKS ?? "gemini-2.5-flash,gemini-2.0-flash";
         return raw
           .split(",")
           .map((m) => m.trim())
           .filter((m) => m.length > 0);
       })(),
-      nativeChunkSize: toNum(process.env.GEMINI_NATIVE_CHUNK_SIZE, 4),
+      nativeChunkSize: toNum(process.env.GEMINI_NATIVE_CHUNK_SIZE, 10),
     },
   };
 }

@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
-import type { Document, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
+import type { Document } from "@prisma/client";
 import type { CreateDocumentInput, UpdateDocumentInput } from "@/domain/types";
 import type { IDocumentRepository } from "@/domain/repositories/document.repository.interface";
 import { NotFoundError } from "@/shared/errors";
@@ -59,13 +60,17 @@ export class DocumentRepository implements IDocumentRepository {
   }
 
   async updateSearchVector(id: string, title?: string, description?: string | null) {
+    // Normalize text before indexing so stored vectors match normalized
+    // search queries. normalize_arabic is pinned char-for-char to
+    // @/shared/arabic-search-normalize (latest definition: prisma/migrations
+    // 20261105000000_normalize_arabic_single_source).
     return this.prisma.$executeRaw`
       UPDATE documents
       SET searchvector =
-        setweight(to_tsvector('simple', coalesce(${title || ""}, '')), 'A') ||
-        setweight(to_tsvector('simple', coalesce("fileName", '')), 'B') ||
-        setweight(to_tsvector('simple', coalesce(${description || ""}, '')), 'C') ||
-        setweight(to_tsvector('simple', coalesce((SELECT searchpreview FROM documents WHERE id = ${id}), '')), 'D')
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${title || ""}, ''))), 'A') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce("fileName", ''))), 'B') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${description || ""}, ''))), 'C') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce((SELECT searchpreview FROM documents WHERE id = ${id}), ''))), 'D')
       WHERE id = ${id}
     `;
   }
@@ -74,6 +79,26 @@ export class DocumentRepository implements IDocumentRepository {
     return this.prisma.document.updateMany({
       where,
       data,
+    });
+  }
+
+  async resetForReprocess(id: string, userId: string) {
+    return this.prisma.document.updateMany({
+      where: {
+        id,
+        userId,
+        deletedAt: null,
+        status: { in: ["FAILED", "UPLOADED"] },
+      },
+      data: {
+        status: "UPLOADED",
+        errorCode: null,
+        errorMessage: null,
+        outputKeys: Prisma.JsonNull,
+        outputFormats: [],
+        pageCount: null,
+        needsReview: false,
+      },
     });
   }
 }

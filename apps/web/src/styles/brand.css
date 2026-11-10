@@ -1,27 +1,68 @@
 @custom-variant dark (&:is(.dark, .dark *));
 
-@theme {
-  --color-primary-50: #f0faf6;
-  --color-primary-100: #d1f2e5;
-  --color-primary-200: #a7e6cc;
-  --color-primary-300: #74d4ad;
-  --color-primary-400: #43bd8e;
-  --color-primary-500: #16a34a;
-  --color-primary-600: #16a34a;
-  --color-primary-700: #086941;
-  --color-primary-800: #065232;
-  --color-primary-900: #043e25;
+/* `static`: Tailwind 4 only emits theme variables a utility actually uses, and
+   these are consumed through `var()` in plain CSS (globals.css `html`/`h1-h6`,
+   landing.css, reading.css). Without `static` the whole font chain —
+   `--font-family-almarai` → `--font-family-body` — is dropped from the output,
+   every element falls back to the UA serif, and Almarai/Amiri never load. */
+@theme static {
+  /* Brand palette — منصة ابن الأزهر Visual Identity (docs/BRAND_IMPLEMENTATION.md)
+     Classic Teal #127E87 · Antique Gold #DA9E2C · Pure White · Prussian Blue #083B40
+     Warm paper #FBF5E9 (the brandbook's own page ground). */
+  --color-primary-50: #ecf5f5;
+  --color-primary-100: #d4e8e9;
+  --color-primary-200: #acd2d5;
+  --color-primary-300: #7db8bd;
+  --color-primary-400: #469aa1;
+  --color-primary-500: #127e87;
+  --color-primary-600: #106f77;
+  --color-primary-700: #0d5b61;
+  --color-primary-800: #0a454a;
+  --color-primary-900: #073033;
 
-  --color-gold-50: #faf6eb;
-  --color-gold-100: #f5edd0;
-  --color-gold-200: #eadb9d;
-  --color-gold-300: #dfc46b;
-  --color-gold-400: #ca8a04;
-  --color-gold-500: #ca8a04;
-  --color-gold-600: #ca8a04;
-  --color-gold-700: #7e601e;
-  --color-gold-800: #5d4514;
-  --color-gold-900: #412f0c;
+  /* Canonical ramp is `primary-*`. `teal-*` aliases it (`var()` resolution
+     keeps the computed colours byte-identical to the duplicated values). */
+  --color-teal-50: var(--color-primary-50);
+  --color-teal-100: var(--color-primary-100);
+  --color-teal-200: var(--color-primary-200);
+  --color-teal-300: var(--color-primary-300);
+  --color-teal-400: var(--color-primary-400);
+  --color-teal-500: var(--color-primary-500);
+  --color-teal-600: var(--color-primary-600);
+  --color-teal-700: var(--color-primary-700);
+  --color-teal-800: var(--color-primary-800);
+  --color-teal-900: var(--color-primary-900);
+
+  --color-gold-50: #fcf7ee;
+  --color-gold-100: #f8eed9;
+  --color-gold-200: #f2ddb5;
+  --color-gold-300: #ebca8b;
+  --color-gold-400: #e2b35a;
+  --color-gold-500: #da9e2c;
+  --color-gold-600: #c08b27;
+  --color-gold-700: #9d7220;
+  --color-gold-800: #785718;
+  --color-gold-900: #533c11;
+
+  --color-prussian-50: #ebeff0;
+  --color-prussian-100: #d3dcdd;
+  --color-prussian-200: #a9babc;
+  --color-prussian-300: #779396;
+  --color-prussian-400: #3e666a;
+  --color-prussian-500: #083b40;
+  --color-prussian-600: #073438;
+  --color-prussian-700: #062a2e;
+  --color-prussian-800: #042023;
+  --color-prussian-900: #031618;
+  --color-prussian: #083b40;
+
+  /* Warm paper — the brandbook ground tone and its neighbours. */
+  --color-paper-50: #fefcf7;
+  --color-paper-100: #fbf5e9;
+  --color-paper-200: #f5e8d2;
+  --color-paper-300: #eddcc0;
+  --color-paper-400: #e0c9a4;
+  --color-paper-500: #cfae80;
 
   --color-neutral-50: #faf8f3;
   --color-neutral-100: #f5f0e8;
@@ -39,42 +80,60 @@
   --color-error-500: #ef4444;
   --color-error-600: #dc2626;
   --color-warning-50: #fffbeb;
-  --color-warning-500: #f59e0b;
-  --color-success-50: #f0fdf4;
-  --color-success-500: #22c55e;
+  --color-warning-500: #da9e2c;
+  /* The brandbook has no green: status hue comes from teal depth, not a new colour. */
+  --color-success-50: #ecf5f5;
+  --color-success-500: #127e87;
+  --color-success-600: #0d5b61;
   --color-info-50: #eff6ff;
   --color-info-500: #3b82f6;
 
   --color-manuscript-brown: #92400e;
 
-  --font-family-cairo: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
-  --font-family-amiri: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-family-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-family-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
+  /* Brand fonts: Amiri display + Almarai body/UI.
+     Thmanyah is the brandbook's primary face but is commercial and unlicensed here
+     (AGENTS.md forbids taking it without a licence file), so the stack names it
+     first and falls through to OFL faces until licensed files are self-hosted. */
+  --font-family-almarai: var(--font-almarai), "Almarai", "Noto Sans Arabic", system-ui, sans-serif;
+  --font-family-thmanyah:
+    "Thmanyah Sans", "Thmanyah", var(--font-almarai), "Almarai", "Amiri", "Noto Naskh Arabic", serif;
+  --font-family-display:
+    var(--font-amiri), "Amiri", "Noto Naskh Arabic", var(--font-family-thmanyah);
+  --font-family-body: var(--font-family-almarai);
+  /* Backwards-compatible aliases (reading.css / landing.css still use these) */
+  --font-family-cairo: var(--font-family-almarai);
   --font-family-mono:
     var(--font-mono), "Fira Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* `--font-*` is the Tailwind namespace that produces utilities, so these two
+     turn the `font-body` / `font-display` class names used across the UI into
+     real rules instead of inert strings. */
+  --font-body: var(--font-family-almarai);
+  --font-display: var(--font-family-display);
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
 
-  --shadow-xs: 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-sm: 0 1px 3px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.04);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -2px rgb(0 0 0 / 0.05);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.04);
-  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.04);
+  --shadow-xs: 0 1px 2px rgb(8 59 64 / 0.04);
+  --shadow-sm: 0 1px 3px rgb(8 59 64 / 0.07), 0 1px 2px rgb(8 59 64 / 0.04);
+  --shadow-md: 0 4px 6px -1px rgb(8 59 64 / 0.08), 0 2px 4px -2px rgb(8 59 64 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(8 59 64 / 0.1), 0 4px 6px -4px rgb(8 59 64 / 0.05);
+  --shadow-xl: 0 20px 25px -5px rgb(8 59 64 / 0.11), 0 8px 10px -6px rgb(8 59 64 / 0.06);
+
+  --radius-brand-sm: 8px;
+  --radius-brand-md: 14px;
+  --radius-brand-lg: 20px;
+  --radius-brand-xl: 28px;
 
   --color-ring: var(--color-primary-500);
-  --ring-offset-width: 2px;
-  --ring-offset-color: var(--surface);
 
   --color-page: var(--page-bg);
+  --color-paper: var(--page-bg);
   --color-surface: var(--surface);
   --color-card: var(--card-bg);
   --color-badge: var(--badge-bg);
   --color-line: var(--border-line);
   --color-subtle: var(--border-subtle);
-  /* Moved text color mappings to explicit utility layer below to avoid Tailwind 4 palette merging issues */
   --color-btn-primary: var(--btn-primary-bg);
   --color-btn-primary-text: var(--btn-primary-text);
   --color-hover: var(--hover-bg);
@@ -104,7 +163,6 @@
   --color-background: var(--surface);
   --color-muted: var(--hover-bg);
 
-  /* Map text colors so Tailwind 4 generates text-primary-color, text-secondary-color, etc. */
   --color-primary-color: var(--text-primary);
   --color-secondary-color: var(--text-secondary);
   --color-muted-color: var(--text-tertiary);
@@ -112,105 +170,114 @@
 }
 
 :root {
-  --page-bg: #fafafa;
+  /* Brand lockup rules (docs/BRAND_IMPLEMENTATION.md) */
+  --brand-teal: #127e87;
+  /* Print clear space from the brandbook (190px at the reference artwork size). */
+  --logo-clear-space: 190px;
+  --logo-min-size: 152px;
+  /* On-screen safe space is proportional to the rendered mark, not the print value. */
+  --logo-safe-inline: 0.75em;
+  --page-bg: #fbf5e9;
   --surface: #ffffff;
   --card-bg: #ffffff;
-  --border-line: #e5e5e5;
-  --border-subtle: #f0f0f0;
-  --text-primary: #171717;
-  --text-secondary: #525252;
-  --text-tertiary: #5f5f5f;
+  --border-line: #e8e2d8;
+  --border-subtle: #f2ece1;
+  --text-primary: #12282b;
+  --text-secondary: #4b5c5e;
+  --text-tertiary: #57696b; /* AA 5.9:1 on light paper */ /* AA >=4.5 on the light paper bg */
   --text-inverse: #fffdf7;
-  --btn-primary-bg: #086941;
+  --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(31, 41, 55, 0.12);
-  --hover-bg: rgba(31, 41, 55, 0.04);
-  --active-bg: rgba(31, 41, 55, 0.06);
-  --badge-bg: rgba(22, 163, 74, 0.1);
-  --overlay: rgba(31, 41, 55, 0.5);
-  --input-bg: #fdfcfa;
-  --input-border: #e8e2d8;
-  --input-focus: #16a34a;
-  --success: #16a34a;
-  --success-bg: #f0faf6;
-  --success-border: #a7e6cc;
-  --danger: #dc2626;
+  --hover-bg: rgba(8, 59, 64, 0.05);
+  --active-bg: rgba(8, 59, 64, 0.08);
+  --badge-bg: rgba(18, 126, 135, 0.1);
+  --overlay: rgba(8, 59, 64, 0.5);
+  --input-bg: #fffdf8;
+  --input-border: #e0d8ca;
+  --input-focus: #127e87;
+  --success: #0d5b61;
+  --success-bg: #ecf5f5;
+  --success-border: #acd2d5;
+  --danger: #c81e1e;
   --danger-bg: #fef2f2;
   --danger-border: #fecaca;
   --info: #3b82f6;
   --info-bg: #eff6ff;
-  --gold: #ca8a04;
-  --gold-bg: #faf6eb;
-  --gold-border: #eadb9d;
-  --icon-color: #1f2937;
-  --icon-muted: #78716c;
-  --ring-focus: #16a34a;
-  --shadow-color: 0 0 0;
-  --font-display: var(--font-amiri), "Traditional Arabic", "Noto Naskh Arabic", serif;
-  --font-body: var(--font-cairo), "Noto Sans Arabic", system-ui, sans-serif;
-  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
-  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
-  --glass-bg: hsla(40, 30%, 98%, 0.7);
-  --glass-border: rgba(202, 138, 4, 0.08);
-  --glass-shadow: 0 16px 32px -8px rgba(31, 41, 55, 0.08);
+  --gold: #da9e2c;
+  --gold-bg: #fcf7ee;
+  --gold-border: #f2ddb5;
+  --icon-color: #083b40;
+  --ring-focus: #127e87;
+  --shadow-color: rgba(8, 59, 64, 0.1);
+  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.35);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.45);
+  --glass-bg: hsla(40, 45%, 97%, 0.72);
+  --glass-border: rgba(218, 158, 44, 0.16);
+  --glass-shadow: 0 16px 32px -8px rgba(8, 59, 64, 0.1);
+  /* Motion — Warm Academic Polish: short, eased, never bouncy. */
+  --motion-fast: 120ms;
+  --motion-base: 200ms;
+  --motion-slow: 320ms;
+  --motion-ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
 .dark {
-  --page-bg: #0a0a0a;
-  --surface: #171717;
-  --card-bg: #171717;
-  --border-line: #262626;
-  --border-subtle: #171717;
-  --text-primary: #fafafa;
-  --text-secondary: #a3a3a3;
-  --text-tertiary: #8c8c8c;
-  --text-inverse: #1a1614;
-  --btn-primary-bg: #086941;
+  --page-bg: #042023;
+  --surface: #083b40;
+  --card-bg: #0d5b61;
+  --border-line: #0d5b61;
+  --border-subtle: #073033;
+  --text-primary: #f7f3ea;
+  --text-secondary: #b9c9ca;
+  --text-tertiary: #c6d9d9; /* AA >=4.5 on the dark teal card bg (#0d5b61) */
+  --text-inverse: #083b40;
+  --btn-primary-bg: #127e87;
   --btn-primary-text: #ffffff;
-  --btn-ghost-border: rgba(245, 240, 232, 0.1);
-  --hover-bg: rgba(245, 240, 232, 0.05);
-  --active-bg: rgba(245, 240, 232, 0.08);
-  --badge-bg: rgba(22, 163, 74, 0.15);
-  --overlay: rgba(26, 22, 20, 0.8);
-  --input-bg: #241f1c;
-  --input-border: #3d3632;
-  --input-focus: #16a34a;
-  --success: #16a34a;
-  --success-bg: rgba(22, 163, 74, 0.1);
-  --success-border: rgba(22, 163, 74, 0.2);
-  --danger: #ef4444;
+  --hover-bg: rgba(245, 240, 232, 0.06);
+  --active-bg: rgba(245, 240, 232, 0.09);
+  --badge-bg: rgba(18, 126, 135, 0.2);
+  --overlay: rgba(3, 22, 24, 0.8);
+  --input-bg: #062a2e;
+  --input-border: #0d5b61;
+  --input-focus: #469aa1;
+  --success: #469aa1;
+  --success-bg: rgba(18, 126, 135, 0.14);
+  --success-border: rgba(70, 154, 161, 0.3);
+  --danger: #fecaca;
   --danger-bg: rgba(239, 68, 68, 0.1);
   --danger-border: rgba(239, 68, 68, 0.2);
   --info: #60a5fa;
   --info-bg: rgba(96, 165, 250, 0.1);
-  --gold: #ca8a04;
-  --gold-bg: rgba(202, 138, 4, 0.1);
-  --gold-border: rgba(202, 138, 4, 0.2);
+  --gold: #e2b35a;
+  --gold-bg: rgba(218, 158, 44, 0.12);
+  --gold-border: rgba(226, 179, 90, 0.28);
   --icon-color: #f5f0e8;
-  --icon-muted: #a8a29e;
-  --ring-focus: #16a34a;
-  --shadow-color: 0 0 0;
-  --btn-shadow: 0 8px 20px -4px rgba(22, 163, 74, 0.35);
-  --btn-shadow-lg: 0 12px 28px -6px rgba(22, 163, 74, 0.45);
-  --glass-bg: rgba(36, 31, 28, 0.65);
+  --ring-focus: #469aa1;
+  --shadow-color: rgba(0, 0, 0, 0.45);
+  --btn-shadow: 0 8px 20px -4px rgba(18, 126, 135, 0.5);
+  --btn-shadow-lg: 0 12px 28px -6px rgba(18, 126, 135, 0.6);
+  --glass-bg: rgba(8, 59, 64, 0.65);
   --glass-border: rgba(245, 240, 232, 0.08);
   --glass-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.8);
 
   /* Dark overrides for @theme neutral tokens (used by reading.css and others) */
-  --color-neutral-50: #1a1614;
-  --color-neutral-100: #241f1c;
-  --color-neutral-200: #2e2824;
-  --color-neutral-300: #3d3632;
+  --color-neutral-50: #042023;
+  --color-neutral-100: #062a2e;
+  --color-neutral-200: #073438;
+  --color-neutral-300: #0d5b61;
   --color-neutral-400: #57534e;
   --color-neutral-500: #78716c;
   --color-neutral-600: #a8a29e;
   --color-neutral-700: #d6cec2;
   --color-neutral-800: #f5f0e8;
   --color-neutral-900: #faf8f3;
-  --color-gold-50: rgba(202, 138, 4, 0.08);
-  --color-gold-100: rgba(202, 138, 4, 0.12);
-  --color-gold-200: rgba(202, 138, 4, 0.18);
-  --color-gold-400: #ca8a04;
+  --color-paper-50: #062a2e;
+  --color-paper-100: #073438;
+  --color-paper-200: #0d5b61;
+  --color-gold-50: rgba(218, 158, 44, 0.08);
+  --color-gold-100: rgba(218, 158, 44, 0.12);
+  --color-gold-200: rgba(218, 158, 44, 0.18);
+  --color-gold-400: #da9e2c;
 }
 
 @layer base {
@@ -237,7 +304,7 @@
   }
 
   .premium-gradient-text {
-    background: linear-gradient(135deg, var(--gold) 0%, var(--success) 100%);
+    background: linear-gradient(135deg, var(--gold) 0%, var(--brand-teal) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -255,6 +322,19 @@
     animation: gradientBG 15s ease infinite;
   }
 
+  @keyframes progressIndeterminate {
+    0% {
+      transform: translateX(-110%);
+    }
+    100% {
+      transform: translateX(220%);
+    }
+  }
+
+  .progress-indeterminate {
+    animation: progressIndeterminate 1.4s ease-in-out infinite;
+  }
+
   @keyframes gradientBG {
     0% {
       background-position: 0% 50%;
@@ -269,8 +349,8 @@
 
   .hover-lift {
     transition:
-      transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transform var(--motion-base) var(--motion-ease),
+      box-shadow var(--motion-base) var(--motion-ease);
   }
 
   .hover-lift:hover {
@@ -284,23 +364,78 @@
 
   @keyframes pulseGlow {
     0% {
-      box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.4);
+      box-shadow: 0 0 0 0 rgba(18, 126, 135, 0.4);
     }
     100% {
-      box-shadow: 0 0 0 8px rgba(22, 163, 74, 0);
+      box-shadow: 0 0 0 8px rgba(18, 126, 135, 0);
     }
+  }
+
+  /* "Subtle Geometric Motifs" (brandbook 05): a rotated-square lattice. Keep the
+     opacity near zero — it is texture, not decoration. */
+  .brand-motif {
+    background-image:
+      linear-gradient(45deg, var(--gold) 1px, transparent 1px),
+      linear-gradient(-45deg, var(--gold) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.07;
+  }
+
+  .brand-motif-panel {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .brand-motif-panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    background-image:
+      linear-gradient(45deg, var(--gold) 1px, transparent 1px),
+      linear-gradient(-45deg, var(--gold) 1px, transparent 1px);
+    background-size: 44px 44px;
+    opacity: 0.06;
+    mask-image: linear-gradient(to bottom, black, transparent);
+    -webkit-mask-image: linear-gradient(to bottom, black, transparent);
+  }
+
+  /* Gold hairline rule, as used on the brandbook page headers. */
+  .brand-rule {
+    border-bottom: 2px solid var(--gold);
   }
 }
 
-/* Ensure the logo turns white in dark mode */
-.dark img[src*="logo.svg"],
-.dark img[src*="logo.png"] {
-  filter: brightness(0) invert(1);
+/* Logo clear space (190px all sides) and minimum size (152px) — print and
+   brand-sheet rules. On-screen headers use --logo-safe-inline; 190px of padding
+   inside a nav bar is never correct. Verified 2026-11-08: no JSX uses
+   .brand-clear-space/.brand-logo in headers or landing (only the BrandLogo
+   component), so these print rules add no header whitespace. */
+.brand-clear-space {
+  padding: var(--logo-clear-space);
+}
+.brand-logo-min {
+  min-width: var(--logo-min-size);
+  min-height: var(--logo-min-size);
+}
+.brand-logo {
+  min-width: var(--logo-min-size);
+  min-height: var(--logo-min-size);
+  margin: var(--logo-clear-space);
 }
 
 @media print {
   body {
     color: #000;
     background: #fff;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-glow,
+  .progress-indeterminate,
+  .animated-bg {
+    animation: none;
   }
 }

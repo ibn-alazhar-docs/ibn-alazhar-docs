@@ -5,8 +5,13 @@ import { join, normalize, isAbsolute, dirname } from "node:path";
 import { pipeline as streamPipeline } from "node:stream/promises";
 import { createReadStream, createWriteStream } from "node:fs";
 
+/** Local storage root (defaults to /data; PARITY with Config.storage.localDir). */
+export function localRoot(config: PipelineConfig): string {
+  return config.storage?.localDir || "/data";
+}
+
 export function localPath(config: PipelineConfig, key: string): string {
-  const root = config.storage?.localDir || "/data";
+  const root = localRoot(config);
   const normalized = normalize(key).replace(/^(\.\.(\/|\\|$))+/, "");
   const full = isAbsolute(normalized) ? normalized : join(root, normalized);
   if (full !== root && !full.startsWith(root + "/") && !full.startsWith(root + "\\")) {
@@ -16,7 +21,7 @@ export function localPath(config: PipelineConfig, key: string): string {
 }
 
 export async function localEnsureRoot(config: PipelineConfig): Promise<void> {
-  await mkdir(config.storage?.localDir || "/data", { recursive: true });
+  await mkdir(localRoot(config), { recursive: true });
 }
 
 export async function localUploadFile(

@@ -7,6 +7,7 @@ import { useRouter } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { registerSchema } from "@/shared/validators/auth";
 import { apiFetch } from "@/shared/api";
+import { FormField } from "./form-field";
 
 interface ActionState {
   error: string | null;
@@ -93,97 +94,41 @@ export function RegisterForm({ showGoogle = false }: { showGoogle?: boolean }) {
       )}
 
       <div className="space-y-4">
-        <div>
-          <label htmlFor="register-name" className="mb-2 block text-xs font-bold text-muted-color">
-            {t("nameLabel")}
-          </label>
-          <input
-            id="register-name"
-            type="text"
-            name="name"
-            aria-invalid={!!state.fieldErrors?.name}
-            aria-describedby={state.fieldErrors?.name ? "name-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-            placeholder={t("namePlaceholder")}
-            dir="ltr"
-          />
-          {state.fieldErrors?.name && (
-            <p className="mt-1.5 text-xs text-danger" id="name-error" role="alert">
-              {state.fieldErrors.name}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="register-name"
+          type="text"
+          name="name"
+          label={t("nameLabel")}
+          placeholder={t("namePlaceholder")}
+          error={state.fieldErrors?.name}
+        />
 
-        <div>
-          <label htmlFor="register-email" className="mb-2 block text-xs font-bold text-muted-color">
-            {t("emailLabel")}
-          </label>
-          <input
-            id="register-email"
-            type="email"
-            name="email"
-            dir="ltr"
-            aria-invalid={!!state.fieldErrors?.email}
-            aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-            placeholder={t("emailPlaceholder")}
-          />
-          {state.fieldErrors?.email && (
-            <p className="mt-1.5 text-xs text-danger" id="email-error" role="alert">
-              {state.fieldErrors.email}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="register-email"
+          type="email"
+          name="email"
+          label={t("emailLabel")}
+          placeholder={t("emailPlaceholder")}
+          error={state.fieldErrors?.email}
+        />
 
-        <div>
-          <label
-            htmlFor="register-password"
-            className="mb-2 block text-xs font-bold text-muted-color"
-          >
-            {t("passwordLabel")}
-          </label>
-          <input
-            id="register-password"
-            type="password"
-            name="password"
-            dir="ltr"
-            aria-invalid={!!state.fieldErrors?.password}
-            aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-            placeholder="••••••••"
-          />
-          {state.fieldErrors?.password && (
-            <p className="mt-1.5 text-xs text-danger" id="password-error" role="alert">
-              {state.fieldErrors.password}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="register-password"
+          type="password"
+          name="password"
+          label={t("passwordLabel")}
+          placeholder="••••••••"
+          error={state.fieldErrors?.password}
+        />
 
-        <div>
-          <label
-            htmlFor="register-confirm-password"
-            className="mb-2 block text-xs font-bold text-muted-color"
-          >
-            {t("confirmPasswordLabel")}
-          </label>
-          <input
-            id="register-confirm-password"
-            type="password"
-            name="confirmPassword"
-            dir="ltr"
-            aria-invalid={!!state.fieldErrors?.confirmPassword}
-            aria-describedby={
-              state.fieldErrors?.confirmPassword ? "confirmPassword-error" : undefined
-            }
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-            placeholder="••••••••"
-          />
-          {state.fieldErrors?.confirmPassword && (
-            <p className="mt-1.5 text-xs text-danger" id="confirmPassword-error" role="alert">
-              {state.fieldErrors.confirmPassword}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="register-confirm-password"
+          type="password"
+          name="confirmPassword"
+          label={t("confirmPasswordLabel")}
+          placeholder="••••••••"
+          error={state.fieldErrors?.confirmPassword}
+        />
 
         <button
           type="submit"

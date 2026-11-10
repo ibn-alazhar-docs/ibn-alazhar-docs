@@ -5,7 +5,9 @@ import { getTranslations, getMessages } from "next-intl/server";
 import { routing } from "@/i18n/routing";
 import { notFound } from "next/navigation";
 import { ThemeWrapper } from "@/ui/theme/theme-wrapper";
+import { RouteProgress } from "@/ui/layout/route-progress";
 import { generatePageMetadata } from "@/ui/metadata";
+import { BRAND_NAME, BRAND_POSITIONING } from "@/ui/brand";
 import { Toaster } from "sonner";
 
 interface LocaleLayoutProps {
@@ -29,7 +31,7 @@ export async function generateStaticParams() {
 
 export default async function LocaleLayout({ children, params }: LocaleLayoutProps) {
   const resolved = await params;
-  const locale = resolved.locale as "ar" | "en";
+  const locale = resolved.locale as "ar";
 
   if (!routing.locales.includes(locale)) {
     notFound();
@@ -48,13 +50,13 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Ibn Al-Azhar Docs",
-    description: "Document processing and text search",
+    name: BRAND_NAME.ar,
+    description: BRAND_POSITIONING,
     url: `${appUrl}/${locale}`,
-    inLanguage: locale === "ar" ? "ar" : "en",
+    inLanguage: "ar",
     publisher: {
       "@type": "Organization",
-      name: "Ibn Al-Azhar Docs",
+      name: BRAND_NAME.ar,
     },
   };
 
@@ -62,7 +64,7 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
     <div>
       <a
         href="#main-content"
-        className="fixed -top-96 start-4 z-[9999] rounded bg-[var(--color-primary-600)] px-4 py-2 text-white opacity-0 transition-all focus:top-4 focus:opacity-100"
+        className="fixed -top-96 start-4 z-[9999] rounded bg-[var(--color-primary-600)] ps-4 pe-4 py-2 text-white opacity-0 transition-all focus:top-4 focus:opacity-100"
       >
         {t("skipToContent")}
       </a>
@@ -74,13 +76,16 @@ export default async function LocaleLayout({ children, params }: LocaleLayoutPro
         <ThemeWrapper>{children}</ThemeWrapper>
         <Toaster
           position="top-center"
-          dir={locale === "ar" ? "rtl" : "ltr"}
+          dir="rtl"
           toastOptions={{
             style: {
-              fontFamily: locale === "ar" ? "Cairo, sans-serif" : "inherit",
+              // Toasts portal to <body>, so they need the brand token spelled out.
+              // "Cairo" here was a pre-brandbook leftover and matched no loaded face.
+              fontFamily: "var(--font-family-body)",
             },
           }}
         />
+        <RouteProgress />
       </NextIntlClientProvider>
     </div>
   );

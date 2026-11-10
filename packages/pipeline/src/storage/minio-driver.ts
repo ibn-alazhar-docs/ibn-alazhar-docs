@@ -1,7 +1,6 @@
 import { Client as MinioClient } from "minio";
 import type { PipelineConfig, StorageDriver } from "../types";
 import { getStorageDriver } from "../config";
-import { logger } from "@ibn-al-azhar-docs/shared";
 
 let client: MinioClient | null = null;
 let lastEndpoint = "";
@@ -11,12 +10,13 @@ let lastAccessKey = "";
 let lastSecretKey = "";
 let clientLock = false;
 
-function getDriver(config: PipelineConfig): StorageDriver {
+/** Single source for the storage-driver resolution used across storage.ts and minio-driver. */
+export function resolveStorageDriver(config: PipelineConfig): StorageDriver {
   return config.storage?.driver ?? getStorageDriver();
 }
 
 export function getStorageClient(config: PipelineConfig): MinioClient {
-  if (getDriver(config) !== "local") {
+  if (resolveStorageDriver(config) !== "local") {
     const isProduction = process.env.NODE_ENV === "production";
     const accessKey = config.minio.accessKey;
     const secretKey = config.minio.secretKey;

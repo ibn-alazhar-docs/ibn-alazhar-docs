@@ -72,27 +72,6 @@ canonical architecture document [`ARCHITECTURE.md`](../ARCHITECTURE.md) (Arabic)
 | ------------------------------ | ----------------------------------------- |
 | [`openapi.yaml`](openapi.yaml) | OpenAPI 3 specification for the REST API. |
 
-## 📘 Conversion Playbook (Arabic · RTL)
-
-Seventh-book documentation of the full pipeline that turns scanned Arabic PDFs into a
-print-ready book: PDF → text (Gemini) → Markdown → Word/PDF, plus the `jamea` authoring
-factory and its quality gates.
-
-| Document                                                             | Description                                                                       |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| [`conversion-playbook/README.md`](conversion-playbook/README.md)     | Index, chapter map, and the governing numbers.                                     |
-| [`01-the-full-journey.md`](conversion-playbook/01-the-full-journey.md) | The whole journey: timeline, layers, what was lost and recovered.                 |
-| [`02-pdf-to-text-pipeline.md`](conversion-playbook/02-pdf-to-text-pipeline.md) | PDF→text pipeline: model pool, verbatim prompt, chunking, quotas, quality gates. |
-| [`03-docx-engine.md`](conversion-playbook/03-docx-engine.md)         | The Word engine: RTL, styles, boxes, poetry, TOC, and its known defects.           |
-| [`04-jamea-factory.md`](conversion-playbook/04-jamea-factory.md)     | The `jamea` factory: stages, disk gates, resume, per-lesson settings.              |
-| [`05-issue-log.md`](conversion-playbook/05-issue-log.md)             | Issue log: symptom · root cause · fix · source (58 issues).                        |
-| [`06-decisions-and-lessons.md`](conversion-playbook/06-decisions-and-lessons.md) | Architectural decisions, governance failures, and 40 extracted lessons. |
-| [`07-appendices.md`](conversion-playbook/07-appendices.md)           | Glossary · path maps · number tables · ready commands · environment limits.        |
-
-> **Note:** This section is authored in Arabic (right-to-left) on purpose — it documents an
-> Arabic-first pipeline, and the Arabic text is the source of truth. File names, commands and
-> code identifiers stay in Latin script.
-
 ## 🗄️ Archive
 
 | Document               | Description                                                      |

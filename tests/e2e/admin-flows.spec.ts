@@ -15,9 +15,10 @@ test.describe("Admin Flows", () => {
       const admin = new AdminPage(page);
       await admin.goto();
       await page.waitForLoadState("domcontentloaded");
-      const adminLink = page.getByRole("link", { name: /المشرف|Admin|لوحة/i }).first();
-      const linkVisible = await adminLink.isVisible().catch(() => false);
-      expect(linkVisible === true || page.url().includes("admin")).toBeTruthy();
+      await expect(
+        page.locator("aside nav a").first().or(page.getByRole("heading").first()),
+      ).toBeVisible({ timeout: 15000 });
+      expect(page.url()).toMatch(/\/(users|admin)/);
     });
 
     test("User management page shows users", async ({ page }) => {
@@ -71,7 +72,7 @@ test.describe("Admin Flows", () => {
       const dashboardLink = page.getByRole("link", { name: /الرئيسية|Dashboard/i }).first();
       if (await dashboardLink.isVisible().catch(() => false)) {
         await dashboardLink.click();
-        await page.waitForLoadState("domcontentloaded");
+        await page.waitForURL(/\/dashboard/, { timeout: 15000 });
         expect(page.url()).toContain("/dashboard");
       }
     });
@@ -90,20 +91,22 @@ test.describe("Admin Flows", () => {
       const nonAdminContext = await browser.newContext();
       const nonAdminPage = await nonAdminContext.newPage();
       const auth = new AuthPage(nonAdminPage);
-      await auth.gotoLogin("en");
+      await auth.gotoLogin("ar");
       await auth.login("user@ibnalazhar.app", "userpass");
-      await page.waitForTimeout(3000);
+      await nonAdminPage.waitForLoadState("domcontentloaded");
       if (!nonAdminPage.url().includes("login")) {
-        await nonAdminPage.goto("/en/admin");
+        await nonAdminPage.goto("/ar/admin");
         await nonAdminPage.waitForLoadState("domcontentloaded");
-        const body = await nonAdminPage.textContent("body");
+        const url = nonAdminPage.url();
+        const body = (await nonAdminPage.textContent("body")) ?? "";
         const denied =
-          body?.includes("403") ||
-          body?.includes("Unauthorized") ||
-          body?.includes("Access") ||
-          !body?.includes("admin") ||
-          body?.includes("login");
+          url.includes("login") ||
+          body.includes("403") ||
+          body.includes("Unauthorized") ||
+          body.includes("غير مصرح");
         expect(denied).toBeTruthy();
+      } else {
+        expect(nonAdminPage.url()).toContain("login");
       }
       await nonAdminContext.close();
     });

@@ -1,6 +1,7 @@
 import { ValidationError } from "@/shared/errors";
 import { LIMITS } from "@/shared/constants";
 import type { ISearchRepository } from "@/domain/repositories/search.repository.interface";
+import { normalizeArabicForSearch } from "@/shared/arabic-search-normalize";
 
 export interface SearchFilters {
   query: string;
@@ -30,16 +31,10 @@ export class SearchUseCases {
   constructor(private readonly searchRepository: ISearchRepository) {}
 
   private normalizeArabic(text: string): string {
-    return text
-      .replace(/[أإآ]/g, "ا")
-      .replace(/ة/g, "ه")
-      .replace(/ى/g, "ي")
-      .replace(/[ؤئ]/g, "ء") // Normalize variants of hamza
-      .replace(/[\u064B-\u065F]/g, "") // Remove tashkeel (diacritics)
-      .replace(/ـ/g, "") // Remove tatweel
-      .replace(/_/g, " ")
-      .replace(/\s+/g, " ")
-      .trim();
+    // الطي القياسي مشترك مع normalize_arabic في SQL (المصدر:
+    // @/shared/arabic-search-normalize)؛ يبقى هنا تنظيف المسافات فقط لأن
+    // plainto_tsquery يستقبل عبارة نصية.
+    return normalizeArabicForSearch(text).replace(/_/g, " ").replace(/\s+/g, " ").trim();
   }
 
   async search(userId: string, role: string, filters: SearchFilters) {
@@ -58,10 +53,10 @@ export class SearchUseCases {
     const normalizedQuery = this.normalizeArabic(query);
     if (!normalizedQuery) throw new ValidationError("Invalid search query");
 
-    // كل مستخدم يبحث في مستنداته فقط
+    // كل مستخدم يبحث في مستنداته فقط — المدير يبحث في كل المستندات
     const searchParams = {
       userId,
-      isAdmin: false,
+      isAdmin: role === "ADMIN",
       normalizedQuery,
       rawQuery: query,
       type,

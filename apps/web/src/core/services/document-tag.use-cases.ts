@@ -3,6 +3,7 @@ import type { ITagRepository } from "../../domain/repositories/tag.repository.in
 import type { ITagDocumentRepository } from "../../domain/repositories/tag-document.repository.interface";
 import { AppError, NotFoundError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
+import { assertDocument } from "./assert-document";
 
 interface DocumentWithTags {
   tags: { tag: { id: string; name: string; color: string } }[];
@@ -27,7 +28,7 @@ export class DocumentTagUseCases {
 
   async addTagToDocument(documentId: string, tagId: string, userId: string, role: string) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
     if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);
@@ -41,7 +42,7 @@ export class DocumentTagUseCases {
 
   async setDocumentTags(documentId: string, tagIds: string[], userId: string, role: string) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     if (tagIds.length > 0) {
       const validTags = await this.tagRepository.findManyTagsByIds(tagIds, userId, role);
@@ -63,7 +64,7 @@ export class DocumentTagUseCases {
 
   async removeTagFromDocument(documentId: string, tagId: string, userId: string, role: string) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     const tag = await this.tagRepository.findTagById(tagId, userId, role);
     if (!tag) throw new AppError("الوسم غير موجود", ERROR_CODES.TAG_NOT_FOUND, 404);

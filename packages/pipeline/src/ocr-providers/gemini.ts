@@ -1,10 +1,61 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { PipelineConfig, OcrEngineType, OcrPageResult, OcrEngineResult } from "../types";
 import type { OcrProvider } from "./types";
+import { averageConfidence } from "./types";
 import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 import { getCloudOcrRemainingBudget, recordCloudOcrUsage } from "../cloud-cost-guard";
+import { KeyPool, keyFingerprint, loadGeminiKeys } from "../keypool";
+import { TASHKEEL, arabicLetterRatio } from "../text/constants";
 
 const logger = baseLogger.child({ module: "ocr-gemini" });
+
+/** وجود مفتاح Gemini — فحص موحّد قبل كل استخراج؛ نصّ الخطأ كما كان حرفيًّا. */
+function assertGeminiApiKey(config: PipelineConfig): void {
+  if (!config.gemini?.apiKey) {
+    throw new Error("Gemini API Key is missing");
+  }
+}
+
+/**
+ * فقدان ميزانية OCR السحابية عبّر كل الطرق الثلاث: استنفاد لنص واحد
+ * (`CLOUD_OCR_BUDGET_EXHAUSTED`) وعدم كفاية لعدد صفحات
+ * (`CLOUD_OCR_BUDGET_INSUFFICIENT`) — تُحوَّل العتبات عبر `neededPages`.
+ */
+function assertGeminiBudget(config: PipelineConfig, neededPages?: number): void {
+  const budget = config.ocr.cloudOcrDailyBudget ?? -1;
+  if (budget < 0) return;
+  const remaining = getCloudOcrRemainingBudget("gemini", budget);
+  if (neededPages !== undefined) {
+    if (remaining < neededPages) {
+      throw new Error(
+        `CLOUD_OCR_BUDGET_INSUFFICIENT: Gemini budget ${remaining} < pages ${neededPages}`,
+      );
+    }
+    return;
+  }
+  if (remaining <= 0) {
+    throw new Error(
+      `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
+    );
+  }
+}
+
+function recordGeminiUsage(config: PipelineConfig, units: number): void {
+  if ((config.ocr.cloudOcrDailyBudget ?? -1) >= 0) {
+    recordCloudOcrUsage("gemini", units);
+  }
+}
+
+/**
+ * Sidecar linkage to SKILL `arabic-pdf-to-book` (specs/012-amazing-merge US3 /
+ * T033, FR-004): API-key discovery comes from `loadGeminiKeys()` (keypool.ts),
+ * which reads `~/.config/ocr/gemini_key` (legacy) and
+ * `~/.config/ocr/gemini_keys` (multi-key) — the skill's key location. The skill
+ * itself is NOT installed or invoked as code here; only its chunk sizing
+ * (10 → 6 on QA failure), PAGE_BREAK splitting, and QA gates are mirrored.
+ * No heavy local models are introduced (constraint). If the key files are
+ * absent, `loadGeminiKeys()` falls back to `GEMINI_API_KEY` env vars.
+ */
 
 function isTransientError(error: unknown): boolean {
   if (error instanceof Error) {
@@ -22,21 +73,74 @@ function isTransientError(error: unknown): boolean {
   return false;
 }
 
+async function withRetry<T>(fn: () => Promise<T>, label: string): Promise<T> {
+  const MAX_ATTEMPTS = 3;
+  let attempt = 0;
+  // Intentional infinite retry loop: exits via return/throw below.
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    try {
+      return await fn();
+    } catch (err) {
+      attempt++;
+      if (attempt >= MAX_ATTEMPTS || !isTransientError(err)) {
+        throw err;
+      }
+      const delay = Math.min(1000 * 2 ** (attempt - 1), 8000);
+      const errMsg = err instanceof Error ? err.message : String(err);
+      logger.warn({ attempt, delay, error: errMsg }, `Retrying ${label} after transient error`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
+}
+
+/**
+ * Rota عبر خانات (مفتاح × موديل) من KeyPool — نقل من arabic-pdf-to-book §3.
+ * في الأصل (gemini_ocr.py) لم يُستخدم KeyPool فعليًا؛ هنا يُربط فعليًا:
+ *   - consume(key, model) بعد كل نجاح (حصة يومية بالطلبات، بصمة sha256 لا المفتاح)
+ *   - خطأ حصة/مفتاح (429/403/401) → تخطّي الخانة إلى التالية، لا إسقاط العملية
+ *   - خطأ عابر → إعادة 3 مرات ثم الخانة التالية (سلوك fallback السابق)
+ *   - خطأ غير عابر وغير حصة → يُرمى فورًا كما كان
+ */
 async function tryWithModelFallbacks<T>(
   config: PipelineConfig,
-  fn: (modelId: string) => Promise<T>,
+  fn: (modelId: string, apiKey: string) => Promise<T>,
+  pages = 1,
 ): Promise<T> {
   const models = [config.gemini.model, ...config.gemini.modelFallbacks];
+  const keys = [...new Set([config.gemini.apiKey, ...loadGeminiKeys()].filter(Boolean))];
+  const pool = new KeyPool({ models, keys });
+  const slots = pool.plan();
   const errors: { model: string; error: string }[] = [];
 
-  for (const modelId of models) {
+  if (keys.length > 0 && slots.length === 0) {
+    throw new Error(
+      "KEYPOOL_EXHAUSTED: no (key, model) slot left today — daily quota consumed; use Tesseract/local or wait for reset",
+    );
+  }
+
+  // بلا مفاتيح مكتشفة: مسار قديم بمفتاح config الواحد (سيُرمى لاحقًا إن غاب).
+  const attempts =
+    slots.length > 0
+      ? slots
+      : models.map((model) => ({ key: config.gemini.apiKey, model, used: 0, left: 0 }));
+
+  for (const slot of attempts) {
     try {
-      return await fn(modelId);
+      const result = await withRetry(
+        () => fn(slot.model, slot.key),
+        `model ${slot.model} key ${keyFingerprint(slot.key)}`,
+      );
+      if (slots.length > 0) pool.consume(slot.key, slot.model, pages);
+      return result;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      logger.warn(`Model ${modelId} failed: ${msg}`);
-      errors.push({ model: modelId, error: msg });
+      logger.warn(`Model ${slot.model} failed: ${msg}`);
+      errors.push({ model: slot.model, error: msg });
 
+      if (KeyPool.isQuotaError(err) || KeyPool.isKeyError(err)) {
+        continue; // نفاد/مفتاح ميت: خانة أخرى قد تنجح
+      }
       if (!isTransientError(err)) {
         throw err;
       }
@@ -74,19 +178,19 @@ export function splitGeminiBatchPages(
   return pages;
 }
 
-function estimateQualityMetrics(pages: OcrPageResult[], rawText: string): {
+function estimateQualityMetrics(
+  pages: OcrPageResult[],
+  rawText: string,
+): {
   arabicRatio: number;
   diacriticsRatio: number;
   tableHints: number;
   averageLength: number;
 } {
-  const arabic = (rawText.match(/[\u0600-\u06FF]/g) || []).length;
-  const total = rawText.replace(/\s+/g, " ").length;
   const tableHints = (rawText.match(/\|/g) || []).length;
-  const diacritics =
-    rawText.match(/[\u064B-\u065F\u0670\u06D6-\u06DC]/g) || [];
+  const diacritics = rawText.match(TASHKEEL) || [];
   return {
-    arabicRatio: total === 0 ? 0 : arabic / total,
+    arabicRatio: arabicLetterRatio(rawText),
     diacriticsRatio: rawText.length === 0 ? 0 : diacritics.length / rawText.length,
     tableHints,
     averageLength: pages.length === 0 ? 0 : rawText.length / pages.length,
@@ -106,7 +210,7 @@ Convert the provided document into high-fidelity Markdown with ZERO information 
 
 ## SCIENTIFIC PRECISION (CRITICAL)
 1. **LaTeX for All Formulas**: Wrap ALL chemical formulas, mathematical equations, and scientific notation in LaTeX.
-   - Inline: $H_2SO_4$, $C_6H_{12}O_6$, $\int f(x)dx$
+   - Inline: $H_2SO_4$, $C_6H_{12}O_6$, $\\int f(x)dx$
    - Block: $$2H_2 + O_2 \\rightarrow 2H_2O$$
    - States of matter: $(s)$, $(l)$, $(g)$, $(aq)$
 2. **Subscripts/Superscripts**: Preserve all subscripts and superscripts in LaTeX.
@@ -125,7 +229,7 @@ When processing multiple pages, separate each page's content with a horizontal r
 ❌ NO interpretation, translation, or paraphrasing
 ❌ NO correction of spelling or grammar in the original
 ❌ NO removal of "unimportant" sections
-✅ ONLY raw, faithful transcription in Markdown format`,
+✅ ONLY raw, faithful text in Markdown format`,
 
   arabic_scientific_chunk: (start: number, end: number) =>
     `${PROMPTS.arabic_scientific}
@@ -134,13 +238,43 @@ When processing multiple pages, separate each page's content with a horizontal r
 Process only pages ${start} to ${end} from the provided material. Maintain continuity with surrounding content.`,
 };
 
-const DEFAULT_NATIVE_CHUNK_SIZE = 4;
+/**
+ * حجم القطعة القياسي 10 صفحات (gemini_ocr.py: --chunk 10)،
+ * وحجم إعادة المحاولة بعد فشل QA = 6 صفحات (pipeline.py: --chunk 6).
+ * 36 صفحة × (10 ثم 6) هي صيغة الأصل المثبتة عمليًّا.
+ */
+export const GEMINI_DEFAULT_CHUNK_SIZE = 10;
+export const GEMINI_RETRY_CHUNK_SIZE = 6;
+const DEFAULT_NATIVE_CHUNK_SIZE = GEMINI_DEFAULT_CHUNK_SIZE;
+
+/**
+ * حجم القطعة بعد فشل QA: إن كانت المحاولة الأولى (10 أو قيمة config)،
+ * أعد بـ6؛ وإن كانت أصلًا 6 أو أصغر، لا صِغر أكثر — أبقها (لا تفيد إعادة
+ * ثالثة أنحف، الأفضل القبول مع needsReview كما في الأصل).
+ */
+export function retryChunkSizeOnQaFailure(currentChunkSize: number): number {
+  return currentChunkSize > GEMINI_RETRY_CHUNK_SIZE ? GEMINI_RETRY_CHUNK_SIZE : currentChunkSize;
+}
+
+/**
+ * QA خفيف على مستوى قطعة واحدة (نصّ مقابل عدد صفحات متوقعة).
+ * يُستخدم داخل extractPdfChunksNative لتسجيل القطع الفاشلة؛
+ * الحكم النهائي ببوابة evaluateQaGates الكاملة في ocr-chain.
+ */
+export function isChunkQaFailed(text: string, expectedPages: number): boolean {
+  const trimmed = text.trim();
+  if (!trimmed) return true;
+  if (trimmed.length > 12_000 * Math.max(1, expectedPages)) return true; // حلقة تكرار (gemini_ocr.generate)
+  const charsPerPage = trimmed.length / Math.max(1, expectedPages);
+  return charsPerPage < 250; // عتبة chars-per-page في qa-gates
+}
 
 export class GeminiOcrProvider implements OcrProvider {
   readonly name = "Gemini OCR (configurable model)";
   readonly type = "gemini" as OcrEngineType;
 
   isAvailable(config: PipelineConfig): boolean {
+    if (process.env.MOCK_OCR === "true") return true;
     if (!config.gemini?.apiKey) return false;
 
     const budget = config.ocr.cloudOcrDailyBudget ?? -1;
@@ -171,29 +305,18 @@ export class GeminiOcrProvider implements OcrProvider {
       };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
-
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      if (remaining <= 0) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
-        );
-      }
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config);
 
     if (mimeType === "application/pdf") {
-      const chunkSize = config.gemini.nativeChunkSize ?? 4;
+      const chunkSize = config.gemini.nativeChunkSize ?? GEMINI_DEFAULT_CHUNK_SIZE;
       return this.extractPdfChunksNative(config, fileBuffer, fileName, chunkSize);
     }
 
     const prompt = PROMPTS.arabic_scientific;
 
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
       logger.info(`Trying Gemini model ${modelId} for single-image OCR`);
@@ -210,9 +333,7 @@ export class GeminiOcrProvider implements OcrProvider {
       const text = result.response.text();
       const metrics = estimateQualityMetrics([{ number: 1, text, confidence: 1.0 }], text);
 
-      if (budget >= 0) {
-        recordCloudOcrUsage("gemini", 1);
-      }
+      recordGeminiUsage(config, 1);
 
       return {
         text: text,
@@ -252,22 +373,11 @@ export class GeminiOcrProvider implements OcrProvider {
       };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config);
 
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      if (remaining <= 0) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_EXHAUSTED: Gemini daily budget exhausted (remaining=${remaining})`,
-        );
-      }
-    }
-
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
       const { PDFDocument } = await import("pdf-lib");
@@ -281,23 +391,30 @@ export class GeminiOcrProvider implements OcrProvider {
         ranges.push({ start, end });
 
         const chunk = await PDFDocument.create();
-        const pages = await chunk.copyPages(pdfDoc, Array.from({ length: end - start }, (_, i) => start + i));
+        const pages = await chunk.copyPages(
+          pdfDoc,
+          Array.from({ length: end - start }, (_, i) => start + i),
+        );
         pages.forEach((page) => chunk.addPage(page));
         const bytes = await chunk.save();
         chunks.push(Buffer.from(bytes));
       }
 
       logger.info(
-        `Native PDF chunking: ${totalPages} pages -> ${chunks.length} chunks on ${modelId}`
+        `Native PDF chunking: ${totalPages} pages -> ${chunks.length} chunks on ${modelId}`,
       );
 
       const pages: OcrPageResult[] = [];
       let fullText = "";
       let processedPages = 0;
+      const chunkQaFailed: { start: number; end: number; chars: number }[] = [];
 
       for (let c = 0; c < chunks.length; c++) {
-        const base64Chunk = chunks[c].toString("base64");
-        const { start, end } = ranges[c];
+        const chunk = chunks[c];
+        const range = ranges[c];
+        if (!chunk || !range) continue;
+        const base64Chunk = chunk.toString("base64");
+        const { start, end } = range;
 
         const promptText = PROMPTS.arabic_scientific_chunk(start + 1, end);
 
@@ -312,6 +429,13 @@ export class GeminiOcrProvider implements OcrProvider {
         ]);
 
         const text = result.response.text();
+        // QA خفيف لكل قطعة: الفاشلة تُسجَّل (تُعيد ocr-chain كل المستند بـ6 عند فشل QA الكلي).
+        if (isChunkQaFailed(text, end - start)) {
+          chunkQaFailed.push({ start: start + 1, end, chars: text.length });
+          logger.warn(
+            `Chunk ${start + 1}-${end} QA-fail (chars=${text.length}, chunkSize=${chunkSize}) — retry policy: chunk ${GEMINI_RETRY_CHUNK_SIZE} عند فشل QA الكلي`,
+          );
+        }
         const chunkPages = splitGeminiBatchPages(text, start, end - start);
         pages.push(...chunkPages);
         for (const p of chunkPages) {
@@ -319,9 +443,7 @@ export class GeminiOcrProvider implements OcrProvider {
         }
         processedPages += chunkPages.length;
 
-        if (budget >= 0) {
-          recordCloudOcrUsage("gemini", chunkPages.length);
-        }
+        recordGeminiUsage(config, chunkPages.length);
 
         onProgress?.(processedPages, totalPages);
 
@@ -331,10 +453,7 @@ export class GeminiOcrProvider implements OcrProvider {
       }
 
       const metrics = estimateQualityMetrics(pages, fullText);
-      const confidence =
-        pages.length > 0
-          ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length
-          : 0;
+      const confidence = averageConfidence(pages);
 
       return {
         text: fullText.trim(),
@@ -366,20 +485,8 @@ export class GeminiOcrProvider implements OcrProvider {
       return { text, pages, confidence: 0.99, engine: "gemini" as OcrEngineType };
     }
 
-    if (!config.gemini?.apiKey) {
-      throw new Error("Gemini API Key is missing");
-    }
-
-    const budget = config.ocr.cloudOcrDailyBudget ?? -1;
-    if (budget >= 0) {
-      const remaining = getCloudOcrRemainingBudget("gemini", budget);
-      const needed = pageGetters.length;
-      if (remaining < needed) {
-        throw new Error(
-          `CLOUD_OCR_BUDGET_INSUFFICIENT: Gemini budget ${remaining} < pages ${needed}`,
-        );
-      }
-    }
+    assertGeminiApiKey(config);
+    assertGeminiBudget(config, pageGetters.length);
 
     const batchPrompt = `You are RAQIM ELITE, an elite scientific scribe specializing in Arabic manuscript digitization.
 
@@ -410,13 +517,14 @@ Separate each page's text with a horizontal rule (---) on its own line.
 ❌ NO interpretation, translation, or paraphrasing
 ❌ NO correction of spelling or grammar in the original
 ❌ NO removal of "unimportant" sections
-✅ ONLY raw, faithful transcription in Markdown format`;
+✅ ONLY raw, faithful text in Markdown format`;
 
-    return tryWithModelFallbacks(config, async (modelId) => {
-      const genAI = new GoogleGenerativeAI(config.gemini.apiKey);
+    return tryWithModelFallbacks(config, async (modelId, apiKey) => {
+      const genAI = new GoogleGenerativeAI(apiKey);
       const model = genAI.getGenerativeModel({ model: modelId });
 
-      const BATCH_SIZE = 10;
+      // دفعات الصور = حجم القطعة (10 أولًا، 6 بعد فشل QA عبر config override في ocr-chain).
+      const BATCH_SIZE = config.gemini.nativeChunkSize ?? GEMINI_DEFAULT_CHUNK_SIZE;
       const pages: OcrPageResult[] = [];
       let fullText = "";
 
@@ -448,9 +556,7 @@ Separate each page's text with a horizontal rule (---) on its own line.
           fullText += p.text + "\n\n";
         }
 
-        if (budget >= 0) {
-          recordCloudOcrUsage("gemini", batchGetters.length);
-        }
+        recordGeminiUsage(config, batchGetters.length);
 
         if (i + BATCH_SIZE < pageGetters.length) {
           await new Promise((resolve) => setTimeout(resolve, 4000));
@@ -458,8 +564,7 @@ Separate each page's text with a horizontal rule (---) on its own line.
       }
 
       const metrics = estimateQualityMetrics(pages, fullText);
-      const confidence =
-        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence = averageConfidence(pages);
 
       return {
         text: fullText.trim(),
@@ -476,4 +581,3 @@ Separate each page's text with a horizontal rule (---) on its own line.
     });
   }
 }
-

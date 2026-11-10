@@ -10,23 +10,32 @@ import {
   Section,
   Text,
 } from "@react-email/components";
+import { BRAND_COLORS, BRAND_NAME } from "@/ui/brand";
+
+const APP_BASE_URL = process.env.APP_URL || "https://ibnalazhar-docs.vercel.app";
 
 interface VerificationEmailProps {
   username?: string;
   verificationUrl: string;
   appName?: string;
+  /** Absolute URL — email clients cannot resolve relative asset paths. */
+  logoUrl?: string;
 }
 
 export const VerificationEmail = ({
   username = "المستخدم",
   verificationUrl,
-  appName = "Ibn Al-Azhar Docs",
+  appName = BRAND_NAME.ar,
+  logoUrl = `${APP_BASE_URL}/brand/lockup-on-dark.png`,
 }: VerificationEmailProps) => (
   <Html lang="ar" dir="rtl">
     <Head />
     <Preview>تأكيد البريد الإلكتروني لحسابك في {appName}</Preview>
     <Body style={main}>
       <Container style={container}>
+        <Section style={header}>
+          <img src={logoUrl} alt={appName} height={56} style={logo} />
+        </Section>
         <Section style={box}>
           <Heading style={heading}>مرحباً {username}!</Heading>
           <Text style={paragraph}>شكراً لإنشاء حسابك في {appName}.</Text>
@@ -49,14 +58,23 @@ export const VerificationEmail = ({
 );
 
 const main = {
-  backgroundColor: "#f6f9fc",
+  backgroundColor: BRAND_COLORS.paper,
   fontFamily:
     '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
 };
 
 const container = {
   margin: "0 auto",
-  padding: "20px 0 48px",
+  padding: "0 0 48px",
+};
+
+const header = {
+  backgroundColor: BRAND_COLORS.prussian,
+  padding: "24px 0",
+};
+
+const logo = {
+  margin: "0 auto",
 };
 
 const box = {
@@ -66,7 +84,7 @@ const box = {
 const heading = {
   fontSize: "24px",
   fontWeight: "bold" as const,
-  color: "#1a5c3a",
+  color: BRAND_COLORS.prussian,
   textAlign: "right" as const,
   direction: "rtl" as const,
 };
@@ -74,7 +92,7 @@ const heading = {
 const paragraph = {
   fontSize: "16px",
   lineHeight: "26px",
-  color: "#333",
+  color: "#12282b",
   textAlign: "right" as const,
   direction: "rtl" as const,
 };
@@ -85,9 +103,9 @@ const buttonSection = {
 };
 
 const button = {
-  backgroundColor: "#1a5c3a",
+  backgroundColor: BRAND_COLORS.teal,
   borderRadius: "8px",
-  color: "#fff",
+  color: "#ffffff",
   fontSize: "16px",
   fontWeight: "bold" as const,
   textDecoration: "none",
@@ -98,19 +116,19 @@ const button = {
 
 const linkText = {
   fontSize: "12px",
-  color: "#666",
+  color: "#4b5c5e",
   wordBreak: "break-all" as const,
   direction: "ltr" as const,
   textAlign: "left" as const,
 };
 
 const hr = {
-  borderColor: "#e6ebf1",
+  borderColor: BRAND_COLORS.gold,
   margin: "20px 0",
 };
 
 const footer = {
   fontSize: "12px",
-  color: "#999",
+  color: "#6f7e80",
   textAlign: "center" as const,
 };

@@ -67,4 +67,4 @@ export const PAGINATION = {
 } as const;
 
 // ── Brand ─────────────────────────────────────────────────────────────────────
-export const DEFAULT_TAG_COLOR = "#16A34A";
+export const DEFAULT_TAG_COLOR = "#127E87";

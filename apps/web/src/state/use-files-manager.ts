@@ -4,6 +4,18 @@ import { useState, useEffect, useCallback } from "react";
 import type { Doc } from "@/ui/files/document-table";
 import { apiFetch } from "@/shared/api";
 import { logger } from "@/shared/logger";
+import {
+  ACTIVE_JOBS_FAST_WINDOW_MS,
+  ACTIVE_JOBS_MEDIUM_WINDOW_MS,
+  ACTIVE_JOBS_POLL_EMPTY_MS,
+  ACTIVE_JOBS_POLL_FALLBACK_MS,
+  ACTIVE_JOBS_POLL_FAST_MS,
+  ACTIVE_JOBS_POLL_MEDIUM_MS,
+  ACTIVE_JOBS_POLL_SLOW_MS,
+  ACTIVE_JOBS_STORAGE_KEY,
+  DOCUMENTS_PAGE_LIMIT,
+  MAX_STORED_JOBS,
+} from "@/state/query-constants";
 
 interface ActiveJob {
   jobId: string;
@@ -14,6 +26,35 @@ interface ActiveJob {
 interface Breadcrumb {
   id: string;
   name: string;
+}
+
+// Survival across navigation: the uploaded job id must not disappear when the
+// user leaves and returns to /files ("سايبت ملف ومش لاقيه").
+
+function readStoredJobs(): ActiveJob[] {
+  try {
+    const parsed: unknown = JSON.parse(sessionStorage.getItem(ACTIVE_JOBS_STORAGE_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (job): job is ActiveJob =>
+          typeof job === "object" &&
+          job !== null &&
+          typeof (job as ActiveJob).jobId === "string" &&
+          typeof (job as ActiveJob).fileName === "string",
+      )
+      .slice(0, MAX_STORED_JOBS);
+  } catch {
+    return [];
+  }
+}
+
+function writeStoredJobs(jobs: ActiveJob[]): void {
+  try {
+    sessionStorage.setItem(ACTIVE_JOBS_STORAGE_KEY, JSON.stringify(jobs.slice(0, MAX_STORED_JOBS)));
+  } catch {
+    // Storage disabled or full: job tracking continues in memory only.
+  }
 }
 
 export interface UseFilesManagerReturn {
@@ -76,7 +117,11 @@ export function useFilesManager(): UseFilesManagerReturn {
     async (folderId: string | null) => {
       setLoadingDocs(true);
       try {
-        const params = new URLSearchParams({ limit: "50", sort: "createdAt", order: "desc" });
+        const params = new URLSearchParams({
+          limit: DOCUMENTS_PAGE_LIMIT,
+          sort: "createdAt",
+          order: "desc",
+        });
         if (folderId !== null) {
           params.set("folderId", folderId);
         }
@@ -170,25 +215,39 @@ export function useFilesManager(): UseFilesManagerReturn {
     setSelectedDocs(new Set());
   }, [selectedFolderId, selectedTagIds, loadDocuments, loadBreadcrumbs]);
 
+  useEffect(() => {
+    const restored = readStoredJobs();
+    if (restored.length === 0) return;
+    setActiveJobs((prev) => {
+      const existingIds = new Set(prev.map((job) => job.jobId));
+      const missing = restored.filter((job) => !existingIds.has(job.jobId));
+      return missing.length > 0 ? [...missing, ...prev] : prev;
+    });
+  }, []);
+
+  useEffect(() => {
+    writeStoredJobs(activeJobs);
+  }, [activeJobs]);
+
   // PERFORMANCE FIX: Poll only when needed, with smarter interval
   useEffect(() => {
     if (activeJobs.length === 0) return;
 
     // Adaptive polling: faster for first minute, then slower
     const getInterval = () => {
-      if (activeJobs.length === 0) return 10000;
+      if (activeJobs.length === 0) return ACTIVE_JOBS_POLL_EMPTY_MS;
 
       const oldestJob = activeJobs[0];
-      if (!oldestJob || !oldestJob.createdAt) return 5000; // Fallback if no timestamp
+      if (!oldestJob || !oldestJob.createdAt) return ACTIVE_JOBS_POLL_FALLBACK_MS;
 
       const jobAge = Date.now() - new Date(oldestJob.createdAt).getTime();
 
       // First 2 minutes: poll every 3 seconds (faster feedback)
-      if (jobAge < 120000) return 3000;
+      if (jobAge < ACTIVE_JOBS_FAST_WINDOW_MS) return ACTIVE_JOBS_POLL_FAST_MS;
       // Next 3 minutes: poll every 6 seconds
-      if (jobAge < 300000) return 6000;
+      if (jobAge < ACTIVE_JOBS_MEDIUM_WINDOW_MS) return ACTIVE_JOBS_POLL_MEDIUM_MS;
       // After 5 minutes: poll every 10 seconds (likely stuck)
-      return 10000;
+      return ACTIVE_JOBS_POLL_SLOW_MS;
     };
 
     const interval = setInterval(() => {

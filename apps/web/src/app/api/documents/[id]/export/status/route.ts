@@ -35,15 +35,45 @@ export const GET = withAuth(async (request, { session, params }) => {
     const outputKeys = (document.outputKeys as Record<string, string>) || {};
     const outputKey = outputKeys[format];
 
-    if (!outputKey) {
+    if (outputKey) {
       return NextResponse.json(
-        { status: "processing", format, ready: false },
+        { status: "ready", format, ready: true, downloadUrl: `/api/export/${id}/${format}` },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
+    }
+
+    // فشل نهائي مسجَّل على المستند (معالج التصدير يسجّل errorCode ثم يُسقط المحاولة).
+    // بلا هذا الفرع يظل العميل يسأل عن حالة «قيد المعالجة» إلى الأبد.
+    if (document.errorCode || document.status === "FAILED") {
+      return NextResponse.json(
+        {
+          status: "failed",
+          format,
+          ready: false,
+          errorCode: document.errorCode,
+          message: document.errorMessage ?? "تعذّر إنشاء الملف",
+        },
+        { headers: { "Cache-Control": "private, no-store" } },
+      );
+    }
+
+    // "PDF مطابق للأصل" يولّده طور التوليد لا طابور التصدير: إن اكتمل المستند
+    // بلا ملفه فلا شيء قيد الانتظار، والانتظار كان لا ينتهي.
+    if (format === "searchable-pdf" && document.status === "COMPLETED") {
+      return NextResponse.json(
+        {
+          status: "failed",
+          format,
+          ready: false,
+          errorCode: "SEARCHABLE_PDF_UNAVAILABLE",
+          message: "لم يُنشأ ملف PDF المطابق للأصل لهذا المستند.",
+        },
         { headers: { "Cache-Control": "private, no-store" } },
       );
     }
 
     return NextResponse.json(
-      { status: "ready", format, ready: true, downloadUrl: `/api/export/${id}/${format}` },
+      { status: "processing", format, ready: false },
       { headers: { "Cache-Control": "private, no-store" } },
     );
   } catch (error: unknown) {

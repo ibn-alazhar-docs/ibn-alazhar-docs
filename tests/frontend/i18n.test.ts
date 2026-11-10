@@ -8,12 +8,8 @@ describe("LOCALES", () => {
     expect(LOCALES).toContain("ar");
   });
 
-  it('contains "en"', () => {
-    expect(LOCALES).toContain("en");
-  });
-
-  it("has exactly 2 entries", () => {
-    expect(LOCALES).toHaveLength(2);
+  it("contains only ar (ar-only platform)", () => {
+    expect(LOCALES).toHaveLength(1);
   });
 });
 

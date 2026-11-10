@@ -4,7 +4,7 @@ set -euo pipefail
 BACKUP_DIR="${BACKUP_DIR:-/opt/ibn-al-azhar-docs/backups}"
 PG_HOST="${PG_HOST:-localhost}"
 PG_USER="${PG_USER:-ibn_docs}"
-PG_PASS="${PG_PASS:-CHANGE_ME_POSTGRES_PASSWORD}"
+PG_PASS="${PG_PASS:-ibn_docs_password}"
 TEST_DB="ibn_docs_restore_test_$(date +%s)"
 
 export PGPASSWORD="${PG_PASS}"

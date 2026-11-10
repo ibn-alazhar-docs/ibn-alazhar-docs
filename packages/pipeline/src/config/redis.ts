@@ -10,8 +10,7 @@ export function buildRedisConfig(): {
   if (url) {
     try {
       const parsed = new URL(url);
-      const password =
-        parsed.password || process.env.REDIS_PASSWORD || undefined;
+      const password = parsed.password || process.env.REDIS_PASSWORD || undefined;
       return {
         host: parsed.hostname,
         port: Number(parsed.port || 6379),
@@ -31,7 +30,7 @@ export function buildRedisConfig(): {
     flagFilePresent = false;
   }
   if (isSelfContained || flagFilePresent) {
-    const password = process.env.REDIS_PASSWORD || "CHANGE_ME_REDIS_PASSWORD";
+    const password = process.env.REDIS_PASSWORD || "ibn_docs_redis";
     const fallback = `redis://:${password}@127.0.0.1:6379`;
     try {
       const parsed = new URL(fallback);

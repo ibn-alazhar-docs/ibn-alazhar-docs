@@ -14,12 +14,15 @@ export class ExportPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.exportButton = page.getByRole("button", { name: /تصدير|Export/i }).first();
+    this.exportButton = page
+      .getByTestId("export-button")
+      .or(page.getByRole("button", { name: /تصدير|Export|صدّر/i }))
+      .first();
     this.advancedExportButton = page
       .getByRole("button", { name: /تصدير متقدم|Advanced Export/i })
       .first();
     this.formatOptions = page.locator('[data-testid="export-format"]');
-    this.downloadButton = page.getByRole("button", { name: /تنزيل|Download/i }).first();
+    this.downloadButton = page.getByRole("button", { name: /تنزيل|Download|صدّر/i }).last();
     this.batchExportButton = page
       .getByRole("button", { name: /تصدير مجمّع|Batch export/i })
       .first();
@@ -28,35 +31,48 @@ export class ExportPage {
   }
 
   async openExportDialog() {
+    await this.page.waitForLoadState("networkidle").catch(() => {});
+    await expect(this.exportButton).toBeVisible({ timeout: 30000 });
+    await expect(this.exportButton).toBeEnabled({ timeout: 30000 });
     await this.exportButton.click();
-    await this.page.waitForTimeout(500);
+    await this.expectDialogVisible();
   }
 
   async openAdvancedExport() {
-    await this.advancedExportButton.click();
-    await this.page.waitForTimeout(500);
+    await this.page.waitForLoadState("networkidle").catch(() => {});
+    await expect(this.exportButton).toBeVisible({ timeout: 30000 });
+    await expect(this.exportButton).toBeEnabled({ timeout: 30000 });
+    await this.exportButton.click();
+    await this.expectDialogVisible();
   }
 
   async selectFormat(format: ExportFormat) {
-    const formatLocator = this.page
-      .locator(`[data-testid="export-format-${format.toLowerCase()}"], text="${format}"`)
-      .first();
-    await formatLocator.click();
-    await this.page.waitForTimeout(300);
+    const formatMap: Record<ExportFormat, string> = {
+      PDF: "pdf",
+      DOCX: "docx",
+      TXT: "txt",
+      Markdown: "md",
+      EPUB: "epub",
+      JSON: "md",
+    };
+    const value = formatMap[format] ?? format.toLowerCase();
+    const select = this.page.locator("select").first();
+    await select.selectOption(value);
   }
 
   async startDownload() {
+    await expect(this.downloadButton).toBeVisible({ timeout: 10000 });
+    await expect(this.downloadButton).toBeEnabled({ timeout: 10000 });
     await this.downloadButton.click();
-    await this.page.waitForTimeout(2000);
   }
 
   async cancelExport() {
+    await expect(this.cancelButton).toBeVisible({ timeout: 10000 });
     await this.cancelButton.click();
-    await this.page.waitForTimeout(500);
   }
 
   async expectDialogVisible() {
-    await expect(this.dialog).toBeVisible();
+    await expect(this.dialog).toBeVisible({ timeout: 15000 });
   }
 
   async expectDialogHidden() {

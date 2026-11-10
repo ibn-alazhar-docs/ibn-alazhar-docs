@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { forgotPasswordSchema } from "@/shared/validators/auth";
 import { apiFetch } from "@/shared/api";
+import { FormField } from "./form-field";
 
 interface ActionState {
   error: string | null;
@@ -93,24 +94,14 @@ export function ForgotPasswordForm() {
         </div>
       )}
 
-      <div>
-        <label className="mb-2 block text-xs font-bold text-muted-color">{t("emailLabel")}</label>
-        <input
-          type="email"
-          name="email"
-          dir="ltr"
-          autoComplete="email"
-          aria-invalid={!!state.fieldErrors?.email}
-          aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-          className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 transition-colors"
-          placeholder={t("emailPlaceholder")}
-        />
-        {state.fieldErrors?.email && (
-          <p className="mt-1.5 text-xs text-danger" id="email-error" role="alert">
-            {state.fieldErrors.email}
-          </p>
-        )}
-      </div>
+      <FormField
+        type="email"
+        name="email"
+        label={t("emailLabel")}
+        autoComplete="email"
+        placeholder={t("emailPlaceholder")}
+        error={state.fieldErrors?.email}
+      />
 
       <button
         type="submit"

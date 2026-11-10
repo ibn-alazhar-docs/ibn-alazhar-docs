@@ -76,8 +76,8 @@ Last updated: 2026-07-01
 | --------------------------------------- | ------ | ----------------------------------------------------------------- |
 | RTL layout support                      | PASS   | Tailwind RTL plugin, logical CSS properties                       |
 | Arabic-first translations               | PASS   | `next-intl` with `ar` as default locale                           |
-| Brand colors correct (#16A34A, #CA8A04) | WARN   | Some hardcoded Tailwind colors in error/conversions pages (F4-01) |
-| Font Cairo loaded                       | PASS   | Google Fonts in root layout                                       |
+| Brand colors correct (#127E87, #DA9E2C, #083B40) | PASS   | Single token source `apps/web/src/styles/brand.css`; no default-palette colours in app surfaces |
+| Fonts loaded (Almarai body + Amiri display) | PASS   | `next/font/google` in root layout; Thmanyah withheld pending licence |
 | Toast notifications (sonner)            | PASS   | Arabic defaults configured                                        |
 | Loading states                          | PASS   | Loading spinners on all route groups                              |
 | Error boundaries                        | PASS   | `error.tsx` in each route group                                   |

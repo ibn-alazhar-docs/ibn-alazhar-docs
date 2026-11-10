@@ -98,7 +98,7 @@ Check `.opencode/context/active-phase.md` for the canonical current phase and sc
 - **Spec-driven**: Read `specs/NNN-feature/spec.md` before implementing.
 - **Phase-locked**: Check `.opencode/context/active-phase.md` — do not implement outside current phase scope.
 - **Arabic-first / RTL-first**: UI defaults to Arabic. Use logical CSS (`ms-`/`me-` not `ml-`/`mr-`).
-- **Brand**: Green `#16A34A` (NOT `#10B981`), Gold `#CA8A04`, Gray `#1F2937`, Font Cairo.
+- **Brand**: Classic Teal `#127E87` (NOT green `#16A34A`/`#10B981`), Antique Gold `#DA9E2C` (NOT `#CA8A04`), Prussian Blue `#083B40` (NOT gray `#1F2937`), Warm Paper `#FBF5E9` page. Fonts: Almarai body + Amiri display (Thmanyah licensed-pending, never loaded). Tokens live in `apps/web/src/styles/brand.css`; the only logo entry point is `<BrandLogo>`. See [`DESIGN.md`](../../DESIGN.md).
 - **Code style**: `interface` over `type` for objects. Named exports only (except Next.js pages/layouts). Never use `any`. See [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md).
 - **`.opencode/` is the runtime OS**: Read `AI_OPERATING_RULES.md` and `SESSION_RULES.md` for mandatory agent rules.
 - **Other instruction files** (loaded by `opencode.json`): [`docs/reference/CODE_STYLE_GUIDE.md`](../reference/CODE_STYLE_GUIDE.md), [`docs/governance/SECURITY_POLICY.md`](SECURITY_POLICY.md), `CONTRIBUTING.md`, `governance/*.md`.

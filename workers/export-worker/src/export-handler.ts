@@ -12,8 +12,10 @@ import {
   generateDocxFromIR,
   generateEpubFromIR,
   generatePdfFromIR,
+  pageGeometryFromStoredJson,
   PermanentPipelineError,
   type ExportRequest,
+  type PageGeometry,
   type PipelineConfig,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
@@ -53,30 +55,46 @@ export async function processExportStage(
 
   const result = generateMarkdown(rawText, { pageCount: req.pageCount });
 
+  // السجل هو مصدر الحقيقة في اللغة: كان `language: "ar"` مكتوبًا في الكود لكل مستند،
+  // فيخرج IR لمستند إنجليزي بلغته عربية — و`language` تُقرأ في الواجهة وفي الحزمة.
+  // قراءة لغة منفصلة عن قراءة `outputKeys` أسفل عمدًا: لو قُرئتا معًا لَتَّسعت نافذة
+  // فقدان التحديث على `outputKeys` إلى مدة التوليد كلها (تصديران متزامنان لصيغتين).
+  const record = await prisma.document.findUnique({
+    where: { id: req.jobId },
+    select: { language: true },
+  });
+
   // Build the structure-preserving IR once, then route every format
   // through IR-aware generators so headings/lists survive export.
   const ir = convertMarkdownToIR(rawText, {
     ocrProvider: "gemini",
     pageCount: req.pageCount,
-    language: "ar",
+    language: record?.language ?? "ar",
     confidence: result.metadata.confidence,
   });
 
   let outputBuffer: Buffer;
   let contentType: string;
-  let outputKey: string;
+
+  // لا outputKey هنا: مفتاح التخزين تُقرّره `uploadExportBuffer` أسفل (ومعها الوجهة
+  // إلى Drive)، فالكتابة في كل حالة كانت تُكتب ثم تُمحى فورًا — توحي بأن المسار
+  // يُختار لكل صيغة وهو لا يُختار.
+
+  // قاعدةُ «المُنتَج نسخةٌ طبق الأصل من الأصل» في الورقة: الـ PDF والـ DOCX يبنيان
+  // `@page` و`w:pgSz`/`w:pgMar` من هندسةِ الأصل المقيسةِ عند التقسيم، لا من A4 ثابتةٍ
+  // ولا من مرجعِ docx واحدٍ لكل المستندات. غيابُ الأثر (صورةٌ مرفوعة، أو قياسٌ فشل)
+  // يعني الترقّيَ إلى ما كان عليه المُنتَجُ دائمًا — لا فشلُ تصدير، ولا هامشٌ مخترَع.
+  const geometry = await loadPageGeometry(config, req.jobId, jobLogger);
 
   switch (req.format) {
     case "md": {
       outputBuffer = await generateMarkdownFromIR(ir, { title: req.options?.title });
       contentType = "text/markdown";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.md`;
       break;
     }
     case "txt": {
       outputBuffer = generateTxtFromIR(ir);
       contentType = "text/plain";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.txt`;
       break;
     }
     case "json": {
@@ -85,25 +103,21 @@ export async function processExportStage(
         markdown: result.markdown,
       });
       contentType = "application/json";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.json`;
       break;
     }
     case "docx": {
-      outputBuffer = await generateDocxFromIR(ir);
+      outputBuffer = await generateDocxFromIR(ir, { geometry });
       contentType = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.docx`;
       break;
     }
     case "epub": {
       outputBuffer = await generateEpubFromIR(ir);
       contentType = "application/epub+zip";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.epub`;
       break;
     }
     case "pdf": {
-      outputBuffer = await generatePdfFromIR(ir, req.options);
+      outputBuffer = await generatePdfFromIR(ir, { ...req.options, geometry });
       contentType = "application/pdf";
-      outputKey = `${config.paths.exports}/${req.jobId}/export.pdf`;
       break;
     }
     default:
@@ -117,7 +131,7 @@ export async function processExportStage(
     });
   }
 
-  outputKey = await uploadExportBuffer(
+  const outputKey = await uploadExportBuffer(
     config,
     req.userId,
     outputBuffer,
@@ -143,6 +157,25 @@ export async function processExportStage(
   }
 
   jobLogger.info(`[export] Completed ${req.format} export for ${req.jobId}`);
+}
+
+/**
+ * أثرُ الهندسة من التخزين، أو undefined. لا يُرمى خطأٌ من هنا: ملفٌ غيرُ موجود يعني
+ * مستندًا بلا قياسٍ (صورةٌ مرفوعة، أو مهمةٌ سبقت هذه الطبقة) لا تصديرًا فاشلًا،
+ * والمولّداتُ كلُّها تعرف وجهَها حين تُترك بلا هندسة.
+ */
+async function loadPageGeometry(
+  config: PipelineConfig,
+  jobId: string,
+  jobLogger: typeof logger,
+): Promise<PageGeometry | undefined> {
+  try {
+    const raw = await downloadFile(config, `${config.paths.ocrResults}/${jobId}/geometry.json`);
+    return pageGeometryFromStoredJson(raw.toString("utf-8")) ?? undefined;
+  } catch (err) {
+    jobLogger.debug({ err, jobId }, "[export] no page geometry artifact — using default page");
+    return undefined;
+  }
 }
 
 export function registerExportHandler(

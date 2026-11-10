@@ -96,7 +96,7 @@ defaults (override only if you want custom credentials).
 | `AUTH_SECRET`      | ✅       | —                      | Auth.js session signing key (use a long random string) |
 | `ADMIN_PASSWORD`   | ❌       | `AdminPassword123!`    | Initial admin account password                         |
 | `ADMIN_EMAIL`      | ❌       | `admin@ibnalazhar.app` | Admin account email                                    |
-| `REDIS_PASSWORD`   | ❌       | `CHANGE_ME_REDIS_PASSWORD`       | Internal Redis password                                |
+| `REDIS_PASSWORD`   | ❌       | `ibn_docs_redis`       | Internal Redis password                                |
 | `MINIO_ACCESS_KEY` | ❌       | `minioadmin`           | Internal object-storage key                            |
 | `MINIO_SECRET_KEY` | ❌       | `minioadmin`           | Internal object-storage secret                         |
 | `S3_BUCKET`        | ❌       | `ibnalazhardocs`       | Object-storage bucket name                             |

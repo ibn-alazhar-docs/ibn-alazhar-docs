@@ -2,12 +2,13 @@
 
 import { useState, useRef, useEffect } from "react";
 import { apiFetch } from "@/shared/api";
-import { logger } from "@ibn-al-azhar-docs/shared";
+import { logger, DEFAULT_MAX_UPLOAD_SIZE_MB } from "@ibn-al-azhar-docs/shared";
 
-// MUST stay in sync with MAX_UPLOAD_SIZE_MB (server-side validator). A client
-// gate far above the server limit produces late, confusing "file too large"
-// failures after the upload has already streamed. Default server limit is 50MB.
-const MAX_SIZE = 50 * 1024 * 1024;
+// Client gate shares the server-side default via DEFAULT_MAX_UPLOAD_SIZE_MB
+// (single source; no manual sync). A client gate far above the server limit
+// produces late, confusing "file too large" failures after the upload has
+// already streamed.
+const MAX_SIZE = DEFAULT_MAX_UPLOAD_SIZE_MB * 1024 * 1024;
 
 interface UseFileUploadOptions {
   folderId?: string | null;

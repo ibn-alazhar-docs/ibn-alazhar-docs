@@ -62,10 +62,14 @@ export class ConversionUseCases {
       Math.max(1, filters.limit || LIMITS.DEFAULT_PAGE_LIMIT),
     );
 
-    // كل مستخدم يرى وظائف التحويل الخاصة به فقط
+    // Admins list all users' conversion jobs for oversight; others see only their own.
     const where: Prisma.ConversionJobWhereInput = {
-      userId: session.user.id,
+      // FR-008: jobs whose document was soft-deleted must not surface or invite analysis.
+      document: { deletedAt: null },
     };
+    if (session.user.role !== "ADMIN") {
+      where.userId = session.user.id;
+    }
     if (filters.status) {
       (where as Record<string, unknown>).status = filters.status;
     }
@@ -102,10 +106,13 @@ export class ConversionUseCases {
   }
 
   async getJobStatus(id: string, session: AuthSession) {
-    const document = await this.documentRepository.findFirst(ownedWhere({ id }, session), {
-      id: true,
-      status: true,
-    });
+    const document = await this.documentRepository.findFirst(
+      ownedWhere({ id, deletedAt: null }, session),
+      {
+        id: true,
+        status: true,
+      },
+    );
     if (!document) throw new NotFoundError("المستند غير موجود");
 
     return document;

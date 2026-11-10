@@ -3,6 +3,7 @@ import type { CleanedText } from "../types";
 import { FormatGenerator, GeneratorOptions } from "./generator-base";
 import { MarkdownGenerator } from "./markdown-generator";
 import { generatePdf } from "./pdf";
+import type { PageGeometry } from "./page-geometry";
 
 function markdownToCleanedText(markdown: string): CleanedText {
   return {
@@ -25,22 +26,29 @@ function markdownToCleanedText(markdown: string): CleanedText {
 
 /**
  * PDF generator driven by the IR. The IR is rendered to Markdown (which already
- * encodes heading hierarchy and lists) and converted to PDF via the existing
- * pdfmake pipeline with Arabic Cairo font support (Requirement 1.7, 2.4).
+ * encodes heading hierarchy and lists) and that Markdown becomes semantic HTML
+ * laid out by WeasyPrint, so structure, Arabic shaping and RTL direction all
+ * survive to the page (Requirement 1.7, 2.4).
  */
 export class PdfGenerator implements FormatGenerator {
   private markdown = new MarkdownGenerator();
 
   async generate(
     ir: DocumentIR,
-    options?: GeneratorOptions & { fontSize?: number; watermark?: string; pageRange?: string },
+    options?: GeneratorOptions & {
+      fontSize?: number;
+      watermark?: string;
+      rtl?: boolean;
+      geometry?: PageGeometry;
+    },
   ): Promise<Buffer> {
     const md = await this.markdown.generate(ir, options);
     const mdStr = md.toString("utf-8");
     return generatePdf(markdownToCleanedText(mdStr), {
       fontSize: options?.fontSize,
       watermark: options?.watermark,
-      pageRange: options?.pageRange,
+      rtl: options?.rtl,
+      geometry: options?.geometry,
     });
   }
 
@@ -55,7 +63,12 @@ export class PdfGenerator implements FormatGenerator {
 
 export function generatePdfFromIR(
   ir: DocumentIR,
-  options?: GeneratorOptions & { fontSize?: number; watermark?: string; pageRange?: string },
+  options?: GeneratorOptions & {
+    fontSize?: number;
+    watermark?: string;
+    /** هندسةُ صفحات الأصل؛ غائبةً يبقى `@page` كما كان: A4 بهامش ٢ سم. */
+    geometry?: PageGeometry;
+  },
 ): Promise<Buffer> {
   return new PdfGenerator().generate(ir, options);
 }

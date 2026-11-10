@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { TagsPage } from "./pages/TagsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
-import { loginAsAdmin } from "./helpers";
+import { loginAsAdmin, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Search & Tag Operations", () => {
   test.describe.configure({ timeout: 120_000 });
@@ -20,7 +20,7 @@ test.describe("Search & Tag Operations", () => {
       await tags.expectTagVisible(`Important ${timestamp}`);
       await tags.createTag(`Reference ${timestamp}`, "#3B82F6");
       await tags.expectTagVisible(`Reference ${timestamp}`);
-      await tags.createTag(`Archive ${timestamp}`, "#10B981");
+      await tags.createTag(`Archive ${timestamp}`, "#127E87");
       await tags.expectTagVisible(`Archive ${timestamp}`);
     });
 
@@ -32,24 +32,30 @@ test.describe("Search & Tag Operations", () => {
       await tags.createTag(`ApplyTest ${timestamp}`, "#8B5CF6");
       await tags.expectTagVisible(`ApplyTest ${timestamp}`);
       await docs.gotoFiles();
-      const docCount = await docs.getDocumentCount();
-      if (docCount > 0) {
-        await docs.selectDocument(0);
-        const tagBtn = page
-          .locator('button:has-text("وسوماً")')
-          .or(page.getByRole("button", { name: /Add tags|وسم|Tag/i }))
-          .first();
-        if (await tagBtn.isVisible().catch(() => false)) {
-          await tagBtn.click();
-          await tags.applyTagToDocument(`ApplyTest ${timestamp}`);
-          const saveBtn = page
-            .locator('button:has-text("حفظ")')
-            .or(page.getByRole("button", { name: /Save/i }))
-            .first();
-          if (await saveBtn.isVisible().catch(() => false)) {
-            await saveBtn.click();
-          }
-        }
+      await docs.uploadFile(TEST_PDF_PATH);
+      await docs.expectDocumentRowVisible(60000);
+      await docs.selectDocument(0);
+      const tagBtn = page
+        .getByRole("button", { name: /أضف وسوماً|وسوم|وسم|Tag|Tags/i })
+        .or(page.locator('button:has-text("وسوماً")'))
+        .first();
+      await expect(tagBtn).toBeVisible({ timeout: 15000 });
+      await expect(tagBtn).toBeEnabled({ timeout: 15000 });
+      await tagBtn.click();
+      const tagOption = page
+        .getByText(`ApplyTest ${timestamp}`, { exact: true })
+        .or(
+          page.locator(`[data-testid="tag-option"]`).filter({ hasText: `ApplyTest ${timestamp}` }),
+        )
+        .first();
+      await expect(tagOption).toBeVisible({ timeout: 15000 });
+      await tagOption.click();
+      const saveBtn = page.getByRole("button", { name: /حفظ|Save|تطبيق|Apply/i }).first();
+      if (await saveBtn.isVisible().catch(() => false)) {
+        await expect(saveBtn)
+          .toBeEnabled({ timeout: 10000 })
+          .catch(() => {});
+        await saveBtn.click();
       }
     });
 
@@ -60,16 +66,16 @@ test.describe("Search & Tag Operations", () => {
       await tags.createTag(`FilterTest ${timestamp}`, "#F59E0B");
       await tags.expectTagVisible(`FilterTest ${timestamp}`);
       await page.goto("/ar/files");
+      await page.waitForLoadState("domcontentloaded");
       const filterOption = page
-        .locator(`text=FilterTest ${timestamp}`)
-        .or(
-          page.locator(`[data-testid="tag-filter"]`).filter({ hasText: `FilterTest ${timestamp}` }),
-        )
+        .locator(`[data-testid="tag-filter"]`)
+        .filter({ hasText: `FilterTest ${timestamp}` })
+        .or(page.getByRole("button", { name: `FilterTest ${timestamp}` }))
+        .or(page.getByText(`FilterTest ${timestamp}`, { exact: true }))
         .first();
-      if (await filterOption.isVisible().catch(() => false)) {
-        await filterOption.click();
-        await page.waitForTimeout(1000);
-      }
+      await expect(filterOption).toBeVisible({ timeout: 15000 });
+      await filterOption.click();
+      await page.waitForLoadState("domcontentloaded");
     });
 
     test("Remove tag from document", async ({ page }) => {
@@ -175,10 +181,9 @@ test.describe("Search & Tag Operations", () => {
       const search = new SearchPage(page);
       await search.goto();
       await search.search("XYZZZZZ");
+      await search.expectEmptyState(15000).catch(() => {});
       await search.clearSearch();
-      await page.waitForTimeout(1000);
-      const inputValue = await search.searchInput.inputValue();
-      expect(inputValue).toBe("");
+      await expect(search.searchInput).toHaveValue("", { timeout: 15000 });
     });
   });
 });

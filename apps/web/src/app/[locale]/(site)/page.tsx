@@ -6,7 +6,6 @@ import { Hero } from "@/ui/sections/hero";
 import { KnowledgeAreas } from "@/ui/sections/knowledge-areas";
 import { Features } from "@/ui/sections/features";
 import { CTASection } from "@/ui/sections/cta-section";
-import { GeometricStar } from "@/ui/geometric-star";
 
 interface HomePageProps {
   params: Promise<{ locale: string }>;
@@ -42,9 +41,6 @@ export default async function HomePage({ params }: HomePageProps) {
           cta={tHero("cta")}
           isLoggedIn={isLoggedIn}
         />
-        <div className="geometric-divider py-2">
-          <GeometricStar className="geometric-star h-4 w-4" />
-        </div>
         <KnowledgeAreas />
         <Features />
         <CTASection isLoggedIn={isLoggedIn} />

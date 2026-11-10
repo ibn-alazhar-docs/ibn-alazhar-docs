@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 178 212" fill="none" stroke-linecap="round" stroke-linejoin="miter" stroke-miterlimit="12" role="img" aria-label="ابن الأزهر">
+  <!-- منصة ابن الأزهر — mark: mihrab arch, radiating light, open book, crescent.
+       Geometry profiled from the brandbook artwork. Teal #FFFFFF / Antique Gold #E8B96A. -->
+  <g stroke="#FFFFFF" stroke-width="8">
+    <path d="M35 150 L35 80 C41 58 75 39 89 28 C103 39 137 58 143 80 L143 150"/>
+    <path d="M10 142 C36 150 68 164 89 178 C110 164 142 150 168 142 L168 180 C142 187 112 196 89 201 C66 196 36 187 10 180 Z"/>
+  </g>
+  <g stroke="#E8B96A" stroke-width="5">
+    <path d="M56 150 L56 96 C58 84 77 66 89 56 C101 66 120 84 122 96 L122 150"/>
+  </g>
+  <g stroke="#E8B96A" stroke-width="2">
+    <path d="M89 176 L89 92"/>
+    <path d="M89 176 L74 110"/><path d="M89 176 L104 110"/>
+    <path d="M89 176 L68 132"/><path d="M89 176 L110 132"/>
+    <path d="M89 176 L64 150"/><path d="M89 176 L114 150"/>
+  </g>
+  <path fill="#E8B96A" d="M89.01,6.05 A10,10 0 1 0 99.09,20.16 A9.4,9.4 0 0 1 89.01,6.05 Z"/>
+</svg>

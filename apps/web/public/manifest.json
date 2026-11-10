@@ -1,17 +1,35 @@
 {
-  "name": "مستندات ابن الأزهر",
-  "short_name": "Ibn Al-Azhar Docs",
-  "description": "منصة ذكية لتحويل واستخراج النصوص",
+  "name": "منصة ابن الأزهر",
+  "short_name": "Ibn Al-Azhar Platform",
+  "description": "أول منصة شاملة للثانوية الأزهرية",
   "start_url": "/ar/dashboard",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#b59954",
+  "background_color": "#FBF5E9",
+  "theme_color": "#127E87",
   "icons": [
     {
-      "src": "/logo.png",
+      "src": "/brand/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/brand/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/brand/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ]
 }

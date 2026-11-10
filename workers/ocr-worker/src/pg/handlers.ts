@@ -1,9 +1,6 @@
-import {
-  JOB_QUEUES,
-  type PipelineConfig,
-  type ClaimedJob,
-} from "@ibn-al-azhar-docs/pipeline";
-import { createPgHandlerWrapper } from "@ibn-al-azhar-docs/pipeline/queue/pg-handler-factory";
+import { JOB_QUEUES, type PipelineConfig, type ClaimedJob } from "@ibn-al-azhar-docs/pipeline";
+import { createPgHandlerWrapper } from "@ibn-al-azhar-docs/pipeline";
+import { logger } from "@ibn-al-azhar-docs/shared";
 
 import { processValidationStage } from "../stages/validate";
 import { processSplittingStage } from "../stages/split";
@@ -13,8 +10,6 @@ import { processGenerationStage } from "../stages/generate";
 
 /** Stable worker identity for the PG-driven OCR worker. */
 export const OCR_WORKER_ID = `pg-ocr-worker-${process.pid}`;
-
-type StageFn = (job: ProcessingJob, config: PipelineConfig) => Promise<void>;
 
 /**
  * Builds the PG-mode handler map for all five OCR pipeline stages. Must be
@@ -27,7 +22,7 @@ export function buildOcrPgHandlers(
   const wrapper = createPgHandlerWrapper({
     config,
     queueName: "pipeline-ocr",
-    logger: console,
+    logger,
   });
 
   return {

@@ -13,6 +13,7 @@ import {
   RefreshIcon,
   UserIcon,
   GearIcon,
+  ToolsIcon,
 } from "@/ui/icons";
 
 interface SidebarProps {
@@ -34,6 +35,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
       { href: "/tags", label: "nav.tags", icon: TagsIcon },
       { href: "/search", label: "nav.search", icon: SearchIcon },
       { href: "/conversions", label: "nav.conversions", icon: RefreshIcon },
+      { href: "/tools", label: "nav.tools", icon: ToolsIcon },
       ...(isAdmin ? [{ href: "/users", label: "nav.users", icon: UserIcon }] : []),
       { href: "/settings", label: "nav.settings", icon: GearIcon },
     ],
@@ -94,9 +96,7 @@ export function Sidebar({ isOpen, onClose, role }: SidebarProps) {
           )}
           <p className="text-[10px] sm:text-xs text-very-muted">
             {t("app.name")}{" "}
-            <span className="text-[9px] sm:text-[10px] opacity-40">
-              © {new Date().getFullYear()}
-            </span>
+            <span className="text-[9px] sm:text-[10px]">© {new Date().getFullYear()}</span>
           </p>
         </div>
       </aside>

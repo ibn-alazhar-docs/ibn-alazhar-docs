@@ -21,4 +21,5 @@ export interface IDocumentRepository {
     where: Prisma.DocumentWhereInput,
     data: Prisma.DocumentUncheckedUpdateInput,
   ): Promise<{ count: number }>;
+  resetForReprocess(id: string, userId: string): Promise<{ count: number }>;
 }

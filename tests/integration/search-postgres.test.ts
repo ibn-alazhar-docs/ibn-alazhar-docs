@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll } from "vitest";
 import { prisma, createTestUser, createTestDocument, cleanupTestUsers } from "./helpers/db";
+import { normalizeArabicForSearch } from "@/shared/arabic-search-normalize";
 
 describe("Search → PostgreSQL Integration", () => {
   let userA: { id: string };
@@ -34,12 +35,13 @@ describe("Search → PostgreSQL Integration", () => {
   });
 
   async function updateSearchVector(id: string, title: string, description?: string) {
+    // Use normalize_arabic() so indexed vectors match normalized queries.
     return prisma.$executeRaw`
       UPDATE documents
       SET searchvector =
-        setweight(to_tsvector('simple', coalesce(${title}, '')), 'A') ||
-        setweight(to_tsvector('simple', coalesce("fileName", '')), 'B') ||
-        setweight(to_tsvector('simple', coalesce(${description || ""}, '')), 'C')
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${title}, ''))), 'A') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce("fileName", ''))), 'B') ||
+        setweight(to_tsvector('simple', normalize_arabic(coalesce(${description || ""}, ''))), 'C')
       WHERE id = ${id}
     `;
   }
@@ -48,7 +50,7 @@ describe("Search → PostgreSQL Integration", () => {
     userId: string,
     query: string,
   ): Promise<{ id: string; title: string; rank: number }[]> {
-    const normalized = normalizeArabic(query);
+    const normalized = normalizeArabicForSearch(query);
     const tsQuery = normalized.split(/\s+/).filter(Boolean).join(" & ");
 
     return prisma.$queryRawUnsafe(
@@ -63,15 +65,8 @@ describe("Search → PostgreSQL Integration", () => {
     );
   }
 
-  // Mirror the DB's normalize_arabic() so test queries match stored vectors.
-  function normalizeArabic(input: string): string {
-    return input
-      .replace(/[أإآ]/g, "ا")
-      .replace(/ة/g, "ه")
-      .replace(/ى/g, "ي")
-      .replace(/ـ/g, "")
-      .replace(/[ًٌٍَُِّْٰ]/g, "");
-  }
+  // ملاحظة: لا مرآة يدوية هنا — التطبيع يُستورد من المصدر الواحد
+  // (@/shared/arabic-search-normalize) المقفول على normalize_arabic في SQL.
 
   describe("Search vector updates", () => {
     it("updating title creates a search vector", async () => {
@@ -175,17 +170,26 @@ describe("Search → PostgreSQL Integration", () => {
     it("normalized alef forms found in search", async () => {
       const doc = await createTestDocument(userA.id, { title: "القرآن الكريم" });
 
-      const normalizedTitle = "القرآن الكريم"
-        .replace(/[أإآ]/g, "ا")
-        .replace(/ة/g, "ه")
-        .replace(/ى/g, "ي");
-
+      // updateSearchVector يطبّق normalize_arabic في SQL؛ التطبيع هنا مجرد
+      // معالجة مسبقة نصية بنفس المصدر الواحد فلا ازدواج في التعريف.
+      const normalizedTitle = normalizeArabicForSearch("القرآن الكريم");
       await updateSearchVector(doc.id, normalizedTitle);
 
-      const normalizedQuery = "القران".replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+      const normalizedQuery = normalizeArabicForSearch("القران");
 
       const results = await searchDocs(userA.id, normalizedQuery);
       expect(results.some((r) => r.id === doc.id)).toBe(true);
+    });
+
+    it("alef wasla and hamza-carrier forms found in search", async () => {
+      const doc = await createTestDocument(userA.id, {
+        title: "سؤل عن ٱلله — صحّة المؤمن",
+      });
+      await updateSearchVector(doc.id, "سؤل عن ٱلله — صحّة المؤمن");
+
+      expect((await searchDocs(userA.id, "سول")).some((r) => r.id === doc.id)).toBe(true);
+      expect((await searchDocs(userA.id, "الله")).some((r) => r.id === doc.id)).toBe(true);
+      expect((await searchDocs(userA.id, "صحه")).some((r) => r.id === doc.id)).toBe(true);
     });
   });
 });

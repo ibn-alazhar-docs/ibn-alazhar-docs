@@ -17,26 +17,17 @@ export function buildOcrConfig(): Pick<PipelineConfig, "ocr"> {
           .split(",")
           .map((p) => p.trim())
           .filter((p) => p.length > 0);
-        const base = (parsed.length > 0
-          ? parsed
-          : ["surya", "tesseract"]) as OcrEngineType[];
-        if (
-          process.env.OCR_CLOUD_ENABLED === "true" &&
-          !base.includes("gemini")
-        ) {
+        const base = (parsed.length > 0 ? parsed : ["surya", "tesseract"]) as OcrEngineType[];
+        if (process.env.OCR_CLOUD_ENABLED === "true" && !base.includes("gemini")) {
           base.push("gemini");
         }
         return base;
       })(),
-      minConfidence: Math.max(
-        0,
-        Math.min(1, Number(process.env.OCR_MIN_CONFIDENCE ?? 0)),
-      ),
+      minConfidence: Math.max(0, Math.min(1, Number(process.env.OCR_MIN_CONFIDENCE ?? 0))),
       adaptiveProviderSelection: process.env.OCR_ADAPTIVE_PROVIDERS !== "false",
       cloudOcrDailyBudget: Number(process.env.OCR_CLOUD_DAILY_BUDGET ?? -1),
       preprocess: {
-        mode: (process.env.OCR_PREPROCESS_MODE as "auto" | "on" | "off") ??
-          "auto",
+        mode: (process.env.OCR_PREPROCESS_MODE as "auto" | "on" | "off") ?? "auto",
         minDpi: toNum(process.env.OCR_MIN_DPI, 300),
         targetDpi: toNum(process.env.OCR_TARGET_DPI, 400),
         upscale: Math.max(1, Number(process.env.OCR_UPSCALE ?? 1.0)),

@@ -1,11 +1,11 @@
 export const openApiSpec = {
   openapi: "3.1.0",
   info: {
-    title: "Ibn Al-Azhar Docs API",
+    title: "Ibn Al-Azhar Platform API",
     version: "1.0.0",
     description:
-      "REST API for the Ibn Al-Azhar Docs platform — an Arabic-first document processing pipeline supporting OCR, conversion, export, and sharing.",
-    contact: { name: "Ibn Al-Azhar Docs" },
+      "REST API for the Ibn Al-Azhar Platform — an Arabic-first document processing pipeline supporting OCR, conversion, export, and sharing.",
+    contact: { name: "Ibn Al-Azhar Platform" },
   },
   servers: [{ url: "/api", description: "Same-origin API (use relative paths)" }],
   tags: [
@@ -2442,7 +2442,7 @@ export const openApiSpec = {
           color: {
             type: "string",
             nullable: true,
-            description: "Hex color (e.g. #16A34A)",
+            description: "Hex color (e.g. #127E87)",
           },
           icon: { type: "string", nullable: true, maxLength: 50 },
         },
@@ -2520,7 +2520,7 @@ export const openApiSpec = {
           name: { type: "string", minLength: 1, maxLength: 50 },
           color: {
             type: "string",
-            default: "#16A34A",
+            default: "#127E87",
             description: "Hex color",
           },
         },

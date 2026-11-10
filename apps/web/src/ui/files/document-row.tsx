@@ -59,7 +59,7 @@ function DocumentRowActions({
       <div className="flex items-center gap-0.5 sm:gap-1 flex-wrap justify-end">
         {!isEditing && (
           <motion.button
-            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => setIsShareModalOpen(true)}
@@ -72,7 +72,7 @@ function DocumentRowActions({
         )}
         {!isEditing && (
           <motion.button
-            whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+            whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
             whileTap={{ scale: 0.9 }}
             type="button"
             onClick={() => onStartEdit(doc)}
@@ -97,7 +97,7 @@ function DocumentRowActions({
               <SaveIcon />
             </motion.button>
             <motion.button
-              whileHover={{ scale: 1.1, color: "var(--primary-color)" }}
+              whileHover={{ scale: 1.1, color: "var(--brand-teal)" }}
               whileTap={{ scale: 0.9 }}
               type="button"
               onClick={onCancelEdit}
@@ -204,6 +204,7 @@ export const DocumentRow = memo(function DocumentRow({
           <input
             type="text"
             value={editTitle}
+            aria-label={tDocs("title")}
             onChange={(e) => onEditTitleChange(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") onSaveEdit(doc.id);
@@ -298,7 +299,7 @@ export const DocumentRow = memo(function DocumentRow({
         {formatFileSize(doc.fileSize)}
       </td>
       <td className="hidden sm:table-cell whitespace-nowrap px-2 sm:px-3 py-2 text-xs sm:text-sm text-muted-color">
-        {new Date(doc.createdAt).toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US")}
+        {new Date(doc.createdAt).toLocaleDateString("ar-EG")}
       </td>
       <DocumentRowActions
         doc={doc}

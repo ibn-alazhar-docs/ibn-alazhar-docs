@@ -8,6 +8,7 @@ import { useRouter, Link } from "@/i18n/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { loginSchema } from "@/shared/validators/auth";
 import { preCheckLogin } from "./actions";
+import { FormField } from "./form-field";
 
 interface ActionState {
   error: string | null;
@@ -108,62 +109,38 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
       )}
 
       <div className="space-y-4">
-        <div>
-          <label htmlFor="login-email" className="mb-2 block text-xs font-bold text-muted-color">
-            {t("emailLabel")}
-          </label>
-          <input
-            id="login-email"
-            type="email"
-            name="email"
-            dir="ltr"
-            disabled={isPending || state.isLocked}
-            aria-invalid={!!state.fieldErrors?.email}
-            aria-describedby={state.fieldErrors?.email ? "email-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 disabled:opacity-50 transition-colors"
-            placeholder={t("emailPlaceholder")}
-          />
-          {state.fieldErrors?.email && (
-            <p className="mt-1.5 text-xs text-danger" id="email-error" role="alert">
-              {state.fieldErrors.email}
-            </p>
-          )}
-        </div>
+        <FormField
+          id="login-email"
+          type="email"
+          name="email"
+          label={t("emailLabel")}
+          disabled={isPending || state.isLocked}
+          placeholder={t("emailPlaceholder")}
+          error={state.fieldErrors?.email}
+        />
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <label htmlFor="login-password" className="text-xs font-bold text-muted-color">
-              {t("passwordLabel")}
-            </label>
+        <FormField
+          id="login-password"
+          type="password"
+          name="password"
+          label={t("passwordLabel")}
+          disabled={isPending || state.isLocked}
+          placeholder={t("passwordPlaceholder")}
+          error={state.fieldErrors?.password}
+          labelExtra={
             <Link
               href="/forgot-password"
               className="text-xs font-semibold text-gold hover:underline underline-offset-4 decoration-1 decoration-gold/20 transition-colors"
             >
               {t("forgotPasswordLink")}
             </Link>
-          </div>
-          <input
-            id="login-password"
-            type="password"
-            name="password"
-            dir="ltr"
-            disabled={isPending || state.isLocked}
-            aria-invalid={!!state.fieldErrors?.password}
-            aria-describedby={state.fieldErrors?.password ? "password-error" : undefined}
-            className="w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30 disabled:opacity-50 transition-colors"
-            placeholder={t("passwordPlaceholder")}
-          />
-          {state.fieldErrors?.password && (
-            <p className="mt-1.5 text-xs text-danger" id="password-error" role="alert">
-              {state.fieldErrors.password}
-            </p>
-          )}
-        </div>
+          }
+        />
 
         <button
           type="submit"
           disabled={isPending || state.isLocked}
-          className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50 transition-all hover:shadow-lg cursor-pointer"
+          className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl ps-4 pe-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50 transition-all hover:shadow-lg cursor-pointer"
         >
           {isPending ? t("loggingIn") : t("loginButton")}
         </button>
@@ -187,7 +164,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
               signIn("google", { redirectTo: `/${locale}/dashboard` });
             }}
             disabled={isPending || state.isLocked || googleLoading}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page ps-4 pe-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="h-5 w-5" />
             {googleLoading ? t("loggingIn") : t("continueWithGoogle")}

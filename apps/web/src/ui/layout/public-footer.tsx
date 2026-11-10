@@ -1,20 +1,19 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BRAND_NAME } from "@/ui/brand";
 import { GeometricStar } from "@/ui/geometric-star";
+import { BrandLogo } from "@/ui/brand-logo";
 
 interface PublicFooterProps {
-  locale: string;
   tagline?: string;
   copyright?: string;
 }
 
-export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) {
+export function PublicFooter({ tagline, copyright }: PublicFooterProps) {
   const t = useTranslations("footer");
-  const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
+  const brand = BRAND_NAME.ar;
 
   return (
     <footer
@@ -32,14 +31,7 @@ export function PublicFooter({ locale, tagline, copyright }: PublicFooterProps) 
               href="/"
               className="flex items-center gap-3 text-sm font-bold tracking-tight text-primary-color no-underline"
             >
-              <Image
-                src="/logo.svg"
-                alt={brand}
-                width={36}
-                height={36}
-                className="h-9 w-auto"
-                priority
-              />
+              <BrandLogo alt={brand} className="h-9 w-auto" priority />
               <span className="heading-display-sm text-sm">{brand}</span>
             </Link>
             <p className="mt-2 text-xs text-very-muted">{tagline || t("tagline")}</p>

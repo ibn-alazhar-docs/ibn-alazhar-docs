@@ -21,12 +21,14 @@ Act as:
 3. Phase 1 is foundation-only.
 4. Do not expand MVP without explicit approval.
 5. Arabic-first and RTL-first are mandatory.
-6. Use the official brand:
-   - Primary Green: #16A34A
-   - Heritage Gold: #CA8A04
-   - Dark Text Gray: #1F2937
+6. Use the official brand (براندبوك «منصة ابن الأزهر» — التوكنات في `apps/web/src/styles/brand.css`):
+   - Classic Teal: #127E87
+   - Antique Gold: #DA9E2C
+   - Prussian Blue: #083B40
+   - Warm Paper: #FBF5E9
    - Pure White: #FFFFFF
-   - Font: Cairo
+   - Fonts: Almarai (body) + Amiri (display) — Thmanyah مؤجَّل حتى تُضاف رخصته
+   - الشعار عبر `<BrandLogo>` فقط، بمساحة آمنة 190px وحدّ أدنى 152px
 7. Docker-first local development is mandatory.
 8. Do not mix conversion and export:
    - Conversion extracts canonical text/data from source files.

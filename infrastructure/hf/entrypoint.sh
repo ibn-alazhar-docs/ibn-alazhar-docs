@@ -9,32 +9,18 @@ echo "════════════════════════�
 # Point Python calls to the venv with pypdfium2/cv2/PIL installed.
 export SURYA_PYTHON_PATH="/opt/ocr-venv/bin/python3"
 
-# ── Step 1: Start MinIO (optional local S3-compatible storage) ────
-# MinIO is only needed when STORAGE_DRIVER=s3. In local-storage mode
-# (default on HF Spaces) files live on the persistent /data volume, so
-# MinIO is skipped entirely to save resources. If S3 mode is requested we
-# start it best-effort and never block boot on its failure.
-if [ "${STORAGE_DRIVER:-s3}" != "local" ]; then
-  echo "[1/5] Starting MinIO on :9000..."
-  MINIO_ROOT_USER="${S3_ACCESS_KEY_ID:-minioadmin}" \
-  MINIO_ROOT_PASSWORD="${S3_SECRET_ACCESS_KEY:-minioadmin}" \
-  minio server /data/minio --address ":9000" --console-address ":9001" &
-  MINIO_PID=$!
-
-  for i in $(seq 1 30); do
-      if curl -sf http://localhost:9000/minio/health/live > /dev/null 2>&1; then
-          echo "[1/5] MinIO is ready ✓"
-          break
-      fi
-      if [ "$i" = "30" ]; then
-          echo "[1/5] MinIO failed to start — continuing without it (S3 uploads may fail)"
-      fi
-      sleep 1
-  done
-else
+# ── Step 1: Storage driver resolution ─────────────────────
+# MinIO server binaries are no longer distributed (dl.min.io 410, 2026-11-07),
+# and the image no longer bundles them. Default to local storage on /data.
+# STORAGE_DRIVER=s3 remains valid ONLY with S3_* pointing to a real remote
+# endpoint (e.g. R2); a local S3 server is not available.
+STORAGE_DRIVER="${STORAGE_DRIVER:-local}"
+if [ "$STORAGE_DRIVER" = "local" ]; then
   echo "[1/5] Local filesystem storage enabled (STORAGE_DRIVER=local) — MinIO skipped"
-  MINIO_PID=""
+else
+  echo "[1/5] STORAGE_DRIVER=$STORAGE_DRIVER requested — ensure S3_* point to a real remote endpoint (no local MinIO in image)"
 fi
+MINIO_PID=""
 
 # ── Step 2: Sync database schema ───────────────────────────────────────
 echo "[2/5] Syncing database schema..."

@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "مستندات ابن الأزهر",
-    "tagline": "مستنداتك، مُيسّرة للبحث والعمل.",
+    "name": "منصة ابن الأزهر",
+    "tagline": "في بيت كل طالب أزهري",
     "loadingPreview": "جارٍ تحميل المعاينة…",
     "previewDocument": "مستند المعاينة"
   },
@@ -12,6 +12,7 @@
     "tags": "الوسوم",
     "search": "البحث",
     "conversions": "المعالجة",
+    "tools": "الأدوات",
     "settings": "الإعدادات",
     "analytics": "التحليلات",
     "users": "المستخدمين",
@@ -46,7 +47,7 @@
   },
   "section": {
     "hero": {
-      "eyebrow": "منصتك لتحويل الملفات",
+      "eyebrow": "وثائق الثانوية الأزهرية في مكان واحد",
       "title": "منصة ذكية لتحويل واستخراج النصوص",
       "subtitle": "قم برفع ملفات PDF أو الصور، وسنقوم بتحويلها بدقة عالية إلى نصوص قابلة للتحرير وصيغ متعددة مثل Word وغيرها بضغطة زر.",
       "cta": "ابدأ التحويل الآن",
@@ -99,8 +100,8 @@
     }
   },
   "footer": {
-    "copyright": "مستندات ابن الأزهر © 2026",
-    "tagline": "لرقمنة الوثائق الأكاديمية"
+    "copyright": "منصة ابن الأزهر © 2026",
+    "tagline": "منصة ابن الأزهر للمستندات — معالجة وتنظيم محتوى الثانوية الأزهرية"
   },
   "common": {
     "loading": "نحمّل...",
@@ -204,7 +205,7 @@
     "switchConfirm": "تأكيد التبديل",
     "switchMessage": "سيتم تبديل اللغة",
     "switchTitle": "تبديل اللغة",
-    "tagline": "مستنداتك، مُيسّرة للبحث والعمل.",
+    "tagline": "في بيت كل طالب أزهري",
     "theme": "السمة",
     "themeDescription": "تغيير مظهر الواجهة",
     "title": "العنوان",
@@ -239,7 +240,7 @@
     "unexpectedError": "حدث خطأ. أعد المحاولة.",
     "accountLocked": "تم قفل الحساب مؤقتاً بسبب محاولات دخول خاطئة متعددة. يرجى الانتظار والمحاولة لاحقاً.",
     "ipRateLimit": "تم حظر الدخول مؤقتاً لتجاوز الحد الأقصى للمحاولات. يرجى المحاولة لاحقاً.",
-    "tagline": "مستنداتك، مُيسّرة للبحث والعمل.",
+    "tagline": "في بيت كل طالب أزهري",
     "continueWithGoogle": "تابع باستخدام Google",
     "forgotPasswordTitle": "نسيت كلمة المرور؟",
     "forgotPasswordButton": "أرسل رابط التعيين",
@@ -280,7 +281,8 @@
       "cleaning": "ننظف المحتوى",
       "generating": "نُنشئ الملفات",
       "completed": "اكتملت المعالجة",
-      "failed": "فشلت المعالجة"
+      "failed": "فشلت المعالجة",
+      "preparing": "جارٍ تجهيز المعالجة"
     },
     "preview": {
       "back": "رجوع",
@@ -311,8 +313,7 @@
       "large": "كبير",
       "watermark": "علامة مائية (اختياري)",
       "watermarkPlaceholder": "أدخل النص...",
-      "pageRange": "نطاق الصفحات (اختياري)",
-      "pageRangePlaceholder": "مثال: 1-5، 8",
+      "timeout": "انتهت مهلة انتظار الملف المُصدَّر؛ أعد المحاولة.",
       "destination": "الوجهة",
       "download": "تنزيل مباشر",
       "drive": "Google Drive",
@@ -344,6 +345,7 @@
     "namePlaceholder": "الاسم",
     "nameRequired": "اسم المجلد مطلوب",
     "nameTooLong": "الاسم طويل جداً",
+    "addSubfolder": "إضافة مجلد فرعي",
     "rename": "أعد التسمية",
     "moveTo": "انقل إلى...",
     "moveTitle": "انقل للمجلد",
@@ -489,6 +491,14 @@
     "suggestionsLabel": "اقتراحات البحث"
   },
   "conversions": {
+    "stages": {
+      "queued": "في قائمة الانتظار",
+      "processing": "قيد المعالجة",
+      "ocr": "قراءة ضوئية",
+      "clean": "تنظيف النص",
+      "saving": "حفظ الناتج",
+      "done": "اكتمل"
+    },
     "title": "المعالجة",
     "subtitle": "تابع تقدم معالجة ملفاتك لحظة بلحظة.",
     "searchPlaceholder": "معرف المهمة",
@@ -520,6 +530,8 @@
   "settings": {
     "title": "الإعدادات",
     "comingSoon": "قريباً",
+    "about": "حول المنصة",
+    "toolsLink": "الأدوات",
     "profile": "ملفك الشخصي",
     "profileDescription": "بيانات حسابك",
     "name": "الاسم",
@@ -527,10 +539,6 @@
     "role": "الدور",
     "admin": "مدير النظام",
     "user": "مستخدم",
-    "language": "اللغة",
-    "languageDescription": "لغة الواجهة",
-    "arabic": "العربية",
-    "english": "English",
     "theme": "المظهر",
     "themeDescription": "مظهر التطبيق",
     "light": "فاتح",
@@ -572,8 +580,8 @@
   "ui": {
     "menuOpen": "افتح القائمة",
     "menuClose": "أغلق القائمة",
-    "name": "مستندات ابن الأزهر",
-    "tagline": "مستنداتك، مُيسّرة للبحث والعمل."
+    "name": "منصة ابن الأزهر",
+    "tagline": "في بيت كل طالب أزهري"
   },
   "tags": {
     "title": "الوسوم",
@@ -649,43 +657,12 @@
     "loadingPreview": "جارٍ تحميل المعاينة…",
     "previewDocument": "مستند المعاينة"
   },
-  "discovery": {
-    "library": "المكتبة",
-    "librarySubtitle": "مكتبة رقمية علمية — تصفح، اقرأ، وتعلّم",
-    "documents": "مستند",
-    "documentsPlural": "مستندات",
-    "minutes": "دقيقة",
-    "minShort": "د",
-    "relatedTitle": "ذات صلة",
-    "prerequisitePrefix": "يُوصى بقراءة",
-    "prerequisiteSuffix": "قبل هذا",
-    "journeyPartOf": "جزء من",
-    "journeyNext": "التالي",
-    "tocTitle": "المحتويات",
-    "tocAriaLabel": "فهرس المحتويات",
-    "docNavLabel": "التنقل",
-    "prev": "السابق",
-    "next": "التالي",
-    "readTime": "دقائق قراءة",
-    "home": "الرئيسية",
-    "breadcrumbLibrary": "المكتبة",
-    "readingJourneys": "رحلات القراءة",
-    "documentCount": "{count, plural, one {# مستند} other {# مستندات}}",
-    "step": "الخطوة {number}",
-    "minute": "{count, plural, one {دقيقة} other {دقائق}}"
-  },
   "a11y": {
     "skipToContent": "تخطَّ إلى المحتوى"
   },
   "theme": {
     "toggleLight": "التبديل إلى الوضع الفاتح",
     "toggleDark": "التبديل إلى الوضع الداكن"
-  },
-  "locale": {
-    "toggle": "تغيير اللغة",
-    "switchTitle": "تغيير اللغة",
-    "switchMessage": "لديك ملف قيد المعالجة ولم يُرفع بعد. تغيير اللغة سيؤدي إلى إلغاء الملف. هل أنت متأكد؟",
-    "switchConfirm": "تغيير"
   },
   "analytics": {
     "title": "التحليلات",
@@ -727,5 +704,18 @@
     "storageNotFound": "مجلد التخزين غير موجود. يرجى التحقق من إعدادات النشر",
     "storageNotWritable": "لا توجد صلاحيات كتابة على مجلد التخزين",
     "storageFull": "مساحة التخزين ممتلئة"
+  },
+  "tools": {
+    "title": "أدوات النص",
+    "tashkeel": {
+      "name": "تشكيل النص",
+      "description": "يضيف التشكيل للنص العربي المدخل",
+      "placeholder": "الصق النص هنا",
+      "run": "تشكيل",
+      "loading": "جارٍ التشكيل…",
+      "result": "النتيجة",
+      "copy": "نسخ",
+      "error": "تعذّر التشكيل. حاول مرة أخرى."
+    }
   }
 }

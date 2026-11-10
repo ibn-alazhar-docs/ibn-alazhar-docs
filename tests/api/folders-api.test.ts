@@ -75,14 +75,14 @@ describe("Folders API", () => {
     it("should create a folder", async () => {
       const request = createApiRequest("/api/folders", {
         method: "POST",
-        body: JSON.stringify({ name: "New Folder", color: "#16A34A" }),
+        body: JSON.stringify({ name: "New Folder", color: "#127E87" }),
       });
       const response = await createFolder(request);
 
       expect(response.status).toBe(201);
       const data = await response.json();
       expect(data.folder.name).toBe("New Folder");
-      expect(data.folder.color).toBe("#16A34A");
+      expect(data.folder.color).toBe("#127E87");
     });
 
     it("should return 400 for validation errors", async () => {

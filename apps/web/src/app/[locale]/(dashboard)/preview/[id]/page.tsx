@@ -110,9 +110,10 @@ export default function PreviewPage() {
               </button>
               <button
                 onClick={() => setIsExportModalOpen(true)}
+                data-testid="export-button"
                 className="px-3 py-2 text-xs font-medium bg-success text-btn-primary-text rounded-lg hover:opacity-90 transition-colors flex-1 sm:flex-initial min-h-9 whitespace-nowrap"
               >
-                {tExportModal("button")}
+                {tExportModal("export")}
               </button>
             </div>
           </div>

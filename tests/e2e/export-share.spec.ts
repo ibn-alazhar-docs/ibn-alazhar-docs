@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { ExportPage, type ExportFormat } from "./pages/ExportPage";
 import { SharePage } from "./pages/SharePage";
 import { DocumentsPage } from "./pages/DocumentsPage";
-import { loginAsAdmin } from "./helpers";
+import { loginAsAdmin, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Export and Share", () => {
   test.describe.configure({ timeout: 180_000 });
@@ -21,25 +21,24 @@ test.describe("Export and Share", () => {
         const docs = new DocumentsPage(page);
         const exportP = new ExportPage(page);
         await docs.gotoFiles();
-        const count = await docs.getDocumentCount();
-        if (count > 0) {
-          await docs.clickFirstDocumentTitle();
-          await page.waitForURL(/\/documents\//);
-          await exportP.openExportDialog();
-          await exportP.expectDialogVisible();
-          await exportP.selectFormat(format);
-          await exportP.startDownload();
-          const download = await page
-            .waitForEvent("download", { timeout: 30000 })
-            .catch(() => null);
-          if (download) {
-            const fileName = download.suggestedFilename();
-            expect(fileName.toLowerCase()).toContain(
-              format.toLowerCase().replace("markdown", "md"),
-            );
-            const path = await download.path();
-            expect(path).toBeTruthy();
-          }
+        await docs.uploadFile(TEST_PDF_PATH);
+        await docs.expectDocumentRowVisible(60000);
+        await docs.clickFirstDocumentTitle();
+        await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
+        await exportP.openExportDialog();
+        await exportP.expectDialogVisible();
+        await exportP.selectFormat(format);
+        const downloadPromise = page.waitForEvent("download", { timeout: 30000 }).catch(() => null);
+        await exportP.startDownload();
+        const download = await downloadPromise;
+        if (download) {
+          const fileName = download.suggestedFilename();
+          const url = download.url();
+          expect(url.toLowerCase() + fileName.toLowerCase()).toContain(
+            format.toLowerCase().replace("markdown", "md"),
+          );
+          const path = await download.path();
+          expect(path).toBeTruthy();
         }
       });
     }
@@ -48,8 +47,10 @@ test.describe("Export and Share", () => {
       const docs = new DocumentsPage(page);
       const exportP = new ExportPage(page);
       await docs.gotoFiles();
+      await docs.uploadFile(TEST_PDF_PATH);
+      await docs.expectDocumentRowVisible(60000);
       await docs.clickFirstDocumentTitle();
-      await page.waitForURL(/\/documents\//);
+      await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
       await exportP.openAdvancedExport();
       await exportP.expectDialogVisible();
       for (const fmt of formats) {
@@ -132,25 +133,18 @@ test.describe("Export and Share", () => {
     test("Share link with expiry renders expiry selector", async ({ page }) => {
       const docs = new DocumentsPage(page);
       const share = new SharePage(page);
-      return docs
-        .gotoFiles()
-        .then(() => docs.documentRows.first().hover())
-        .then(() => {
-          const shareBtn = docs.documentRows
-            .first()
-            .getByRole("button", { name: /مشاركة|Share/i })
-            .first();
-          return shareBtn.isVisible().catch(() => false);
-        })
-        .then((visible) => {
-          if (!visible) return;
-          return shareBtn
-            .click()
-            .then(() => share.createShareLink())
-            .then(() => {
-              return share.setExpiry(7);
-            });
-        });
+      await docs.gotoFiles();
+      await docs.uploadFile(TEST_PDF_PATH);
+      await docs.expectDocumentRowVisible(60000);
+      const row = docs.documentRows.first();
+      await row.hover();
+      const shareBtn = row.getByRole("button", { name: /مشاركة|Share/i }).first();
+      await expect(shareBtn).toBeVisible({ timeout: 15000 });
+      await shareBtn.click();
+      await share.createShareLink();
+      await share.expectShareLinkCreated();
+      await expect(share.expirySelector).toBeVisible({ timeout: 15000 });
+      await share.setExpiry(7);
     });
 
     test("Regenerate share token", async ({ page }) => {

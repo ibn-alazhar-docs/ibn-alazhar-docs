@@ -5,7 +5,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/transport/db";
 import { ForbiddenError } from "@/shared/errors";
 import { handleRouteError } from "@/shared/route-helpers";
-import { isAdminRole } from "@/domain/auth";
+import { isAdminRole, ROLE } from "@/domain/auth";
 import type { AuthSession } from "@/domain/types";
 
 export type { AuthSession } from "@/domain/types";
@@ -48,24 +48,31 @@ type AuthenticatedHandler = (
   context: { session: AuthSession; params: Record<string, string | undefined> },
 ) => Promise<NextResponse | Response> | NextResponse | Response;
 
+async function applyTestApiKeyBypass(
+  request: NextRequest,
+  session: AuthSession | null,
+): Promise<AuthSession | null> {
+  // SECURITY FIX: Only allow TEST_API_KEY in development/test environments
+  const apiKey = process.env.TEST_API_KEY;
+  const isDevelopment = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
+  if (!session && apiKey && isDevelopment && request.headers.get("x-api-key") === apiKey) {
+    const admin = await prisma.user.findFirst({ where: { role: ROLE.ADMIN } });
+    if (admin) {
+      return {
+        user: { id: admin.id, role: admin.role, email: admin.email, name: admin.name },
+      } as AuthSession;
+    }
+  }
+  return session;
+}
+
 export function withAuth(handler: AuthenticatedHandler) {
   return async (
     request: NextRequest,
     context: { params: Promise<Record<string, string | undefined>> },
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
-
-    // SECURITY FIX: Only allow TEST_API_KEY in development/test environments
-    const apiKey = process.env.TEST_API_KEY;
-    const isDevelopment = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
-    if (!session && apiKey && isDevelopment && request.headers.get("x-api-key") === apiKey) {
-      const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-      if (admin) {
-        session = {
-          user: { id: admin.id, role: admin.role, email: admin.email, name: admin.name },
-        } as AuthSession;
-      }
-    }
+    session = await applyTestApiKeyBypass(request, session);
 
     if (!session) return unauthorizedResponse();
 
@@ -85,18 +92,7 @@ export function withAdminAuth(handler: AuthenticatedHandler) {
     context: { params: Promise<Record<string, string | undefined>> },
   ): Promise<Response> => {
     let session = await requireAuth().catch(() => null);
-
-    // SECURITY FIX: Only allow TEST_API_KEY in development/test environments
-    const apiKey = process.env.TEST_API_KEY;
-    const isDevelopment = process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test";
-    if (!session && apiKey && isDevelopment && request.headers.get("x-api-key") === apiKey) {
-      const admin = await prisma.user.findFirst({ where: { role: "ADMIN" } });
-      if (admin) {
-        session = {
-          user: { id: admin.id, role: admin.role, email: admin.email, name: admin.name },
-        } as AuthSession;
-      }
-    }
+    session = await applyTestApiKeyBypass(request, session);
 
     if (!session) return unauthorizedResponse();
     if (!isAdminRole(session.user.role)) return forbiddenResponse();

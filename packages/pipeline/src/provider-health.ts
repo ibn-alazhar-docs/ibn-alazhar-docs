@@ -1,3 +1,11 @@
+/**
+ * provider-health.ts — صحة مزوّدي OCR (circuit-breaker خفيف لكل OcrEngineType).
+ *
+ * يتتبّع الاتصال الناجح/الفاشل بزمن الاستجابة، ويحوّل الحالة إلى
+ * healthy / degraded / open (فشل متتالٍ ضمن windowMs ⇒ open حتى cooldownMs).
+ * لا يختار المزوّد بنفسه؛ ocr-provider يقرأ الدرجة ويعيد الترتيب.
+ */
+
 import type { OcrEngineType } from "./types";
 
 export interface ProviderHealthRecord {

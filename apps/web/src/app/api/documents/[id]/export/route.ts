@@ -4,7 +4,6 @@ import { withAuth } from "@/middleware/auth-guards";
 import { handleRouteError } from "@/shared/route-helpers";
 import { checkUserRateLimit, rateLimitResponse } from "@/clients/redis";
 import { useCases } from "@/core/composition-root";
-import { enqueueViaDriver, JOB_QUEUES, loadConfig } from "@ibn-al-azhar-docs/pipeline";
 
 export const POST = withAuth(async (request, { session, params }) => {
   const id = params.id!;
@@ -19,7 +18,7 @@ export const POST = withAuth(async (request, { session, params }) => {
     body = await request.json();
   } catch {
     return NextResponse.json(
-      { error: { code: "BAD_REQUEST", message: "Invalid JSON" } },
+      { error: { code: "BAD_REQUEST", message: "طلب غير صالح: JSON غير سليم" } },
       { status: 400 },
     );
   }
@@ -27,12 +26,16 @@ export const POST = withAuth(async (request, { session, params }) => {
   const exportSchema = z
     .object({
       format: z.enum(["md", "txt", "docx", "epub", "json", "pdf", "searchable-pdf"], {
-        message: "Format must be md, txt, docx, epub, json, pdf, or searchable-pdf",
+        message: "الصيغة يجب أن تكون md أو txt أو docx أو epub أو json أو pdf أو searchable-pdf",
       }),
       options: z
         .object({
           destination: z.enum(["local", "drive"]).optional(),
           profile: z.enum(["research", "archive", "plain", "developer"]).optional(),
+          // تُمرَّر فعليًا إلى مولّد الـ PDF؛ بلا هذا كانت الواجهة تعرض حجم خط
+          // وعلامة مائية ثم تسقطهما الطبقة التالية (`.strip()`).
+          fontSize: z.coerce.number().min(8).max(72).optional(),
+          watermark: z.string().max(120).optional(),
         })
         .optional(),
     })
@@ -45,7 +48,7 @@ export const POST = withAuth(async (request, { session, params }) => {
       {
         error: {
           code: "VALIDATION_ERROR",
-          message: firstError?.message || "Invalid payload",
+          message: firstError?.message || "بيانات غير صالحة",
         },
       },
       { status: 400 },
@@ -55,56 +58,21 @@ export const POST = withAuth(async (request, { session, params }) => {
   const { format, options } = validation.data;
 
   try {
-    const document = await useCases.documentCrud.getDocumentById(id, session.user.id);
+    const result = await useCases.documentExportJob.enqueueExport(
+      id,
+      session.user.id,
+      format,
+      options,
+    );
 
-    if (document.status !== "COMPLETED") {
+    if (!result.ok) {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Document processing is not completed" } },
-        { status: 400 },
+        { error: { code: result.code, message: result.message } },
+        { status: result.status },
       );
     }
 
-    if (options?.destination === "drive") {
-      const { prisma } = await import("@/transport/db");
-      const account = await prisma.account.findFirst({
-        where: { userId: session.user.id, provider: "google" },
-      });
-      if (!account || !account.access_token || !account.refresh_token) {
-        return NextResponse.json(
-          {
-            error: {
-              code: "NOT_LINKED",
-              message: "يجب ربط حساب Google من الإعدادات أولاً لتتمكن من التصدير إلى Drive.",
-            },
-          },
-          { status: 400 },
-        );
-      }
-    }
-
-    const config = loadConfig();
-
-    const jobId = document.id;
-
-    const textKey = `${config.paths.ocrResults}/${document.id}/cleaned.json`;
-    const outputKey = `${config.paths.exports}/${document.id}/export.${format}`;
-
-    if (format === "searchable-pdf") {
-      return NextResponse.json({ success: true, jobId: document.id, message: "Export ready" });
-    }
-
-    await enqueueViaDriver(JOB_QUEUES.EXPORT, config, {
-      jobId,
-      documentId: document.id,
-      userId: session.user.id,
-      format: format as "md" | "txt" | "docx" | "epub" | "json" | "pdf",
-      textKey,
-      outputKey,
-      pageCount: document.pageCount || undefined,
-      options,
-    });
-
-    return NextResponse.json({ success: true, jobId, message: "Export job enqueued" });
+    return NextResponse.json({ success: true, jobId: result.jobId, message: result.message });
   } catch (error: unknown) {
     return handleRouteError(error, "documents/export/POST", "تعذر إنشاء التصدير. حاول مرة أخرى.");
   }

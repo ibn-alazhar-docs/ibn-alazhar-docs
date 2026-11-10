@@ -32,9 +32,10 @@ npm-debug.log*
 yarn-debug.log*
 pnpm-debug.log*
 
-# Test artifacts
+# Test artifacts (source fixtures ARE tracked — E2E/ocr tests load them)
 test-results/
-test-data/
+test-data/output/
+test-data/phase1b-test.ts
 playwright-report/
 .nyc_output/
 
@@ -83,9 +84,7 @@ openuser.config.json
 .coderabbit.yaml
 .ruff_cache/
 
-# Session logs and local credential notes must never be committed
-.opencode-session-summary.md
-*-session-summary.md
-
-# FUSE/ntfs-3g leftovers from a file deleted while a process held it open
+# Fuse temporary files
 .fuse_hidden*
+*/.fuse_hidden*
+tests/api/test-results.json

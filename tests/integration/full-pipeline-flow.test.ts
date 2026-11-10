@@ -143,7 +143,7 @@ describe("Full Pipeline Flow: Upload → OCR → Clean → Markdown → Export",
       const cleaned = cleanArabicText(MIXED_TEXT);
       expect(cleaned).toContain("Chapter 1");
       expect(cleaned).toContain("الفقه");
-      expect(cleaned).toContain("ابو حن");
+      expect(cleaned).toContain("أبو حن");
     });
 
     it("OCR exclamation artifacts are removed from Arabic text", () => {
@@ -229,7 +229,7 @@ describe("Full Pipeline Flow: Upload → OCR → Clean → Markdown → Export",
 
     it("TXT with metadata includes header fields", () => {
       const txt = generateTxt(cleanedText, true);
-      expect(txt).toContain("Ibn Al-Azhar Docs");
+      expect(txt).toContain("Ibn Al-Azhar Platform");
       expect(txt).toContain("Pages:");
       expect(txt).toContain("Words:");
     });

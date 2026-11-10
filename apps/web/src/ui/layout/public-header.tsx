@@ -1,23 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { ThemeToggle } from "@/ui/theme/theme-toggle";
-import { LocaleToggle } from "@/ui/locale/locale-toggle";
 import { BRAND_NAME } from "@/ui/brand";
+import { BrandLogo } from "@/ui/brand-logo";
 
 interface PublicHeaderProps {
-  locale: string;
   signInLabel?: string;
   signUpLabel?: string;
   mainNavLabel?: string;
   isLoggedIn?: boolean;
 }
 
-export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
+export function PublicHeader({ signInLabel, signUpLabel, isLoggedIn }: PublicHeaderProps) {
   const t = useTranslations("nav");
-  const brand = BRAND_NAME[locale as keyof typeof BRAND_NAME] ?? BRAND_NAME.en;
+  const brand = BRAND_NAME.ar;
 
   return (
     <header
@@ -25,27 +23,19 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
       className="glass-header fixed inset-x-0 top-0 z-50"
       style={{ viewTransitionName: "public-header" }}
     >
-      <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-2 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-2 px-3 sm:px-4 lg:px-8">
         <Link href="/" className="flex min-w-0 items-center gap-3 no-underline">
-          <Image
-            src="/logo.svg"
-            alt={brand}
-            width={40}
-            height={40}
-            className="h-10 w-auto"
-            priority
-          />
-          <span className="heading-display-sm hidden truncate text-sm font-bold tracking-tight text-primary-color sm:inline">
+          <BrandLogo alt={brand} className="h-10 w-auto" priority />
+          <span className="heading-display-sm hidden text-sm font-bold text-primary-color sm:inline whitespace-nowrap">
             {brand}
           </span>
         </Link>
         <nav aria-label={t("mainNav")} className="flex items-center gap-2">
-          <LocaleToggle />
           <ThemeToggle />
           {isLoggedIn ? (
             <Link
               href="/dashboard"
-              className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold tracking-[0.08em] no-underline"
+              className="landing-btn-primary inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold no-underline"
             >
               {t("home")}
             </Link>
@@ -53,13 +43,13 @@ export function PublicHeader({ locale, signInLabel, signUpLabel, isLoggedIn }: P
             <>
               <Link
                 href="/login"
-                className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold tracking-[0.06em] text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
+                className="px-2 py-2 sm:px-4 text-[10px] sm:text-xs font-semibold text-secondary-color no-underline transition-colors hover:text-primary-color whitespace-nowrap"
               >
                 {signInLabel || t("signIn")}
               </Link>
               <Link
                 href="/register"
-                className="landing-btn-primary inline-flex items-center gap-1 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold tracking-[0.08em] no-underline whitespace-nowrap"
+                className="landing-btn-primary inline-flex items-center gap-1 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-[10px] sm:text-xs font-bold no-underline whitespace-nowrap"
               >
                 {signUpLabel || t("signUp")}
               </Link>

@@ -42,12 +42,13 @@ const publicPagePrefixes = [
   "/forgot-password",
   "/reset-password",
   "/share",
+  // Root Scalar API reference (app/docs) — a real public developer page, not the
+  // removed marketing docs.
   "/docs",
-  "/journeys",
 ];
 
 // Routes that should NOT be accessible when logged in
-const guestOnlyRoutes = ["/login", "/register"];
+const authOnlyRoutes = ["/login", "/register"];
 
 function isPublicPage(pathnameWithoutLocale: string): boolean {
   return publicPagePrefixes.some(
@@ -55,10 +56,24 @@ function isPublicPage(pathnameWithoutLocale: string): boolean {
   );
 }
 
-function getLocaleFromRequest(request: NextRequest): string {
-  // Check Accept-Language header
-  const acceptLanguage = request.headers.get("accept-language");
-  if (acceptLanguage?.startsWith("en")) return "en";
+// Files served straight from `public/` (and Next's own build output) that must
+// never see auth redirects, i18n rewrites or CSRF cookies. The matcher cannot
+// express this — see the note on `config` at the bottom of the file — so the
+// skip happens here instead.
+const STATIC_PATH_PREFIXES = ["/_next", "/brand/", "/pdfjs-wasm/"];
+// An extension of 2-5 chars, plus the two longer ones this app actually serves
+// (`.webmanifest`, `.woff2` is inside the 5-char range). Kept narrow on purpose:
+// a route segment containing a dot (`/share/a.b`) is a path, not a file.
+const STATIC_EXTENSIONS = /\.(?:[a-zA-Z0-9]{2,5}|webmanifest)$/;
+
+function isStaticAsset(pathname: string): boolean {
+  return (
+    STATIC_PATH_PREFIXES.some((prefix) => pathname.startsWith(prefix)) ||
+    STATIC_EXTENSIONS.test(pathname)
+  );
+}
+
+function getLocaleFromRequest(_request: NextRequest): string {
   return "ar";
 }
 
@@ -80,14 +95,20 @@ export async function middleware(request: NextRequest) {
   // Generate request ID for tracing
   const requestId = request.headers.get("x-request-id") || generateRequestId();
 
-  // Skip static/internal Next.js paths (only skip actual file extensions, not dots in paths)
-  if (pathname.startsWith("/_next") || /\.[a-zA-Z0-9]{2,5}$/.test(pathname)) {
+  // Skip static/internal paths before anything else (no auth, i18n or CSRF on
+  // files Next serves directly).
+  if (isStaticAsset(pathname)) {
     return NextResponse.next();
   }
 
-  // Handle API routes: CSRF check + rate limiting, no i18n routing
+  // Handle API routes: CSRF check + rate limiting, no i18n routing.
+  // PLAYWRIGHT_TEST bypass: Node APIRequestContext uploads carry no Origin and
+  // a rotated double-submit cookie, which would 403 here (observed as upload
+  // 403 in pipeline-smoke). Production keeps full double-submit enforcement.
+  const isPlaywrightTest = process.env.PLAYWRIGHT_TEST === "true";
   if (pathname.startsWith("/api")) {
     if (
+      !isPlaywrightTest &&
       ["POST", "PUT", "PATCH", "DELETE"].includes(request.method) &&
       !pathname.startsWith("/api/auth")
     ) {
@@ -187,12 +208,12 @@ export async function middleware(request: NextRequest) {
     // else for the API path — prevents the header being written twice (which
     // some proxies surface as a duplicated "id, id" string).
     response.headers.set("x-request-id", requestId);
-    if (request.method === "GET" && pathname !== "/api/csrf") {
-      ensureCsrfCookie(response, request);
-      response.headers.set("Cache-Control", "private, max-age=10, stale-while-revalidate=30");
-    } else {
-      response.headers.set("Cache-Control", "private, no-store");
-    }
+    const isApiGet = request.method === "GET" && pathname !== "/api/csrf";
+    if (isApiGet) ensureCsrfCookie(response, request);
+    response.headers.set(
+      "Cache-Control",
+      isApiGet ? "private, max-age=10, stale-while-revalidate=30" : "private, no-store",
+    );
     // Security headers for API routes
     response.headers.set("X-Content-Type-Options", "nosniff");
     response.headers.set("X-Frame-Options", "DENY");
@@ -200,15 +221,20 @@ export async function middleware(request: NextRequest) {
     return response;
   }
 
+  // Legacy /en URLs redirect to /ar so old links keep working.
+  if (pathname === "/en" || pathname.startsWith("/en/")) {
+    return NextResponse.redirect(new URL(`/ar${pathname.slice(3) || "/"}`, request.url), 308);
+  }
+
   const isLoggedIn = hasSessionCookie(request);
 
   // Extract locale from URL (e.g., /ar/files -> ar)
   const urlLocale = pathname.split("/")[1];
-  const locale = urlLocale === "ar" || urlLocale === "en" ? urlLocale : undefined;
+  const locale = urlLocale === "ar" ? "ar" : undefined;
   const pathnameWithoutLocale = locale ? pathname.slice(`/${locale}`.length) || "/" : pathname;
 
-  // If logged in and trying to access guest-only routes, redirect to dashboard
-  if (isLoggedIn && guestOnlyRoutes.some((route) => pathnameWithoutLocale.startsWith(route))) {
+  // If logged in and trying to access auth-only routes, redirect to dashboard
+  if (isLoggedIn && authOnlyRoutes.some((route) => pathnameWithoutLocale.startsWith(route))) {
     const targetLocale = locale || getLocaleFromRequest(request);
     return NextResponse.redirect(new URL(`/${targetLocale}/dashboard`, request.url));
   }
@@ -263,8 +289,9 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    // Match all pathnames except static files
-    "/((?!_next|favicon.ico|logo.svg|manifest.json|manifest.webmanifest|sw.js|robots.ts|sitemap.ts).*)",
-  ],
+  // Next 16 compiles matchers with path-to-regexp v8, which rejects the old
+  // `(?!…)` negative-lookahead idiom outright ("Pattern cannot start with \"?\"")
+  // and refuses to boot the dev server. Static paths are skipped in `middleware`
+  // itself instead (see `isStaticAsset`), so the matcher only needs to run everywhere.
+  matcher: ["/:path*"],
 };

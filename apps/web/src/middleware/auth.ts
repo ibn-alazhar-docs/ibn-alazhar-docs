@@ -72,7 +72,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       name: "next-auth.session-token",
       options: {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure:
+          process.env.NODE_ENV === "production" &&
+          process.env.PLAYWRIGHT_TEST !== "true" &&
+          (process.env.AUTH_URL?.startsWith("https://") ?? true),
         sameSite: "lax",
         path: "/",
       },

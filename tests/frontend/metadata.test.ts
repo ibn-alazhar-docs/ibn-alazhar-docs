@@ -9,56 +9,51 @@ describe("getLocaleUrl", () => {
   });
 
   it("prepends slash when path lacks one", () => {
-    expect(getLocaleUrl("en", "contact")).toBe("https://ibnalazhar-docs.vercel.app/en/contact");
+    expect(getLocaleUrl("ar", "contact")).toBe("https://ibnalazhar-docs.vercel.app/ar/contact");
   });
 
   it("handles empty path", () => {
     expect(getLocaleUrl("ar")).toBe("https://ibnalazhar-docs.vercel.app/ar/");
   });
 
-  it("works with ar locale", () => {
+  it("works with a deep path", () => {
     expect(getLocaleUrl("ar", "/docs")).toContain("/ar/docs");
-  });
-
-  it("works with en locale", () => {
-    expect(getLocaleUrl("en", "/docs")).toContain("/en/docs");
   });
 
   it("handles deep nested path", () => {
     expect(getLocaleUrl("ar", "/a/b/c/d")).toBe("https://ibnalazhar-docs.vercel.app/ar/a/b/c/d");
   });
 
-  it("returns correct format for both locales", () => {
+  it("returns correct format for the ar locale", () => {
     const arUrl = getLocaleUrl("ar", "/page");
-    const enUrl = getLocaleUrl("en", "/page");
     expect(arUrl).toMatch(/\/ar\/page$/);
-    expect(enUrl).toMatch(/\/en\/page$/);
   });
 });
 
 describe("siteName constants", () => {
-  it("siteName is Ibn Al-Azhar", () => {
-    expect(siteName).toBe("Ibn Al-Azhar Docs");
+  it("siteName is the Arabic brand name", () => {
+    expect(siteName).toBe("منصة ابن الأزهر");
   });
 
-  it("siteNameAr is defined", () => {
-    expect(siteNameAr).toBeDefined();
+  it("siteNameAr equals siteName (ar-only)", () => {
+    expect(siteNameAr).toBe(siteName);
   });
 });
 
 describe("generatePageMetadata", () => {
-  it("returns correct title with site name appended", () => {
+  it("passes the title through verbatim — the brand suffix is OG-only", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "Home",
       description: "Welcome",
     });
     expect(meta.title).toBe("Home");
+    expect(meta.openGraph?.title).toBe("Home — منصة ابن الأزهر");
   });
 
   it("returns correct description", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "My description",
     });
@@ -67,7 +62,7 @@ describe("generatePageMetadata", () => {
 
   it("includes metadataBase", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
     });
@@ -85,7 +80,6 @@ describe("generatePageMetadata", () => {
       canonical: "https://ibnalazhar-docs.vercel.app/ar/about",
       languages: {
         ar: "https://ibnalazhar-docs.vercel.app/ar/about",
-        en: "https://ibnalazhar-docs.vercel.app/en/about",
       },
     });
   });
@@ -101,7 +95,7 @@ describe("generatePageMetadata", () => {
 
   it("og title uses English site name for en locale", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "Home",
       description: "D",
     });
@@ -110,7 +104,7 @@ describe("generatePageMetadata", () => {
 
   it("ogType defaults to website", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
     });
@@ -119,7 +113,7 @@ describe("generatePageMetadata", () => {
 
   it("ogType can be set to article", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
       ogType: "article",
@@ -129,7 +123,7 @@ describe("generatePageMetadata", () => {
 
   it("publishedTime only included for article ogType", () => {
     const withArticle = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
       ogType: "article",
@@ -138,7 +132,7 @@ describe("generatePageMetadata", () => {
     expect(withArticle.openGraph?.publishedTime).toBe("2025-01-01");
 
     const withWebsite = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
       ogType: "website",
@@ -149,13 +143,18 @@ describe("generatePageMetadata", () => {
 
   it("image included in openGraph when provided", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
       image: "https://example.com/og.png",
     });
     expect(meta.openGraph?.images).toEqual([
-      { url: "https://example.com/og.png", width: 1200, height: 630 },
+      {
+        url: "https://example.com/og.png",
+        width: 1200,
+        height: 630,
+        alt: "منصة ابن الأزهر للمستندات — معالجة وتنظيم محتوى الثانوية الأزهرية",
+      },
     ]);
   });
 
@@ -168,18 +167,18 @@ describe("generatePageMetadata", () => {
     expect(meta.openGraph?.locale).toBe("ar_AR");
   });
 
-  it("ogLocale is en_US for English", () => {
+  it("ogLocale is always ar_AR (ar-only)", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
     });
-    expect(meta.openGraph?.locale).toBe("en_US");
+    expect(meta.openGraph?.locale).toBe("ar_AR");
   });
 
   it("twitter card is summary_large_image", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
     });
@@ -188,7 +187,7 @@ describe("generatePageMetadata", () => {
 
   it("robots allows indexing and following", () => {
     const meta = generatePageMetadata({
-      locale: "en",
+      locale: "ar",
       title: "T",
       description: "D",
     });

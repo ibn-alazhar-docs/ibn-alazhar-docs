@@ -16,7 +16,7 @@ mkdir -p "$PGDATA" "$REDIS_DATA" "$MINIO_DATA" "$APP_DATA"
 touch /data/.self-contained 2>/dev/null || true
 
 # ---- Credentials (defaults keep the container runnable without secrets) -----
-REDIS_PASSWORD="${REDIS_PASSWORD:-CHANGE_ME_REDIS_PASSWORD}"
+REDIS_PASSWORD="${REDIS_PASSWORD:-ibn_docs_redis}"
 MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-minioadmin}"
 MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-minioadmin}"
 S3_BUCKET="${S3_BUCKET:-ibnalazhardocs}"
@@ -196,7 +196,10 @@ fi
 # ---- 3) MinIO (S3-compatible object storage) --------------------------------
 # Only started when STORAGE_DRIVER=s3. In local-storage mode (default on HF
 # Spaces) files live on the persistent /data volume, so MinIO is skipped.
-if [ "$STORAGE_DRIVER" = "s3" ]; then
+# NOTE 2026-11-07: the image no longer embeds the minio/mc binaries (dl.min.io
+# returns 410) — STORAGE_DRIVER=s3 therefore assumes an EXTERNAL endpoint
+# (S3_ENDPOINT, e.g. the compose `minio` service or Cloudflare R2).
+if [ "$STORAGE_DRIVER" = "s3" ] && command -v minio >/dev/null 2>&1; then
   echo "[entrypoint] starting MinIO (STORAGE_DRIVER=s3)..."
   minio server "$MINIO_DATA" --address 127.0.0.1:9000 --console-address 127.0.0.1:9001 >"$APP_DATA/minio.log" 2>&1 &
   for i in $(seq 1 60); do
@@ -206,7 +209,11 @@ if [ "$STORAGE_DRIVER" = "s3" ]; then
   mc alias set local http://127.0.0.1:9000 "$MINIO_ACCESS_KEY" "$MINIO_SECRET_KEY" >/dev/null 2>&1
   mc mb -p "local/$S3_BUCKET" >/dev/null 2>&1 || true
 else
-  echo "[entrypoint] MinIO skipped (local filesystem storage initialized earlier)"
+  if [ "$STORAGE_DRIVER" = "s3" ]; then
+    echo "[entrypoint] STORAGE_DRIVER=s3: using EXTERNAL S3 endpoint (no embedded MinIO in image)"
+  else
+    echo "[entrypoint] MinIO skipped (local filesystem storage initialized earlier)"
+  fi
 fi
 
 # ---- 4) Database migrations + seed -----------------------------------------
@@ -219,6 +226,14 @@ else
   if ! prisma migrate deploy --schema=/app/packages/database/prisma/schema.prisma 2>&1 | tail -5; then
     echo "[entrypoint] migrate deploy failed - falling back to prisma db push"
     prisma db push --schema=/app/packages/database/prisma/schema.prisma --accept-data-loss 2>&1 | tail -5 || true
+
+    # Re-create critical columns that db push --accept-data-loss may have dropped.
+    prisma db execute --schema=/app/packages/database/prisma/schema.prisma --stdin <<'SQL' 2>/dev/null || true
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchvector tsvector;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS searchpreview text;
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS wordcount integer;
+CREATE INDEX IF NOT EXISTS documents_searchvector_idx ON documents USING GIN (searchvector);
+SQL
   fi
 fi
 echo "[entrypoint] seeding database (idempotent)..."

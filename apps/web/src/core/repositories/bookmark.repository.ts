@@ -1,12 +1,20 @@
 import { PrismaClient } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import type { IBookmarkRepository } from "@/domain/repositories/bookmark.repository.interface";
+
+function bookmarkKeyWhere(
+  userId: string,
+  documentId: string,
+): Prisma.DocumentBookmarkWhereUniqueInput {
+  return { userId_documentId: { userId, documentId } };
+}
 
 export class BookmarkRepository implements IBookmarkRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   async isBookmarked(userId: string, documentId: string): Promise<boolean> {
     const bookmark = await this.prisma.documentBookmark.findUnique({
-      where: { userId_documentId: { userId, documentId } },
+      where: bookmarkKeyWhere(userId, documentId),
       select: { id: true },
     });
     return bookmark !== null;
@@ -14,7 +22,7 @@ export class BookmarkRepository implements IBookmarkRepository {
 
   async toggleBookmark(userId: string, documentId: string) {
     const existing = await this.prisma.documentBookmark.findUnique({
-      where: { userId_documentId: { userId, documentId } },
+      where: bookmarkKeyWhere(userId, documentId),
     });
 
     if (existing) {

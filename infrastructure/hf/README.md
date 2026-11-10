@@ -55,6 +55,47 @@ Set these in **Space Settings → Variables and Secrets**:
 | `S3_SECRET_ACCESS_KEY` | MinIO secret key                      | Any random string                                                          |
 | `APP_URL`              | Your Space URL                        | `https://your-space.hf.space`                                              |
 
+### Boot check (فحص الإقلاع — إلزامي قبل اعتبار الـ Space جاهزًا)
+
+Mandatory variables — set only via **Variables and secrets** in the Space settings:
+
+| Variable | Required | Notes |
+| --- | --- | --- |
+| `DATABASE_URL_DIRECT` | **yes** | Neon direct connection (migrations + queue) |
+| `AUTH_URL` | **yes** | Public Space URL (same origin as `NEXT_PUBLIC_SITE_URL`) |
+| `NEXT_PUBLIC_SITE_URL` | **yes** | Public site URL for sitemap/links |
+| `ADMIN_EMAIL` / `ADMIN_PASSWORD` | **yes** | Seed admin credentials (password as Secret) |
+| `PROMETHEUS_BEARER_TOKEN` | **yes** | Secret for `/api/metrics/prometheus` scrape |
+| `PORT` | `7860` | HF external port — matches `app_port: 7860` in frontmatter |
+
+Health endpoint after boot:
+
+```bash
+curl -fsS http://localhost:7860/api/health/ready
+```
+
+- `PORT 7860` must be the external port of the Space (Docker SDK) — `app_port: 7860` at the top of this file.
+- `/api/health/ready` returns up only when the web server is listening and its dependencies respond.
+
+**SKIP migration note:** There is **no SKIP-migrate switch** in this image: the migration cannot be skipped from inside `entrypoint.sh`. Every boot runs `node /app/migrate-with-lock.mjs` (`prisma migrate deploy` with a Postgres advisory lock) at step `[2/5]`, then drops orphaned triggers and runs the seed. To bypass it, take over migrations outside the container (manual `pnpm db:migrate` with `DATABASE_URL_DIRECT`); the container will still run the migrate-with-lock step at boot.
+
+---
+
+Optional Cloudflare R2 (instead of in-container MinIO):
+
+| Variable               | Description                                    | Example                                                       |
+| ---------------------- | ---------------------------------------------- | ------------------------------------------------------------- |
+| `S3_ENDPOINT`          | R2 public endpoint                             | `https://<account-id>.r2.cloudflarestorage.com`               |
+| `S3_ACCESS_KEY_ID`     | R2 API token access key ID                     | R2 token                                                      |
+| `S3_SECRET_ACCESS_KEY` | R2 API token secret                            | R2 token                                                      |
+
+Queue: the HF image runs with `QUEUE_DRIVER=pg` (Neon is the queue; no Redis
+inside the container). The web default stays `QUEUE_DRIVER=redis` (Upstash).
+Do not set `QUEUE_DRIVER` in production/runtime config beyond this image ENV
+and do not touch `wrangler.jsonc` for it. Hardware: Docker **2vCPU + 16GB RAM**
+per `docs/deployment/HF_DEPLOYMENT_GUIDE.md` (HF Docker free tier ended;
+see `docs/deployment/HOSTING_DECISION.md` §1).
+
 ### Optional
 
 | Variable               | Description            |

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { execSync } from "child_process";
+import { execFileSync } from "child_process";
 import { withAdminAuth } from "@/middleware/auth-guards";
+import { DEBUG_DIAGNOSTICS, DEBUG_PROBE_NAMES } from "@/shared/debug-diagnostics";
 
 export const dynamic = "force-dynamic";
 
@@ -18,15 +19,30 @@ export const POST = withAdminAuth(async (request) => {
   }
 
   try {
-    const body = (await request.json().catch(() => ({}))) as { cmd?: string };
-    const cmd = body.cmd;
-    if (typeof cmd !== "string" || cmd.length === 0) {
-      return new NextResponse("Missing command", { status: 400 });
+    const body = (await request.json().catch(() => ({}))) as { probe?: unknown };
+    const name = typeof body.probe === "string" ? body.probe : "";
+    const probe = DEBUG_DIAGNOSTICS.get(name);
+    if (!probe) {
+      return NextResponse.json(
+        {
+          error: {
+            code: "UNKNOWN_PROBE",
+            message: "غير معروف: اختر أحد فحوصات التشخيص",
+            probes: DEBUG_PROBE_NAMES,
+          },
+        },
+        { status: 400 },
+      );
     }
-    const out = execSync(cmd, { encoding: "utf-8", timeout: 10_000 });
+
+    // No `shell: true` and a constant argv: the request supplies a key, never a
+    // command line, so there is nothing here for an injected `;` or backtick to act on.
+    const [program, ...args] = probe.argv;
+    if (!program) return new NextResponse("Probe failed", { status: 500 });
+    const out = execFileSync(program, args, { encoding: "utf-8", timeout: 10_000 });
     return new NextResponse(out, { headers: { "Content-Type": "text/plain" } });
   } catch {
     // Never echo raw stderr / stdout / internal error text to the client.
-    return new NextResponse("Command failed", { status: 500 });
+    return new NextResponse("Probe failed", { status: 500 });
   }
 });

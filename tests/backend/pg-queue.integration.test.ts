@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from "vitest";
 import type { Client } from "pg";
 
 /**
@@ -59,6 +59,16 @@ describe("job_queue migration (live PostgreSQL)", () => {
     }
   });
 
+  // Idempotent re-runs: fixed keys ('c5', 'dup') would otherwise collide with
+  // rows left behind by a previous run (UNIQUE(queue, idempotencyKey)).
+  beforeEach(async () => {
+    if (reachable && client) {
+      await client.query(
+        `DELETE FROM job_queue WHERE "idempotencyKey" IN ('c1','c2','c3','c4','c5','dup')`,
+      );
+    }
+  });
+
   it("creates job_queue with expected columns and nullable heartbeatAt", async () => {
     if (!reachable || !client) return;
     const res = await client.query<{ column_name: string }>(
@@ -96,40 +106,42 @@ describe("job_queue migration (live PostgreSQL)", () => {
     if (!reachable || !client) return;
     await expect(
       client.query(
-        `INSERT INTO job_queue (queue, "idempotencyKey", payload, status) VALUES ('pipeline-ocr','c1','{}','bogus')`,
+        `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, "createdAt", "updatedAt") VALUES ('pipeline-ocr','c1','{}','bogus', now(), now())`,
       ),
     ).rejects.toThrow(/job_queue_status_check/);
 
     await expect(
       client.query(
-        `INSERT INTO job_queue (queue, "idempotencyKey", payload, attempts) VALUES ('pipeline-ocr','c2','{}',-1)`,
+        `INSERT INTO job_queue (queue, "idempotencyKey", payload, attempts, "createdAt", "updatedAt") VALUES ('pipeline-ocr','c2','{}',-1, now(), now())`,
       ),
     ).rejects.toThrow(/job_queue_attempts_check/);
 
     await expect(
       client.query(
-        `INSERT INTO job_queue (queue, "idempotencyKey", payload, "maxAttempts") VALUES ('pipeline-ocr','c3','{}',0)`,
+        `INSERT INTO job_queue (queue, "idempotencyKey", payload, "maxAttempts", "createdAt", "updatedAt") VALUES ('pipeline-ocr','c3','{}',0, now(), now())`,
       ),
     ).rejects.toThrow(/job_queue_max_attempts_check/);
 
     await expect(
       client.query(
-        `INSERT INTO job_queue (queue, "idempotencyKey", payload) VALUES ('pipeline-bogus','c4','{}')`,
+        `INSERT INTO job_queue (queue, "idempotencyKey", payload, "createdAt", "updatedAt") VALUES ('pipeline-bogus','c4','{}', now(), now())`,
       ),
     ).rejects.toThrow(/job_queue_queue_name_check/);
 
     await client.query(
-      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, attempts, "maxAttempts") VALUES ('pipeline-ocr','c5','{}','pending',0,3)`,
+      // 'done' (not 'pending') so this fixture row is never claimable by a
+      // sibling suite's worker while it sits in the table.
+      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, attempts, "maxAttempts", "createdAt", "updatedAt") VALUES ('pipeline-ocr','c5','{}','done',0,3, now(), now())`,
     );
   });
 
   it("UNIQUE(queue, idempotencyKey) keeps a single row on re-enqueue", async () => {
     if (!reachable || !client) return;
     await client.query(
-      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status) VALUES ('pipeline-export','dup','{}','done')`,
+      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, "createdAt", "updatedAt") VALUES ('pipeline-export','dup','{}','done', now(), now())`,
     );
     await client.query(
-      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status) VALUES ('pipeline-export','dup','{}','pending') ON CONFLICT (queue, "idempotencyKey") DO NOTHING`,
+      `INSERT INTO job_queue (queue, "idempotencyKey", payload, status, "createdAt", "updatedAt") VALUES ('pipeline-export','dup','{}','pending', now(), now()) ON CONFLICT (queue, "idempotencyKey") DO NOTHING`,
     );
     const res = await client.query<{ count: string }>(
       `SELECT count(*)::text AS count FROM job_queue WHERE queue='pipeline-export' AND "idempotencyKey"='dup'`,

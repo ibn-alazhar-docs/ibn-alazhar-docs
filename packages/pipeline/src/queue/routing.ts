@@ -4,6 +4,7 @@ import { JOB_QUEUES, QUEUE_STAGE_MAP } from "../types";
 import { loadConfig } from "../config";
 import { getAllQueueMetrics, getJobStatus } from "./metrics";
 import { getFailedJobs, cleanupFailedJob, recordFailedJob } from "./dlq";
+import { isPgDriver } from "./driver";
 
 /** Map the persisted DocStatus to the UI stage name. */
 const STATUS_TO_STAGE: Record<string, string> = {
@@ -58,7 +59,7 @@ const EMPTY_BUCKET: QueueBucket = {
  * - redis: derives buckets from BullMQ `getJobCounts`.
  */
 export async function getMetricsViaDriver(): Promise<DriverMetrics> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
     const rows = await prisma.$queryRaw<{ queue: string; status: string; count: bigint }[]>`
       SELECT queue, status, COUNT(*)::bigint AS count
       FROM job_queue
@@ -103,7 +104,7 @@ function toBucket(counts: Record<string, number> | undefined): QueueBucket {
 export async function getJobStatusViaDriver(
   jobId: string,
 ): Promise<{ stage: string; progress: number } | null> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
     // Prefer the document's own status/progress (the source of truth written by
     // the worker stages). Fall back to the queue→stage mapping only when the
     // document row is missing, so the percentage is always real, never 0.
@@ -142,9 +143,10 @@ export async function getJobStatusViaDriver(
  * status `dead` (written by `PgQueueDriver.fail`); callers should read them via
  * `getFailedJobsViaDriver` instead. This function therefore refuses to act in
  * pg mode and preserves the redis path unchanged.
+ * DELIBERATE asymmetry (PARITY): Redis DLQ writes must not be "unified" with PG dead rows.
  */
 export async function recordFailedJobViaDriver(failed: FailedJob): Promise<void> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
     throw new Error(
       "DLQ for pg mode is handled by job_queue.dead rows; use getFailedJobsViaDriver",
     );
@@ -158,7 +160,7 @@ export async function recordFailedJobViaDriver(failed: FailedJob): Promise<void>
  * - redis: `getFailedJobs(config)`.
  */
 export async function getFailedJobsViaDriver(): Promise<FailedJob[]> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
     const rows = await prisma.jobQueue.findMany({
       where: { status: "dead" },
     });
@@ -183,7 +185,7 @@ export async function getFailedJobsViaDriver(): Promise<FailedJob[]> {
  * - redis: `cleanupFailedJob(config, jobId)`.
  */
 export async function cleanupFailedJobViaDriver(jobId: string): Promise<void> {
-  if (process.env.QUEUE_DRIVER === "pg") {
+  if (isPgDriver()) {
     await prisma.jobQueue.deleteMany({
       where: { status: "dead", idempotencyKey: jobId },
     });

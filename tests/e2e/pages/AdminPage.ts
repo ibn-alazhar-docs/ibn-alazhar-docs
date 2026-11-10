@@ -27,12 +27,15 @@ export class AdminPage {
   }
 
   async goto(locale: string = "ar") {
-    await this.page.goto(`/${locale}/admin`);
+    // No /admin route exists; the admin users page lives at /users inside
+    // the dashboard layout (sidebar + user table). The old /admin path
+    // bounced to /login, leaving zero sidebar links.
+    await this.page.goto(`/${locale}/users`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 
   async gotoUsers(locale: string = "ar") {
-    await this.page.goto(`/${locale}/admin/users`);
+    await this.page.goto(`/${locale}/users`);
     await this.page.waitForLoadState("domcontentloaded");
   }
 

@@ -21,7 +21,7 @@ export const Default: Story = {
   args: {
     id: "1",
     name: "فقه",
-    color: "#16A34A",
+    color: "#127E87",
     size: "sm",
   },
 };
@@ -58,7 +58,7 @@ export const WithRemove: Story = {
 export const AllColors: Story = {
   render: () => (
     <div className="flex flex-wrap gap-2">
-      <TagChip id="1" name="فقه" color="#16A34A" />
+      <TagChip id="1" name="فقه" color="#127E87" />
       <TagChip id="2" name="حديث" color="#CA8A04" />
       <TagChip id="3" name="عقيدة" color="#2563EB" />
       <TagChip id="4" name="تربية" color="#DC2626" />

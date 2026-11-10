@@ -8,16 +8,16 @@ test.describe("Comprehensive User Journey", () => {
 
     // 1. Login/Auth flow
     const loginPage = new LoginPage(page);
-    await loginPage.goto("en");
-    await loginPage.login("admin@ibnalazhar.app", "password123");
-    await page.waitForURL(/\/en\/dashboard/);
+    await loginPage.goto("ar");
+    await loginPage.login("admin@ibnalazhar.app", "AdminPassword123!");
+    await page.waitForURL(/\/ar\/dashboard/);
 
     // 2. Navigating the dashboard
     await page
       .getByRole("link", { name: /Files|الملفات/i })
       .first()
       .click();
-    await page.waitForURL(/\/en\/files/);
+    await page.waitForURL(/\/ar\/files/);
 
     // 3. Uploading a file (verify the new framer-motion animations don't block clicks)
     const testFilePath = path.resolve(
@@ -96,7 +96,7 @@ test.describe("Comprehensive User Journey", () => {
       .getByRole("link", { name: /Settings|الإعدادات/i })
       .first()
       .click();
-    await page.waitForURL(/\/en\/settings/);
+    await page.waitForURL(/\/ar\/settings/);
 
     // Check if we are on settings page
     await expect(page.url()).toContain("settings");

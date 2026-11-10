@@ -1,4 +1,7 @@
+import path from "node:path";
 import type { StorybookConfig } from "@storybook/react-vite";
+
+const srcPath = path.resolve(import.meta.dirname, "../src");
 
 const config: StorybookConfig = {
   stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|mjs|ts|tsx)"],
@@ -11,7 +14,7 @@ const config: StorybookConfig = {
     config.resolve = config.resolve || {};
     config.resolve.alias = {
       ...config.resolve.alias,
-      "@": "/home/abed/Data/03_Professional/Projects/Ibn_Al_Azhar_Docs/apps/web/src",
+      "@": srcPath,
     };
     return config;
   },

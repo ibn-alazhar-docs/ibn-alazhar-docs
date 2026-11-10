@@ -2,22 +2,22 @@ import { test, expect, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "password123";
+const PASSWORD = "AdminPassword123!";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
 }
 
 /* ─── Color Utility ─── */
 
-function parseRgb(rgb: string): { r: number; g: number; b: number } {
-  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+function parseRgba(rgb: string): { r: number; g: number; b: number; a: number } {
+  const match = rgb.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
   if (!match) {
     const hex = rgb.trim();
     if (hex.startsWith("#")) {
@@ -28,21 +28,51 @@ function parseRgb(rgb: string): { r: number; g: number; b: number } {
           r: Number.parseInt(full.slice(0, 2), 16),
           g: Number.parseInt(full.slice(2, 4), 16),
           b: Number.parseInt(full.slice(4, 6), 16),
+          a: 1,
+        };
+      }
+      if (h.length === 8) {
+        return {
+          r: Number.parseInt(h.slice(0, 2), 16),
+          g: Number.parseInt(h.slice(2, 4), 16),
+          b: Number.parseInt(h.slice(4, 6), 16),
+          a: Number.parseInt(h.slice(6, 8), 16) / 255,
         };
       }
       return {
         r: Number.parseInt(h.slice(0, 2), 16),
         g: Number.parseInt(h.slice(2, 4), 16),
         b: Number.parseInt(h.slice(4, 6), 16),
+        a: 1,
       };
     }
-    return { r: 0, g: 0, b: 0 };
+    return { r: 0, g: 0, b: 0, a: 1 };
   }
   return {
     r: Number.parseInt(match[1]),
     g: Number.parseInt(match[2]),
     b: Number.parseInt(match[3]),
+    a: match[4] === undefined ? 1 : Number.parseFloat(match[4]),
   };
+}
+
+function compositeRgba(
+  fg: { r: number; g: number; b: number; a: number },
+  bg: { r: number; g: number; b: number; a: number },
+): { r: number; g: number; b: number; a: number } {
+  const a = fg.a + bg.a * (1 - fg.a);
+  if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+  return {
+    r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a,
+    g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a,
+    b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a,
+    a,
+  };
+}
+
+function parseRgb(rgb: string): { r: number; g: number; b: number } {
+  const c = parseRgba(rgb);
+  return { r: Math.round(c.r), g: Math.round(c.g), b: Math.round(c.b) };
 }
 
 function getLuminance(r: number, g: number, b: number): number {
@@ -65,7 +95,41 @@ function calculateContrastRatio(color1: string, color2: string): number {
 
 async function getComputedColor(page: Page, selector: string, property: string): Promise<string> {
   const el = page.locator(selector).first();
-  return await el.evaluate((node, prop) => getComputedStyle(node).getPropertyValue(prop), property);
+  return await el.evaluate((node, propRaw) => {
+    const prop = propRaw.replace(/([A-Z])/g, (c) => "-" + c.toLowerCase());
+    if (prop !== "background-color") return getComputedStyle(node).getPropertyValue(prop);
+    /* WCAG effective background: alpha-composite from body up to element. */
+    const parse = (s: string) => {
+      const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+      return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+    };
+    const composite = (fg: any, bg: any) => {
+      const a = fg.a + bg.a * (1 - fg.a);
+      if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+      return {
+        r: (fg.r * fg.a + bg.r * bg.a * (1 - fg.a)) / a,
+        g: (fg.g * fg.a + bg.g * bg.a * (1 - fg.a)) / a,
+        b: (fg.b * fg.a + bg.b * bg.a * (1 - fg.a)) / a,
+        a,
+      };
+    };
+    const chain: Element[] = [];
+    let cur: Element | null = node;
+    while (cur) {
+      chain.unshift(cur);
+      cur = cur.parentElement;
+    }
+    let acc = parse(getComputedStyle(document.body).backgroundColor);
+    for (const elNode of chain) {
+      const bg = getComputedStyle(elNode).backgroundColor;
+      if (!bg || bg === "transparent" || bg === "rgba(0, 0, 0, 0)") continue;
+      const c = parse(bg);
+      if (c.a <= 0) continue;
+      acc = c.a >= 1 ? { ...c } : composite(c, acc);
+    }
+    return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
+  }, property);
 }
 
 async function expectSufficientContrast(
@@ -96,19 +160,19 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("login page: heading text vs background @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expectSufficientContrast(page, "h2", "color", "background-color", "Login heading");
   });
 
   test("login page: body text vs background @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expectSufficientContrast(page, "p", "color", "background-color", "Login body text");
   });
 
   test("login page: submit button text vs background @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const btn = page.locator('button[type="submit"]').first();
     const color = await btn.evaluate((el) => getComputedStyle(el).color);
     const bg = await btn.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -122,7 +186,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("login page: input text vs background @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await expectSufficientContrast(
       page,
       'input[name="email"]',
@@ -134,7 +198,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("login page: link text vs background @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const link = page.locator("a").first();
     const color = await link.evaluate((el) => getComputedStyle(el).color);
     const bg = await link.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -161,7 +225,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("dashboard: stat card text vs background @a11y-contrast", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const cards = page.locator("a.stat-card-premium, [class*='stat-card']").first();
     if (await cards.isVisible()) {
@@ -178,7 +242,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("dashboard: sidebar link text vs background @a11y-contrast", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const sidebar = page.locator("aside");
     if (await sidebar.isVisible()) {
@@ -201,7 +265,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("dashboard: page background vs text contrast @a11y-contrast", async ({ page }) => {
     await login(page);
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const body = page.locator("body");
     const bg = await body.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -222,7 +286,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("search page: text contrast @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const body = page.locator("body");
     const bg = await body.evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -243,7 +307,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("tags page: table header text vs background @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1000);
 
     const th = page.locator("table th").first();
@@ -262,7 +326,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("tags page: muted text vs background @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(1000);
 
     const mutedEl = page.locator("table, .text-muted-color, [class*='muted']").first();
@@ -288,7 +352,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("files page: upload button text contrast @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const uploadBtn = page.locator('button:has-text("رفع"), button:has-text("Upload")').first();
     if (await uploadBtn.isVisible()) {
@@ -308,7 +372,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("users page: badge text vs background @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/users");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const badge = page
       .locator("[class*='badge'], span:has-text('ADMIN'), span:has-text('STUDENT')")
@@ -331,7 +395,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
     page,
   }) => {
     await page.goto("/ar");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
 
     const textElements = page.locator("h1, h2, h3, p, a, li, span, label");
@@ -345,17 +409,36 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
       const color = await el.evaluate((node) => getComputedStyle(node).color);
       const bg = await el.evaluate((node) => {
-        const s = getComputedStyle(node);
-        if (s.backgroundColor !== "transparent" && s.backgroundColor !== "rgba(0, 0, 0, 0)") {
-          return s.backgroundColor;
+        const parse = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+          return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+        };
+        const composite = (fg: any, bgc: any) => {
+          const a = fg.a + bgc.a * (1 - fg.a);
+          if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+          return {
+            r: (fg.r * fg.a + bgc.r * bgc.a * (1 - fg.a)) / a,
+            g: (fg.g * fg.a + bgc.g * bgc.a * (1 - fg.a)) / a,
+            b: (fg.b * fg.a + bgc.b * bgc.a * (1 - fg.a)) / a,
+            a,
+          };
+        };
+        const chain: Element[] = [];
+        let cur: Element | null = node as Element;
+        while (cur) {
+          chain.unshift(cur);
+          cur = cur.parentElement;
         }
-        let parent = node.parentElement;
-        while (parent) {
-          const pBg = getComputedStyle(parent).backgroundColor;
-          if (pBg !== "transparent" && pBg !== "rgba(0, 0, 0, 0)") return pBg;
-          parent = parent.parentElement;
+        let acc = parse(getComputedStyle(document.body).backgroundColor);
+        for (const elNode of chain) {
+          const cstr = getComputedStyle(elNode).backgroundColor;
+          if (!cstr || cstr === "transparent" || cstr === "rgba(0, 0, 0, 0)") continue;
+          const c = parse(cstr);
+          if (c.a <= 0) continue;
+          acc = c.a >= 1 ? { ...c } : composite(c, acc);
         }
-        return s.backgroundColor;
+        return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
       });
 
       if (bg === "transparent" || bg === "rgba(0, 0, 0, 0)") continue;
@@ -384,16 +467,56 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("error/danger text has sufficient contrast @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     await page.locator('input[name="email"]').fill("bad");
     await page.locator('button[type="submit"]').first().click();
     await page.waitForTimeout(2000);
 
-    const errorEl = page.getByRole("alert").first();
-    if (await errorEl.isVisible().catch(() => false)) {
-      const color = await errorEl.evaluate((el) => getComputedStyle(el).color);
-      const bg = await errorEl.evaluate((el) => getComputedStyle(el).backgroundColor);
+    const alert = page.getByRole("alert").first();
+    if (await alert.isVisible().catch(() => false)) {
+      const textEl = alert.locator("p, span, div").first();
+      const target = (await textEl.count()) > 0 ? textEl : alert;
+      const color = await target.evaluate((el) => getComputedStyle(el).color);
+      const bg = await target.evaluate((node) => {
+        const parse = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\d+(?:,\s*([\d.]+))?\)/);
+          // fallback handled below
+          return m
+            ? { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) }
+            : { r: 255, g: 255, b: 255, a: 1 };
+        };
+        const parseSafe = (s: string) => {
+          const m = s.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+          if (!m) return { r: 255, g: 255, b: 255, a: 1 };
+          return { r: +m[1], g: +m[2], b: +m[3], a: m[4] === undefined ? 1 : parseFloat(m[4]) };
+        };
+        const composite = (fg: any, bgc: any) => {
+          const a = fg.a + bgc.a * (1 - fg.a);
+          if (a === 0) return { r: 0, g: 0, b: 0, a: 0 };
+          return {
+            r: (fg.r * fg.a + bgc.r * bgc.a * (1 - fg.a)) / a,
+            g: (fg.g * fg.a + bgc.g * bgc.a * (1 - fg.a)) / a,
+            b: (fg.b * fg.a + bgc.b * bgc.a * (1 - fg.a)) / a,
+            a,
+          };
+        };
+        const chain: Element[] = [];
+        let cur: Element | null = node as Element;
+        while (cur) {
+          chain.unshift(cur);
+          cur = cur.parentElement;
+        }
+        let acc = parseSafe(getComputedStyle(document.body).backgroundColor);
+        for (const elNode of chain) {
+          const cstr = getComputedStyle(elNode).backgroundColor;
+          if (!cstr || cstr === "transparent" || cstr === "rgba(0, 0, 0, 0)") continue;
+          const c = parseSafe(cstr);
+          if (c.a <= 0) continue;
+          acc = c.a >= 1 ? { ...c } : composite(c, acc);
+        }
+        return `rgb(${Math.round(acc.r)}, ${Math.round(acc.g)}, ${Math.round(acc.b)})`;
+      });
       const ratio = calculateContrastRatio(color, bg);
       test.info().annotations.push({
         type: "contrast",
@@ -407,7 +530,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("placeholder text has sufficient contrast @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const input = page.locator('input[name="email"]');
     const color = await input.evaluate((el) => {
@@ -434,7 +557,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
   test("conversions page: button and text contrast @a11y-contrast", async ({ page }) => {
     await login(page);
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const btn = page.locator("button").first();
     if (await btn.isVisible()) {
@@ -453,7 +576,7 @@ test.describe("Color Contrast — WCAG 2.2 AA (4.5:1 threshold)", () => {
 
   test("404 page: text contrast @a11y-contrast", async ({ page }) => {
     await page.goto("/ar/404");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const body = page.locator("body");
     const bg = await body.evaluate((el) => getComputedStyle(el).backgroundColor);

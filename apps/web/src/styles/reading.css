@@ -451,7 +451,7 @@
 .doc-nav-link:hover {
   border-color: var(--color-primary-200);
   background: var(--color-primary-50);
-  box-shadow: 0 2px 8px var(--shadow-color, rgba(22, 163, 74, 0.06));
+  box-shadow: var(--shadow-sm);
 }
 
 .doc-nav-link:focus-visible {

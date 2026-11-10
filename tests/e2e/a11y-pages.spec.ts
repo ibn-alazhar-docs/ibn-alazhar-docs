@@ -3,16 +3,19 @@ import AxeBuilder from "@axe-core/playwright";
 
 const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
-const PASSWORD = "password123";
+const PASSWORD = "AdminPassword123!";
 
 async function login(page: Page) {
   await page.goto(`${BASE}/ar/login`);
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
-  await page.waitForLoadState("networkidle");
+  await page.waitForLoadState("load");
+  await page
+    .waitForFunction(() => (document.title || "").trim().length > 0, { timeout: 5000 })
+    .catch(() => {});
 }
 
 async function runAxe(page: Page, disableRules?: string[]) {
@@ -35,15 +38,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
 
   test("/ar (landing) has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar");
-    await page.waitForLoadState("networkidle");
-    await page.waitForTimeout(500);
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/en (landing English) has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/en");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     await page.waitForTimeout(500);
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
@@ -51,79 +46,49 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
 
   test("/ar/login has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/login");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/en/login has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/en/login");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("/ar/register has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/register");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("/ar/forgot-password has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/forgot-password");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("/ar/reset-password has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/reset-password");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("/ar/404 has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/404");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("/ar/500 (error) has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/500");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
 
   test("shared document not-found page has no a11y violations @a11y", async ({ page }) => {
     await page.goto("/ar/share/invalid-token-12345");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  /* ─── Auth Pages (English) ─── */
-
-  test("/en/register has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/en/register");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/en/forgot-password has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/en/forgot-password");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page, ["bypass"]);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/en/reset-password has no a11y violations @a11y", async ({ page }) => {
-    await page.goto("/en/reset-password");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page, ["bypass"]);
     expect(results.violations).toEqual([]);
   });
@@ -145,15 +110,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/documents has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/files");
-    await page.waitForLoadState("networkidle");
-    const results = await runAxe(page);
-    expect(results.violations).toEqual([]);
-  });
-
-  test("/en/documents has no a11y violations @a11y", async ({ page }) => {
-    await login(page);
-    await page.goto("/en/files");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -161,7 +118,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/folders has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/folders");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -169,7 +126,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/tags has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/tags");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -177,7 +134,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/search (empty) has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -185,7 +142,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/search (with results) has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/search?q=test");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -193,7 +150,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/conversions has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/conversions");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -201,7 +158,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/settings has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/settings");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -209,7 +166,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/analytics has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/analytics");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -217,7 +174,7 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/users has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/users");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
@@ -225,15 +182,15 @@ test.describe("WCAG 2.2 AA — Full-page axe audits", () => {
   test("/ar/bookmarks has no a11y violations @a11y", async ({ page }) => {
     await login(page);
     await page.goto("/ar/bookmarks");
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });
 
-  test("/en/dashboard has no a11y violations @a11y", async ({ page }) => {
+  test("/ar/dashboard has no a11y violations @a11y", async ({ page }) => {
     await login(page);
-    await page.goto("/en/dashboard");
-    await page.waitForLoadState("networkidle");
+    await page.goto("/ar/dashboard");
+    await page.waitForLoadState("load");
     const results = await runAxe(page);
     expect(results.violations).toEqual([]);
   });

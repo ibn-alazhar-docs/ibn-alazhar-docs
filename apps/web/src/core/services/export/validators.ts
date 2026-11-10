@@ -7,7 +7,6 @@ export const singleExportSchema = z
     format: z.enum(EXPORT_FORMATS, { error: "Unsupported format" }),
     profile: z.enum(EXPORT_PROFILES, { error: "Unsupported profile" }),
     includeSource: z.boolean().optional().default(false),
-    pageRange: z.string().optional(),
   })
   .strip();
 

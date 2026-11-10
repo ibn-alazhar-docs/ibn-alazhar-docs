@@ -1,5 +1,5 @@
 import type { DocumentIR, BlockNode, InlineNode } from "@ibn-al-azhar-docs/shared";
-import { FormatGenerator, GeneratorOptions } from "./generator-base";
+import { FormatGenerator, GeneratorOptions, normalizeBlankLines } from "./generator-base";
 
 function inlineToPlain(nodes: InlineNode[]): string {
   return nodes.map((n) => (n.type === "text" ? n.content : "")).join("");
@@ -40,11 +40,7 @@ function blockToTxt(block: BlockNode, depth = 0): string {
  */
 export class TxtGenerator implements FormatGenerator {
   generate(ir: DocumentIR, _options?: GeneratorOptions): Buffer {
-    const text = ir.content
-      .map((b) => blockToTxt(b))
-      .join("\n\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    const text = normalizeBlankLines(ir.content.map((b) => blockToTxt(b)).join("\n\n"));
     return Buffer.from(text, "utf-8");
   }
 

@@ -4,11 +4,16 @@
 
 | الخدمة                 | الدور                               | السعر | التسجيل         |
 | ---------------------- | ----------------------------------- | ----- | --------------- |
-| **HuggingFace Spaces** | Hosting (Docker)                    | مجاني | email أو GitHub |
+| **HuggingFace Spaces** | Hosting (Docker 2vCPU+16GB)         | مدفوع* | email أو GitHub |
 | **Neon.tech**          | PostgreSQL                          | مجاني | GitHub          |
 | **Upstash**            | Redis                               | مجاني | GitHub          |
-| **MinIO**              | Object Storage (داخل الـ container) | مجاني | —               |
+| **Cloudflare R2**      | Object Storage (10GB, zero egress)  | مجاني | GitHub          |
+| **MinIO** (اختياري)    | بديل محلي داخل الـ container        | مجاني | —               |
 | **Tesseract OCR**      | OCR (داخل الـ container)            | مجاني | —               |
+
+\* تحقق في `docs/deployment/HOSTING_DECISION.md` §1: ‏HF Spaces (Docker) لم يعد مجانيًا؛
+الطراز المقصود هو Docker ‏2vCPU + 16GB RAM. القيم: neon.tech بلا فيزا (1GB، 100 CU-hr)،
+Upstash بلا فيزا (256MB، 10K cmd/day)، R2 بلا فيزا (10GB، zero egress).
 
 **التكلفة: $0/شهر**
 
@@ -55,7 +60,7 @@
    - Space name: `ibn-al-azhar` (أو أي اسم)
    - License: MIT
    - SDK: **Docker**
-   - Hardware: **CPU basic (free)**
+   - Hardware: **CPU Upgrade (2vCPU + 16GB RAM)**
    - Private or Public: اختار
 3. بعد ما يتعمل → **Settings** → **Variables and Secrets**:
 
@@ -81,6 +86,26 @@
 | `S3_REGION`           | `us-east-1`                                                       |
 | `APP_URL`             | `https://your-username-ibn-al-azhar.hf.space`                     |
 | `APP_NAME`            | `Ibn Al-Azhar Docs`                                               |
+
+### Cloudflare R2 (اختياري بدل MinIO)
+
+بدل MinIO المحلي داخل الـ container، يمكن استخدام Cloudflare R2 (10GB مجاني، zero egress):
+
+| Name                   | Value                                                        |
+| ---------------------- | ------------------------------------------------------------ |
+| `S3_ENDPOINT`          | `https://<account-id>.r2.cloudflarestorage.com`              |
+| `S3_BUCKET`            | اسم الـ bucket (خاص + ضيف)                                   |
+| `S3_ACCESS_KEY_ID`     | R2 API token access key ID                                   |
+| `S3_SECRET_ACCESS_KEY` | R2 API token secret                                          |
+| `S3_REGION`            | `auto`                                                       |
+
+### قرار QUEUE_DRIVER (لا يتغير في الإنتاج)
+
+`packages/pipeline/src/queue/driver.ts` يبقى `QUEUE_DRIVER=redis` افتراضيًا (Upstash).
+صورة HF تستخدم `QUEUE_DRIVER=pg` لأن الحاوية لا تشغّل Redis (Neon هو الطابور هناك،
+`infrastructure/hf/Dockerfile`). لا تُعدّل `QUEUE_DRIVER` في prod/runtime config
+ولا تُلمس `wrangler.jsonc` لتغييره؛ الاختيار بـ env فقط (`QUEUE_DRIVER=pg` اختياري،
+لا dual-write).
 
 ---
 

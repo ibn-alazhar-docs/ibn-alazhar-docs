@@ -8,4 +8,15 @@
     "directory": ".open-next/assets",
     "binding": "ASSETS",
   },
+  "r2_buckets": [
+    {
+      "binding": "R2_BUCKET",
+      "bucket_name": "ibnalazhardocs",
+    },
+  ],
+  "vars": {
+    // NOTE: QUEUE_DRIVER deliberately omitted — keeps driver.ts default "redis" per PHASE5 rules.
+    "STORAGE_DRIVER": "s3",
+    "NODE_ENV": "production",
+  },
 }

@@ -101,6 +101,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libjpeg62-turbo \
     libgif7 \
     librsvg2-2 \
+    libgl1 \
+    libglib2.0-0 \
+    libsm6 \
+    libxext6 \
+    libxrender1 \
     openssl \
     curl \
     wget \
@@ -125,11 +130,10 @@ RUN python3 -m venv /opt/ocr-venv && \
 
 ENV PATH="/opt/ocr-venv/bin:$PATH"
 
-# Install MinIO server binary (auto-detect architecture)
-RUN ARCH=$(dpkg --print-architecture) && \
-    if [ "$ARCH" = "arm64" ]; then MINIO_ARCH="arm64"; else MINIO_ARCH="amd64"; fi && \
-    curl -fsSL "https://dl.min.io/server/minio/release/linux-${MINIO_ARCH}/minio" -o /usr/local/bin/minio && \
-    chmod +x /usr/local/bin/minio
+# MinIO: the open-source MinIO Server binaries are no longer distributed
+# (dl.min.io serves 410 since the community edition was archived, 2026-11-07).
+# The Space runs STORAGE_DRIVER=local by default (files live on /data), so MinIO
+# is not bundled. If S3 mode is requested, point S3_* at a remote endpoint.
 
 # Create data directories (persistent with HF Storage Bucket)
 RUN mkdir -p /data/minio /data/uploads /data/exports /data/tmp && \

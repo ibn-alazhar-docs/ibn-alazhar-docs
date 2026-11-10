@@ -85,14 +85,17 @@ test.describe("Folder Management", () => {
     await folders.goto();
     const folderName = `Breadcrumb Test ${Date.now()}`;
     await folders.createFolder(folderName);
-    await folders.folderItems.filter({ hasText: folderName }).first().click();
+    await folders.expectFolderVisible(folderName);
+    const folder = folders.folderItems.filter({ hasText: folderName }).first();
+    await expect(folder).toBeVisible({ timeout: 15000 });
+    await folder.click();
     await page.waitForLoadState("domcontentloaded");
     const breadcrumb = page
       .locator('[data-testid="breadcrumb"]')
-      .or(page.locator('nav[aria-label*="Breadcrumb"').or(page.locator('[class*="breadcrumb"]')))
+      .or(page.locator('nav[aria-label*="breadcrumb" i]'))
+      .or(page.locator('[class*="breadcrumb"]'))
       .first();
-    const breadcrumbVisible = await breadcrumb.isVisible().catch(() => false);
-    expect(breadcrumbVisible).toBeTruthy();
+    await expect(breadcrumb).toBeVisible({ timeout: 15000 });
   });
 
   test("Folder page RTL direction is correct", async ({ page }) => {

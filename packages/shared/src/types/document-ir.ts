@@ -27,30 +27,30 @@ export interface HeadingNode {
   type: "heading";
   level: 1 | 2 | 3 | 4 | 5 | 6;
   content: InlineNode[];
-  id?: string; // For linking/TOC generation
+  id?: string | undefined; // For linking/TOC generation
 }
 
 export interface ParagraphNode {
   type: "paragraph";
   content: InlineNode[];
-  alignment?: "left" | "center" | "right" | "justify";
+  alignment?: "left" | "center" | "right" | "justify" | undefined;
 }
 
 export interface ListNode {
   type: "list";
   ordered: boolean;
   items: ListItemNode[];
-  startNumber?: number; // For ordered lists
+  startNumber?: number | undefined; // For ordered lists
 }
 
 export interface ListItemNode {
   content: InlineNode[];
-  children?: BlockNode[]; // Nested lists or paragraphs
+  children?: BlockNode[] | undefined; // Nested lists or paragraphs
 }
 
 export interface CodeBlockNode {
   type: "code-block";
-  language?: string;
+  language?: string | undefined;
   content: string; // Plain text
 }
 
@@ -62,14 +62,16 @@ export type InlineNode = TextNode | LineBreakNode;
 export interface TextNode {
   type: "text";
   content: string;
-  emphasis?: {
-    bold?: boolean;
-    italic?: boolean;
-    underline?: boolean;
-    strikethrough?: boolean;
-  };
-  fontSize?: number; // For heading detection
-  fontWeight?: number; // 100-900
+  emphasis?:
+    | {
+        bold?: boolean | undefined;
+        italic?: boolean | undefined;
+        underline?: boolean | undefined;
+        strikethrough?: boolean | undefined;
+      }
+    | undefined;
+  fontSize?: number | undefined; // For heading detection
+  fontWeight?: number | undefined; // 100-900
 }
 
 export interface LineBreakNode {

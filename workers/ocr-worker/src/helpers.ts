@@ -18,6 +18,8 @@ import {
   getDriveClient,
   downloadFromDrive,
   uploadExportBuffer,
+  findAmiriFonts,
+  getWeasyprintPython,
   type ProcessingJob,
   type PipelineConfig,
   type OcrEngineResult,
@@ -143,6 +145,24 @@ export async function generateSearchablePdf(
     const { PDFDocument } = await import("pdf-lib");
     const mergedPdf = await PDFDocument.create();
 
+    // طبقة النصّ تبنيها WeasyPrint (Pango/HarfBuzz) وحده: مفسّر Python الذي لا يملكها
+    // يُخرج طبقة فارغة أو ترتيبًا بصريًا، فهو المفسّر المُعتمَد هنا لا `getPythonCommand`
+    // العامّ لطبقة OCR. ودليل Amiri يُحلّ من مكانه الوحيد في المستودع (`findAmiriFonts`)
+    // لا من مسارٍ شخصي في كود الإنتاج — انظر رأس السكربت.
+    const python = getWeasyprintPython();
+    const fontDir = path.dirname(findAmiriFonts().regular);
+
+    const scriptPath = path.join(
+      __dirname,
+      "..",
+      "..",
+      "..",
+      "packages",
+      "pipeline",
+      "scripts",
+      "generate-searchable-pdf.py",
+    );
+
     for (let i = 0; i < pageGetters.length; i++) {
       const pageBuf = await pageGetters[i]();
       const tempId = randomUUID();
@@ -151,28 +171,21 @@ export async function generateSearchablePdf(
 
       await writeFile(imgPath, pageBuf);
 
-      const scriptPath = path.join(
-        __dirname,
-        "..",
-        "..",
-        "..",
-        "packages",
-        "pipeline",
-        "scripts",
-        "generate-searchable-pdf.py",
-      );
       const jsonPath = path.join(os.tmpdir(), `${tempId}.json`);
 
-      const pageLayout = ocrResult?.pages[i]?.layout;
-      const lines = pageLayout?.lines || [];
-      await writeFile(jsonPath, JSON.stringify({ lines }));
+      const pageResult = ocrResult?.pages[i];
+      const lines = pageResult?.layout?.lines || [];
+      // نصّ الصفحة يُمرَّر احتياطًا: بلا سطورٍ صالحة يبني السكربت طبقةً انسيابية
+      // تقريبية بدل أن يُسلّم ملفًا غير قابل للبحث بصمت.
+      await writeFile(jsonPath, JSON.stringify({ lines, text: pageResult?.text || "" }));
 
-      await execFileAsync(process.env.PYTHON_CMD || "python3", [
-        scriptPath,
-        imgPath,
-        jsonPath,
-        pdfPath,
-      ]);
+      const run = await execFileAsync(python, [scriptPath, imgPath, jsonPath, pdfPath, fontDir]);
+      if (run.stderr.trim().length > 0) {
+        logger.warn(
+          { jobId: job.id, page: i + 1, stderr: run.stderr.slice(0, 2000) },
+          "[ocr] generate-searchable-pdf notice",
+        );
+      }
 
       const pdfBuf = await readFile(pdfPath);
       const doc = await PDFDocument.load(pdfBuf);

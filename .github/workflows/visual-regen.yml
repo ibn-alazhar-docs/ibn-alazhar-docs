@@ -1,0 +1,134 @@
+name: Visual Snapshot Regen
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_branch:
+        description: Branch the regenerated baselines land on
+        required: false
+        default: integration/reconcile-main
+      projects:
+        description: Projects to regenerate (chromium, chromium-dark, or all)
+        required: false
+        default: all
+  push:
+    branches: ["regen/visual-dark"]
+
+permissions:
+  contents: write
+
+jobs:
+  regen:
+    name: Regen visual baselines (all projects)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: ibn_docs
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: ibn_docs
+        ports: [5432:5432]
+        options: >-
+          --health-cmd "pg_isready -U ibn_docs"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports: [6379:6379]
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      DATABASE_URL_DIRECT: postgresql://ibn_docs:postgres@localhost:5432/ibn_docs?schema=public
+      REDIS_URL: redis://localhost:6379
+      AUTH_SECRET: test-secret-do-not-use-in-prod
+      NODE_ENV: test
+      STORAGE_DRIVER: "local"
+      STORAGE_LOCAL_DIR: /tmp/ibn-storage-e2e
+      S3_ACCESS_KEY_ID: dummy
+      S3_SECRET_ACCESS_KEY: dummy
+    steps:
+      - name: Checkout target branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target_branch }}
+          lfs: true
+          fetch-depth: 0
+
+      - name: Verify LFS snapshots materialized
+        run: |
+          git lfs pull
+          lfs_count=$(git lfs ls-files | grep -c "tests/e2e" || true)
+          echo "LFS tracked e2e snapshots: $lfs_count"
+          test "$lfs_count" -gt 0
+          pointer_count=$(grep -r 'version https://git-lfs' tests/e2e/*snapshots* -l 2>/dev/null | wc -l)
+          echo "LFS pointer files remaining: $pointer_count"
+          test "$pointer_count" = "0"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: "10.33.4"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        run: pnpm db:generate
+
+      - name: Run migrations
+        run: pnpm exec prisma migrate deploy --schema=packages/database/prisma/schema.prisma
+
+      - name: Seed database
+        run: pnpm db:seed
+
+      - name: Prepare local storage dir
+        run: mkdir -p "${STORAGE_LOCAL_DIR}"
+
+      - name: Build web app
+        run: pnpm --filter @ibn-al-azhar-docs/web build
+
+      - name: Install Playwright
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Apply pixel-risk note for baseline review
+        # Baselines are refreshed only after a human reviews diffs in the
+        # PR produced below; this step is a loud marker in the logs.
+        run: echo "Regenerating baselines for ${{ matrix.project }} from pinned CI env"
+
+      - name: Regenerate baselines (visual specs, all projects)
+        run: |
+          set -euo pipefail
+          specs="tests/e2e/visual-components.spec.ts tests/e2e/visual-pages.spec.ts tests/e2e/visual-regression.spec.ts tests/e2e/visual-responsive.spec.ts tests/e2e/visual-theme.spec.ts"
+          pnpm exec playwright test --project=chromium $specs --update-snapshots --workers=2
+          pnpm exec playwright test --project=chromium-dark $specs --update-snapshots --workers=2
+
+      - name: Commit refreshed snapshots (LFS)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/e2e/*-snapshots/
+          if git diff --cached --quiet; then
+            echo "No snapshot changes for chromium/chromium-dark"
+            exit 0
+          fi
+          git commit -m "test(e2e): refresh visual baselines (chromium + chromium-dark, CI pinned env)"
+          target="${{ inputs.target_branch || 'integration/reconcile-main' }}"
+          echo "Pushing to target branch: $target"
+          git fetch origin "$target"
+          git rebase --autostash "origin/$target" || (git rebase --abort && exit 1)
+          git push origin "HEAD:${target}"

@@ -7,7 +7,16 @@ import { logger as baseLogger } from "@ibn-al-azhar-docs/shared";
 
 const logger = baseLogger.child({ module: "ocr-surya" });
 import type { OcrProvider } from "./types";
-import { getPythonCommand } from "./types";
+import {
+  getPythonCommand,
+  probePythonModule,
+  materializePageFiles,
+  cleanupPageFiles,
+  averageConfidence,
+  joinPageTexts,
+  toOcrPagesFromBatch,
+  extractTextViaSplitPages,
+} from "./types";
 
 const SURYA_TIMEOUT = Math.max(60_000, Number(process.env.OCR_TIMEOUT ?? 1_500_000) || 1_500_000);
 
@@ -20,6 +29,14 @@ interface SuryaPageResult {
   text: string;
   confidence: number;
   needsRetry?: boolean;
+  /** سطور OCR بمواضعها ببكسلات صورة الصفحة نفسها — لا نقاط ولا dpi آخر. */
+  lines?: SuryaOcrLine[];
+}
+
+interface SuryaOcrLine {
+  text: string;
+  confidence: number;
+  bbox?: number[] | null;
 }
 
 export class SuryaOcrProvider implements OcrProvider {
@@ -29,28 +46,12 @@ export class SuryaOcrProvider implements OcrProvider {
   private cachedAvailable: boolean | null = null;
 
   async isAvailable(_config: PipelineConfig): Promise<boolean> {
+    if (process.env.MOCK_OCR === "true") return true;
     if (this.cachedAvailable !== null) return this.cachedAvailable;
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const python = getPythonCommand();
-        const proc = execFile(
-          python,
-          [
-            "-c",
-            "from surya.detection import DetectionPredictor; from surya.recognition import FoundationPredictor, RecognitionPredictor; print('available')",
-          ],
-          { timeout: 120_000, env: { ...process.env, PYTHONIOENCODING: "utf-8" } },
-          (err) => {
-            if (err) reject(err);
-            else resolve();
-          },
-        );
-        proc.on("error", reject);
-      });
-      this.cachedAvailable = true;
-    } catch {
-      this.cachedAvailable = false;
-    }
+    this.cachedAvailable = await probePythonModule(
+      "from surya.detection import DetectionPredictor; from surya.recognition import FoundationPredictor, RecognitionPredictor; print('available')",
+      120_000,
+    );
     return this.cachedAvailable;
   }
 
@@ -64,22 +65,9 @@ export class SuryaOcrProvider implements OcrProvider {
     if (!available) {
       throw new Error("SURYA_NOT_AVAILABLE: Python surya package not found");
     }
-
-    const { splitPdfPages } = await import("../ocr");
-    let splitResult;
-    try {
-      splitResult = await splitPdfPages(fileBuffer, config.ocr.dpi);
-    } catch (err) {
-      throw new Error(`SURYA_SPLIT_FAILED: ${err instanceof Error ? err.message : String(err)}`);
-    }
-
-    const { readFile, rm: rmFn } = await import("node:fs/promises");
-    try {
-      const pageGetters = splitResult.pagePaths.map((p) => () => readFile(p));
-      return await this.extractPages(config, pageGetters, fileName);
-    } finally {
-      await rmFn(splitResult.tempDir, { recursive: true, force: true }).catch(() => {});
-    }
+    return extractTextViaSplitPages(config, fileBuffer, fileName, "SURYA_SPLIT_FAILED", (c, g, f) =>
+      this.extractPages(c, g, f),
+    );
   }
 
   async extractPages(
@@ -92,18 +80,9 @@ export class SuryaOcrProvider implements OcrProvider {
       throw new Error("SURYA_NOT_AVAILABLE: Python surya package not found");
     }
 
-    const tempDir = await mkdtemp(join(tmpdir(), "surya-ocr-"));
-    const imagePaths: string[] = [];
+    const { tempDir, imagePaths } = await materializePageFiles(pageGetters, "surya-ocr-");
 
     try {
-      for (let i = 0; i < pageGetters.length; i++) {
-        const pageNum = i + 1;
-        const imagePath = join(tempDir, `page_${pageNum}.png`);
-        const pageBuf = await pageGetters[i]!();
-        await writeFile(imagePath, pageBuf);
-        imagePaths.push(imagePath);
-      }
-
       // First pass: standard OCR
       logger.info(`First pass OCR for ${fileName} (${imagePaths.length} pages)`);
       const allResults = await this.runSuryaBatch(imagePaths, config.ocr.language);
@@ -116,14 +95,11 @@ export class SuryaOcrProvider implements OcrProvider {
         }
       }
 
-      // Second pass: retry failed pages with aggressive preprocessing
+      // Second pass: retry failed pages with a fresh batch run
       if (retryIndices.length > 0) {
         logger.warn(
           `Retrying ${retryIndices.length} low-confidence pages with aggressive preprocessing`,
         );
-
-        // Re-preprocess failed pages with aggressive settings
-        // (reprocessing is done via runSuryaBatch below)
 
         // Retry pages one by one (not batch) for maximum quality
         for (const idx of retryIndices) {
@@ -131,11 +107,8 @@ export class SuryaOcrProvider implements OcrProvider {
             const pageNum = idx + 1;
             const origPath = imagePaths[idx]!;
 
-            // Read, reprocess, and re-OCR
             const { readFile: fsRead } = await import("node:fs/promises");
             const pageBuffer = await fsRead(origPath);
-
-            // Apply aggressive preprocessing via Python
             const tempRetryDir = await mkdtemp(join(tmpdir(), "surya-retry-"));
             const retryPath = join(tempRetryDir, `retry_page_${pageNum}.png`);
             await writeFile(retryPath, pageBuffer);
@@ -158,19 +131,11 @@ export class SuryaOcrProvider implements OcrProvider {
         }
       }
 
-      const pages: OcrPageResult[] = allResults.map((r, i) => ({
-        number: i + 1,
-        text: r.text,
-        confidence: r.confidence,
-      }));
+      const pages: OcrPageResult[] = toOcrPagesFromBatch(allResults);
 
-      const text = pages
-        .filter((p) => p.text.length > 0)
-        .map((p) => p.text)
-        .join("\n\n");
+      const text = joinPageTexts(pages);
 
-      const confidence =
-        pages.length > 0 ? pages.reduce((sum, p) => sum + p.confidence, 0) / pages.length : 0;
+      const confidence = averageConfidence(pages);
 
       const pageErrors: { page: number; error: string }[] = [];
       for (let i = 0; i < allResults.length; i++) {
@@ -196,10 +161,7 @@ export class SuryaOcrProvider implements OcrProvider {
         pageErrors: pageErrors.length > 0 ? pageErrors : undefined,
       };
     } finally {
-      for (const p of imagePaths) {
-        await unlink(p).catch(() => {});
-      }
-      await rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await cleanupPageFiles(tempDir, imagePaths);
     }
   }
 
@@ -220,6 +182,30 @@ from surya.recognition import FoundationPredictor, RecognitionPredictor
 det_predictor = DetectionPredictor()
 foundation = FoundationPredictor()
 rec_predictor = RecognitionPredictor(foundation)
+
+def line_bbox(line):
+    # صندوق [x0,y0,x1,y1] ببكسلات الصورة كما هي: surya ترجع polygon أو bbox بحسب
+    # الإصدار، وكلاهما إحداثيات الصورة الأصلية بلا تحجيم — لا تُختلق عند غيبوبتهما.
+    poly = getattr(line, "polygon", None)
+    box = None
+    if poly is not None:
+        try:
+            pts = [(float(p[0]), float(p[1])) for p in poly]
+            if pts:
+                box = [min(x for x, _ in pts), min(y for _, y in pts),
+                       max(x for x, _ in pts), max(y for _, y in pts)]
+        except (TypeError, ValueError, IndexError):
+            box = None
+    if box is None:
+        bb = getattr(line, "bbox", None)
+        if bb is not None:
+            try:
+                vals = [float(v) for v in bb]
+            except (TypeError, ValueError):
+                vals = []
+            if len(vals) == 4:
+                box = vals
+    return box
 
 with open(sys.argv[1], "r") as f:
     paths = json.load(f)
@@ -270,7 +256,7 @@ for start in range(0, total, BATCH_SIZE):
         continue
 
     for vi, res in zip(valid_indices, ocr_results):
-        lines = [{"text": l.text, "confidence": l.confidence} for l in res.text_lines]
+        lines = [{"text": l.text, "confidence": float(l.confidence), "bbox": line_bbox(l)} for l in res.text_lines]
         avg_conf = sum(l.confidence for l in res.text_lines) / len(res.text_lines) if res.text_lines else 0.0
         
         all_results[start + vi] = {
@@ -319,7 +305,7 @@ print(json.dumps(all_results))
           }
           try {
             const allResults: {
-              lines: { text: string; confidence: number }[];
+              lines: { text: string; confidence: number; bbox?: number[] | null }[];
               needs_retry: boolean;
             }[] = JSON.parse(stdout.trim());
 
@@ -334,6 +320,7 @@ print(json.dumps(all_results))
                 text,
                 confidence,
                 needsRetry: pageData.needs_retry || confidence < CONFIDENCE_THRESHOLD_RETRY,
+                lines,
               };
             });
             resolve(results);

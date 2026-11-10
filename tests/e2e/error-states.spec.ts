@@ -167,7 +167,7 @@ test.describe("Error and Edge Case States", () => {
   });
 
   test("Invalid URL slug handles gracefully", async ({ page }) => {
-    await page.goto("/en/this-does-not-exist");
+    await page.goto("/ar/this-does-not-exist");
     await page.waitForLoadState("domcontentloaded");
     const body = await page.textContent("body");
     const hasError =

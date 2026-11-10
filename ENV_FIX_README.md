@@ -163,7 +163,7 @@ cat .env | grep -E "^(REDIS_PASSWORD|GEMINI_API_KEY|AUTH_SECRET)="
 cat .env | grep -E "^(REDIS_PASSWORD|GEMINI_API_KEY|DATABASE_URL|AUTH_SECRET)="
 
 # يجب أن ترى:
-# DATABASE_URL="postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5433/ibn_docs?schema=public"
+# DATABASE_URL="postgresql://ibn_docs:ibn_docs_password@localhost:5433/ibn_docs?schema=public"
 # REDIS_PASSWORD=redis_strong_password_2026
 # AUTH_SECRET=random_32_char_string
 # GEMINI_API_KEY=AIzaSy... (your real key)

@@ -130,7 +130,6 @@ export interface SingleExportRequest {
   format: ExportFormat;
   profile: ExportProfile;
   includeSource?: boolean;
-  pageRange?: string;
 }
 
 export interface BatchExportRequest {

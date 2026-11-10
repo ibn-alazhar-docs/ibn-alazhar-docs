@@ -1,6 +1,7 @@
 import {
   createOcrWorker,
   OcrManager,
+  runOcrChain,
   downloadFile,
   fileExists,
   categorizeFailure,
@@ -8,107 +9,128 @@ import {
   enqueueViaDriver,
   JOB_QUEUES,
   PermanentPipelineError,
+  runQaOnResult,
   type ProcessingJob,
   type PipelineConfig,
   type OcrEngineType,
+  type OcrEngineResult,
 } from "@ibn-al-azhar-docs/pipeline";
 import type { Job } from "@ibn-al-azhar-docs/pipeline";
-import { generateSearchablePdf, updateDocStatusWithProgress } from "../helpers";
+import {
+  generateSearchablePdf,
+  updateDocStatusWithProgress,
+  downloadDocumentBuffer,
+} from "../helpers";
 import { logger } from "@ibn-al-azhar-docs/shared";
 
 /**
- * Pure stage logic: runs OCR on the document and enqueues cleaning. Shared by
- * the BullMQ worker (redis driver) and the PgWorker (pg driver) via the same
- * `enqueueViaDriver` entry point.
+ * مرحلة OCR ضمن السلسلة الكاملة (docs/IMPLEMENTATION_OCR_CHAIN.md).
+ *
+ * - الخطوة 1 (direct pdf-parse) حُسمت في split عبر routeDocument:
+ *   nativeText + skipOcr ⇒ route=native مباشرة بلا أي OCR.
+ * - الخطوة 2 (Tesseract) والخطوة 3 (Gemini keypool) عبر runOcrChain:
+ *   OcrManager بترتيب resolveOcrChainOrder ثم بوابة QA الكاملة، وعند فشل
+ *   QA تُعاد مرة واحدة بقطع 6 صفحات (pipeline.py §5).
+ * لا مسار Gemini-series منفصل هنا — المزوّد يختار تلقائيًّا (محلي قبل سحابي):
+ * إن كان Tesseract متاحًا نُجّح نصّه دون إرسال أي صفحة إلى السحابة،
+ * وGemini (keypool) احتياط أخير فقط.
  */
+
+/** جمع pageGetters من الصفحات المقسّمة في split (null إن غابت الأولى). */
+async function collectPageGetters(
+  config: PipelineConfig,
+  jobId: string,
+): Promise<(() => Promise<Buffer>)[] | null> {
+  const firstPageKey = `${config.paths.pages}/${jobId}/page-001.png`;
+  const exists = await fileExists(config, firstPageKey);
+  if (!exists) return null;
+  const pageGetters: (() => Promise<Buffer>)[] = [];
+  let pageNum = 1;
+  let hasMorePages = true;
+  while (hasMorePages) {
+    const pageKey = `${config.paths.pages}/${jobId}/page-${String(pageNum).padStart(3, "0")}.png`;
+    const hit = await fileExists(config, pageKey);
+    if (hit) {
+      pageGetters.push(() => downloadFile(config, pageKey));
+      pageNum++;
+    } else {
+      hasMorePages = false;
+    }
+  }
+  return pageGetters;
+}
+
 export async function processOcrStage(data: ProcessingJob, config: PipelineConfig): Promise<void> {
   const jobLogger = logger.child({ jobId: data.id, documentId: data.documentId, stage: "ocr" });
   jobLogger.info(`[ocr] Processing job ${data.id}: ${data.fileName}`);
 
   await updateDocStatusWithProgress(data.documentId, "OCR_PROCESSING");
 
-  const manager = new OcrManager(config);
-  const firstPageKey = `${config.paths.pages}/${data.id}/page-001.png`;
-  let result;
+  let result: OcrEngineResult;
+  let qa: ReturnType<typeof runQaOnResult> | null = null;
+  let retried = false;
+  let retryChunkSize: number | undefined;
+  const route: "native" | "ocr" = data.skipOcr && data.nativeText ? "native" : "ocr";
 
-  // Native text fast path: skip OCR if split stage already extracted text
-  if (data.skipOcr && data.nativeText) {
+  if (route === "native") {
     jobLogger.info(`[ocr] Using native text extraction for ${data.id} (skipping OCR)`);
-    result = {
-      text: data.nativeText,
-      pages: [{ number: 1, text: data.nativeText, confidence: 0.95 }],
-      confidence: 0.95,
-      engine: "gemini" as OcrEngineType,
-    };
-  } else if (
-    data.mimeType === "application/pdf" &&
-    config.ocr.providers.some((p) => p === "gemini" || config.ocr.provider === "gemini")
-  ) {
-    // Gemini native PDF fast path: prefer original PDF chunking over rasterized PNGs
-    jobLogger.info(`[ocr] Using Gemini native PDF chunking for ${data.id}`);
-    const fileBuffer = await downloadFile(config, data.storageKey);
+    const out = await runOcrChain(config, {
+      fileBuffer: Buffer.alloc(0),
+      fileName: data.fileName,
+      mimeType: data.mimeType,
+      nativeText: data.nativeText,
+      skipOcr: true,
+    });
+    result = out.result;
+    qa = out.qa;
+    // الـPDF نشأةً رقميًا هو «المطابق للأصل» حرفيًا: يُنشر كما هو بدل إعادة بنائه
+    // صورةً بطبقة. بلا هذا كانت الصيغة تُعرض لكل مستند ثم تُرفض 409 إلى الأبد في native.
     try {
-      result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
-    } catch (nativeError) {
+      const original = await downloadDocumentBuffer(data.storageKey, data.userId, config);
+      const pdfKey = `${config.paths.exports}/${data.id}/searchable.pdf`;
+      await uploadBuffer(config, pdfKey, original, "application/pdf");
+      jobLogger.info(`[ocr] Published original PDF as searchable output for ${data.id}`);
+    } catch (err) {
       jobLogger.warn(
-        nativeError,
-        `[ocr] Native PDF chunking failed for ${data.id}, falling back to pre-split pages`,
+        err,
+        `[ocr] Failed to publish original PDF as searchable output for ${data.id}`,
       );
-      const pagesExist = await fileExists(config, firstPageKey);
-      if (pagesExist) {
-        const pageGetters: (() => Promise<Buffer>)[] = [];
-        let pageNum = 1;
-        let hasMorePages = true;
-        while (hasMorePages) {
-          const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-          const exists = await fileExists(config, pageKey);
-          if (exists) {
-            pageGetters.push(() => downloadFile(config, pageKey));
-            pageNum++;
-          } else {
-            hasMorePages = false;
-          }
-        }
-        result = await manager.extractPages(config, pageGetters, data.fileName);
-        await generateSearchablePdf(data, pageGetters, config, result);
-      } else {
-        throw nativeError;
-      }
     }
   } else {
+    const pageGetters = await collectPageGetters(config, data.id);
+    const fileBuffer = await downloadFile(config, data.storageKey);
+    jobLogger.info(
+      pageGetters
+        ? `[ocr] Streaming pre-split pages for ${data.id} (${pageGetters.length} pages)`
+        : `[ocr] No pre-split pages, extracting from full PDF for ${data.id}`,
+    );
     try {
-      const pagesExist = await fileExists(config, firstPageKey);
-
-      if (pagesExist) {
-        jobLogger.info(`[ocr] Streaming pre-split pages for ${data.id}`);
-        const pageGetters: (() => Promise<Buffer>)[] = [];
-        let pageNum = 1;
-        let hasMorePages = true;
-        while (hasMorePages) {
-          const pageKey = `${config.paths.pages}/${data.id}/page-${String(pageNum).padStart(3, "0")}.png`;
-          const exists = await fileExists(config, pageKey);
-          if (exists) {
-            pageGetters.push(() => downloadFile(config, pageKey));
-            pageNum++;
-          } else {
-            hasMorePages = false;
-          }
-        }
-        jobLogger.info(`[ocr] Found ${pageGetters.length} pre-split pages for lazy extraction`);
+      const out = await runOcrChain(config, {
+        fileBuffer,
+        fileName: data.fileName,
+        mimeType: data.mimeType,
+        pageGetters: pageGetters ?? undefined,
+      });
+      result = out.result;
+      qa = out.qa;
+      retried = out.retried;
+      retryChunkSize = out.retryChunkSize;
+      if (pageGetters) {
+        await generateSearchablePdf(data, pageGetters, config, result);
+      }
+    } catch (chainErr) {
+      jobLogger.warn(
+        { error: chainErr instanceof Error ? chainErr.message : String(chainErr) },
+        `[ocr] OCR chain failed for ${data.id}, trying legacy manager path`,
+      );
+      const manager = new OcrManager(config);
+      if (pageGetters) {
         result = await manager.extractPages(config, pageGetters, data.fileName);
         await generateSearchablePdf(data, pageGetters, config, result);
       } else {
-        jobLogger.info(`[ocr] No pre-split pages, extracting from full PDF for ${data.id}`);
-        const fileBuffer = await downloadFile(config, data.storageKey);
         result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
       }
-    } catch (pageError: unknown) {
-      const pageErrorMsg = pageError instanceof Error ? pageError.message : String(pageError);
-      jobLogger.warn(
-        `[ocr] Page detection failed for ${data.id}: ${pageErrorMsg}. Falling back to full PDF.`,
-      );
-      const fileBuffer = await downloadFile(config, data.storageKey);
-      result = await manager.extractText(config, fileBuffer, data.fileName, data.mimeType);
+      qa = runQaOnResult(result, result.pages?.length || 1);
     }
   }
 
@@ -119,6 +141,19 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
       { confidence: result.confidence, minConfidence },
       `[ocr] Low-confidence OCR result for ${data.id} (code: OCR_LOW_CONFIDENCE) — proceeding with degradation`,
     );
+  }
+  const qaFailed = !!qa && !qa.pass;
+  if (qaFailed) {
+    jobLogger.warn(
+      {
+        exitCode: qa!.exitCode,
+        checks: qa!.checks.filter((c) => !c.ok && !c.warn).map((c) => c.name),
+        retried,
+      },
+      `[ocr] QA failed for ${data.id}${retried ? " after retry chunk 6" : ""} — proceeding degraded`,
+    );
+  }
+  if (lowConfidence || qaFailed) {
     await updateDocStatusWithProgress(data.documentId, "OCR_PROCESSING", {
       needsReview: true,
     }).catch(() => {});
@@ -130,9 +165,31 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
     fileName: data.fileName,
     confidence: result.confidence,
     pages: result.pages.length,
+    engine: result.engine as OcrEngineType,
     text: result.text,
+    route,
+    retried,
+    retryChunkSize,
+    qa: qa
+      ? {
+          pass: qa.pass,
+          exitCode: qa.exitCode,
+          checks: qa.checks,
+          charsPerPage: qa.charsPerPage,
+          inputPages: qa.inputPages,
+          outputPages: qa.outputPages,
+        }
+      : null,
   });
   await uploadBuffer(config, ocrKey, Buffer.from(metadataJson), "application/json");
+  if (qa) {
+    await uploadBuffer(
+      config,
+      `${config.paths.ocrResults}/${data.id}/qa.json`,
+      Buffer.from(JSON.stringify(qa), "utf-8"),
+      "application/json",
+    ).catch(() => {});
+  }
 
   await enqueueViaDriver(JOB_QUEUES.CLEANING, config, {
     ...data,
@@ -141,7 +198,7 @@ export async function processOcrStage(data: ProcessingJob, config: PipelineConfi
   });
 
   jobLogger.info(
-    `[ocr] Completed OCR for ${data.id} (${result.pages.length} pages, confidence: ${result.confidence})`,
+    `[ocr] Completed OCR for ${data.id} (${result.pages.length} pages, engine: ${result.engine}, confidence: ${result.confidence}${retried ? ", retried chunk 6" : ""})`,
   );
 }
 

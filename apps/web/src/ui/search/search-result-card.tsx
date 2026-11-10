@@ -56,7 +56,7 @@ export function SearchResultCard({ result, getStatusLabel }: SearchResultCardPro
   const formattedDate = React.useMemo(() => {
     try {
       const date = new Date(result.createdAt);
-      return date.toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", {
+      return date.toLocaleDateString("ar-EG", {
         year: "numeric",
         month: "short",
         day: "numeric",

@@ -113,6 +113,7 @@ describe("cleanArabicText", () => {
 
       // Garbage line should be removed
       expect(output).toContain("نص صحيح");
+      // Aمانة: the default no longer folds hamza, so آخر stays آخر.
       expect(output).toContain("نص آخر صحيح");
       expect(output).not.toContain("@#$%^&*()");
     });
@@ -125,6 +126,7 @@ describe("cleanArabicText", () => {
       const output = cleanArabicText(input);
 
       // Should convert to markdown headings in general docs
+      // Heading text keeps its hamza now (الأول, not الاول).
       expect(output).toContain("## الفصل الأول");
       expect(output).toContain("## الفصل الثاني");
     });

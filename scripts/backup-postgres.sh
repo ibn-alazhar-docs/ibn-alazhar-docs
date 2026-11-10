@@ -12,7 +12,7 @@ echo "📦 Starting PostgreSQL backup..."
 echo "   Database: ${DATABASE_URL:-postgresql://localhost:5432/ibn_docs}"
 echo "   Output: ${BACKUP_FILE}"
 
-pg_dump "${DATABASE_URL:-postgresql://ibn_docs:CHANGE_ME_POSTGRES_PASSWORD@localhost:5432/ibn_docs}" \
+pg_dump "${DATABASE_URL:-postgresql://ibn_docs:ibn_docs_password@localhost:5432/ibn_docs}" \
   --clean \
   --if-exists \
   | gzip > "$BACKUP_FILE"

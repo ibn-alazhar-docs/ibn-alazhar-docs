@@ -22,7 +22,7 @@ export const GET = withAuth(async (request, { session, params }) => {
       )
     ) {
       return NextResponse.json(
-        { error: { code: "BAD_REQUEST", message: "Unsupported format" } },
+        { error: { code: "BAD_REQUEST", message: "الصيغة غير مدعومة" } },
         { status: 400 },
       );
     }

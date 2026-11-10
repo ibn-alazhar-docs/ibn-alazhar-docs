@@ -10,6 +10,8 @@ export interface IVerificationTokenRepository {
     identifier: string,
     token: string,
   ): Promise<VerificationTokenRecord | null>;
+  findByToken(token: string): Promise<VerificationTokenRecord | null>;
   deleteByIdentifier(identifier: string): Promise<void>;
   deleteByIdentifierAndToken(identifier: string, token: string): Promise<void>;
+  deleteByToken(token: string): Promise<void>;
 }

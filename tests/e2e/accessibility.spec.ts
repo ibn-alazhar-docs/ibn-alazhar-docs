@@ -8,8 +8,9 @@ test.describe("WCAG 2.2 Accessibility Scans", () => {
   }) => {
     await page.goto("/ar/");
 
-    // Wait for animations to settle
-    await page.waitForTimeout(1000);
+    // Wait for animations AND web fonts to settle before the axe sweep.
+    await page.waitForTimeout(250);
+    await page.evaluate(() => document.fonts.ready);
 
     const accessibilityScanResults = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])

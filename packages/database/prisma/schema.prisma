@@ -131,7 +131,10 @@ model Document {
   irGeneratedAt   DateTime? // Timestamp when IR was generated
 
   // Search fields (managed via raw SQL, not Prisma)
-  searchvector  String?   @map("searchvector")
+  // tsvector for Postgres full-text search (@@ / ts_rank). Unsupported so
+  // Prisma leaves it to raw SQL; declared as String it was created as TEXT,
+  // which broke ts_rank(text, tsquery) — see search.repository.ts.
+  searchvector  Unsupported("tsvector")? @map("searchvector")
   searchPreview String?   @map("searchpreview") @db.Text
   wordCount     Int?      @map("wordcount")
   // GIN index on searchVector managed via raw SQL migration

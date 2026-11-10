@@ -3,6 +3,7 @@ import { sendEmail, type SendEmailOptions } from "./client";
 import { VerificationEmail } from "./templates/verification";
 import { ResetPasswordEmail } from "./templates/reset-password";
 import { WelcomeEmail } from "./templates/welcome";
+import { BRAND_NAME } from "@/ui/brand";
 
 const BASE_URL = process.env.APP_URL || "https://ibnalazhar-docs.vercel.app";
 
@@ -26,7 +27,7 @@ export async function sendVerificationEmail(
 
   return sendEmail({
     to: params.to,
-    subject: "تأكيد البريد الإلكتروني - Ibn Al-Azhar Docs",
+    subject: `تأكيد البريد الإلكتروني - ${BRAND_NAME.ar}`,
     html,
   });
 }
@@ -51,7 +52,7 @@ export async function sendResetPasswordEmail(
 
   return sendEmail({
     to: params.to,
-    subject: "إعادة تعيين كلمة المرور - Ibn Al-Azhar Docs",
+    subject: `إعادة تعيين كلمة المرور - ${BRAND_NAME.ar}`,
     html,
   });
 }
@@ -72,7 +73,7 @@ export async function sendWelcomeEmail(
 
   return sendEmail({
     to: params.to,
-    subject: "مرحباً بك في Ibn Al-Azhar Docs! 🎉",
+    subject: `مرحباً بك في ${BRAND_NAME.ar}! 🎉`,
     html,
   });
 }

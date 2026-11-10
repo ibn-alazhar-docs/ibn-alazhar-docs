@@ -22,8 +22,15 @@ describe("TAG_COLORS", () => {
     }
   });
 
-  it("includes brand green #16A34A", () => {
-    expect(TAG_COLORS).toContain("#16A34A");
+  it("leads with the brand teal", () => {
+    expect(TAG_COLORS[0]).toBe("#127E87");
+  });
+
+  it("carries no pre-migration green", () => {
+    // The old Tailwind greens, not the brand teal (#127E87) that replaced them.
+    for (const color of TAG_COLORS) {
+      expect(color).not.toMatch(/16A34A|059669|10B981/i);
+    }
   });
 });
 
@@ -54,9 +61,9 @@ describe("createTagSchema", () => {
     expect(result.name).toBe("تفسير");
   });
 
-  it("color defaults to #16A34A", () => {
+  it("color defaults to the first palette entry", () => {
     const result = createTagSchema.parse({ name: "test" });
-    expect(result.color).toBe("#16A34A");
+    expect(result.color).toBe(TAG_COLORS[0]);
   });
 
   it("invalid color fails", () => {
@@ -65,7 +72,7 @@ describe("createTagSchema", () => {
   });
 
   it("color without # fails", () => {
-    const result = createTagSchema.safeParse({ name: "test", color: "16A34A" });
+    const result = createTagSchema.safeParse({ name: "test", color: "127E87" });
     expect(result.success).toBe(false);
   });
 

@@ -2,8 +2,9 @@ import type { IDocumentRepository } from "../../domain/repositories/document.rep
 import type { IShareRepository } from "../../domain/repositories/share.repository.interface";
 import { randomBytes } from "crypto";
 import { expirationToMs } from "@/shared/validators/share";
-import { AppError, NotFoundError } from "@/shared/errors";
+import { AppError } from "@/shared/errors";
 import { ERROR_CODES } from "@/shared/constants";
+import { assertDocument } from "./assert-document";
 
 export class DocumentShareUseCases {
   constructor(
@@ -17,7 +18,7 @@ export class DocumentShareUseCases {
 
   async createShareLink(documentId: string, userId: string, expirationStr: string | null) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
     if (document.status === "FAILED") {
       throw new AppError("الملف فشل في المعالجة ولا يمكن مشاركته", ERROR_CODES.NOT_READY, 409);
     }
@@ -42,7 +43,7 @@ export class DocumentShareUseCases {
 
   async regenerateShareLink(documentId: string, userId: string) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
     if (!existing) throw new AppError("لا يوجد رابط مشاركة", ERROR_CODES.NO_SHARE_LINK, 404);
@@ -53,7 +54,7 @@ export class DocumentShareUseCases {
 
   async deleteShareLink(documentId: string, userId: string) {
     const document = await this.documentRepository.findDocumentById(documentId, userId);
-    if (!document) throw new NotFoundError();
+    assertDocument(document);
 
     const existing = await this.shareRepository.findShareLinkByDocumentId(documentId, userId);
     if (!existing) throw new AppError("لا يوجد رابط مشاركة", ERROR_CODES.NO_SHARE_LINK, 404);

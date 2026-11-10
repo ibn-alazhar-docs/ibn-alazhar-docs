@@ -122,7 +122,7 @@ function makeTag(overrides: Partial<Record<string, unknown>> = {}) {
     id: "tag-1",
     userId: TEST_USER_ID,
     name: "تفسير",
-    color: "#16A34A",
+    color: "#127E87",
     createdAt: new Date("2025-01-01"),
     _count: { documents: 2 },
     ...overrides,
@@ -172,13 +172,13 @@ describe("POST /api/tags — إنشاء وسم", () => {
     mockSession();
     vi.mocked(prisma.tag.count).mockResolvedValue(0);
     vi.mocked(prisma.tag.findFirst).mockResolvedValue(null);
-    vi.mocked(prisma.tag.create).mockResolvedValue(makeTag({ color: "#16A34A" }));
+    vi.mocked(prisma.tag.create).mockResolvedValue(makeTag({ color: "#127E87" }));
 
     const response = await createTag(req({ name: "عقيدة" }));
     const body = await response.json();
 
     expect(response.status).toBe(201);
-    expect(body.tag.color).toBe("#16A34A");
+    expect(body.tag.color).toBe("#127E87");
   });
 
   it("يرفض الاسم الفارغ", async () => {
@@ -353,9 +353,9 @@ describe("PATCH /api/tags/[id] — تحديث وسم", () => {
     mockSession();
     vi.mocked(prisma.tag.findFirst).mockResolvedValueOnce(makeTag({ select: { id: true } }));
     vi.mocked(prisma.tag.findFirst).mockResolvedValueOnce(null);
-    vi.mocked(prisma.tag.update).mockResolvedValue(makeTag({ name: "فقه", color: "#CA8A04" }));
+    vi.mocked(prisma.tag.update).mockResolvedValue(makeTag({ name: "فقه", color: "#DA9E2C" }));
 
-    const response = await updateTag(req({ name: "فقه", color: "#CA8A04" }), params("tag-1"));
+    const response = await updateTag(req({ name: "فقه", color: "#DA9E2C" }), params("tag-1"));
 
     expect(response.status).toBe(200);
   });
@@ -625,7 +625,7 @@ describe("GET /api/documents/[id]/tags — وسوم المستند", () => {
         {
           tagId: "tag-1",
           documentId: "doc-1",
-          tag: { id: "tag-1", name: "تفسير", color: "#16A34A" },
+          tag: { id: "tag-1", name: "تفسير", color: "#127E87" },
         },
       ],
     } as any);
@@ -780,7 +780,7 @@ describe("Validation — التحقق من الصحة", () => {
 
     it("يرفض اللون بدون علامة #", async () => {
       mockSession();
-      const res = await createTag(req({ name: "تفسير", color: "16A34A" }));
+      const res = await createTag(req({ name: "تفسير", color: "127E87" }));
       expect(res.status).toBe(400);
     });
 

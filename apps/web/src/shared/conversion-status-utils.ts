@@ -60,3 +60,10 @@ export function getProgressPercent(stage: Stage, progress: number = 0): number {
   if (currentIdx === -1) return 5;
   return Math.max(5, (currentIdx / (STAGE_ORDER.length - 1)) * 100);
 }
+
+// Monotonic clamp: job progress never walks backwards mid-job; 100 on
+// completion is the cap. A fresh 0 is set only when a new job starts.
+export function clampProgressMonotonically(prev: number, next: number): number {
+  if (next >= 100) return 100;
+  return Math.max(prev, next);
+}

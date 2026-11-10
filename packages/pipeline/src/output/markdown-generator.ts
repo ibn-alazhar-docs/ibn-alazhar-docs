@@ -1,5 +1,5 @@
 import type { DocumentIR, BlockNode, InlineNode } from "@ibn-al-azhar-docs/shared";
-import { FormatGenerator, GeneratorOptions } from "./generator-base";
+import { FormatGenerator, GeneratorOptions, normalizeBlankLines } from "./generator-base";
 
 function inlineToMarkdown(nodes: InlineNode[]): string {
   return nodes
@@ -55,10 +55,7 @@ export class MarkdownGenerator implements FormatGenerator {
       parts.push(`# ${options.title}`, "");
     }
     parts.push(...ir.content.map((b) => blockToMarkdown(b)));
-    const markdown = parts
-      .join("\n\n")
-      .replace(/\n{3,}/g, "\n\n")
-      .trim();
+    const markdown = normalizeBlankLines(parts.join("\n\n"));
     return Buffer.from(markdown, "utf-8");
   }
 

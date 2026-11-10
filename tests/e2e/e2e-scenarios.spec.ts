@@ -23,7 +23,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await page.goto(`${BASE}/ar/login`);
     await page.fill('input[name="email"]', "invalid-email");
     await page.locator('button[type="submit"]').first().click();
-    await page.waitForLoadState("networkidle");
+    await page.waitForLoadState("load");
 
     const csrfRes = await request.get("/api/auth/csrf");
     const { csrfToken } = await csrfRes.json();
@@ -69,18 +69,18 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       "../../test-data/source/لا_أعلم_هويتي_حوار_بين_متشكك_ومتيقن_حسام_الدين_حامد.pdf",
     );
 
-    await page.waitForLoadState("networkidle");
-    await page.setInputFiles('[data-testid="file-input"]', testFilePath);
+    await page.waitForLoadState("domcontentloaded");
+    const fileInput = page.locator('[data-testid="file-input"], input[type="file"]').first();
+    await fileInput.setInputFiles(testFilePath);
 
-    await page.getByTestId("upload-button").click({ timeout: 15000 });
+    const uploadButton = page.getByTestId("upload-button").first();
+    await expect(uploadButton).toBeVisible({ timeout: 15000 });
+    await expect(uploadButton).toBeEnabled({ timeout: 15000 });
+    await uploadButton.click();
 
-    await expect(page.locator('[data-testid="document-row"]').first()).toBeVisible({
-      timeout: 30000,
-    });
-
-    await expect(page.locator('[data-testid="document-row"]').first()).toContainText("اكتمل", {
-      timeout: 60000,
-    });
+    const row = page.locator('[data-testid="document-row"]').first();
+    await expect(row).toBeVisible({ timeout: 30000 });
+    await expect(row).toContainText(/اكتمل/, { timeout: 120000 });
   });
 
   test("4. Search document & Empty search", async ({ page }) => {
@@ -133,7 +133,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     // 1. Select the document checkbox
     const fileRow = page.locator('[data-testid="document-row"]').first();
     const checkbox = fileRow.locator('[data-testid="document-select"]').first();
-    await checkbox.click();
+    await checkbox.click({ force: true });
 
     // 2. Click "أضف وسوماً" (Add tags) button in BulkActions
     const tagsBtn = page.locator('button:has-text("أضف وسوماً")').first();
@@ -144,7 +144,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       await page.fill('input[placeholder="الاسم"]', "وسم_مهم");
       await page.locator('button:has-text("حفظ")').first().click();
       // Close TagPicker
-      await page.locator('button:has-text("أغلق")').first().click();
+      await page.locator('button:has-text("أغلق")').first().click({ force: true });
     }
 
     // 3. Click the document title to open the preview page and test advanced export
@@ -152,7 +152,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     await titleLink.click();
     await page.waitForURL(/\/ar\/preview\//);
 
-    const previewExportBtn = page.locator('button:has-text("تصدير متقدم")').first();
+    const previewExportBtn = page.locator('button:has-text("صدّر")').first();
     await previewExportBtn.click();
     await expect(page.locator("text=تصدير متقدم").first()).toBeVisible({ timeout: 10000 });
     await page.locator("text=إلغاء").first().click();
@@ -163,7 +163,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
     // 5. Select the document checkbox again
     const moveFileRow = page.locator('[data-testid="document-row"]').first();
     const moveCheckbox = moveFileRow.locator('[data-testid="document-select"]').first();
-    await moveCheckbox.click();
+    await moveCheckbox.click({ force: true });
 
     // 6. Click "انقل إلى..." (Move to folder) button in BulkActions
     const moveBtn = page.locator('button:has-text("انقل إلى...")').first();
@@ -199,7 +199,7 @@ test.describe("Ibn Al-Azhar Docs — Complete E2E Suite", () => {
       const anonymousContext = await context.browser()!.newContext();
       const anonymousPage = await anonymousContext.newPage();
       await anonymousPage.goto(shareLink);
-      await expect(anonymousPage.locator("text=Ibn Al-Azhar Docs").first()).toBeVisible({
+      await expect(anonymousPage.locator("text=ابن الأزهر").first()).toBeVisible({
         timeout: 15000,
       });
       await anonymousContext.close();

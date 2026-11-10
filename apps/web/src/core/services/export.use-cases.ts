@@ -1,5 +1,5 @@
 import { ownedWhere } from "@/core/authorization";
-import type { AuthSession } from "@/domain/types";
+import type { AuthSession, DomainDocument } from "@/domain/types";
 import { NotFoundError, AppError } from "@/shared/errors";
 import { executeBulkExport } from "@/core/services/export/bulk-export-helpers";
 import {
@@ -23,7 +23,6 @@ interface ExportOptions {
   format: string;
   includeSource: boolean;
   profile: "research" | "archive" | "plain" | "developer";
-  pageRange?: string;
 }
 
 interface SingleExportResult {
@@ -68,7 +67,7 @@ export class ExportUseCases {
       return this.buildZipExport(document, tags, folder, metadata, options);
     }
 
-    return this.buildSingleFileExport(document, options.format, pipeline, options);
+    return this.buildSingleFileExport(document, options.format, pipeline);
   }
 
   private async buildZipExport(
@@ -149,7 +148,6 @@ export class ExportUseCases {
     document: { id: string; title: string; pageCount: number | null },
     format: string,
     pipeline: { wordCount: number; pageCount?: number },
-    options: ExportOptions,
   ): Promise<SingleExportResult> {
     const textFormats = ["md", "txt", "json"];
     if (textFormats.includes(format)) {
@@ -158,7 +156,7 @@ export class ExportUseCases {
 
     const binaryFormats = ["pdf", "docx", "epub"];
     if (binaryFormats.includes(format)) {
-      return this.generateBinaryFormat(document, format, pipeline, options);
+      return this.generateBinaryFormat(document, format, pipeline);
     }
 
     throw new AppError(`Unsupported format: ${format}`, "VALIDATION_ERROR", 400);
@@ -240,7 +238,6 @@ export class ExportUseCases {
     document: { id: string; title: string; pageCount: number | null },
     format: string,
     pipeline: { wordCount: number; pageCount?: number },
-    options: ExportOptions,
   ): Promise<SingleExportResult> {
     const { sanitizeTitle, getContentType } = await import("@/core/services/export/profiles");
 
@@ -271,11 +268,7 @@ export class ExportUseCases {
     switch (format) {
       case "pdf": {
         const { generatePdf } = await import("@ibn-al-azhar-docs/pipeline");
-        outputBuffer = await generatePdf(cleaned, {
-          fontSize: undefined,
-          watermark: undefined,
-          pageRange: options.pageRange,
-        });
+        outputBuffer = await generatePdf(cleaned);
         break;
       }
       case "docx": {
@@ -325,7 +318,7 @@ export class ExportUseCases {
         doc.deletedAt === null &&
         "userId" in doc &&
         doc.userId === session.user.id,
-    ) as import("@prisma/client").Document[];
+    ) as DomainDocument[];
 
     if (documents.length === 0) throw new NotFoundError("No documents with this tag");
 

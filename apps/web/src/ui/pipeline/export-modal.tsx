@@ -13,13 +13,46 @@ interface ExportModalProps {
   onClose: () => void;
 }
 
+const POLL_INTERVAL_MS = 2_000;
+const POLL_TIMEOUT_MS = 180_000;
+
+/**
+ * ملف التصدير لا يوجد لحظة الإدراج، بل عندما يُنهيه العامل ويحدّث `outputKeys`.
+ * التنزيل الفوري بعد الطلب كان يصطدم بـ 409 أو يسلّم نسخة قديمة بلا هذه الخيارات.
+ */
+async function waitForExport(documentId: string, format: string, timeoutLabel: string) {
+  const deadline = Date.now() + POLL_TIMEOUT_MS;
+  while (Date.now() < deadline) {
+    const res = await apiFetch(
+      `/api/documents/${documentId}/export/status?format=${encodeURIComponent(format)}`,
+    );
+    const data = (await res.json().catch(() => null)) as {
+      status?: string;
+      downloadUrl?: string;
+      message?: string;
+    } | null;
+
+    if (!res.ok) {
+      throw new Error(data?.message ?? "تعذر التصدير");
+    }
+    if (data?.status === "ready" && data.downloadUrl) {
+      return data.downloadUrl;
+    }
+    if (data?.status === "failed") {
+      throw new Error(data.message ?? "تعذر التصدير");
+    }
+
+    await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+  }
+  throw new Error(timeoutLabel);
+}
+
 export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
   const t = useTranslations("pipeline.exportModal");
   const [format, setFormat] = useState("searchable-pdf");
-  const [fontSize, setFontSize] = useState("medium");
+  const [fontSize, setFontSize] = useState("14");
   const [watermark, setWatermark] = useState("");
-  const [pageRange, setPageRange] = useState("");
-  const [destination, setDestination] = useState("download");
+  const [destination, setDestination] = useState("local");
   const [loading, setLoading] = useState(false);
 
   if (!isOpen) return null;
@@ -32,7 +65,11 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           format,
-          options: { fontSize, watermark, destination, pageRange: pageRange || undefined },
+          options: {
+            fontSize: Number(fontSize),
+            watermark: watermark || undefined,
+            destination,
+          },
         }),
       });
 
@@ -41,16 +78,16 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
         throw new Error(errorData?.error?.message || "Export failed");
       }
 
-      const data = await res.json();
-      const jobId = data.jobId;
-
       if (destination === "drive") {
         toast.success(t("successDrive"));
         onClose();
-      } else {
-        window.location.href = `/api/export/${encodeURIComponent(jobId)}/${encodeURIComponent(format)}`;
-        onClose();
+        return;
       }
+
+      const downloadUrl = await waitForExport(documentId, format, t("timeout"));
+      toast.success(t("successDownload"));
+      window.location.href = downloadUrl;
+      onClose();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : t("error");
       toast.error(msg);
@@ -100,6 +137,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   <option value="epub">{t("formatEpub")}</option>
                   <option value="md">{t("formatMd")}</option>
                   <option value="txt">{t("formatTxt")}</option>
+                  <option value="json">JSON</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
                   <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -107,7 +145,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
               </div>
             </div>
 
-            {format !== "searchable-pdf" && (
+            {format === "pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
                 <label className="text-xs sm:text-sm font-semibold text-primary-color">
                   {t("fontSize")}
@@ -118,9 +156,9 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                     onChange={(e) => setFontSize(e.target.value)}
                     className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                   >
-                    <option value="small">{t("small")}</option>
-                    <option value="medium">{t("medium")}</option>
-                    <option value="large">{t("large")}</option>
+                    <option value="12">{t("small")}</option>
+                    <option value="14">{t("medium")}</option>
+                    <option value="18">{t("large")}</option>
                   </select>
                   <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">
                     <ChevronDownIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
@@ -129,7 +167,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
               </div>
             )}
 
-            {format !== "searchable-pdf" && (
+            {format === "pdf" && (
               <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
                 <label className="text-xs sm:text-sm font-semibold text-primary-color">
                   {t("watermark")}
@@ -139,21 +177,6 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   value={watermark}
                   onChange={(e) => setWatermark(e.target.value)}
                   placeholder={t("watermarkPlaceholder")}
-                  className="w-full rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
-                />
-              </div>
-            )}
-
-            {format !== "searchable-pdf" && (
-              <div className="space-y-1.5 animate-in slide-in-from-top-2 fade-in duration-200">
-                <label className="text-xs sm:text-sm font-semibold text-primary-color">
-                  {t("pageRange")}
-                </label>
-                <input
-                  type="text"
-                  value={pageRange}
-                  onChange={(e) => setPageRange(e.target.value)}
-                  placeholder={t("pageRangePlaceholder")}
                   className="w-full rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all placeholder:text-muted-color/50"
                 />
               </div>
@@ -169,7 +192,7 @@ export function ExportModal({ documentId, isOpen, onClose }: ExportModalProps) {
                   onChange={(e) => setDestination(e.target.value)}
                   className="w-full appearance-none rounded-lg border border-line bg-badge px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm text-primary-color outline-none focus:border-success focus:ring-1 focus:ring-success transition-all"
                 >
-                  <option value="download">{t("download")}</option>
+                  <option value="local">{t("download")}</option>
                   <option value="drive">{t("drive")}</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 end-0 flex items-center px-3 sm:px-4 text-muted-color">

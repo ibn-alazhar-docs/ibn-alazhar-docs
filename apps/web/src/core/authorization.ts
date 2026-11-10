@@ -1,3 +1,4 @@
+import { ROLE } from "@/domain/auth";
 import type { AuthSession } from "@/domain/types";
 
 export function ownedWhere(
@@ -5,8 +6,16 @@ export function ownedWhere(
   session: AuthSession,
   userIdField = "userId",
 ): Record<string, unknown> {
-  // كل مستخدم يرى بياناته فقط، بغض النظر عن دوره
-  const where = { ...baseWhere, [userIdField]: session.user.id };
+  const where = { ...baseWhere };
+
+  // Regular users only see their own data. Admins retain oversight visibility
+  // and must not be scoped by a user ID.
+  if (session.user.role === ROLE.ADMIN) {
+    delete where[userIdField];
+  } else {
+    where[userIdField] = session.user.id;
+  }
+
   if (!("deletedAt" in where)) {
     where.deletedAt = null;
   }

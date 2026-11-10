@@ -15,7 +15,7 @@ function makeMetadata(): ExportMetadata {
       language: "ar",
       isRtl: true,
     },
-    tags: [{ name: "test", color: "#16A34A" }],
+    tags: [{ name: "test", color: "#127E87" }],
     folder: { name: "Test", path: "Test", ancestors: ["Test"] },
     ocr: { confidence: 0.9, engine: "google", pageCount: 10 },
     pipeline: {

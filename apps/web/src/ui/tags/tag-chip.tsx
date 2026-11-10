@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/ui/cn";
+import { tagChipStyle, tagDotStyle } from "./tag-color";
 
 interface TagChipProps {
   id: string;
@@ -33,14 +34,10 @@ export function TagChip({
         selected && "ring-2 ring-offset-1 ring-primary-color",
         className,
       )}
-      style={{
-        backgroundColor: `${color}20`,
-        color: color,
-        borderColor: `${color}40`,
-      }}
+      style={tagChipStyle(color)}
       onClick={onClick}
     >
-      <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+      <span className="w-2 h-2 rounded-full shrink-0" style={tagDotStyle(color)} />
       {name}
       {onRemove && (
         <button
