@@ -23,7 +23,6 @@ const nextConfig: NextConfig = {
     ],
   },
   experimental: {
-    viewTransition: true,
     // Force a single serial build worker. On the HuggingFace cpu-basic build
     // machine, parallel webpack workers (memoryBasedWorkersCount) blow past
     // the RAM limit and the build is OOM-killed (exit 137). A single worker
