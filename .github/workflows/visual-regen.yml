@@ -19,13 +19,9 @@ permissions:
 
 jobs:
   regen:
-    name: Regen visual baselines (${{ matrix.project }})
+    name: Regen visual baselines (all projects)
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
-    strategy:
-      fail-fast: false
-      matrix:
-        project: [chromium, chromium-dark]
+    timeout-minutes: 180
     services:
       postgres:
         image: postgres:16-alpine
@@ -107,8 +103,12 @@ jobs:
         # PR produced below; this step is a loud marker in the logs.
         run: echo "Regenerating baselines for ${{ matrix.project }} from pinned CI env"
 
-      - name: Regenerate baselines (visual specs only)
-        run: pnpm exec playwright test --project=${{ matrix.project }} tests/e2e/visual-components.spec.ts tests/e2e/visual-pages.spec.ts tests/e2e/visual-regression.spec.ts tests/e2e/visual-responsive.spec.ts tests/e2e/visual-theme.spec.ts --update-snapshots --workers=2
+      - name: Regenerate baselines (visual specs, all projects)
+        run: |
+          set -euo pipefail
+          specs="tests/e2e/visual-components.spec.ts tests/e2e/visual-pages.spec.ts tests/e2e/visual-regression.spec.ts tests/e2e/visual-responsive.spec.ts tests/e2e/visual-theme.spec.ts"
+          pnpm exec playwright test --project=chromium $specs --update-snapshots --workers=2
+          pnpm exec playwright test --project=chromium-dark $specs --update-snapshots --workers=2
 
       - name: Commit refreshed snapshots (LFS)
         env:
@@ -118,13 +118,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add tests/e2e/*-snapshots/
           if git diff --cached --quiet; then
-            echo "No snapshot changes for ${{ matrix.project }}"
+            echo "No snapshot changes for chromium/chromium-dark"
             exit 0
           fi
-          git commit -m "test(e2e): refresh visual baselines (${{ matrix.project }}, CI pinned env)"
+          git commit -m "test(e2e): refresh visual baselines (chromium + chromium-dark, CI pinned env)"
           target="${{ inputs.target_branch || 'integration/reconcile-main' }}"
           echo "Pushing to target branch: $target"
-          # This job runs on a single matrix value (chromium-dark) from a
-          # dedicated branch, so the push target is fixed: no concurrent
-          # rerace with a second job is possible.
+          git fetch origin "$target"
+          git rebase "origin/$target" || (git rebase --abort && exit 1)
           git push origin "HEAD:${target}"
