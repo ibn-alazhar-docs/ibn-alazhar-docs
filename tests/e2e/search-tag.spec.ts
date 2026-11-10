@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import { TagsPage } from "./pages/TagsPage";
 import { SearchPage } from "./pages/SearchPage";
 import { DocumentsPage } from "./pages/DocumentsPage";
-import { loginAsAdmin } from "./helpers";
+import { loginAsAdmin, TEST_PDF_PATH } from "./helpers";
 
 test.describe("Search & Tag Operations", () => {
   test.describe.configure({ timeout: 120_000 });
@@ -32,6 +32,7 @@ test.describe("Search & Tag Operations", () => {
       await tags.createTag(`ApplyTest ${timestamp}`, "#8B5CF6");
       await tags.expectTagVisible(`ApplyTest ${timestamp}`);
       await docs.gotoFiles();
+      await docs.uploadFile(TEST_PDF_PATH);
       await docs.expectDocumentRowVisible(60000);
       await docs.selectDocument(0);
       const tagBtn = page

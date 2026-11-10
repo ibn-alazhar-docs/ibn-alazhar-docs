@@ -13,9 +13,9 @@ export function AuthPageShell({ title, logoAlt, subtitle, children }: AuthPageSh
   return (
     <div className="text-center">
       <Link href="/" className="inline-block mb-6">
-        <BrandLogo alt={logoAlt} className="mx-auto h-12 w-auto" priority />
+        <BrandLogo alt={logoAlt} className="ms-auto me-auto h-12 w-auto" priority />
       </Link>
-      <div className="gold-divider mx-auto mb-6" />
+      <div className="gold-divider ms-auto me-auto mb-6" />
       <h2 className="heading-display text-xl font-bold tracking-[0.02em] text-primary-color sm:text-2xl">
         {title}
       </h2>

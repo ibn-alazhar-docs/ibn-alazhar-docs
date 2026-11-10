@@ -449,6 +449,17 @@ jobs:
       - name: Build web app
         run: pnpm --filter @ibn-al-azhar-docs/web build
 
+      - name: Install pipeline system + Python dependencies
+        # Conversion chain runs Python scripts (PyMuPDF for classification/native
+        # extraction, pypdfium2+Pillow for page splitting) plus WeasyPrint for PDF
+        # export and Pandoc for DOCX/EPUB. Without them every conversion dies with
+        # ModuleNotFoundError: No module named 'pymupdf'.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc
+          python3 -m pip install --break-system-packages --no-cache-dir \
+            pymupdf pypdfium2 Pillow weasyprint
+
       - name: Start pipeline workers (E2E)
         env:
           PLAYWRIGHT_TEST: "true"

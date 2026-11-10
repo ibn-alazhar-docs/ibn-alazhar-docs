@@ -30,7 +30,7 @@ test("Files and Folders QA", async ({ page }) => {
     const errorMsg = await page
       .locator('.text-danger-500, .text-destructive, [class*="text-[var(--danger)]"]')
       .first()
-      .textContent()
+      .textContent({ timeout: 2000 })
       .catch(() => null);
     console.log("Folder Creation Error (Long Text):", errorMsg);
     await page

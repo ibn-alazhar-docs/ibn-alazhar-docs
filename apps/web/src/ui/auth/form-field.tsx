@@ -74,7 +74,7 @@ export function FormField({
         aria-invalid={!!error}
         aria-describedby={error ? resolvedErrorId : undefined}
         className={cn(
-          "w-full rounded-lg border border-line bg-page px-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30",
+          "w-full rounded-lg border border-line bg-page ps-4 pe-4 py-3 text-sm text-primary-color placeholder:text-very-muted focus:border-gold focus:outline-none focus:ring-1 focus:ring-gold/30",
           disabled && "disabled:opacity-50",
           "transition-colors",
           inputClassName,

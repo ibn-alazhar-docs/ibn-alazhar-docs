@@ -71,6 +71,7 @@ export class SearchPage {
   async expectEmptyState(timeout: number = 15000) {
     await expect(
       this.emptyState
+        .or(this.page.locator("text=لم نجد").first())
         .or(this.page.locator("text=لم نعثر").first())
         .or(this.page.locator("text=لا يوجد").first()),
     ).toBeVisible({ timeout });

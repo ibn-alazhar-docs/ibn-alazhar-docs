@@ -215,15 +215,19 @@ test.describe("Keyboard Navigation", () => {
       await page.keyboard.press("Tab");
       await page.waitForTimeout(50);
       const focused = page.locator(":focus");
-      const signature = await focused
-        .evaluate((el) => {
-          const element = el as HTMLElement;
-          const text = (element.textContent || "").trim().slice(0, 20);
-          const id = element.id ? `#${element.id}` : "";
-          const name = element.getAttribute("name") || "";
-          return `${element.tagName}${id}[name=${name}](${text})`;
-        })
-        .catch(() => "");
+      const focusedCount = await focused.count().catch(() => 0);
+      let signature = "";
+      if (focusedCount > 0) {
+        signature = await focused
+          .evaluate((el) => {
+            const element = el as HTMLElement;
+            const text = (element.textContent || "").trim().slice(0, 20);
+            const id = element.id ? `#${element.id}` : "";
+            const name = element.getAttribute("name") || "";
+            return `${element.tagName}${id}[name=${name}](${text})`;
+          })
+          .catch(() => "");
+      }
       if (signature) {
         if (!seen.has(signature)) moves++;
         seen.add(signature);

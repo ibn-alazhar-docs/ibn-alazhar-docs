@@ -72,7 +72,7 @@ test.describe("Admin Flows", () => {
       const dashboardLink = page.getByRole("link", { name: /الرئيسية|Dashboard/i }).first();
       if (await dashboardLink.isVisible().catch(() => false)) {
         await dashboardLink.click();
-        await page.waitForLoadState("domcontentloaded");
+        await page.waitForURL(/\/dashboard/, { timeout: 15000 });
         expect(page.url()).toContain("/dashboard");
       }
     });

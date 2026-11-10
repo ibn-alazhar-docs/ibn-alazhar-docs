@@ -345,6 +345,7 @@
     "namePlaceholder": "الاسم",
     "nameRequired": "اسم المجلد مطلوب",
     "nameTooLong": "الاسم طويل جداً",
+    "addSubfolder": "إضافة مجلد فرعي",
     "rename": "أعد التسمية",
     "moveTo": "انقل إلى...",
     "moveTitle": "انقل للمجلد",

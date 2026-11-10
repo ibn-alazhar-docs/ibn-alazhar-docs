@@ -114,7 +114,8 @@ test.describe("Navigation stability (CLS) — dashboard matrix", () => {
       "mobile viewport check on desktop project",
     );
     await page.setViewportSize({ width: 390, height: 844 });
-    await loginAsAdmin(page, "ar");
+    // Already signed in by the describe's beforeEach — signing in again would
+    // hit /login, get redirected to /dashboard, and time out on the email field.
     await settle(page);
     // Open the off-canvas mobile menu, then navigate via a sidebar link.
     await page.locator("header button").first().click();

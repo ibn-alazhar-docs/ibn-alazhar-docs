@@ -140,7 +140,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
         <button
           type="submit"
           disabled={isPending || state.isLocked}
-          className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50 transition-all hover:shadow-lg cursor-pointer"
+          className="landing-btn-primary flex w-full items-center justify-center gap-3 rounded-xl ps-4 pe-4 py-3 text-sm font-bold tracking-[0.04em] no-underline shadow-[0_4px_14px_0_var(--btn-shadow)] disabled:opacity-50 transition-all hover:shadow-lg cursor-pointer"
         >
           {isPending ? t("loggingIn") : t("loginButton")}
         </button>
@@ -164,7 +164,7 @@ export function LoginForm({ showGoogle = false }: { showGoogle?: boolean }) {
               signIn("google", { redirectTo: `/${locale}/dashboard` });
             }}
             disabled={isPending || state.isLocked || googleLoading}
-            className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page px-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
+            className="flex w-full items-center justify-center gap-3 rounded-xl border border-line bg-page ps-4 pe-4 py-3 text-sm font-bold tracking-[0.04em] text-primary-color transition-all hover:bg-hover hover:border-gold/30 hover:shadow-sm disabled:opacity-50 cursor-pointer"
           >
             <FcGoogle className="h-5 w-5" />
             {googleLoading ? t("loggingIn") : t("continueWithGoogle")}

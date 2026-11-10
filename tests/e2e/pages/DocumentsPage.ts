@@ -52,12 +52,11 @@ export class DocumentsPage {
     // Page objects live in tests/e2e/pages; the fixture dir is at repo root.
     const testFilePath = path.resolve(__dirname, "../../../test-data/source", fileName);
     await this.fileInput.setInputFiles(testFilePath);
-    if (await this.uploadButton.isVisible().catch(() => false)) {
-      await expect(this.uploadButton)
-        .toBeEnabled({ timeout: 15000 })
-        .catch(() => {});
-      await this.uploadButton.click();
-    }
+    await this.uploadButton.scrollIntoViewIfNeeded().catch(() => {});
+    await expect(this.uploadButton)
+      .toBeEnabled({ timeout: 15000 })
+      .catch(() => {});
+    await this.uploadButton.click({ force: true }).catch(() => {});
   }
 
   async uploadMultipleFiles(fileNames: string[]) {

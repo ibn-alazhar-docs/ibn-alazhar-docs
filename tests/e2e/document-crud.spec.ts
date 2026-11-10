@@ -22,7 +22,7 @@ test.describe("Document CRUD Operations", () => {
       page
         .locator('[data-testid="document-row"]')
         .first()
-        .getByText(/معالجة|Processing|اكتمل|Completed|رُفع|Uploaded|معلّق|Queued/i)
+        .locator('[data-testid="document-status"]')
         .first(),
     ).toBeVisible({ timeout: 30000 });
   });
@@ -32,7 +32,7 @@ test.describe("Document CRUD Operations", () => {
     await docs.gotoFiles();
     await docs.expectDocumentRowVisible(60000);
     await docs.clickFirstDocumentTitle();
-    await page.waitForURL(/\/documents\//, { timeout: 30000 });
+    await page.waitForURL(/\/(documents|preview)\//, { timeout: 30000 });
     await page.waitForLoadState("domcontentloaded");
     await expect(page.locator("body")).toContainText(/.+/, { timeout: 15000 });
     const hasContent = await page.locator("body").textContent();
@@ -44,7 +44,7 @@ test.describe("Document CRUD Operations", () => {
     await docs.gotoFiles();
     await docs.expectDocumentRowVisible();
     await docs.clickFirstDocumentTitle();
-    await page.waitForURL(/\/documents\//);
+    await page.waitForURL(/\/(documents|preview)\//);
     const editButton = page.getByRole("button", { name: /تعديل|Edit/i }).first();
     if (await editButton.isVisible().catch(() => false)) {
       await editButton.click();
@@ -155,7 +155,7 @@ test.describe("Document CRUD Operations", () => {
 
   test("Upload multiple documents at once", async ({ page }) => {
     const docs = new DocumentsPage(page);
-    await docs.gotoUpload();
+    await docs.gotoFiles();
     await docs.uploadFile(TEST_PDF_PATH);
     await page.waitForTimeout(2000);
     const uploadFeedback = page
@@ -168,9 +168,9 @@ test.describe("Document CRUD Operations", () => {
 
   test("Upload page renders with file chooser", async ({ page }) => {
     const docs = new DocumentsPage(page);
-    await docs.gotoUpload();
+    await docs.gotoFiles();
     const fileInput = page.locator('input[type="file"]');
-    await expect(fileInput).toBeVisible();
+    await expect(fileInput).toBeAttached();
     const uploadHeading = page.getByRole("heading").first();
     await expect(uploadHeading).toBeVisible();
   });

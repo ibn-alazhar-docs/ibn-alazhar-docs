@@ -13,6 +13,7 @@ async function login(page: Page) {
   await page.locator('button[type="submit"]').first().click();
   await page.waitForURL(/dashboard/, { timeout: 30000 });
   await page.waitForLoadState("load");
+  await page.waitForFunction(() => (document.title || "").trim().length > 0, { timeout: 5000 }).catch(() => {});
 }
 
 async function runAxe(page: Page, disableRules?: string[]) {

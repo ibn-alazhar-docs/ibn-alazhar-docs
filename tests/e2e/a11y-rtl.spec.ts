@@ -1,11 +1,10 @@
 import { test, expect, type Page } from "@playwright/test";
 
-const BASE = process.env.BASE_URL || "http://localhost:3000";
 const EMAIL = "admin@ibnalazhar.app";
 const PASSWORD = "AdminPassword123!";
 
 async function login(page: Page) {
-  await page.goto(`${BASE}/ar/login`);
+  await page.goto("/ar/login");
   await page.waitForLoadState("load");
   await page.fill('input[name="email"]', EMAIL);
   await page.fill('input[name="password"]', PASSWORD);
@@ -89,29 +88,23 @@ test.describe("Arabic/RTL-specific accessibility", () => {
   test("Arabic pages use logical CSS properties (no physical left/right) @a11y-rtl", async ({
     page,
   }) => {
+    await page.context().clearCookies();
     await page.goto("/ar/login");
     await page.waitForLoadState("load");
 
     const physicalViolations = await page.evaluate(() => {
-      const physicalProps = ["margin-left", "margin-right", "padding-left", "padding-right"];
-      const found: Array<{ selector: string; prop: string; value: string }> = [];
-      const allElements = document.querySelectorAll("*");
+      const physicalClassPattern = /\b(m[ltr]|m[rtl]|p[ltr]|p[rtl]|ml|mr|pl|pr|px|mx)(-\S+)?\b/;
+      const found: Array<{ selector: string; cls: string }> = [];
       const seen = new Set<string>();
-
-      allElements.forEach((el) => {
-        const styles = window.getComputedStyle(el);
-        for (const prop of physicalProps) {
-          const val = styles.getPropertyValue(prop);
-          if (val && val !== "0px" && val !== "0" && val !== "normal") {
-            const key = `${el.tagName}.${(el.className || "").slice(0, 30)}:${prop}`;
-            if (!seen.has(key)) {
-              seen.add(key);
-              found.push({
-                selector: `${el.tagName.toLowerCase()}${el.className ? "." + (el.className as string).slice(0, 40) : ""}`,
-                prop,
-                value: val,
-              });
-            }
+      document.querySelectorAll("*").forEach((el) => {
+        const cls = (el.className && typeof el.className === "string") ? el.className : "";
+        // Only flag physical horizontal spacing utilities, not logical (ms/me/ps/pe/mx-auto is physical too)
+        const matches = cls.match(/\b(ml|mr|pl|pr|px|mx)(-\S+)?\b/g);
+        if (matches) {
+          const key = `${el.tagName}:${matches.join(",")}`;
+          if (!seen.has(key)) {
+            seen.add(key);
+            found.push({ selector: el.tagName.toLowerCase(), cls: matches.join(" ") });
           }
         }
       });

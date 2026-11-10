@@ -130,6 +130,13 @@ test.describe("i18n and RTL", () => {
       });
     }
   });
+});
+
+// This test exercises the login form itself, so it must run logged OUT — the
+// describe above has a beforeEach that signs in, and a signed-in visitor is
+// redirected away from /login to /dashboard (no submit button to click).
+test.describe("Auth forms (logged out)", () => {
+  test.describe.configure({ timeout: 120_000 });
 
   test("Form validation messages in Arabic", async ({ page }) => {
     const auth = new AuthPage(page);

@@ -121,6 +121,10 @@ export function FolderTree({ selectedFolderId, onSelectFolder }: FolderTreeProps
                 setMovingFolderId(folderId);
                 setShowMoveDialog(true);
               }}
+              onAddSubfolder={(folderId) => {
+                setCreateParentId(folderId);
+                setShowCreateDialog(true);
+              }}
             />
           ))}
         </div>

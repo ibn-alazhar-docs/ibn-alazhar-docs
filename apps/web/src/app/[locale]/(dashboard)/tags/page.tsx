@@ -180,46 +180,54 @@ export default function TagsPage() {
             {/* Create form */}
             {isCreating && (
               <Card className="p-6">
-                <h3 className="text-sm font-semibold text-primary-color mb-4">{t("createNew")}</h3>
-                <label
-                  htmlFor="new-tag-name"
-                  className="mb-2 block text-sm font-medium text-primary-color"
-                >
-                  {t("nameLabel")}
-                </label>
-                <Input
-                  id="new-tag-name"
-                  type="text"
-                  value={newTagName}
-                  onChange={(e) => setNewTagName(e.target.value)}
-                  placeholder={t("namePlaceholder")}
-                  className="mb-4"
-                  autoFocus
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") handleCreate();
-                    if (e.key === "Escape") setIsCreating(false);
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCreate();
                   }}
-                />
-                <div className="flex gap-2 mb-4">
-                  {TAG_COLORS.map((color) => (
-                    <button
-                      key={color}
-                      type="button"
-                      className={`w-6 h-6 rounded-full transition-transform ${
-                        newTagColor === color ? "scale-125 ring-2 ring-offset-1" : ""
-                      }`}
-                      style={{ backgroundColor: color }}
-                      onClick={() => setNewTagColor(color)}
-                      aria-label={`${t("colorLabel")}: ${color}`}
-                    />
-                  ))}
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsCreating(false)}>
-                    {tCommon("cancel")}
-                  </Button>
-                  <Button onClick={handleCreate}>{tCommon("save")}</Button>
-                </div>
+                >
+                  <h3 className="text-sm font-semibold text-primary-color mb-4">
+                    {t("createNew")}
+                  </h3>
+                  <label
+                    htmlFor="new-tag-name"
+                    className="mb-2 block text-sm font-medium text-primary-color"
+                  >
+                    {t("nameLabel")}
+                  </label>
+                  <Input
+                    id="new-tag-name"
+                    type="text"
+                    value={newTagName}
+                    onChange={(e) => setNewTagName(e.target.value)}
+                    placeholder={t("namePlaceholder")}
+                    className="mb-4"
+                    autoFocus
+                    onKeyDown={(e) => {
+                      if (e.key === "Escape") setIsCreating(false);
+                    }}
+                  />
+                  <div className="flex gap-2 mb-4">
+                    {TAG_COLORS.map((color) => (
+                      <button
+                        key={color}
+                        type="button"
+                        className={`w-6 h-6 rounded-full transition-transform ${
+                          newTagColor === color ? "scale-125 ring-2 ring-offset-1" : ""
+                        }`}
+                        style={{ backgroundColor: color }}
+                        onClick={() => setNewTagColor(color)}
+                        aria-label={`${t("colorLabel")}: ${color}`}
+                      />
+                    ))}
+                  </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" type="button" onClick={() => setIsCreating(false)}>
+                      {tCommon("cancel")}
+                    </Button>
+                    <Button type="submit">{tCommon("save")}</Button>
+                  </div>
+                </form>
               </Card>
             )}
 

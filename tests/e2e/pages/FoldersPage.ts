@@ -90,8 +90,8 @@ export class FoldersPage {
     await expect(menuBtn).toBeVisible({ timeout: 10000 });
     await menuBtn.click();
     const renameBtn = this.page
-      .getByRole("menuitem", { name: /إعادة تسمية|Rename/i })
-      .or(this.page.getByRole("button", { name: /إعادة تسمية|Rename/i }))
+      .getByRole("menuitem", { name: /أعد التسمية|إعادة تسمية|Rename/i })
+      .or(this.page.getByRole("button", { name: /أعد التسمية|إعادة تسمية|Rename/i }))
       .first();
     await expect(renameBtn).toBeVisible({ timeout: 10000 });
     await renameBtn.click();
@@ -101,8 +101,7 @@ export class FoldersPage {
     await Promise.all([
       this.page
         .waitForResponse(
-          (r) =>
-            r.url().includes("/api/") && ["PATCH", "PUT", "POST"].includes(r.request().method()),
+          (r) => r.url().includes("/api/folders") && r.request().method() === "GET",
           { timeout: 15000 },
         )
         .catch(() => null),

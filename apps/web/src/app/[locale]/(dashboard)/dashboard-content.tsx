@@ -8,6 +8,7 @@ import { Badge } from "@/ui/badge";
 import { Button } from "@/ui/button";
 import { FileTextIcon, FolderIcon, TagIcon, RefreshIcon, ChevronRightIcon } from "@/ui/icons";
 import { type ReactNode } from "react";
+import { useEffect } from "react";
 
 interface Document {
   id: string;
@@ -34,6 +35,12 @@ export function DashboardContent({ counts, recentDocuments }: DashboardContentPr
   const tFolders = useTranslations("folders");
   const tTags = useTranslations("tags");
   const tConv = useTranslations("conversions");
+
+  useEffect(() => {
+    if (typeof document !== "undefined" && !document.title) {
+      document.title = "الرئيسية — منصة ابن الأزهر";
+    }
+  }, []);
 
   const statusVariantMap: Record<
     string,
