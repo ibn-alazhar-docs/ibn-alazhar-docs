@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 
 test.setTimeout(120000); // 120 seconds
@@ -13,11 +13,18 @@ test("Files and Folders QA 2", async ({ page }) => {
   await page.goto("/ar/folders");
   await page.waitForTimeout(1000);
 
-  // Create a folder first so we have something to delete
-  await page.getByRole("button", { name: "+ New folder" }).click();
-  await page.waitForSelector('text="Create folder"');
-  await page.getByRole("textbox", { name: "Folder name" }).fill("Delete Me Folder");
-  await page.getByRole("button", { name: "New folder" }).last().click();
+  // Create a folder first so we have something to delete.
+  // Arabic page: button labels are Arabic (+ مجلد جديد / أنشئ مجلداً).
+  await page
+    .getByRole("button", { name: /\+\s*مجلد\s*جديد|\+\s*New folder/i })
+    .first()
+    .click();
+  await page.waitForSelector('text="أنشئ مجلداً", text="Create folder"').catch(() => {});
+  await page.getByRole("textbox", { name: /اسم المجلد|Folder name/i }).fill("Delete Me Folder");
+  await page
+    .getByRole("button", { name: /مجلد جديد|New folder/i })
+    .last()
+    .click();
   await page.waitForTimeout(2000);
 
   // Find the options menu on the first folder item
@@ -25,12 +32,12 @@ test("Files and Folders QA 2", async ({ page }) => {
   if ((await menuBtn.count()) > 0) {
     await menuBtn.click();
     await page.waitForTimeout(500);
-    const deleteBtn = page.getByRole("button", { name: "Delete" }).first();
+    const deleteBtn = page.getByRole("button", { name: /حذف|Delete/i }).first();
     if ((await deleteBtn.count()) > 0) {
       await deleteBtn.dblclick();
       console.log("Double clicked delete button");
       await page.waitForTimeout(1000);
-      const deleteModalText = await page.locator('text="Delete"').allTextContents();
+      const deleteModalText = await page.locator('text="حذف", text="Delete"').allTextContents();
       console.log("Delete Modal Text:", deleteModalText);
       await page.screenshot({ path: "test-results/qa-delete-double-click.png", fullPage: true });
     }

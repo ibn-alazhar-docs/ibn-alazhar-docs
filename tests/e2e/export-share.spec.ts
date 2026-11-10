@@ -136,14 +136,18 @@ test.describe("Export and Share", () => {
         .gotoFiles()
         .then(() => docs.documentRows.first().hover())
         .then(() => {
+          const btn = docs.documentRows
+            .first()
+            .getByRole("button", { name: /مشاركة|Share/i })
+            .first();
+          return btn.isVisible().catch(() => false);
+        })
+        .then((visible) => {
+          if (!visible) return;
           const shareBtn = docs.documentRows
             .first()
             .getByRole("button", { name: /مشاركة|Share/i })
             .first();
-          return shareBtn.isVisible().catch(() => false);
-        })
-        .then((visible) => {
-          if (!visible) return;
           return shareBtn
             .click()
             .then(() => share.createShareLink())

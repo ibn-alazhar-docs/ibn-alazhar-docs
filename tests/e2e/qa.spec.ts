@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { test } from "@playwright/test";
 import { LoginPage } from "./pages/LoginPage";
 
 test("Files and Folders QA", async ({ page }) => {
@@ -9,13 +9,19 @@ test("Files and Folders QA", async ({ page }) => {
 
   console.log("=== Task 3: Submitting new folder with long text and invalid characters ===");
   await page.goto("/ar/folders");
-  await page.getByRole("button", { name: "+ New folder" }).click();
-  await page.waitForSelector('text="Create folder"');
+  // Arabic page: the button label is "+ مجلد جديد".
+  await page
+    .getByRole("button", { name: /\+\s*مجلد\s*جديد|\+\s*New folder/i })
+    .first()
+    .click();
+  await page.waitForSelector('text="أنشئ مجلداً", text="Create folder"').catch(() => {});
 
   const longText = "A".repeat(500) + '< > / \\ : * ? " |';
-  await page.getByRole("textbox", { name: "Folder name" }).fill(longText);
-  // The modal has a "New folder" button at the bottom right.
-  await page.getByRole("button", { name: "New folder" }).last().click();
+  await page.getByRole("textbox", { name: /اسم المجلد|Folder name/i }).fill(longText);
+  await page
+    .getByRole("button", { name: /مجلد جديد|New folder/i })
+    .last()
+    .click();
 
   await page.waitForTimeout(2000);
   const errorMsg = await page
@@ -34,11 +40,11 @@ test("Files and Folders QA", async ({ page }) => {
   if ((await menuBtn.count()) > 0) {
     await menuBtn.click();
     await page.waitForTimeout(500);
-    const deleteBtn = page.getByRole("button", { name: "Delete" }).first();
+    const deleteBtn = page.getByRole("button", { name: /حذف|Delete/i }).first();
     await deleteBtn.dblclick();
     console.log("Double clicked delete button");
     await page.waitForTimeout(1000);
-    const deleteModalText = await page.locator('text="Delete"').allTextContents();
+    const deleteModalText = await page.locator('text="حذف", text="Delete"').allTextContents();
     console.log("Delete Modal Text:", deleteModalText);
   } else {
     console.log("No delete button found on folders");

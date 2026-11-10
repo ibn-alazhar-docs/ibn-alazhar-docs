@@ -76,7 +76,7 @@ test.describe("Navigation stability (CLS) — dashboard matrix", () => {
     }) => {
       await page.goto(`/${locale}/dashboard`);
       await settle(page);
-      const worst = { route: "", value: 0 };
+      let worst = { route: "", value: 0 };
       for (const route of DASHBOARD_ROUTES) {
         const delta = await clickNav(page, `/${locale}${route}`);
         if (delta > worst.value) worst = { route, value: delta };
@@ -134,7 +134,7 @@ test.describe("Navigation stability — reduced motion", () => {
     await page.addInitScript(CLS_INIT);
     await loginAsAdmin(page, "ar");
     await settle(page);
-    const worst = { route: "", value: 0 };
+    let worst = { route: "", value: 0 };
     for (const route of DASHBOARD_ROUTES) {
       const delta = await clickNav(page, `/ar${route}`);
       if (delta > worst.value) worst = { route, value: delta };
