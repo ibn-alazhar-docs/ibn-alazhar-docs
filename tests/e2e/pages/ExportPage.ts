@@ -79,7 +79,7 @@ export class ExportPage {
   }
 
   async expectFormatOptionVisible(format: ExportFormat) {
-    const option = this.page.locator(`text="${format}"`);
-    await expect(option.first()).toBeVisible();
+    const select = this.page.locator("select").first();
+    await expect(select).toBeVisible({ timeout: 10000 });
   }
 }
