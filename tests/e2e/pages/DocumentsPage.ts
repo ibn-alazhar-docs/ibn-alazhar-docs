@@ -14,7 +14,7 @@ export class DocumentsPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.fileInput = page.locator('[data-testid="file-input"], input[type="file"]');
+    this.fileInput = page.locator('[data-testid="file-input"], input[type="file"]').first();
     this.uploadButton = page
       .getByTestId("upload-button")
       .or(page.getByRole("button", { name: /رفع|Upload|تحميل/i }).first());
