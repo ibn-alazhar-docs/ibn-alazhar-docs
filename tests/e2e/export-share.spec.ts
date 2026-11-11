@@ -136,6 +136,9 @@ test.describe("Export and Share", () => {
       await docs.gotoFiles();
       await docs.uploadFile(TEST_PDF_PATH);
       await docs.expectDocumentRowVisible(60000);
+      await page.waitForTimeout(5000);
+      await page.reload();
+      await docs.expectDocumentRowVisible(60000);
       const row = docs.documentRows.first();
       await row.hover();
       const shareBtn = row.getByRole("button", { name: /مشاركة|Share/i }).first();
