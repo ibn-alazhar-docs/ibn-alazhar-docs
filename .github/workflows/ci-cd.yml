@@ -742,6 +742,7 @@ jobs:
     needs: [build]
     if: github.event_name == 'push' || github.event.workflow_dispatch.inputs.deploy == 'true'
     environment: staging
+    continue-on-error: true
     steps:
       - name: Deploy to Northflank (free tier)
         if: env.NORTHFLANK_API_TOKEN != ''
