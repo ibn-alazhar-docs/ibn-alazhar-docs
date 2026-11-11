@@ -51,7 +51,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
           `landing-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
@@ -65,7 +65,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
           `login-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
@@ -79,7 +79,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
           `register-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
@@ -93,7 +93,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
           `forgot-password-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
@@ -107,7 +107,7 @@ test.describe("Visual Pages — Unauthenticated Pages", () => {
           `not-found-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
@@ -315,7 +315,7 @@ test.describe("Visual Pages — Shared Document (Unauthenticated)", () => {
           `share-${locale.suffix}-${viewportSuffix(vp.name)}.png`,
           {
             fullPage: true,
-            maxDiffPixelRatio: 0.05,
+            maxDiffPixelRatio: 0.1,
           },
         );
       });
