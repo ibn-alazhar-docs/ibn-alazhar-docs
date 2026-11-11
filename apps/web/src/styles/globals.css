@@ -194,3 +194,9 @@ button,
 [lang="ar"] .recent-doc-category {
   text-transform: none !important;
 }
+
+/* Comprehensive Arabic text-transform disable */
+:lang(ar),
+[lang="ar"] {
+  text-transform: none !important;
+}
