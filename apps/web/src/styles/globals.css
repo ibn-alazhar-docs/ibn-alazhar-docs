@@ -181,3 +181,16 @@ button,
   margin-left: 0;
   margin-right: 0;
 }
+
+/* Arabic text-transform fix — uppercase breaks Arabic shaping
+   (hamza placed on wrong letter, e.g. وء instead of وء). */
+:lang(ar) [style*="text-transform: uppercase"],
+[lang="ar"] [style*="text-transform: uppercase"],
+:lang(ar) .journey-step-number,
+[lang="ar"] .journey-step-number,
+:lang(ar) .thematic-group-label,
+[lang="ar"] .thematic-group-label,
+:lang(ar) .recent-doc-category,
+[lang="ar"] .recent-doc-category {
+  text-transform: none !important;
+}

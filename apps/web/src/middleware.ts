@@ -42,9 +42,8 @@ const publicPagePrefixes = [
   "/forgot-password",
   "/reset-password",
   "/share",
-  // Root Scalar API reference (app/docs) — a real public developer page, not the
-  // removed marketing docs.
   "/docs",
+  "/tools",
 ];
 
 // Routes that should NOT be accessible when logged in
