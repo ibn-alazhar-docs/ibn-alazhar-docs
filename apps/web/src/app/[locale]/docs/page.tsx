@@ -42,6 +42,7 @@ const TAG_ORDER: Record<string, number> = {
 };
 
 export default async function DocsPage({ params }: DocsPageProps) {
+  // DEPLOY-VERIFY: 1794398486
   await params;
 
   const endpoints: {
