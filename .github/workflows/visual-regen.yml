@@ -55,7 +55,7 @@ jobs:
       S3_SECRET_ACCESS_KEY: dummy
     steps:
       - name: Checkout target branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.target_branch }}
           lfs: true
