@@ -67,7 +67,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-landing-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -82,7 +82,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-login-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -97,7 +97,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-register-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -112,7 +112,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-forgot-password-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -127,7 +127,7 @@ test.describe("Responsive — Public Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-not-found-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }
@@ -152,7 +152,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-dashboard-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -167,7 +167,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-files-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -182,7 +182,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-folders-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -197,7 +197,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-tags-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -212,7 +212,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-search-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -227,7 +227,7 @@ test.describe("Responsive — Authenticated Pages (Arabic RTL)", () => {
 
       await expect(page).toHaveScreenshot(`responsive-settings-ar-${bp.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }

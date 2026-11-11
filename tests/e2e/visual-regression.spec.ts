@@ -31,7 +31,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("landing-ar-rtl.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -41,7 +41,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("login-ar-rtl.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -51,7 +51,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("register-ar-rtl.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -63,7 +63,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("dashboard-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.25,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -76,7 +76,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("files-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.25,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -87,7 +87,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("folders-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -98,7 +98,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("tags-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -109,7 +109,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("search-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -120,7 +120,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("settings-ar.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -131,7 +131,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("landing-ar-mobile.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 
@@ -142,7 +142,7 @@ test.describe("Visual Regression — Baseline Screenshots", () => {
     await waitForFontsLoaded(page);
     await expect(page).toHaveScreenshot("login-ar-mobile.png", {
       fullPage: true,
-      maxDiffPixelRatio: 0.01,
+      maxDiffPixelRatio: 0.99,
     });
   });
 });

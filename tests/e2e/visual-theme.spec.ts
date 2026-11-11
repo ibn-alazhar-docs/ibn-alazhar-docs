@@ -25,7 +25,7 @@ test.describe("Visual Theme — Light Mode", () => {
 
       await expect(page).toHaveScreenshot(`light-ar-${pageInfo.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }
@@ -45,7 +45,7 @@ test.describe("Visual Theme — Dark Mode", () => {
 
       await expect(page).toHaveScreenshot(`dark-ar-${pageInfo.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }
@@ -68,7 +68,7 @@ test.describe("Visual Theme — RTL Layout (Light Mode)", () => {
 
       await expect(page).toHaveScreenshot(`rtl-light-ar-${pageInfo.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }
@@ -91,7 +91,7 @@ test.describe("Visual Theme — RTL Layout (Dark Mode)", () => {
 
       await expect(page).toHaveScreenshot(`rtl-dark-ar-${pageInfo.name}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }

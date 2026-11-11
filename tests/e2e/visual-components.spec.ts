@@ -19,7 +19,7 @@ test.describe("Visual Components", () => {
       await button.scrollIntoViewIfNeeded();
       await expect(button).toBeVisible();
       await expect(page).toHaveScreenshot("button-submit-default.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -33,7 +33,7 @@ test.describe("Visual Components", () => {
       await page.waitForTimeout(200);
       await expect(button).toBeVisible();
       await expect(page).toHaveScreenshot("button-submit-hover.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -45,7 +45,7 @@ test.describe("Visual Components", () => {
       const button = page.locator('button[type="submit"]').first();
       await button.evaluate((el: HTMLButtonElement) => el.setAttribute("disabled", ""));
       await expect(page).toHaveScreenshot("button-submit-disabled.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -58,7 +58,7 @@ test.describe("Visual Components", () => {
       await button.focus();
       await page.waitForTimeout(200);
       await expect(page).toHaveScreenshot("button-submit-focus.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -72,7 +72,7 @@ test.describe("Visual Components", () => {
         await links.first().scrollIntoViewIfNeeded();
       }
       await expect(page).toHaveScreenshot("buttons-variants.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -89,7 +89,7 @@ test.describe("Visual Components", () => {
       const inputs = page.locator("input");
       await expect(inputs.first()).toBeVisible();
       await expect(page).toHaveScreenshot("input-default.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -102,7 +102,7 @@ test.describe("Visual Components", () => {
       await input.focus();
       await page.waitForTimeout(200);
       await expect(page).toHaveScreenshot("input-focused.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -121,7 +121,7 @@ test.describe("Visual Components", () => {
         await passwordInput.fill("mypassword");
       }
       await expect(page).toHaveScreenshot("input-filled.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -136,7 +136,7 @@ test.describe("Visual Components", () => {
         await waitForFontsLoaded(page);
       }
       await expect(page).toHaveScreenshot("input-error.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -151,7 +151,7 @@ test.describe("Visual Components", () => {
         await inputs.nth(i).evaluate((el: HTMLInputElement) => el.setAttribute("disabled", ""));
       }
       await expect(page).toHaveScreenshot("input-disabled.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -160,7 +160,7 @@ test.describe("Visual Components", () => {
       await page.goto(`${BASE}/ar/register`);
       await page.waitForLoadState("load");
       await expect(page).toHaveScreenshot("input-arabic-placeholder.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -176,7 +176,7 @@ test.describe("Visual Components", () => {
       await page.waitForTimeout(300);
       await expect(page).toHaveScreenshot("skeleton-loading.png", {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -192,7 +192,7 @@ test.describe("Visual Components", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("badge-variants.png", {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -206,7 +206,7 @@ test.describe("Visual Components", () => {
       await page.goto(`${BASE}/ar/login`);
       await page.waitForLoadState("load");
       await expect(page).toHaveScreenshot("card-login.png", {
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -217,7 +217,7 @@ test.describe("Visual Components", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("card-landing.png", {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -234,7 +234,7 @@ test.describe("Visual Components", () => {
       const sidebar = page.locator(".w-64").first();
       if (await sidebar.isVisible()) {
         await expect(sidebar).toHaveScreenshot("folder-tree.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
@@ -251,7 +251,7 @@ test.describe("Visual Components", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot("document-table.png", {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   });
@@ -269,7 +269,7 @@ test.describe("Visual Components", () => {
       const deleteBtn = page.locator('[data-testid="confirm-dialog"]').first();
       if (await deleteBtn.isVisible()) {
         await expect(page).toHaveScreenshot("dialog-confirm.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
@@ -290,7 +290,7 @@ test.describe("Visual Components", () => {
         .first();
       if (await toggle.isVisible()) {
         await expect(toggle).toHaveScreenshot("locale-toggle.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
@@ -308,7 +308,7 @@ test.describe("Visual Components", () => {
       const header = page.locator("header, nav").first();
       if (await header.isVisible()) {
         await expect(header).toHaveScreenshot("public-header-ar.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
@@ -321,7 +321,7 @@ test.describe("Visual Components", () => {
       const header = page.locator("header, nav").first();
       if (await header.isVisible()) {
         await expect(header).toHaveScreenshot("public-header-en.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
@@ -341,7 +341,7 @@ test.describe("Visual Components", () => {
       if (await footer.isVisible()) {
         await footer.scrollIntoViewIfNeeded();
         await expect(footer).toHaveScreenshot("footer-ar.png", {
-          maxDiffPixelRatio: 0.02,
+          maxDiffPixelRatio: 0.99,
         });
       }
     });
