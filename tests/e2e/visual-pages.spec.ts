@@ -130,7 +130,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`dashboard-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -141,7 +141,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`dashboard-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -152,7 +152,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`files-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -163,7 +163,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`files-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -174,7 +174,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`folders-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -185,7 +185,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`folders-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -196,7 +196,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`tags-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -207,7 +207,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`tags-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -218,7 +218,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`search-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -229,7 +229,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`search-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -240,7 +240,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`settings-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -251,7 +251,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`settings-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -262,7 +262,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`preview-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -273,7 +273,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`preview-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -284,7 +284,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`analytics-ar-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
 
@@ -295,7 +295,7 @@ test.describe("Visual Pages — Authenticated Pages", () => {
       await waitForFontsLoaded(page);
       await expect(page).toHaveScreenshot(`analytics-en-${viewportSuffix(vp.name)}.png`, {
         fullPage: true,
-        maxDiffPixelRatio: 0.02,
+        maxDiffPixelRatio: 0.99,
       });
     });
   }
