@@ -14,10 +14,7 @@ export class ExportPage {
 
   constructor(page: Page) {
     this.page = page;
-    this.exportButton = page
-      .getByTestId("export-button")
-      .or(page.getByRole("button", { name: /تصدير|Export|صدّر/i }))
-      .first();
+    this.exportButton = page.getByTestId("export-button");
     this.advancedExportButton = page
       .getByRole("button", { name: /تصدير متقدم|Advanced Export/i })
       .first();
@@ -53,11 +50,13 @@ export class ExportPage {
       TXT: "txt",
       Markdown: "md",
       EPUB: "epub",
-      JSON: "md",
+      JSON: "json",
     };
     const value = formatMap[format] ?? format.toLowerCase();
     const select = this.page.locator("select").first();
     await select.selectOption(value);
+    // Verify the selection stuck
+    await expect(select).toHaveValue(value, { timeout: 5000 });
   }
 
   async startDownload() {
