@@ -717,7 +717,7 @@ jobs:
           file: Dockerfile
           target: ocr-runner
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ocr-worker:${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ocr-worker:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -728,7 +728,7 @@ jobs:
           file: Dockerfile
           target: export-runner
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/export-worker:${{ steps.meta.outputs.tags }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/export-worker:${{ github.ref_name }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
