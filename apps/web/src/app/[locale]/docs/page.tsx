@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
 import { Container } from "@/ui/container";
 import { Card, CardContent, CardHeader, CardTitle } from "@/ui/card";
 import { Badge } from "@/ui/badge";
@@ -10,8 +9,7 @@ interface DocsPageProps {
 }
 
 export async function generateMetadata({ params }: DocsPageProps): Promise<Metadata> {
-  const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "nav" });
+  await params;
   return {
     title: "توثيق واجهة برمجة التطبيقات",
     description: "توثيق REST API لمنصة ابن الأزهر",
@@ -44,7 +42,7 @@ const TAG_ORDER: Record<string, number> = {
 };
 
 export default async function DocsPage({ params }: DocsPageProps) {
-  const { locale } = await params;
+  await params;
 
   const endpoints: {
     method: string;
@@ -54,17 +52,19 @@ export default async function DocsPage({ params }: DocsPageProps) {
     auth: boolean;
   }[] = [];
 
-  const spec = openApiSpec as any;
-  for (const [path, methods] of Object.entries(spec.paths ?? {})) {
-    const methodObj = methods as Record<string, any>;
+  const spec = openApiSpec as Record<string, unknown>;
+  const paths = (spec.paths ?? {}) as Record<string, Record<string, Record<string, unknown>>>;
+  for (const [path, methods] of Object.entries(paths)) {
+    const methodObj = methods;
     for (const [method, op] of Object.entries(methodObj)) {
       if (method === "parameters") continue;
+      const operation = op as Record<string, unknown>;
       endpoints.push({
         method: method.toUpperCase(),
         path: path.replace("/api", ""),
-        summary: op.summary ?? path,
-        tag: op.tags?.[0] ?? "General",
-        auth: (op.security?.length ?? 0) > 0,
+        summary: (operation.summary as string) ?? path,
+        tag: ((operation.tags as string[])?.[0] ?? "General"),
+        auth: ((operation.security as unknown[])?.length ?? 0) > 0,
       });
     }
   }
