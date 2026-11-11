@@ -107,7 +107,7 @@ export default async function DocsPage({ params }: DocsPageProps) {
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {tags.map((tag) => {
-            const items = byTag[tag];
+            const items = byTag[tag] ?? [];
             return (
               <Card key={tag} className="overflow-hidden">
                 <CardHeader>
